@@ -40,6 +40,10 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - La carga de un post y la restauración de una revisión comparten ahora `postToForm`, antes eran dos copias del mismo bloque.
 - Pruebas nuevas: `BitacoraPostEditor.test.jsx` (render, slug automático, post publicado) y `postEditorForm.test.js`. Frontend pasa a 95 tests.
 
+### Limpieza menor
+- `editorExtensions.js` configura `link` desde `StarterKit` y ya no registra `Link` y `Underline` por separado: desaparece el aviso de Tiptap por extensiones duplicadas y el HTML generado es el mismo.
+- Añadido `.gitattributes` (`* text=auto`, y CRLF para los `.cmd`) y normalizados a LF los 21 archivos que estaban con CRLF o mezclados. Es un cambio solo de saltos de línea, sin tocar contenido.
+
 ### Arranque en local
 - `arrancar.cmd` (doble clic) deja todo el entorno en marcha: comprueba `backend/.env`, abre Docker Desktop si está cerrado, levanta PostgreSQL en un contenedor de desarrollo y arranca backend y frontend como dos pestañas de una misma ventana de Windows Terminal. El móvil se abre en otra ventana con las direcciones para entrar por la red Wi-Fi. Si algún servidor ya está en marcha, no lo lanza de nuevo. Sin Windows Terminal usa ventanas de cmd.
 
@@ -54,10 +58,9 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - `editor/extensions/contentButton.jsx` (unas 670 líneas) e `imageGrid.jsx` (unas 590) aún tienen la vista y la extensión juntas: separar el panel de personalización de cada una.
 - `editor/image/ResizableImageView.jsx` sigue en unas 650 líneas: separar la barra de imagen y la capa de anotaciones.
 - `RichEditor.jsx` todavía tiene los manejadores de subida, color, enlaces y bloques (unas 450 líneas de lógica): llevarlos a hooks por tema. `MediaGroup` recibe 34 props, señal de que ese estado debería agruparse.
-- Tiptap avisa de extensiones duplicadas (`link` y `underline`) porque `StarterKit` ya las incluye. No afecta al resultado, pero conviene quitar las repetidas.
+- `@tiptap/extension-link` y `@tiptap/extension-underline` siguen como dependencias directas en `frontend/package.json` aunque ya no se importan: `StarterKit` las trae. Quitarlas y actualizar el lockfile.
 - Revisar con el mismo criterio el resto de comentarios en español: tono natural, explican el porqué.
 - Revisar `console.warn` y `console.log` que queden con mensajes en inglés.
-- Los saltos de línea del repo mezclan LF y CRLF (Git avisa en cada commit): añadir un `.gitattributes`.
 
 ### Funcionalidad
 - Añadir `/clasico` al sitemap del backend (`backend/lib/sitemap.js`).

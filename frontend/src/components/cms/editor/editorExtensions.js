@@ -1,14 +1,12 @@
 // Lista de extensiones de Tiptap con las que se construye el editor de posts.
 import StarterKit from '@tiptap/starter-kit';
 import { createTechnicalCodeBlockExtension } from './technicalCodeBlockExtension';
-import Underline from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
 import Highlight from '@tiptap/extension-highlight';
 import { TooltipMark } from './extensions/tooltipMark';
 import TextAlign from '@tiptap/extension-text-align';
-import Link from '@tiptap/extension-link';
 import { ResizableImageExtension } from './image/resizableImageExtension';
 import { ResizableYoutubeExtension } from './video/resizableYoutubeExtension';
 import { AudioNode } from './audio/audioNode';
@@ -24,19 +22,22 @@ import CharacterCount from '@tiptap/extension-character-count';
 
 export function buildEditorExtensions(lowlight) {
     return [
-        StarterKit.configure({ codeBlock: false }),
+        // StarterKit ya incluye link y underline: se configuran aquí en vez de registrarlos aparte,
+        // porque un segundo registro con el mismo nombre hace que Tiptap avise de extensiones duplicadas.
+        StarterKit.configure({
+            codeBlock: false,
+            link: {
+                openOnClick: false,
+                HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
+            },
+        }),
         createTechnicalCodeBlockExtension(lowlight),
-        Underline,
         TextStyle,
         Color,
         FontFamily.configure({ types: ['textStyle'] }),
         Highlight.configure({ multicolor: true }),
         TooltipMark,
         TextAlign.configure({ types: ['heading', 'paragraph', 'image', 'youtube', 'audio', 'callout', 'mermaid', 'accordion', 'contentButton', 'documentAttachment', 'imageGrid'] }),
-        Link.configure({
-            openOnClick: false,
-            HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
-        }),
         ResizableImageExtension.configure({ allowBase64: false }),
         ResizableYoutubeExtension,
         AudioNode,

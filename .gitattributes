@@ -1,0 +1,6 @@
+# Git guarda los textos con LF y cada sistema los muestra con su final de línea
+* text=auto
+
+# Los scripts de Windows necesitan CRLF para ejecutarse bien
+*.cmd text eol=crlf
+*.bat text eol=crlf
