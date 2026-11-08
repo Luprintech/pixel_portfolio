@@ -1,0 +1,20 @@
+// Extensiones TipTap avanzadas para el editor del CMS: un módulo por bloque
+export { LineHeight } from './lineHeight';
+export { AccordionExtension } from './accordion';
+export { ContentButtonExtension } from './contentButton';
+export { DocumentAttachmentExtension } from './documentAttachment';
+export { ImageGridExtension } from './imageGrid';
+export { VideoGalleryExtension } from './videoGallery';
+export { GifExtension } from './gif';
+export { QuoteCardExtension } from '../blocks/QuoteCard';
+export { StatsCounterExtension } from '../blocks/StatsCounter';
+export { TimelineExtension } from '../blocks/Timeline';
+export { ComparisonSliderExtension } from '../blocks/ComparisonSlider';
+export { SpotifyEmbedExtension } from '../blocks/SpotifyEmbed';
+export { ProgressBarsExtension } from '../blocks/ProgressBars';
+export { CountdownTimerExtension } from '../blocks/CountdownTimer';
+export { SocialShareExtension } from '../blocks/SocialShare';
+export { TabsExtension } from '../blocks/Tabs';
+export { ToggleExtension } from '../blocks/Toggle';
+export { QuizExtension } from '../blocks/Quiz';
+export { PollExtension } from '../blocks/Poll';

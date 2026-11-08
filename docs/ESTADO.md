@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08 (refactor de RichEditor).
+Última actualización: 2026-11-08 (modularización de las extensiones del editor).
 
 ## Hecho
 
@@ -28,6 +28,11 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - La lista de extensiones, la limpieza del HTML pegado y el cálculo de menús flotantes salieron a `editorExtensions.js`, `pasteUtils.js` y `hooks/useFloatingMenus.js`.
 - Nueva prueba `RichEditor.test.jsx` con el documento cargado y una instantánea de la barra de herramientas, para detectar cambios no intencionados al reorganizar.
 
+### Modularización de las extensiones del editor
+- `editor/extensions.jsx` (unas 2.350 líneas) se dividió en `editor/extensions/`: un módulo por bloque (`lineHeight`, `accordion`, `contentButton`, `documentAttachment`, `imageGrid`, `videoGallery`, `gif`) y un `index.js` que reexporta todo, así que los imports existentes no cambian.
+- `joinClassNames`, que compartían tres bloques, vive en `extensions/classNames.js`.
+- Tests (84), lint y build sin cambios respecto a antes.
+
 ### Arranque en local
 - `arrancar.cmd` (doble clic) deja todo el entorno en marcha: comprueba `backend/.env`, abre Docker Desktop si está cerrado, levanta PostgreSQL en un contenedor de desarrollo y arranca backend y frontend como dos pestañas de una misma ventana de Windows Terminal. El móvil se abre en otra ventana con las direcciones para entrar por la red Wi-Fi. Si algún servidor ya está en marcha, no lo lanza de nuevo. Sin Windows Terminal usa ventanas de cmd.
 
@@ -39,7 +44,8 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ## Pendiente
 
 ### Estructura y calidad de código
-- Modularizar `components/cms/editor/extensions.jsx` (unas 2.350 líneas con todas las extensiones de bloques) y `pages/cms/BitacoraPostEditor.jsx`.
+- Modularizar `pages/cms/BitacoraPostEditor.jsx`.
+- `editor/extensions/contentButton.jsx` (unas 670 líneas) e `imageGrid.jsx` (unas 590) aún tienen la vista y la extensión juntas: separar el panel de personalización de cada una.
 - `editor/image/ResizableImageView.jsx` sigue en unas 650 líneas: separar la barra de imagen y la capa de anotaciones.
 - `RichEditor.jsx` todavía tiene los manejadores de subida, color, enlaces y bloques (unas 450 líneas de lógica): llevarlos a hooks por tema. `MediaGroup` recibe 34 props, señal de que ese estado debería agruparse.
 - Tiptap avisa de extensiones duplicadas (`link` y `underline`) porque `StarterKit` ya las incluye. No afecta al resultado, pero conviene quitar las repetidas.
