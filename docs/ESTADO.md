@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08 (bloques sin uso borrados).
+Última actualización: 2026-11-08 (medida del chunk del juego).
 
 ## Hecho
 
@@ -87,7 +87,8 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ### Funcionalidad
 - Los sprites laterales y de espalda de la princesa son versiones simplificadas.
-- El chunk del juego (`boot`) pesa unos 1,4 MB por Phaser; está cargado de forma diferida, pero conviene medirlo.
+- Medido el 2026-11-08: el chunk del juego (`boot`) pesa 1,41 MB (unos 329 KB con gzip) y casi todo es Phaser. Solo lo pide `pages/Valle.jsx` con `import()` y no aparece en los `modulepreload` de `index.html`, así que ni `/` ni `/clasico` lo descargan. El peso de `Valle` en sí es de 9 KB. Reducirlo exigiría una compilación a medida de Phaser, y no compensa mientras no moleste a quien entra al juego.
+- Hallazgo al medir: `dist/index.html` precarga `editor-vendor` (unos 610 KB) y `cms-diagrams-vendor` (unos 535 KB) aunque son del CMS. Hay que averiguar qué importación estática de la entrada los arrastra (probablemente algo compartido con el CMS) y pasarla a carga diferida para que la web pública no los baje.
 
 ### Infraestructura
 - El CI (`.github/workflows/ci.yml`) ya ejecuta lint, tests y build del frontend y tests y comprobación de sintaxis del backend en cada PR. Falta el despliegue automatizado.
