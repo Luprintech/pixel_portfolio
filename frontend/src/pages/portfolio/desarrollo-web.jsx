@@ -1,0 +1,109 @@
+import { motion as Motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { FaCode, FaWordpress } from "react-icons/fa";
+import ProjectCard from "../../components/ProjectCard";
+import { useProjects } from "../../hooks/useProjects";
+
+export default function PortfolioDesarrolloWeb() {
+  const { t } = useTranslation();
+  const { codeProjects, cmsProjects, loading } = useProjects();
+
+  return (
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] py-28 px-6 md:px-16 relative overflow-x-hidden selection:bg-[var(--accent-primary)]/30">
+      <div className="ambient-grid-halos absolute inset-0 pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-noise opacity-[0.02] mix-blend-overlay pointer-events-none z-0" />
+
+      {/* CABECERA */}
+      <Motion.div
+        initial={{ opacity: 0, y: -40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="relative z-10 max-w-6xl mx-auto text-center mb-20"
+      >
+        <h1 className="typo-title text-4xl md:text-5xl font-extrabold mb-6 text-[var(--text-primary)] ">
+          {t('portfolio.web_title')}
+        </h1>
+        <p className="typo-body text-[var(--text-muted)] text-lg max-w-3xl mx-auto leading-relaxed">
+          {t('portfolio.web_desc')}
+        </p>
+      </Motion.div>
+
+      <div className="relative z-10 max-w-6xl mx-auto space-y-20">
+
+        {/* Sección 1: full stack & código */}
+        <section>
+          <Motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center gap-3 mb-10"
+          >
+            <div className="p-2.5 rounded-none bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 text-[var(--accent-primary)]">
+              <FaCode size={20} />
+            </div>
+            <div>
+              <h2 className="typo-title text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+                {t('portfolio.web_code_title')}
+              </h2>
+              <p className="typo-body text-sm text-[var(--text-muted)] mt-0.5">
+                {t('portfolio.web_code_desc')}
+              </p>
+            </div>
+          </Motion.div>
+
+          {loading ? (
+            <p className="typo-body text-[var(--text-muted)]">Cargando proyectos...</p>
+          ) : codeProjects.length === 0 ? (
+            <p className="typo-body text-[var(--text-muted)]">{t('portfolio.web_empty')}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {codeProjects.map((proyecto, index) => (
+                <ProjectCard key={proyecto.id} project={proyecto} index={index} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Separador */}
+        <div className="border-t border-[var(--border-subtle)]" />
+
+        {/* Sección 2: wordpress & CMS */}
+        <section>
+          <Motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center gap-3 mb-10"
+          >
+            <div className="p-2.5 rounded-none bg-[var(--accent-secondary)]/10 border border-[var(--accent-secondary)]/20 text-[var(--accent-secondary)]">
+              <FaWordpress size={20} />
+            </div>
+            <div>
+              <h2 className="typo-title text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+                {t('portfolio.web_cms_title')}
+              </h2>
+              <p className="typo-body text-sm text-[var(--text-muted)] mt-0.5">
+                {t('portfolio.web_cms_desc')}
+              </p>
+            </div>
+          </Motion.div>
+
+          {loading ? (
+            <p className="typo-body text-[var(--text-muted)]">Cargando proyectos...</p>
+          ) : cmsProjects.length === 0 ? (
+            <p className="typo-body text-[var(--text-muted)]">{t('portfolio.web_cms_empty')}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {cmsProjects.map((proyecto, index) => (
+                <ProjectCard key={proyecto.id} project={proyecto} index={index} />
+              ))}
+            </div>
+          )}
+        </section>
+
+      </div>
+    </div>
+  );
+}

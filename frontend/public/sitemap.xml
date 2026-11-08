@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://guadalupecano.es/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://guadalupecano.es/clasico</loc>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://guadalupecano.es/blog</loc>
+    <changefreq>daily</changefreq>
+  </url>
+  <url>
+    <loc>https://guadalupecano.es/blog/diseno-arquitectura-vocaccion</loc>
+    <lastmod>2026-02-22</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://guadalupecano.es/blog/synology-docker-deploy</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+</urlset>

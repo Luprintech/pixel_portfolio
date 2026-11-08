@@ -1,0 +1,666 @@
+@import "tailwindcss";
+@import "./pixel.css";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --breakpoint-xs: 475px;
+  --font-sans: 'Pixelify Sans', ui-monospace, monospace;
+  --font-headline: 'Jersey 10', 'Pixelify Sans', monospace;
+  --font-body: 'Pixelify Sans', ui-monospace, monospace;
+  --font-read: 'Literata', Georgia, serif;
+  --font-label: 'Pixelify Sans', ui-monospace, monospace;
+}
+
+:root {
+  --type-title-family: var(--font-headline);
+  --type-body-family: var(--font-body);
+  --type-label-family: var(--font-label);
+}
+
+.typo-title {
+  font-family: var(--type-title-family);
+}
+
+.typo-body {
+  font-family: var(--type-body-family);
+}
+
+.typo-label {
+  font-family: var(--type-label-family);
+}
+
+/* Variables de tema, claro y oscuro.
+
+   Jerarquía de fondos:
+   --bg-primary     fondo base de la página
+   --bg-secondary   secciones alternas
+   --bg-surface     tarjetas, paneles y desplegables
+   --bg-elevated    modales, tarjetas flotantes e inputs
+   --bg-overlay     capas con desenfoque de fondo
+   --bg-code        bloques de código (siempre oscuro)
+   --bg-code-header cabecera del bloque de código (siempre oscuro) */
+
+/* Tema oscuro */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --nav-height: 5rem;
+  --section-gutter-x: clamp(1.25rem, 2vw, 2.5rem);
+  --section-gutter-y: clamp(1rem, 2.2vh, 1.75rem);
+
+  /* Fondos */
+  --bg-primary: #1c1b3a;
+  --bg-secondary: #242350;
+  --bg-surface: #2e2d5a;
+  --bg-elevated: #242350;
+  --bg-overlay: rgba(28, 27, 58, 0.92);
+
+  /* Código: siempre oscuro en ambos temas */
+  --bg-code: #15142c;
+  --bg-code-header: #0f0e22;
+
+  /* Textos */
+  --text-primary: #f1e6cf;
+  --text-secondary: #cfc5e0;
+  --text-muted: #9d95bd;
+  --text-inverse: #1c1b3a;
+  --hero-typewriter-color: #f1e6cf;
+
+  /* Bordes */
+  --border-color: #4b4380;
+  --border-subtle: #33306a;
+  --border-default: #3d3977;
+  --border-card: #4b4380;
+
+  /* Acentos (vibrant: igual en ambos temas) */
+  --accent-primary: #f2b134;
+  --accent-primary-dim: rgba(242, 177, 52, 0.16);
+  --accent-secondary: #4cb3c9;
+  --accent-secondary-dim: rgba(76, 179, 201, 0.16);
+  --accent-violet: #b8a2e0;
+
+  /* Acentos extras: verde · naranja · violeta (stack tecnológico) */
+  --accent-green: #a3c14f;
+  --accent-green-dim: rgba(163, 193, 79, 0.16);
+  --accent-orange: #e2654f;
+  --accent-orange-dim: rgba(226, 101, 79, 0.16);
+  --accent-purple: #b8a2e0;
+  --accent-purple-dim: rgba(184, 162, 224, 0.16);
+
+  /* Gradiente logo */
+  --gradient-logo: linear-gradient(to right, #f2b134, #f2b134);
+
+  /* Navbar */
+  --nav-bg-scrolled: #1c1b3a;
+  --nav-bg-mobile: #1c1b3a;
+  --nav-border: #f2b134;
+
+  /* Cards */
+  --card-bg: #2e2d5a;
+  --card-border: #4b4380;
+  --card-shadow: 0 4px 0 #0f0e22;
+  --card-hover-shadow: 0 6px 0 #0f0e22;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 0 #0f0e22;
+  --shadow-md: 0 4px 0 #0f0e22;
+  --shadow-nav: 0 4px 0 #0f0e22;
+
+  /* Footer */
+  --footer-bg: #15142c;
+  --footer-border: #4b4380;
+
+  /* Scroll + misc */
+  --gradient-inner-bg: #1c1b3a;
+  --scrollbar-track: #15142c;
+  --scrollbar-thumb: #4b4380;
+
+  /* Toggle */
+  --toggle-bg: #2e2d5a;
+  --toggle-hover: #3d3977;
+  --toggle-border: #4b4380;
+  --toggle-icon: #f2b134;
+
+  /* Blog surfaces */
+  --blog-bg: #1c1b3a;
+  --blog-surface: #242350;
+  --blog-surface-low: #242350;
+  --blog-surface-high: #2e2d5a;
+  --blog-text-primary: #f1e6cf;
+  --blog-text-secondary: #cfc5e0;
+  --blog-text-muted: #9d95bd;
+  --blog-outline-variant: #4b4380;
+  --blog-glow-primary: rgba(242, 177, 52, 0.12);
+  --blog-glow-secondary: rgba(76, 179, 201, 0.12);
+
+}
+
+/* Tema claro (por defecto) */
+/* Personalidad: misma estética del oscuro en clave clara.
+   Fondos con toque azul/índigo. Acentos siempre vibrantes.
+   Bordes índigo-pastel, NO grises neutros.               */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Fondos */
+  --bg-primary: #f1e6cf; /* blanco con toque azul muy sutil     */
+  --bg-secondary: #e8d9ba; /* sección alterna                     */
+  --bg-surface: #f8f0df; /* tarjetas, paneles                   */
+  --bg-elevated: #fbf6ea; /* modales, cards flotantes, inputs    */
+  --bg-overlay: rgba(241, 230, 207, 0.94);
+
+  /* Código: permanece oscuro para legibilidad del syntax highlighting */
+  --bg-code: #1c1b3a;
+  --bg-code-header: #15142c;
+
+  /* Textos: contraste WCAG AA garantizado */
+  --text-primary: #1c1b3a; /* casi negro azulado   (ratio >13:1) ✅ */
+  --text-secondary: #3a3868; /* slate-700            (ratio >7:1)  ✅ */
+  --text-muted: #615d88; /* slate-500            (ratio >4.5:1)✅ */
+  --text-inverse: #f1e6cf;
+  --hero-typewriter-color: #3a3868;
+
+  /* Bordes: índigo pastel, coherente con la paleta */
+  --border-color: #1c1b3a; /* indigo-200                          */
+  --border-subtle: #d4c3a0; /* indigo-100                          */
+  --border-default: #c9b78f;
+  --border-card: #1c1b3a;
+
+  /* Acentos: misma vivacidad que en oscuro */
+  --accent-primary: #b86a0a; /* fuchsia-400 — igual al oscuro */
+  --accent-primary-dim: rgba(184, 106, 10, 0.14);
+  --accent-secondary: #2a7f93; /* cyan-500 — ligeramente más oscuro que 400 para contraste */
+  --accent-secondary-dim: rgba(42, 127, 147, 0.14);
+  --accent-violet: #6b4fa0; /* violet-500                    */
+
+  /* Acentos extras: verde · naranja · violeta (stack tecnológico) */
+  --accent-green: #3f6b2f; /* emerald-600 — contraste ✅ */
+  --accent-green-dim: rgba(63, 107, 47, 0.14);
+  --accent-orange: #b8402c; /* orange-600 — contraste ✅ */
+  --accent-orange-dim: rgba(184, 64, 44, 0.14);
+  --accent-purple: #6b4fa0; /* violet-700 — contraste ✅ */
+  --accent-purple-dim: rgba(107, 79, 160, 0.14);
+
+  /* Gradiente logo: misma vivacidad */
+  --gradient-logo: linear-gradient(to right, #1c1b3a, #1c1b3a);
+
+  /* Navbar */
+  --nav-bg-scrolled: #f1e6cf;
+  --nav-bg-mobile: #f1e6cf;
+  --nav-border: #1c1b3a;
+
+  /* Cards */
+  --card-bg: #fbf6ea;
+  --card-border: #1c1b3a;
+  --card-shadow: 0 4px 0 #1c1b3a;
+  --card-hover-shadow: 0 6px 0 #1c1b3a;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 0 #1c1b3a;
+  --shadow-md: 0 4px 0 #1c1b3a;
+  --shadow-nav: 0 4px 0 #1c1b3a;
+
+  /* Footer */
+  --footer-bg: #e8d9ba;
+  --footer-border: #1c1b3a;
+
+  /* Scroll + misc */
+  --gradient-inner-bg: #f1e6cf;
+  --scrollbar-track: #e8d9ba;
+  --scrollbar-thumb: #1c1b3a;
+
+  /* Toggle */
+  --toggle-bg: #fbf6ea;
+  --toggle-hover: #e8d9ba;
+  --toggle-border: #1c1b3a;
+  --toggle-icon: #b86a0a;
+
+  /* Blog surfaces */
+  --blog-bg: #f1e6cf;
+  --blog-surface: #fbf6ea;
+  --blog-surface-low: #f8f0df;
+  --blog-surface-high: #fbf6ea;
+  --blog-text-primary: #1c1b3a;
+  --blog-text-secondary: #3a3868;
+  --blog-text-muted: #615d88;
+  --blog-outline-variant: #1c1b3a;
+  --blog-glow-primary: rgba(184, 106, 10, 0.1);
+  --blog-glow-secondary: rgba(42, 127, 147, 0.1);
+
+}
+
+/* Transición suave al cambiar de tema (0.3 s) */
+*,
+*::before,
+*::after {
+  transition-property:
+    background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* Estilos base */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--type-body-family);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  scroll-padding-top: 80px;
+}
+
+body.home-scroll-snap {
+  overflow-x: hidden;
+}
+
+body.home-scroll-snap #main-content {
+  height: auto;
+  overflow: visible;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+/* Color de la selección de texto */
+::selection {
+  background: color-mix(in srgb, var(--accent-primary) 35%, transparent);
+}
+
+/* Componentes globales */
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enlace para saltar al contenido (accesibilidad con teclado) */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+  font-weight: 600;
+  z-index: 100;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+/* Retraso para escalonar animaciones */
+.animation-delay-150 {
+  animation-delay: 150ms;
+}
+
+/* Textura de ruido */
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Fondos de blog y proyectos: planos, sin halos ni gradientes */
+.ambient-grid-halos,
+.blog-cosmic-grid {
+  background: var(--blog-bg);
+}
+
+.blog-glass {
+  background: var(--blog-surface);
+  border: 2px solid var(--blog-outline-variant);
+  box-shadow: 4px 4px 0 var(--px-ink, #0f0e22);
+}
+
+/* Editor de texto: colores según el tema */
+
+.rich-editor-content .tiptap,
+.rich-editor-content .tiptap p,
+.rich-editor-content .tiptap li,
+.rich-editor-content .tiptap blockquote,
+.rich-editor-content .tiptap td,
+.rich-editor-content .tiptap dd {
+  color: var(--text-secondary);
+}
+
+.rich-editor-content .tiptap h1,
+.rich-editor-content .tiptap h2,
+.rich-editor-content .tiptap h3,
+.rich-editor-content .tiptap h4,
+.rich-editor-content .tiptap h5,
+.rich-editor-content .tiptap h6,
+.rich-editor-content .tiptap strong,
+.rich-editor-content .tiptap th {
+  color: var(--text-primary);
+}
+
+.rich-editor-content .tiptap em {
+  color: var(--text-primary);
+}
+
+.rich-editor-content .tiptap blockquote {
+  color: var(--text-muted);
+  border-left-color: var(--accent-primary);
+}
+
+.rich-editor-content .tiptap a {
+  color: var(--accent-primary);
+}
+
+.rich-editor-content .tiptap code:not(pre code) {
+  color: #22d3ee; /* cyan-400 — constante, se ve bien en ambos temas */
+  background-color: var(--bg-elevated);
+}
+
+/* Placeholder */
+.rich-editor-content .tiptap p.is-editor-empty:first-child::before {
+  color: var(--text-muted);
+}
+
+/* Editor de texto: bloques de código con resaltado */
+
+/* Wrapper pre del editor y del blog renderizado */
+.tiptap pre,
+.prose-blog pre {
+  background: #0d1117;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+
+.tiptap pre code.hljs,
+.prose-blog pre code.hljs {
+  background: transparent;
+  padding: 18px 22px;
+  font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+  font-size: 0.875em;
+  line-height: 1.65;
+  display: block;
+}
+
+.rich-editor-content .tiptap pre[data-variant="terminal"] .hljs,
+.rich-editor-content .tiptap pre[data-variant="terminal"] .hljs *,
+.prose-blog .terminal-window__body code,
+.prose-blog .terminal-window__body code * {
+  color: inherit !important;
+  text-shadow: none !important;
+}
+
+/* Avisos (callouts) en el blog público */
+.prose-blog [data-callout] {
+  border-radius: 0 8px 8px 0;
+  padding: 10px 16px;
+  margin: 16px 0;
+}
+.prose-blog [data-callout-type="tip"]     { border-left: 4px solid #22c55e; background: rgba(34,197,94,0.08);   }
+.prose-blog [data-callout-type="note"]    { border-left: 4px solid #3b82f6; background: rgba(59,130,246,0.08);  }
+.prose-blog [data-callout-type="warning"] { border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.08);  }
+.prose-blog [data-callout-type="info"]    { border-left: 4px solid #8b5cf6; background: rgba(139,92,246,0.08);  }
+
+/* Alineación de los bloques personalizados del editor */
+[data-align="center"] { display: flex; flex-direction: column; align-items: center; }
+[data-align="right"]  { display: flex; flex-direction: column; align-items: flex-end; }
+a[data-content-button][data-align="center"] { display: block; margin: 16px auto; width: fit-content; }
+a[data-content-button][data-align="right"]  { display: block; margin: 16px 0 16px auto; width: fit-content; }
+
+/* Documentos incrustados en el blog publicado */
+.prose-blog [data-document],
+.prose [data-document] {
+  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+.prose-blog [data-document] iframe,
+.prose [data-document] iframe {
+  width: 100%;
+  border: none;
+  display: block;
+}
+
+/* Rejilla de imágenes en el blog publicado */
+.prose-blog [data-image-grid],
+.prose [data-image-grid] {
+  margin: 1.5em 0;
+}
+.prose-blog [data-image-grid] img,
+.prose [data-image-grid] img {
+  border-radius: 8px;
+}
+
+/* Botones de llamada a la acción en el blog publicado */
+.prose-blog a[data-content-button],
+.prose a[data-content-button] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s;
+  margin: 8px 0;
+  max-width: 100%;
+}
+.prose-blog a[data-content-button]:hover,
+.prose a[data-content-button]:hover { opacity: 0.85; }
+.prose-blog a[data-content-button].content-button--primary,
+.prose a[data-content-button].content-button--primary {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.24);
+}
+.prose-blog a[data-content-button].content-button--secondary,
+.prose a[data-content-button].content-button--secondary {
+  background: linear-gradient(90deg, #0891b2 0%, #06b6d4 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(6, 182, 212, 0.22);
+}
+.prose-blog a[data-content-button].content-button--fuchsia,
+.prose a[data-content-button].content-button--fuchsia {
+  background: linear-gradient(90deg, #c026d3 0%, #d946ef 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(217, 70, 239, 0.22);
+}
+.prose-blog a[data-content-button].content-button--outline,
+.prose a[data-content-button].content-button--outline {
+  background: transparent;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+}
+.prose-blog a[data-content-button].content-button--dark,
+.prose a[data-content-button].content-button--dark {
+  background: #18181b;
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(24, 24, 27, 0.22);
+}
+
+/* Ventana de terminal en el blog publicado */
+.terminal-window {
+  background: var(--bg-code);
+  border-color: rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+}
+
+.terminal-window__header {
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+}
+
+.terminal-window__body {
+  margin: 0;
+  background: var(--bg-code);
+  color: #e6edf3;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.terminal-window__body,
+.terminal-window__body code,
+.terminal-window__body span {
+  font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
+}
+
+.terminal-window__body code {
+  color: inherit;
+  background: transparent;
+  white-space: inherit;
+}
+
+.terminal-window__body code:not(.hljs),
+.terminal-window__body code:not(.hljs) span {
+  color: inherit;
+}
+
+:root[data-theme="dark"] .terminal-window {
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: 0 20px 48px rgba(2, 6, 23, 0.32);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tablas de TipTap, en el editor y en la vista pública */
+
+.ProseMirror table,
+article table,
+.post-content table {
+  width: 100%;
+  margin: 1.5em 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  background: var(--bg-surface, #1e293b);
+}
+
+.ProseMirror td,
+.ProseMirror th,
+article td,
+article th,
+.post-content td,
+.post-content th {
+  min-width: 1em;
+  border: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
+  padding: 0.75rem 1rem;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+  text-align: left;
+}
+
+.ProseMirror th,
+article th,
+.post-content th {
+  font-weight: 600;
+  text-align: left;
+  background: var(--bg-elevated, #111827);
+  color: var(--text-primary, #f1f5f9);
+  border-bottom: 2px solid var(--accent-primary, #f2b134);
+}
+
+.ProseMirror td,
+article td,
+.post-content td {
+  color: var(--text-secondary, #94a3b8);
+}
+
+/* Modo editor: celdas seleccionadas */
+.ProseMirror .selectedCell {
+  background: rgba(232, 121, 249, 0.1);
+  border-color: rgba(232, 121, 249, 0.3);
+}
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: rgba(232, 121, 249, 0.5);
+  pointer-events: none;
+  cursor: col-resize;
+}
+
+/* Modo editor: el tirador se ve al pasar el ratón */
+.ProseMirror table:hover .column-resize-handle {
+  opacity: 1;
+}
+
+/* Filas alternas para leer mejor */
+.ProseMirror tbody tr:nth-child(even),
+article tbody tr:nth-child(even),
+.post-content tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Resalte de fila al pasar el ratón (solo en la vista pública) */
+article tbody tr:hover,
+.post-content tbody tr:hover {
+  background: rgba(232, 121, 249, 0.05);
+  transition: background 0.2s ease;
+}
+
+/* Tablas con scroll horizontal en móvil */
+@media (max-width: 768px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Solo forzar min-width en contenido público, no dentro del editor CMS */
+  article table,
+  .post-content table {
+    min-width: 600px;
+  }
+}
+
+/* Colores personalizados elegidos desde el editor */
+.ProseMirror td[style*="background"],
+.ProseMirror th[style*="background"] {
+  /* Los estilos inline toman precedencia */
+}
+
+/* En tablas sin cabecera, la primera celda va en negrita */
+.ProseMirror tbody tr td:first-child,
+article tbody tr td:first-child,
+.post-content tbody tr td:first-child {
+  font-weight: 500;
+  color: var(--text-primary, #f1f5f9);
+}

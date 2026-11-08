@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "diseno-arquitectura-vocaccion",
+    "title": "Diseñando VocAcción: Arquitectura Conversacional y Decisiones Guiadas",
+    "date": "2026-02-23",
+    "excerpt": "Cómo convertí un problema pedagógico en una arquitectura conversacional con React, Laravel, MySQL y un motor vocacional asistido por IA.",
+    "tags": [
+      "Arquitectura",
+      "React",
+      "Laravel"
+    ],
+    "filename": "diseno-arquitectura-vocaccion.md",
+    "status": "published"
+  },
+  {
+    "slug": "synology-docker-deploy",
+    "title": "Cómo desplegué mi portfolio React + Node.js en un Synology con Docker, HTTPS y dominio propio (sin depender de ningún hosting)",
+    "date": "2026-02-25",
+    "excerpt": "Crónica técnica de un despliegue real en Synology: Docker, HTTPS, NGINX Proxy Manager, CORS, rutas SPA y errores resueltos en producción.",
+    "ogImage": "/posts/images/synology-docker-deploy-cover.png",
+    "tags": [
+      "Docker",
+      "Synology",
+      "React",
+      "Node.js",
+      "HTTPS",
+      "Despliegue"
+    ],
+    "filename": "synology-docker-deploy.md",
+    "status": "published"
+  }
+]

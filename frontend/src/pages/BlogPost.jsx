@@ -1,0 +1,149 @@
+import { useMemo } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { ChevronUp, ArrowRight } from 'lucide-react';
+import { buildShareLinks, extractHeadings } from '../components/blog/markdownComponents';
+import { usePost } from '../hooks/usePost';
+import { useReadingProgress } from '../hooks/useReadingProgress';
+import { useActiveHeading } from '../hooks/useActiveHeading';
+import { inferPostContentFields } from '../lib/postContentSource';
+import PostSkeleton from '../components/blog/PostSkeleton';
+import PostHeader from '../components/blog/PostHeader';
+import PostContent from '../components/blog/PostContent';
+import PostSidebar from '../components/blog/PostSidebar';
+import ShareButtons from '../components/blog/ShareButtons';
+import 'highlight.js/styles/atom-one-dark.css';
+
+const BlogPost = () => {
+  const { slug } = useParams();
+
+  const { postMeta, content, loading, error } = usePost(slug);
+  const { readProgress, showScrollTop } = useReadingProgress();
+
+  const resolvedContent = useMemo(() => inferPostContentFields(postMeta || { content }), [postMeta, content]);
+  const headings = useMemo(() => extractHeadings(resolvedContent.sourceContent), [resolvedContent.sourceContent]);
+  const hasToc = postMeta?.showToc !== false && headings.length >= 3;
+
+  const activeHeadingId = useActiveHeading(headings, hasToc);
+
+  // Estados de carga y error
+
+  if (loading) return <PostSkeleton />;
+
+  if (error) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center blog-cosmic-grid px-4 text-[var(--text-primary)]">
+        <div className="pointer-events-none absolute inset-0" style={{ background: 'var(--blog-bg)' }} />
+        <div className="max-w-md rounded-[1.4rem] border border-red-500/20 bg-red-500/10 p-8 text-center text-red-400">
+          <p className="mb-4">{error}</p>
+          <Link to="/blog" className="font-medium text-[var(--text-primary)] transition-colors hover:text-[var(--accent-secondary)]">
+            Volver al blog
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!postMeta) return null;
+
+  const shareLinks = buildShareLinks(postMeta);
+  const seoTitle = postMeta.seoTitle || postMeta.title;
+  const seoDescription = postMeta.seoDescription || postMeta.excerpt;
+  const canonicalUrl = shareLinks.url;
+  const socialImageUrl = postMeta.ogImage
+    ? (postMeta.ogImage.startsWith('http') ? postMeta.ogImage : `${window.location.origin}${postMeta.ogImage}`)
+    : '';
+
+  return (
+    <div className="relative min-h-screen blog-cosmic-grid py-24 text-[var(--text-primary)] selection:bg-[var(--accent-primary)]/30" data-version="2.0">
+      <Helmet>
+        <title>{seoTitle} | Guadalupe Cano</title>
+        <meta name="description" content={seoDescription} />
+        <meta name="robots" content={postMeta.noindex ? 'noindex, nofollow' : 'index, follow'} />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        {socialImageUrl && <meta property="og:image" content={socialImageUrl} />}
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={canonicalUrl} />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDescription} />
+        {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
+      </Helmet>
+
+      {/* Barra de progreso de lectura */}
+      <div
+        className="pointer-events-none fixed left-0 top-0 z-50 h-[3px] transition-all duration-75"
+        style={{
+          width: `${readProgress}%`,
+          background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))',
+        }}
+        role="progressbar"
+        aria-valuenow={Math.round(readProgress)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Progreso de lectura"
+      />
+
+      <article className="relative z-10 w-full">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
+          <PostHeader postMeta={postMeta} />
+
+          <div className={`mt-10 grid gap-8 lg:gap-12 ${hasToc ? 'lg:grid-cols-[minmax(0,1fr)_300px]' : 'mx-auto max-w-4xl'} lg:items-start`}>
+            <PostSidebar
+              postMeta={postMeta}
+              headings={headings}
+              activeHeadingId={activeHeadingId}
+              hasToc={hasToc}
+            />
+
+            <div className="order-1 min-w-0">
+              <div className="w-full">
+                <PostContent post={postMeta} />
+                <ShareButtons postMeta={postMeta} />
+
+                {/* CTA: Seguir leyendo */}
+                <div className="mt-6 overflow-hidden rounded-[1.8rem] border border-[var(--border-default)] bg-[var(--bg-elevated)]/72">
+                  <div className="p-8">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-[var(--text-muted)]">
+                      Seguir leyendo
+                    </p>
+                    <h2 className="typo-title mt-3 text-2xl leading-snug text-[var(--text-primary)]">
+                      Explorar más artículos
+                    </h2>
+                    <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+                      Guías técnicas, despliegues, automatización e ingeniería aplicada al desarrollo real.
+                    </p>
+                    <Link
+                      to="/blog"
+                      className="mt-5 inline-flex items-center gap-2 rounded-none border border-[var(--border-default)] bg-[var(--bg-surface)]/80 px-5 py-3 text-sm font-semibold text-[var(--text-primary)] transition-all hover:border-[var(--accent-secondary)]/30 hover:text-[var(--accent-secondary)]"
+                    >
+                      Ver todos los artículos
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      {/* Botón para volver arriba */}
+      {showScrollTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Volver al inicio"
+          className="fixed bottom-8 right-8 z-40 flex h-11 w-11 items-center justify-center rounded-none border border-[var(--border-default)] bg-[var(--bg-elevated)]/90 text-[var(--text-secondary)] shadow-[var(--shadow-md)] transition-all duration-200 hover:border-[var(--accent-secondary)]/30 hover:text-[var(--accent-secondary)]"
+        >
+          <ChevronUp className="h-5 w-5" aria-hidden="true" />
+        </button>
+      ) : null}
+    </div>
+  );
+};
+
+export default BlogPost;

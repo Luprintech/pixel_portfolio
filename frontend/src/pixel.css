@@ -1,0 +1,137 @@
+/* Piezas de interfaz del Valle del Bucle: marcos, botones y títulos de píxel.
+   Todo sale de los tokens de index.css, así que el modo claro y el oscuro funcionan solos. */
+:root {
+  --px-ink: #0f0e22;
+  --px-ring: var(--accent-primary);
+}
+:root[data-theme='light'] {
+  --px-ink: #1c1b3a;
+}
+
+.px-title {
+  font-family: var(--font-headline);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-shadow: 0 3px 0 var(--px-ink);
+  color: var(--text-primary);
+}
+:root[data-theme='light'] .px-title {
+  text-shadow: 0 3px 0 rgba(28, 27, 58, 0.18);
+}
+
+.px-text {
+  font-family: var(--font-body);
+}
+
+.px-read {
+  font-family: var(--font-read);
+  line-height: 1.7;
+}
+
+/* Marco de dos anillos: tinta por fuera, azafrán por dentro. */
+.px-frame {
+  position: relative;
+  margin: 9px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow:
+    0 0 0 3px var(--px-ring),
+    0 0 0 6px var(--px-ink),
+    0 9px 0 6px var(--px-ink);
+}
+.px-frame--quiet {
+  box-shadow:
+    0 0 0 3px var(--border-color),
+    0 0 0 6px var(--px-ink),
+    0 6px 0 6px var(--px-ink);
+}
+
+.px-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.1;
+  color: #1c1b3a;
+  background: #f2b134;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow:
+    0 0 0 3px var(--px-ink),
+    0 6px 0 3px var(--px-ink);
+  transition: transform 80ms steps(2), box-shadow 80ms steps(2), background-color 80ms;
+}
+.px-btn:hover {
+  background: #f8d77a;
+}
+.px-btn:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 0 0 3px var(--px-ink),
+    0 2px 0 3px var(--px-ink);
+}
+.px-btn--bone {
+  color: #1c1b3a;
+  background: #f1e6cf;
+}
+.px-btn--bone:hover {
+  background: #fff6e0;
+}
+.px-btn--ghost {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+.px-btn--ghost:hover {
+  background: var(--bg-secondary);
+}
+
+.px-btn:focus-visible,
+.px-link:focus-visible,
+.px-chip:focus-visible {
+  outline: 3px solid var(--accent-secondary);
+  outline-offset: 5px;
+}
+
+.px-link {
+  color: var(--accent-secondary);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.px-link:hover {
+  color: var(--accent-primary);
+}
+
+.px-chip {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 2px var(--border-color);
+}
+
+.px-rule {
+  height: 6px;
+  border: 0;
+  background: repeating-linear-gradient(90deg, var(--px-ring) 0 6px, transparent 6px 12px);
+  opacity: 0.8;
+}
+
+.px-canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-btn {
+    transition: none;
+  }
+}

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
+
+  <!-- SEO Meta Tags -->
+  <meta name="description"
+    content="Guadalupe Cano - Dev Web Full Stack especializada en React, Node.js e integración de IA. Transformando ideas en productos digitales." />
+  <meta name="keywords"
+    content="dev web, full stack, React, Node.js, inteligencia artificial, automatización, portfolio" />
+  <meta name="author" content="Guadalupe Cano" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://guadalupecano.es/" />
+  <meta property="og:title" content="Guadalupe Cano | Dev Web Full Stack" />
+  <meta property="og:description"
+    content="Desarrolladora Full Stack especializada en React, Node.js e IA. Soluciones web modernas, eficientes y bien construidas." />
+  <meta property="og:image" content="/og-image.jpg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://guadalupecano.es/" />
+  <meta property="twitter:title" content="Guadalupe Cano | Dev Web Full Stack" />
+  <meta property="twitter:description"
+    content="Desarrolladora Full Stack especializada en React, Node.js e IA. Soluciones web modernas, eficientes y bien construidas." />
+  <meta property="twitter:image" content="/og-image.jpg" />
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#1c1b3a" />
+
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem('theme');
+        var theme = savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+      } catch {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <title>Guadalupe Cano | Dev Web Full Stack</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+  <!-- Google Fonts: Blog Design System (Neon Luminary) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Pixelify+Sans:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,600&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Skip to main content (Accesibilidad) -->
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>
