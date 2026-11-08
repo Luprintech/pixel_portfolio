@@ -16,6 +16,19 @@ Portfolio full-stack de Guadalupe Cano (Luprintech): SPA React + Vite, API Expre
 | Arquitectura, rutas, flujo de contenido, juego Phaser | `docs/ARCHITECTURE.md` |
 | Sistema de diseño vigente (Valle del Bucle) | `frontend/docs/DESIGN.md` |
 | Qué se ha hecho, qué falta y por qué se decidió cada cosa | `docs/ESTADO.md` |
+| Visión de producto: a qué funcionalidades queremos llegar y en qué orden | `docs/VISION.md` |
+
+## Hacia dónde vamos: visión de producto
+
+`docs/VISION.md` recoge la visión de Valle del Bucle: pantalla de título animada, pueblo con zonas (plaza, Casa de Lupe, Taller del Código, Biblioteca de los Logs, Taberna del Debug, Oficina de Correos), interiores de edificios, mecánicas de aventura (interacción contextual, NPC, diario, viaje rápido, misiones opcionales, guardado en `localStorage`), un modo clásico rediseñado como landing profesional y una hoja de ruta en seis fases. Es la guía para programar en esa dirección, no una lista de requisitos cerrados.
+
+- Antes de empezar una tarea de juego, de `/clasico` o de la portada, léelo y comprueba en qué fase de su hoja de ruta cae. Después mira `docs/ESTADO.md` para saber qué existe ya.
+- Las propuestas del documento (nombres de zonas, mecánicas, estética del modo clásico) no son decisiones tomadas. Las pendientes están en su sección 13: si la tarea depende de una, pregunta a la usuaria antes de implementar.
+- Prioridades que marca: el modo clásico debe funcionar como portfolio profesional sin jugar; el primer edificio completo será el Taller del Código; ninguna mecánica puede esconder información profesional.
+- Aplica los criterios de su sección 14 a cada funcionalidad nueva y pospón la que añada complejidad sin mejorar la experiencia.
+- `/clasico` debe acabar siendo un portfolio clásico y profesional, sin estética de videojuego. Ese rediseño lo hará la usuaria con las skills de diseño cuando termine el trabajo actual: no lo empieces por tu cuenta y, hasta entonces, no cambies su aspecto.
+- Los proyectos y artículos siguen saliendo una sola vez de `/api/projects` y `/api/posts`; no se duplican por modo.
+- Al cerrar un bloque, anota en `docs/ESTADO.md` qué parte de la visión avanza.
 
 ## Diseño vigente: "Valle del Bucle"
 
