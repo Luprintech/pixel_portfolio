@@ -31,6 +31,7 @@ import { usePinnedTools } from './editor/hooks/usePinnedTools';
 import { useSelectionFormat } from './editor/hooks/useSelectionFormat';
 import { useSlashMenu } from './editor/hooks/useSlashMenu';
 import { useTextColor } from './editor/hooks/useTextColor';
+import { useToolbarMenus } from './editor/hooks/useToolbarMenus';
 
 const lowlight = createLowlight(common);
 
@@ -40,21 +41,11 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
     const audioInputRef = useRef(null);
     const docInputRef   = useRef(null);
 
-    const [showLinkMenu,    setShowLinkMenu]    = useState(false);
+    const menus = useToolbarMenus();
     const [linkUrl,         setLinkUrl]         = useState('');
-    const [showYoutubeMenu, setShowYoutubeMenu] = useState(false);
     const [youtubeUrl,      setYoutubeUrl]      = useState('');
-    const [showAudioMenu,   setShowAudioMenu]   = useState(false);
     const [audioUrl,        setAudioUrl]        = useState('');
-    const [showImageMenu,   setShowImageMenu]   = useState(false);
-    const [showColorPick,   setShowColorPick]   = useState(false);
     const [lastTextColor,   setLastTextColor]   = useState('#000000');
-    const [showHighPick,    setShowHighPick]    = useState(false);
-    const [showCalloutMenu, setShowCalloutMenu] = useState(false);
-    const [showMermaidMenu, setShowMermaidMenu] = useState(false);
-    const [showTableColors, setShowTableColors] = useState(false);
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const [showInsertMenu,  setShowInsertMenu]  = useState(false);
     const [insertMenuQuery, setInsertMenuQuery] = useState('');
     const [markdownMode,    setMarkdownMode]    = useState(false);
     const [markdownSource,  setMarkdownSource]  = useState('');
@@ -68,27 +59,18 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
     const { pinnedTools, handlePinTool, handleUnpinTool } = usePinnedTools();
 
     // Recoloca la barra flotante al hacer scroll
-    const { audioToolRef, calloutToolRef, colorToolRef, editorContainerRef, editorScrollRef, emojiToolRef, floatingMenuPosition, highlightToolRef, imageToolRef, insertToolRef, linkToolRef, mermaidToolRef, toolbarFixed, toolbarPlaceholderRef, toolbarPosition, toolbarRef, updateFloatingMenuPosition, youtubeToolRef } = useFloatingMenus({ fullscreen, showAudioMenu, showCalloutMenu, showColorPick, showEmojiPicker, showHighPick, showImageMenu, showInsertMenu, showLinkMenu, showMermaidMenu, showYoutubeMenu });
+    const { audioToolRef, calloutToolRef, colorToolRef, editorContainerRef, editorScrollRef, emojiToolRef, floatingMenuPosition, highlightToolRef, imageToolRef, insertToolRef, linkToolRef, mermaidToolRef, toolbarFixed, toolbarPlaceholderRef, toolbarPosition, toolbarRef, updateFloatingMenuPosition, youtubeToolRef } = useFloatingMenus({ fullscreen, openMenu: menus.openMenu });
 
     // Cerrar popups al hacer clic fuera
+    const closeMenus = menus.close;
     useEffect(() => {
         function close() {
-            setShowLinkMenu(false);
-            setShowImageMenu(false);
-            setShowYoutubeMenu(false);
-            setShowAudioMenu(false);
-            setShowColorPick(false);
-            setShowHighPick(false);
-            setShowCalloutMenu(false);
-            setShowMermaidMenu(false);
-            setShowEmojiPicker(false);
-            setShowInsertMenu(false);
+            closeMenus();
             setInsertMenuQuery('');
-            setShowTableColors(false);
         }
         document.addEventListener('mousedown', close);
         return () => document.removeEventListener('mousedown', close);
-    }, []);
+    }, [closeMenus]);
 
     const editor = useEditor({
         extensions: buildEditorExtensions(lowlight),
@@ -127,7 +109,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         },
     });
 
-    const closeImageMenu = useCallback(() => setShowImageMenu(false), []);
+    const closeImageMenu = useCallback(() => closeMenus('image'), [closeMenus]);
     const { uploading, uploadError, availableImages, loadingImages, handleImageFile, handleImageInputChange, loadAvailableImages, insertExistingImage, handleAudioFile, handleDocumentUpload } = useMediaUploads({ editor, token, closeImageMenu });
     useEffect(() => { imageFileHandlerRef.current = handleImageFile; }, [handleImageFile]);
 
@@ -152,31 +134,26 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
 
     const openImageMenu = useCallback(() => {
         updateFloatingMenuPosition('image', imageToolRef.current, 352);
-        setShowImageMenu(true);
-        setShowLinkMenu(false);
-        setShowYoutubeMenu(false);
-        setShowAudioMenu(false);
-        setShowInsertMenu(false);
-        setShowEmojiPicker(false);
+        menus.open('image');
         void loadAvailableImages();
-    }, [imageToolRef, loadAvailableImages, updateFloatingMenuPosition]);
+    }, [imageToolRef, loadAvailableImages, menus, updateFloatingMenuPosition]);
 
     function applyLink() {
         if (!linkUrl) editor?.chain().focus().unsetLink().run();
         else editor?.chain().focus().setLink({ href: linkUrl }).run();
-        setShowLinkMenu(false);
+        menus.close('link');
         setLinkUrl('');
     }
 
     function applyYoutube() {
         if (youtubeUrl) editor?.commands.setYoutubeVideo({ src: youtubeUrl });
-        setShowYoutubeMenu(false);
+        menus.close('youtube');
         setYoutubeUrl('');
     }
 
     function applyAudio() {
         if (audioUrl) editor?.commands.insertAudio({ src: audioUrl });
-        setShowAudioMenu(false);
+        menus.close('audio');
         setAudioUrl('');
     }
 
@@ -195,17 +172,17 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
     // Acciones del menú «/» que necesitan abrir una interfaz propia
     function handleSlashAction(action) {
         if (action === 'image') setTimeout(() => openImageMenu(), 0);
-        else if (action === 'youtube') setShowYoutubeMenu(true);
-        else if (action === 'audio') setShowAudioMenu(true);
+        else if (action === 'youtube') menus.open('youtube');
+        else if (action === 'audio') menus.open('audio');
         else if (action === 'document') setTimeout(() => docInputRef.current?.click(), 0);
-        else if (action === 'emoji') setShowEmojiPicker(true);
+        else if (action === 'emoji') menus.open('emoji');
     }
 
     function handleInsertAction(action) {
         if (!runInsertMenuEditorAction(editor, action)) {
             handleSlashAction(action);
         }
-        setShowInsertMenu(false);
+        menus.close('insert');
     }
 
     function updateCodeBlockMetadata(patch) {
@@ -274,6 +251,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                 />
 
                 <ColorGroup
+                    menus={menus}
                     applyTextColor={applyTextColor}
                     clearTextColor={clearTextColor}
                     colorToolRef={colorToolRef}
@@ -282,16 +260,13 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                     highlightToolRef={highlightToolRef}
                     lastTextColor={lastTextColor}
                     setLastTextColor={setLastTextColor}
-                    setShowColorPick={setShowColorPick}
-                    setShowHighPick={setShowHighPick}
-                    showColorPick={showColorPick}
-                    showHighPick={showHighPick}
                     updateFloatingMenuPosition={updateFloatingMenuPosition}
                 />
 
                 <ParagraphGroup editor={editor} justifyEnabled={justifyEnabled} richBlockAlignmentActive={richBlockAlignmentActive} />
 
                 <MediaGroup
+                    menus={menus}
                     applyAudio={applyAudio}
                     applyLink={applyLink}
                     applyYoutube={applyYoutube}
@@ -313,15 +288,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                     openImageMenu={openImageMenu}
                     setAudioUrl={setAudioUrl}
                     setLinkUrl={setLinkUrl}
-                    setShowAudioMenu={setShowAudioMenu}
-                    setShowImageMenu={setShowImageMenu}
-                    setShowLinkMenu={setShowLinkMenu}
-                    setShowYoutubeMenu={setShowYoutubeMenu}
                     setYoutubeUrl={setYoutubeUrl}
-                    showAudioMenu={showAudioMenu}
-                    showImageMenu={showImageMenu}
-                    showLinkMenu={showLinkMenu}
-                    showYoutubeMenu={showYoutubeMenu}
                     updateFloatingMenuPosition={updateFloatingMenuPosition}
                     uploading={uploading}
                     youtubeToolRef={youtubeToolRef}
@@ -329,30 +296,27 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                 />
 
                 <BlockInsertGroup
+                    menus={menus}
                     calloutToolRef={calloutToolRef}
                     editor={editor}
                     floatingMenuPosition={floatingMenuPosition}
                     mermaidToolRef={mermaidToolRef}
-                    setShowCalloutMenu={setShowCalloutMenu}
-                    setShowMermaidMenu={setShowMermaidMenu}
-                    showCalloutMenu={showCalloutMenu}
-                    showMermaidMenu={showMermaidMenu}
                     updateFloatingMenuPosition={updateFloatingMenuPosition}
                 />
 
                 <QuickToolsGroup
+                    menus={menus}
                     editor={editor}
                     emojiToolRef={emojiToolRef}
                     floatingMenuPosition={floatingMenuPosition}
                     handleInsertAction={handleInsertAction}
                     handleUnpinTool={handleUnpinTool}
                     pinnedTools={pinnedTools}
-                    setShowEmojiPicker={setShowEmojiPicker}
-                    showEmojiPicker={showEmojiPicker}
                     updateFloatingMenuPosition={updateFloatingMenuPosition}
                 />
 
                 <InsertMenu
+                    menus={menus}
                     floatingMenuPosition={floatingMenuPosition}
                     handleInsertAction={handleInsertAction}
                     handlePinTool={handlePinTool}
@@ -363,8 +327,6 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                     plusMenuGroups={plusMenuGroups}
                     plusMenuItems={plusMenuItems}
                     setInsertMenuQuery={setInsertMenuQuery}
-                    setShowInsertMenu={setShowInsertMenu}
-                    showInsertMenu={showInsertMenu}
                     updateFloatingMenuPosition={updateFloatingMenuPosition}
                 />
 
@@ -437,7 +399,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                     <EditorContent editor={editor} />
                     <BubbleMenuTooltip editor={editor} />
                     
-                    <TableBubbleMenu editor={editor} setShowTableColors={setShowTableColors} showTableColors={showTableColors} />
+                    <TableBubbleMenu editor={editor} menus={menus} />
                 </div>
             </div>
 

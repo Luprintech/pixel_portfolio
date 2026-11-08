@@ -3,8 +3,7 @@ import { BubbleMenu } from '@tiptap/react/menus';
 
 export default function TableBubbleMenu({
     editor,
-    setShowTableColors,
-    showTableColors,
+    menus,
 }) {
     return (
         <>
@@ -45,12 +44,12 @@ export default function TableBubbleMenu({
                     <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 self-center" />
                     {/* Color picker */}
                     <div className="relative">
-                        <button type="button" onClick={() => setShowTableColors(v => !v)}
+                        <button type="button" onClick={() => menus.toggle('tableColors')}
                             className="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-secondary)] transition-colors flex items-center gap-1" title="Color de celda">
                             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                             Color
                         </button>
-                        {showTableColors && (
+                        {menus.isOpen('tableColors') && (
                             <div className="absolute top-full left-0 mt-1 p-3 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-xl z-50 w-56" onMouseDown={e => e.preventDefault()}>
                                 <p className="text-[10px] uppercase text-[var(--text-muted)] tracking-wider mb-2">Fondo de celda</p>
                                 <div className="flex flex-wrap gap-1.5 mb-3">
@@ -61,7 +60,7 @@ export default function TableBubbleMenu({
                                         '#1e1e2e', '#2a2a3a', '#3a3a4a', '#f8fafc', '#f1f5f9', '#e2e8f0',
                                     ].map((color, i) => (
                                         <button key={i} type="button"
-                                            onMouseDown={e => { e.preventDefault(); editor.chain().focus().setCellAttribute('backgroundColor', color).run(); setShowTableColors(false); }}
+                                            onMouseDown={e => { e.preventDefault(); editor.chain().focus().setCellAttribute('backgroundColor', color).run(); menus.close('tableColors'); }}
                                             className={`w-6 h-6 rounded border transition-transform hover:scale-110 ${!color ? 'border-dashed border-[var(--border-color)]' : 'border-transparent'}`}
                                             style={{ background: color || 'transparent' }}
                                             title={color || 'Sin color'}
@@ -78,7 +77,7 @@ export default function TableBubbleMenu({
                                         '#fecaca', '#bfdbfe', '#ddd6fe',
                                     ].map((color, i) => (
                                         <button key={i} type="button"
-                                            onMouseDown={e => { e.preventDefault(); editor.chain().focus().setCellAttribute('borderColor', color).run(); setShowTableColors(false); }}
+                                            onMouseDown={e => { e.preventDefault(); editor.chain().focus().setCellAttribute('borderColor', color).run(); menus.close('tableColors'); }}
                                             className={`w-6 h-6 rounded border-2 transition-transform hover:scale-110 ${!color ? 'border-dashed border-[var(--border-color)]' : ''}`}
                                             style={{ borderColor: color || undefined, background: 'transparent' }}
                                             title={color || 'Por defecto'}

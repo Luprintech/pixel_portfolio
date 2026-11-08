@@ -10,12 +10,11 @@ export default function InsertMenu({
     handleUnpinTool,
     insertMenuQuery,
     insertToolRef,
+    menus,
     pinnedTools,
     plusMenuGroups,
     plusMenuItems,
     setInsertMenuQuery,
-    setShowInsertMenu,
-    showInsertMenu,
     updateFloatingMenuPosition,
 }) {
     return (
@@ -23,16 +22,13 @@ export default function InsertMenu({
             {/* Insertar bloque especial */}
             <div ref={insertToolRef} className="relative" onMouseDown={e => e.stopPropagation()}>
                 <ToolBtn onClick={() => {
-                    if (!showInsertMenu) updateFloatingMenuPosition('insert', insertToolRef.current, 416);
-                    setShowInsertMenu(prev => {
-                        const next = !prev;
-                        if (!next) setInsertMenuQuery('');
-                        return next;
-                    });
+                    if (menus.isOpen('insert')) setInsertMenuQuery('');
+                    else updateFloatingMenuPosition('insert', insertToolRef.current, 416);
+                    menus.toggle('insert');
                 }} title="Insertar bloque especial (+)">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </ToolBtn>
-                {showInsertMenu && typeof document !== 'undefined' && createPortal(
+                {menus.isOpen('insert') && typeof document !== 'undefined' && createPortal(
                     <div className="fixed z-[220] flex max-h-[min(78vh,36rem)] w-[min(26rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-elevated)] shadow-2xl"
                          style={{ top: `${floatingMenuPosition.insert.top}px`, left: `${floatingMenuPosition.insert.left}px` }}
                          onMouseDown={e => e.stopPropagation()}>

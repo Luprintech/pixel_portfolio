@@ -8,11 +8,8 @@ export default function BlockInsertGroup({
     calloutToolRef,
     editor,
     floatingMenuPosition,
+    menus,
     mermaidToolRef,
-    setShowCalloutMenu,
-    setShowMermaidMenu,
-    showCalloutMenu,
-    showMermaidMenu,
     updateFloatingMenuPosition,
 }) {
     return (
@@ -21,8 +18,8 @@ export default function BlockInsertGroup({
             <div ref={calloutToolRef} className="relative" onMouseDown={e => e.stopPropagation()}>
                 <ToolBtn
                     onClick={() => {
-                        if (!showCalloutMenu) updateFloatingMenuPosition('callout', calloutToolRef.current, 144);
-                        setShowCalloutMenu(p => !p);
+                        if (!menus.isOpen('callout')) updateFloatingMenuPosition('callout', calloutToolRef.current, 144);
+                        menus.toggle('callout');
                     }}
                     active={editor.isActive('callout')}
                     title="Insertar callout (TIP / NOTE / WARNING / INFO)"
@@ -33,7 +30,7 @@ export default function BlockInsertGroup({
                         <line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
                 </ToolBtn>
-                {showCalloutMenu && typeof document !== 'undefined' && createPortal(
+                {menus.isOpen('callout') && typeof document !== 'undefined' && createPortal(
                     <div
                         className="fixed z-[220] p-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl shadow-2xl flex flex-col gap-1 w-36"
                         style={{ top: `${floatingMenuPosition.callout.top}px`, left: `${floatingMenuPosition.callout.left}px` }}
@@ -42,7 +39,7 @@ export default function BlockInsertGroup({
                         {Object.entries(CALLOUT_CONFIG).map(([k, v]) => (
                             <button
                                 key={k} type="button"
-                                onClick={() => { editor.chain().focus().insertCallout(k).run(); setShowCalloutMenu(false); }}
+                                onClick={() => { editor.chain().focus().insertCallout(k).run(); menus.close('callout'); }}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm text-[var(--text-secondary)] text-left"
                             >
                                 <span>{v.icon}</span>
@@ -57,8 +54,8 @@ export default function BlockInsertGroup({
             {/* Mermaid / Diagrama */}
             <div ref={mermaidToolRef} className="relative" onMouseDown={e => e.stopPropagation()}>
                 <ToolBtn onClick={() => {
-                    if (!showMermaidMenu) updateFloatingMenuPosition('mermaid', mermaidToolRef.current, 192);
-                    setShowMermaidMenu(p => !p);
+                    if (!menus.isOpen('mermaid')) updateFloatingMenuPosition('mermaid', mermaidToolRef.current, 192);
+                    menus.toggle('mermaid');
                 }} title="Insertar diagrama (flowchart, mapa mental, secuencia)">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <rect x="3" y="3" width="5" height="4" rx="1"/><rect x="16" y="3" width="5" height="4" rx="1"/>
@@ -67,7 +64,7 @@ export default function BlockInsertGroup({
                         <line x1="5.5" y1="10" x2="18.5" y2="10"/><line x1="12" y1="10" x2="12" y2="17"/>
                     </svg>
                 </ToolBtn>
-                {showMermaidMenu && typeof document !== 'undefined' && createPortal(
+                {menus.isOpen('mermaid') && typeof document !== 'undefined' && createPortal(
                     <div
                         className="fixed z-[220] p-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl shadow-2xl flex flex-col gap-1 w-48"
                         style={{ top: `${floatingMenuPosition.mermaid.top}px`, left: `${floatingMenuPosition.mermaid.left}px` }}
@@ -77,7 +74,7 @@ export default function BlockInsertGroup({
                             ...MERMAID_TEMPLATE_OPTIONS,
                         ].map(({ key, icon, label }) => (
                             <button key={key} type="button"
-                                onClick={() => { editor.chain().focus().insertMermaid(MERMAID_TEMPLATES[key]).run(); setShowMermaidMenu(false); }}
+                                onClick={() => { editor.chain().focus().insertMermaid(MERMAID_TEMPLATES[key]).run(); menus.close('mermaid'); }}
                                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm text-[var(--text-secondary)] text-left"
                             >
                                 <span className="text-fuchsia-400 w-4 text-center">{icon}</span>

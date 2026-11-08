@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08 (vista de imagen del editor).
+Última actualización: 2026-11-08 (menús de la barra del editor).
 
 ## Hecho
 
@@ -61,6 +61,10 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ### Vista de imagen del editor
 - `image/ResizableImageView.jsx` pasó de 645 a unas 210 líneas. La lógica de anotaciones (estado, dibujo, arrastre de textos y del panel) vive en `useImageAnnotations.js`, la posición de la barra en `useImageToolbarPosition.js`, y la interfaz en `ImageToolbar.jsx` y `TextAnnotationPanel.jsx`. La vista conserva el redimensionado, el pie de foto y el render.
 
+### Menús de la barra del editor
+- Los 10 booleanos de menús abiertos de `RichEditor.jsx` (enlace, imagen, YouTube, audio, colores, resaltado, avisos, Mermaid, emojis, insertar y colores de tabla) se sustituyeron por el hook `editor/hooks/useToolbarMenus.js`, que guarda solo el nombre del menú abierto. Ya no hace falta que cada botón cierre a mano los demás.
+- Cada grupo de la barra recibe un único `menus` en lugar de un par `show` y `setShow` por menú (`MediaGroup` baja de unas 34 a unas 26 props) y `useFloatingMenus` solo recibe el menú abierto. `RichEditor.jsx` queda en unas 440 líneas. Prueba nueva del hook; frontend pasa a 101 tests.
+
 ### Mensajes de consola en español
 - Traducidos los `console.error`, `console.warn` y `console.log` con texto en inglés (renderizadores del blog, selector de GIFs, vista previa de PDF, utilidades del portapapeles, ErrorBoundary, analítica y el script de migraciones del backend) y quitados los emojis de la salida de `migrate.js`.
 
@@ -70,12 +74,11 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
 - Documentación de contexto: `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN.md` y este archivo.
-- Tests al cierre de esta fecha: frontend 98 y backend 60, todos en verde; build y lint sin errores.
+- Tests al cierre de esta fecha: frontend 101 y backend 60, todos en verde; build y lint sin errores.
 
 ## Pendiente
 
 ### Estructura y calidad de código
-- `MediaGroup` recibe unas 34 props y `RichEditor.jsx` sigue guardando 18 booleanos de menús abiertos: agrupar ese estado (por ejemplo un único menú abierto a la vez) simplificaría las props de todos los grupos de la barra.
 - Revisar con el mismo criterio el resto de comentarios en español: tono natural, explican el porqué.
 
 ### Funcionalidad

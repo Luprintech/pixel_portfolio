@@ -11,11 +11,8 @@ export default function ColorGroup({
     floatingMenuPosition,
     highlightToolRef,
     lastTextColor,
+    menus,
     setLastTextColor,
-    setShowColorPick,
-    setShowHighPick,
-    showColorPick,
-    showHighPick,
     updateFloatingMenuPosition,
 }) {
     return (
@@ -34,8 +31,7 @@ export default function ColorGroup({
                         onMouseDown={e => {
                             e.preventDefault();
                             applyTextColor(lastTextColor);
-                            setShowColorPick(false);
-                            setShowHighPick(false);
+                            menus.close();
                         }}
                         className="flex h-full w-8 items-center justify-center text-[var(--text-muted)] transition-colors hover:bg-black/5 hover:text-[var(--text-primary)] dark:hover:bg-white/10"
                     >
@@ -50,12 +46,11 @@ export default function ColorGroup({
                         title="Cambiar color de texto"
                         aria-label="Cambiar color de texto"
                         aria-haspopup="menu"
-                        aria-expanded={showColorPick ? 'true' : 'false'}
+                        aria-expanded={menus.isOpen('color') ? 'true' : 'false'}
                         onMouseDown={e => {
                             e.preventDefault();
-                            if (!showColorPick) updateFloatingMenuPosition('color', colorToolRef.current, 192);
-                            setShowColorPick(p => !p);
-                            setShowHighPick(false);
+                            if (!menus.isOpen('color')) updateFloatingMenuPosition('color', colorToolRef.current, 192);
+                            menus.toggle('color');
                         }}
                         className="flex h-full w-5 items-center justify-center border-l border-[var(--border-color)] text-[var(--text-muted)] transition-colors hover:bg-black/5 hover:text-[var(--text-primary)] dark:hover:bg-white/10"
                     >
@@ -65,14 +60,14 @@ export default function ColorGroup({
                     </button>
                 </div>
 
-                {showColorPick && typeof document !== 'undefined' && createPortal(
+                {menus.isOpen('color') && typeof document !== 'undefined' && createPortal(
                     <div
                         className="fixed z-[220] p-3 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl shadow-2xl w-48"
                         style={{ top: `${floatingMenuPosition.color.top}px`, left: `${floatingMenuPosition.color.left}px` }}
                         onMouseDown={e => e.stopPropagation()}
                     >
                         <button type="button" className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-2 w-full text-left px-1"
-                            onClick={() => { clearTextColor(); setLastTextColor('#000000'); setShowColorPick(false); }}>
+                            onClick={() => { clearTextColor(); setLastTextColor('#000000'); menus.close('color'); }}>
                             Quitar color
                         </button>
                         <div className="grid grid-cols-5 gap-1.5 mb-2">
@@ -80,7 +75,7 @@ export default function ColorGroup({
                                 <button key={c} type="button" title={c}
                                     className="w-6 h-6 rounded-md border-2 border-transparent hover:border-white/50 hover:scale-110 transition-all"
                                     style={{ background: c }}
-                                    onClick={() => { applyTextColor(c); setLastTextColor(c); setShowColorPick(false); }}
+                                    onClick={() => { applyTextColor(c); setLastTextColor(c); menus.close('color'); }}
                                 />
                             ))}
                         </div>
@@ -104,20 +99,19 @@ export default function ColorGroup({
             {/* Resaltado */}
             <div ref={highlightToolRef} className="relative" onMouseDown={e => e.stopPropagation()}>
                 <ToolBtn onClick={() => {
-                    if (!showHighPick) updateFloatingMenuPosition('highlight', highlightToolRef.current, 176);
-                    setShowHighPick(p => !p);
-                    setShowColorPick(false);
+                    if (!menus.isOpen('highlight')) updateFloatingMenuPosition('highlight', highlightToolRef.current, 176);
+                    menus.toggle('highlight');
                 }} active={editor.isActive('highlight')} title="Color de fondo">
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                 </ToolBtn>
-                {showHighPick && typeof document !== 'undefined' && createPortal(
+                {menus.isOpen('highlight') && typeof document !== 'undefined' && createPortal(
                     <div
                         className="fixed z-[220] p-3 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl shadow-2xl w-44"
                         style={{ top: `${floatingMenuPosition.highlight.top}px`, left: `${floatingMenuPosition.highlight.left}px` }}
                         onMouseDown={e => e.stopPropagation()}
                     >
                         <button type="button" className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-2 w-full text-left px-1"
-                            onClick={() => { editor.chain().focus().unsetHighlight().run(); setShowHighPick(false); }}>
+                            onClick={() => { editor.chain().focus().unsetHighlight().run(); menus.close('highlight'); }}>
                             Quitar fondo
                         </button>
                         <div className="grid grid-cols-4 gap-1.5 mb-2">
@@ -125,7 +119,7 @@ export default function ColorGroup({
                                 <button key={c} type="button" title={c}
                                     className="w-6 h-6 rounded-md border-2 border-transparent hover:border-white/50 hover:scale-110 transition-all"
                                     style={{ background: c }}
-                                    onClick={() => { editor.chain().focus().toggleHighlight({ color: c }).run(); setShowHighPick(false); }}
+                                    onClick={() => { editor.chain().focus().toggleHighlight({ color: c }).run(); menus.close('highlight'); }}
                                 />
                             ))}
                         </div>

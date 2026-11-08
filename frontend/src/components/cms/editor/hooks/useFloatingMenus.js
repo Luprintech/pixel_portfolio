@@ -2,16 +2,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 
 export function useFloatingMenus({
-    showAudioMenu,
-    showCalloutMenu,
-    showColorPick,
-    showEmojiPicker,
-    showHighPick,
-    showImageMenu,
-    showInsertMenu,
-    showLinkMenu,
-    showMermaidMenu,
-    showYoutubeMenu,
+    openMenu,
     fullscreen,
 }) {
     const editorScrollRef = useRef(null);
@@ -67,43 +58,24 @@ export function useFloatingMenus({
     }, [getFloatingPickerPosition]);
 
     const refreshOpenFloatingMenus = useCallback(() => {
-        if (showColorPick) updateFloatingMenuPosition('color', colorToolRef.current, 192);
-        if (showHighPick) updateFloatingMenuPosition('highlight', highlightToolRef.current, 176);
-        if (showLinkMenu) updateFloatingMenuPosition('link', linkToolRef.current, 288);
-        if (showImageMenu) updateFloatingMenuPosition('image', imageToolRef.current, 352);
-        if (showYoutubeMenu) updateFloatingMenuPosition('youtube', youtubeToolRef.current, 320);
-        if (showAudioMenu) updateFloatingMenuPosition('audio', audioToolRef.current, 320);
-        if (showCalloutMenu) updateFloatingMenuPosition('callout', calloutToolRef.current, 144);
-        if (showMermaidMenu) updateFloatingMenuPosition('mermaid', mermaidToolRef.current, 192);
-        if (showEmojiPicker) updateFloatingMenuPosition('emoji', emojiToolRef.current, 320);
-        if (showInsertMenu) updateFloatingMenuPosition('insert', insertToolRef.current, 416);
-    }, [
-        showColorPick,
-        showHighPick,
-        showLinkMenu,
-        showImageMenu,
-        showYoutubeMenu,
-        showAudioMenu,
-        showCalloutMenu,
-        showMermaidMenu,
-        showEmojiPicker,
-        showInsertMenu,
-        updateFloatingMenuPosition,
-    ]);
+        const anchors = {
+            color: [colorToolRef, 192],
+            highlight: [highlightToolRef, 176],
+            link: [linkToolRef, 288],
+            image: [imageToolRef, 352],
+            youtube: [youtubeToolRef, 320],
+            audio: [audioToolRef, 320],
+            callout: [calloutToolRef, 144],
+            mermaid: [mermaidToolRef, 192],
+            emoji: [emojiToolRef, 320],
+            insert: [insertToolRef, 416],
+        };
+        const anchor = anchors[openMenu];
+        if (anchor) updateFloatingMenuPosition(openMenu, anchor[0].current, anchor[1]);
+    }, [openMenu, updateFloatingMenuPosition]);
 
     useEffect(() => {
-        const anyFloatingMenuOpen = showColorPick
-            || showHighPick
-            || showLinkMenu
-            || showImageMenu
-            || showYoutubeMenu
-            || showAudioMenu
-            || showCalloutMenu
-            || showMermaidMenu
-            || showEmojiPicker
-            || showInsertMenu;
-
-        if (!anyFloatingMenuOpen) return;
+        if (!openMenu) return;
 
         refreshOpenFloatingMenus();
 
@@ -119,19 +91,7 @@ export function useFloatingMenus({
             window.removeEventListener('scroll', handleReposition, true);
             toolbarEl?.removeEventListener('scroll', handleReposition);
         };
-    }, [
-        showColorPick,
-        showHighPick,
-        showLinkMenu,
-        showImageMenu,
-        showYoutubeMenu,
-        showAudioMenu,
-        showCalloutMenu,
-        showMermaidMenu,
-        showEmojiPicker,
-        showInsertMenu,
-        refreshOpenFloatingMenus,
-    ]);
+    }, [openMenu, refreshOpenFloatingMenus]);
 
     // La barra se fija arriba de la ventana cuando el editor sube por encima del viewport
     useEffect(() => {

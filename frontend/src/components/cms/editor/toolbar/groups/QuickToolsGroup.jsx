@@ -9,9 +9,8 @@ export default function QuickToolsGroup({
     floatingMenuPosition,
     handleInsertAction,
     handleUnpinTool,
+    menus,
     pinnedTools,
-    setShowEmojiPicker,
-    showEmojiPicker,
     updateFloatingMenuPosition,
 }) {
     return (
@@ -48,15 +47,15 @@ export default function QuickToolsGroup({
             {/* Emoji */}
             <div ref={emojiToolRef} className="relative" onMouseDown={e => e.stopPropagation()}>
                 <ToolBtn onClick={() => {
-                    if (!showEmojiPicker) updateFloatingMenuPosition('emoji', emojiToolRef.current, 320);
-                    setShowEmojiPicker(p => !p);
+                    if (!menus.isOpen('emoji')) updateFloatingMenuPosition('emoji', emojiToolRef.current, 320);
+                    menus.toggle('emoji');
                 }} title="Insertar emoji">
                     <span className="text-sm">😀</span>
                 </ToolBtn>
-                {showEmojiPicker && (
+                {menus.isOpen('emoji') && (
                     <EmojiPicker
                         onSelect={emoji => editor?.chain().focus().insertContent(emoji).run()}
-                        onClose={() => setShowEmojiPicker(false)}
+                        onClose={() => menus.close('emoji')}
                         className="fixed z-[220] bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl shadow-2xl w-[320px] overflow-hidden"
                         style={{ top: `${floatingMenuPosition.emoji.top}px`, left: `${floatingMenuPosition.emoji.left}px` }}
                     />
