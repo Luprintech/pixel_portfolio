@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08 (medida del chunk del juego).
+Última actualización: 2026-11-08 (chunks del CMS fuera de la web pública).
 
 ## Hecho
 
@@ -69,6 +69,10 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - Borrados `blocks/AudioPlayer.jsx` y `blocks/ChartsBlock.jsx`: nada los importaba ni estaban registrados en el editor, así que ningún post podía contenerlos. El audio ya lo cubre la extensión de audio del editor.
 - Quitada la dependencia `recharts`, que solo usaba `ChartsBlock`.
 
+### Chunks del CMS fuera de la web pública
+- `dist/index.html` precargaba `editor-vendor` (unos 610 KB) y `cms-diagrams-vendor` (unos 535 KB) en todas las páginas. La causa no era una importación del CMS: con `manualChunks` en forma de objeto, Rollup alojaba en esos chunks helpers internos (la precarga de rutas de Vite y el interop de React que usa `swr` a través de `use-sync-external-store`) y la entrada los necesitaba siempre.
+- `vite.config.js` usa ahora `manualChunks` como función: fija esos helpers y `use-sync-external-store` en `react-vendor` y deja a Rollup separar mermaid y pdf.js, que ya se cargan de forma diferida. La entrada solo precarga `react-vendor` y `animation-vendor`, y `Title`, `Clasico`, `Valle`, `Blog`, `BlogPost` y `Contact` no importan nada del editor.
+
 ### Mensajes de consola en español
 - Traducidos los `console.error`, `console.warn` y `console.log` con texto en inglés (renderizadores del blog, selector de GIFs, vista previa de PDF, utilidades del portapapeles, ErrorBoundary, analítica y el script de migraciones del backend) y quitados los emojis de la salida de `migrate.js`.
 
@@ -88,7 +92,6 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ### Funcionalidad
 - Los sprites laterales y de espalda de la princesa son versiones simplificadas.
 - Medido el 2026-11-08: el chunk del juego (`boot`) pesa 1,41 MB (unos 329 KB con gzip) y casi todo es Phaser. Solo lo pide `pages/Valle.jsx` con `import()` y no aparece en los `modulepreload` de `index.html`, así que ni `/` ni `/clasico` lo descargan. El peso de `Valle` en sí es de 9 KB. Reducirlo exigiría una compilación a medida de Phaser, y no compensa mientras no moleste a quien entra al juego.
-- Hallazgo al medir: `dist/index.html` precarga `editor-vendor` (unos 610 KB) y `cms-diagrams-vendor` (unos 535 KB) aunque son del CMS. Hay que averiguar qué importación estática de la entrada los arrastra (probablemente algo compartido con el CMS) y pasarla a carga diferida para que la web pública no los baje.
 
 ### Infraestructura
 - El CI (`.github/workflows/ci.yml`) ya ejecuta lint, tests y build del frontend y tests y comprobación de sintaxis del backend en cada PR. Falta el despliegue automatizado.
