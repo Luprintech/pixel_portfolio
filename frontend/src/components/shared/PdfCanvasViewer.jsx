@@ -111,7 +111,7 @@ export default function PdfCanvasViewer({
         setNumPages(documentProxy.numPages);
       } catch (loadError) {
         if (!cancelled) {
-          console.error('Error loading PDF preview:', loadError);
+          console.error('Error al cargar la vista previa del PDF:', loadError);
           setError('No se pudo cargar la vista previa del PDF.');
         }
       } finally {
@@ -180,7 +180,7 @@ export default function PdfCanvasViewer({
         await renderTask.promise;
       } catch (renderError) {
         if (!cancelled && renderError?.name !== 'RenderingCancelledException') {
-          console.error('Error rendering PDF preview:', renderError);
+          console.error('Error al dibujar la vista previa del PDF:', renderError);
           setError('No se pudo renderizar esta pagina del PDF.');
         }
       }

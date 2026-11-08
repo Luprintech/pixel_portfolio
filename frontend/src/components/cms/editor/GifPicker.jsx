@@ -47,7 +47,7 @@ export default function GifPicker({ onSelect, onClose }) {
       setTrending(data.data || []);
       setError(null);
     } catch (error) {
-      console.error('Error fetching trending GIFs:', error);
+      console.error('Error al cargar los GIFs en tendencia:', error);
       setError('Error al cargar GIFs');
     } finally {
       setLoading(false);
@@ -63,7 +63,7 @@ export default function GifPicker({ onSelect, onClose }) {
       const data = await response.json();
       setGifs(data.data || []);
     } catch (error) {
-      console.error('Error searching GIFs:', error);
+      console.error('Error al buscar GIFs:', error);
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,7 @@ export default function GifPicker({ onSelect, onClose }) {
       const data = await response.json();
       setGifs(data.data || []);
     } catch (error) {
-      console.error('Error fetching category GIFs:', error);
+      console.error('Error al cargar los GIFs de la categoría:', error);
     } finally {
       setLoading(false);
     }

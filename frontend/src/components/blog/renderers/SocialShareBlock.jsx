@@ -83,7 +83,7 @@ export default function SocialShareBlock({ element }) {
       config = { ...config, ...JSON.parse(dataAttr) };
     }
   } catch (err) {
-    console.error('Failed to parse social-share config:', err);
+    console.error('No se pudo leer la configuración de compartir en redes:', err);
   }
 
   useEffect(() => {

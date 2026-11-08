@@ -1,6 +1,6 @@
 export const loadGoogleAnalytics = (measurementId) => {
     if (!measurementId) {
-        console.warn('GA4 Measurement ID is required to load Google Analytics.');
+        console.warn('Hace falta el ID de medición de GA4 para cargar Google Analytics.');
         return;
     }
 

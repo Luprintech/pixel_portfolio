@@ -14,7 +14,7 @@ export async function copyToClipboard(text) {
       await navigator.clipboard.writeText(text);
       return true;
     } catch (error) {
-      console.warn('Clipboard API failed, trying fallback:', error);
+      console.warn('Falló la API del portapapeles, se prueba el método alternativo:', error);
     }
   }
 
@@ -37,7 +37,7 @@ export async function copyToClipboard(text) {
       document.body.removeChild(textarea);
       return success;
     } catch (error) {
-      console.error('Fallback clipboard copy failed:', error);
+      console.error('Falló también la copia alternativa al portapapeles:', error);
       return false;
     }
   }

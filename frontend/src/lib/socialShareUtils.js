@@ -66,7 +66,7 @@ export async function copyToClipboard(text) {
       await navigator.clipboard.writeText(text);
       return true;
     } catch (err) {
-      console.error('Failed to copy with clipboard API:', err);
+      console.error('No se pudo copiar con la API del portapapeles:', err);
     }
   }
 
@@ -82,7 +82,7 @@ export async function copyToClipboard(text) {
     document.body.removeChild(textarea);
     return true;
   } catch (err) {
-    console.error('Failed to copy with fallback:', err);
+    console.error('No se pudo copiar con el método alternativo:', err);
     return false;
   }
 }

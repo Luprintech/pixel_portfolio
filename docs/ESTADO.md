@@ -54,6 +54,9 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - El efecto de la barra fija al hacer scroll pasó a `useFloatingMenus`, que ya tenía su estado; el selector de tipo de bloque a `editor/blockCommands.js`.
 - Prueba nueva de `blockCommands`.
 
+### Mensajes de consola en español
+- Traducidos los `console.error`, `console.warn` y `console.log` con texto en inglés (renderizadores del blog, selector de GIFs, vista previa de PDF, utilidades del portapapeles, ErrorBoundary, analítica y el script de migraciones del backend) y quitados los emojis de la salida de `migrate.js`.
+
 ### Arranque en local
 - `arrancar.cmd` (doble clic) deja todo el entorno en marcha: comprueba `backend/.env`, abre Docker Desktop si está cerrado, levanta PostgreSQL en un contenedor de desarrollo y arranca backend y frontend como dos pestañas de una misma ventana de Windows Terminal. El móvil se abre en otra ventana con las direcciones para entrar por la red Wi-Fi. Si algún servidor ya está en marcha, no lo lanza de nuevo. Sin Windows Terminal usa ventanas de cmd.
 
@@ -69,7 +72,6 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - `editor/image/ResizableImageView.jsx` sigue en unas 650 líneas: separar la barra de imagen y la capa de anotaciones.
 - `MediaGroup` recibe unas 34 props y `RichEditor.jsx` sigue guardando 18 booleanos de menús abiertos: agrupar ese estado (por ejemplo un único menú abierto a la vez) simplificaría las props de todos los grupos de la barra.
 - Revisar con el mismo criterio el resto de comentarios en español: tono natural, explican el porqué.
-- Revisar `console.warn` y `console.log` que queden con mensajes en inglés.
 
 ### Funcionalidad
 - Los sprites laterales y de espalda de la princesa son versiones simplificadas.

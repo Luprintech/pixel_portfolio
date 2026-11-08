@@ -118,7 +118,7 @@ function ContentButtonView({ node, updateAttributes, selected, deleteNode }) {
                 headers: { Authorization: `Bearer ${token}` },
                 body: fd,
             });
-            if (!res.ok) throw new Error('Error uploading document');
+            if (!res.ok) throw new Error('Error al subir el documento');
             const data = await res.json();
             updateAttributes({ documentUrl: data.url, documentFilename: data.filename });
         } catch (err) { console.error(err); }

@@ -48,7 +48,7 @@ async function applyMigration(client, filename) {
     const filePath = path.join(MIGRATIONS_DIR, filename);
     const sql = await fsExtra.readFile(filePath, 'utf-8');
 
-    console.log(`  Applying: ${filename}`);
+    console.log(`  Aplicando: ${filename}`);
     await client.query(sql);
     await client.query(
         'INSERT INTO schema_migrations (filename) VALUES ($1)',
@@ -68,22 +68,22 @@ async function run() {
         const pending = await getPendingMigrations(applied);
 
         if (pending.length === 0) {
-            console.log('✅ No pending migrations.');
+            console.log('No hay migraciones pendientes.');
             await client.query('COMMIT');
             return;
         }
 
-        console.log(`Running ${pending.length} migration(s)...`);
+        console.log(`Ejecutando ${pending.length} migración(es)...`);
 
         for (const filename of pending) {
             await applyMigration(client, filename);
         }
 
         await client.query('COMMIT');
-        console.log(`✅ Applied ${pending.length} migration(s) successfully.`);
+        console.log(`Se aplicaron ${pending.length} migración(es) correctamente.`);
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error('❌ Migration failed — rolled back:', error.message);
+        console.error('La migración falló y se revirtió:', error.message);
         process.exit(1);
     } finally {
         client.release();

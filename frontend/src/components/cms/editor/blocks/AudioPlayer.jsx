@@ -77,7 +77,7 @@ function AudioPlayerView({ node, updateAttributes, selected, deleteNode }) {
         setUploadError('Error al subir el archivo.');
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Error al subir el audio:', error);
       setUploadError('Error al subir el archivo.');
     } finally {
       setUploading(false);

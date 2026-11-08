@@ -20,7 +20,7 @@ export default function PollBlock({ question = '', options = [], style = 'cards'
         setResults(data.results || {});
       }
     } catch (err) {
-      console.error('Error loading poll data:', err);
+      console.error('Error al cargar los datos de la encuesta:', err);
     }
   }, [storageKey]);
 
@@ -69,7 +69,7 @@ export default function PollBlock({ question = '', options = [], style = 'cards'
         })
       );
     } catch (err) {
-      console.error('Error saving poll vote:', err);
+      console.error('Error al guardar el voto de la encuesta:', err);
     }
   };
 
@@ -80,7 +80,7 @@ export default function PollBlock({ question = '', options = [], style = 'cards'
     try {
       localStorage.removeItem(storageKey);
     } catch (err) {
-      console.error('Error clearing poll vote:', err);
+      console.error('Error al borrar el voto de la encuesta:', err);
     }
   };
 

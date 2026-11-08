@@ -17,7 +17,7 @@ export default class ErrorBoundary extends Component {
   componentDidCatch(error, info) {
     // En producción podrías enviar esto a Sentry, LogRocket, etc.
     if (import.meta.env.DEV) {
-      console.error('ErrorBoundary caught:', error, info);
+      console.error('Error capturado por ErrorBoundary:', error, info);
     }
   }
 

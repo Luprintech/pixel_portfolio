@@ -618,7 +618,7 @@ function renderNode(node, path) {
     try {
       stats = JSON.parse(statsData);
     } catch (e) {
-      console.error('Failed to parse stats data:', e);
+      console.error('No se pudieron leer los datos de las estadísticas:', e);
     }
     
     return (
@@ -639,7 +639,7 @@ function renderNode(node, path) {
     try {
       events = JSON.parse(eventsData);
     } catch (e) {
-      console.error('Failed to parse timeline events data:', e);
+      console.error('No se pudieron leer los eventos de la línea de tiempo:', e);
     }
     
     return (
@@ -678,7 +678,7 @@ function renderNode(node, path) {
     try {
       bars = JSON.parse(barsData);
     } catch (e) {
-      console.error('Failed to parse progress bars data:', e);
+      console.error('No se pudieron leer los datos de las barras de progreso:', e);
     }
     
     return (
@@ -712,7 +712,7 @@ function renderNode(node, path) {
     try {
       quizObj = JSON.parse(quizData);
     } catch (e) {
-      console.error('Failed to parse quiz data:', e);
+      console.error('No se pudieron leer los datos del quiz:', e);
     }
     
     return (
@@ -735,7 +735,7 @@ function renderNode(node, path) {
     try {
       pollObj = JSON.parse(pollData);
     } catch (e) {
-      console.error('Failed to parse poll data:', e);
+      console.error('No se pudieron leer los datos de la encuesta:', e);
     }
     
     return (
@@ -766,7 +766,7 @@ function renderNode(node, path) {
     try {
       tabs = JSON.parse(tabsData);
     } catch (e) {
-      console.error('Failed to parse tabs data:', e);
+      console.error('No se pudieron leer los datos de las pestañas:', e);
     }
     
     return (

@@ -41,7 +41,7 @@ function ComparisonSliderView({ node, updateAttributes, selected, deleteNode }) 
                 body: fd,
             });
 
-            if (!res.ok) throw new Error('Error uploading image');
+            if (!res.ok) throw new Error('Error al subir la imagen');
 
             const data = await res.json();
             const imageUrl = data.url;
@@ -50,7 +50,7 @@ function ComparisonSliderView({ node, updateAttributes, selected, deleteNode }) 
                 [`${type}Image`]: imageUrl,
             });
         } catch (err) {
-            console.error('Image upload failed:', err);
+            console.error('Error al subir la imagen:', err);
             alert('Error al subir la imagen');
         } finally {
             setUploading(prev => ({ ...prev, [type]: false }));
