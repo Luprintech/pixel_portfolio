@@ -29,7 +29,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - Nueva prueba `RichEditor.test.jsx` con el documento cargado y una instantánea de la barra de herramientas, para detectar cambios no intencionados al reorganizar.
 
 ### Arranque en local
-- `arrancar.cmd` (doble clic) comprueba `backend/.env`, instala dependencias la primera vez y abre backend y frontend como dos pestañas de la misma ventana de Windows Terminal. Sin Windows Terminal usa dos ventanas de cmd. Muestra las direcciones para entrar desde el móvil por la red Wi-Fi.
+- `arrancar.cmd` (doble clic) deja todo el entorno en marcha: comprueba `backend/.env`, abre Docker Desktop si está cerrado, levanta PostgreSQL en un contenedor de desarrollo y arranca backend y frontend como dos pestañas de una misma ventana de Windows Terminal. El móvil se abre en otra ventana con las direcciones para entrar por la red Wi-Fi. Si algún servidor ya está en marcha, no lo lanza de nuevo. Sin Windows Terminal usa ventanas de cmd.
 
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
