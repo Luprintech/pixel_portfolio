@@ -1,6 +1,6 @@
 # Arquitectura
 
-Visión general. Los comandos de trabajo están en el `README.md`; el diseño visual en `frontend/docs/DESIGN.md`.
+Visión general. Las reglas de trabajo y los comandos están en `AGENTS.md`; el diseño visual en `frontend/docs/DESIGN.md`; el estado y las decisiones en `docs/ESTADO.md`.
 
 ## Capas
 
@@ -63,4 +63,4 @@ Protegido por login. Subrutas: `inicio`, `posts`, `proyectos`, `imagenes`, `cv`,
 
 ## Zonas delicadas
 
-Puntos a vigilar: sitemap, `CONTENT_PATH`, SMTP del contacto y Gemini del chat.
+Ver la sección homónima de `AGENTS.md`: sitemap, `CONTENT_PATH`, SMTP del contacto y Gemini del chat.

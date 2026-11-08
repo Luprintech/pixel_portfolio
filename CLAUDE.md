@@ -1,0 +1,77 @@
+# CLAUDE.md
+
+Contexto permanente para Claude Code en este repositorio. Léelo antes de tocar nada y, después, abre `docs/ESTADO.md` para saber en qué punto está el trabajo.
+
+@AGENTS.md
+
+## Qué es esto
+
+Portfolio full-stack de Guadalupe Cano (Luprintech): SPA React + Vite, API Express, PostgreSQL y un CMS privado en `/bitacora`. Trabaja con la usuaria en **español**.
+
+## Dónde está cada documento
+
+| Tema | Archivo |
+| --- | --- |
+| Reglas de trabajo, comandos, variables de entorno, zonas delicadas | `AGENTS.md` (importado arriba) |
+| Arquitectura, rutas, flujo de contenido, juego Phaser | `docs/ARCHITECTURE.md` |
+| Sistema de diseño vigente (Valle del Bucle) | `frontend/docs/DESIGN.md` |
+| Qué se ha hecho, qué falta y por qué se decidió cada cosa | `docs/ESTADO.md` |
+
+## Diseño vigente: "Valle del Bucle"
+
+Desde 2026-11-08 el portfolio es un overworld pixel art estilo Zelda (Phaser 3) con un **modo clásico** en HTML real. La arquitectura (CMS, blog, API, BD) **no cambió**; solo la capa visual.
+
+- `/` título, `/valle` el juego, `/clasico` todo el contenido de corrido.
+- El contenido sale **una sola vez** de `/api/projects` y `/api/posts` y se pinta en ambos modos (`components/valle/Content.jsx`).
+- Paleta, fuentes y reglas: ver `frontend/docs/DESIGN.md`. No introduzcas colores fuera de los tokens de `frontend/src/index.css`.
+- El CMS (`/bitacora`) conserva sus colores fijos a propósito; solo recibe tokens.
+
+## Cosas que NO debes hacer
+
+- No restaures el diseño anterior (fucsia/cian, partículas, gradientes, "Neon Luminary"). Se descartó por genérico: la idea es que el portfolio tenga personalidad propia.
+- Ya no existen `design/tokens.js`, `data/` ni las secciones del diseño anterior (Expertise, TechSkills, TerminalWidget, ToolsGrid, InteractiveAvatar, FeaturedProjects). No los recrees.
+- No uses gradientes, halos radiales, sombras difuminadas ni colores fucsia/cian/violeta sueltos: usa tokens y sombras duras (`var(--px-ink)`).
+- No cambies slugs públicos sin revisar `backend/lib/sitemap.js`.
+- No importes Phaser fuera de `pages/Valle.jsx` (carga diferida a propósito para no pesar en el resto del sitio).
+- No ejecutes las skills de diseño por tu cuenta: las lanza la usuaria.
+
+## Flujo de Git
+
+Repositorio: https://github.com/Luprintech/pixel_portfolio (rama `main`). Nunca se commitea directo a `main`: cada funcionalidad va en su rama y entra por PR. El repo anterior (`mi-portfolio`) se conserva aparte como archivo y no se toca; en local su historial queda en la rama `legacy-main` y el remoto `legacy`.
+
+**Cuando la usuaria dice "mergea"**, en este orden y parando si algo falla:
+
+1. Pasan **todos** los tests: `npm test`, `npm run lint` y `npm run build` en `frontend/`, y `npm test` en `backend/`. Si algo falla, no se mergea: se informa con la salida del fallo.
+2. Crear la rama (`feat/...`, `fix/...`, `docs/...`) desde `main` actualizada y commitear.
+3. Subir la rama y abrir el PR con `gh pr create`.
+4. Mergear el PR (squash).
+5. Borrar la rama en remoto y en local, volver a `main` y actualizarla.
+
+**Cuando dice "descarga del remoto al local"**: traer a `main` local lo que haya en `origin/main` (`git fetch` y `git pull --ff-only`). Si hay cambios locales sin commitear o `main` ha divergido, avisar antes de tocar nada; no sobrescribir trabajo local.
+
+**Autoría**: todo lo que se commitea, se sube en un PR o se publica es de Guadalupe y solo de ella. Los commits y las descripciones de PR **no llevan** líneas `Co-Authored-By`, "Generated with" ni ninguna mención a Claude o a otra IA.
+
+## Convenciones de código
+
+- Los comentarios van en **español**, con el tono de una persona que explica a la siguiente: el porqué de una decisión, una trampa o una restricción, no lo que ya dice el código. Sin banderines decorativos, sin emojis y sin frases de relleno.
+- Nombres de variables, funciones y componentes claros; funciones pequeñas con una sola responsabilidad.
+- Frontend y backend siguen separados (`frontend/` y `backend/`) y no comparten código. El contrato entre ambos es la API.
+- Cada módulo hace una cosa: la UI no accede a datos directamente (pasa por `lib/` y `hooks/`), y en el backend las rutas solo reciben y responden (la lógica va en `lib/` y `utils/`).
+- Nada de código muerto, duplicado ni `console.log` olvidados.
+- Los textos visibles al usuario van por i18n, no incrustados en los componentes.
+
+## Antes de cerrar un cambio
+
+Frontend: `npm run build`, `npm run lint` y `npm test` desde `frontend/`. Backend: `npm test` y comprobar `GET /api/health`. Detalle completo en `AGENTS.md`.
+
+## Estado del proyecto
+
+`docs/ESTADO.md` recoge lo hecho, lo pendiente y las decisiones. Al cerrar cada bloque de trabajo (una funcionalidad, un refactor, una limpieza) se actualiza en el mismo PR: pasar lo terminado a "Hecho", anotar lo nuevo en "Pendiente" y añadir cada decisión con su motivo. Si cambia algo del diseño o de la arquitectura, actualizar también `frontend/docs/DESIGN.md` o `docs/ARCHITECTURE.md`.
+
+## Pendientes conocidos
+
+- Añadir `/clasico` al sitemap del backend.
+- Sprites laterales y de espalda de la princesa son versiones simplificadas.
+- Claves de i18n `expertise_*` en `frontend/src/locales/*/common.json` quizá sin uso tras borrar Expertise.
+- Bloques CMS `AudioPlayer.jsx` y `ChartsBlock.jsx` no se importan en ningún sitio: revisar si son funciones previstas.
+- Los bloques de contenido del blog (gradientes de `lib/gradients.js`, botones y avisos del editor) conservan colores propios: son opciones del autor, no el tema.

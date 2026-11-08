@@ -57,7 +57,5 @@ deploy.sh
 *.db
 nul
 
-# Notas y contexto de trabajo locales (no se suben)
-CLAUDE.md
-AGENTS.md
+# Caché local de herramientas de diseño
 .impeccable/
