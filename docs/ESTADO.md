@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08 (paneles de botón CTA e Image Grid).
+Última actualización: 2026-11-08 (vista de imagen del editor).
 
 ## Hecho
 
@@ -58,6 +58,9 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - `contentButton.jsx` pasó de 671 a unas 260 líneas: el panel de personalización vive en `ContentButtonPanel.jsx` y los colores y configuraciones guardadas (localStorage) en `contentButtonPresets.js`, con el hook `useCtaPresets`.
 - `imageGrid.jsx` pasó de 592 a unas 375 líneas: opciones del bloque y edición por imagen en `ImageGridPanel.jsx`; `imageGridOrder.js` guarda el reordenado.
 
+### Vista de imagen del editor
+- `image/ResizableImageView.jsx` pasó de 645 a unas 210 líneas. La lógica de anotaciones (estado, dibujo, arrastre de textos y del panel) vive en `useImageAnnotations.js`, la posición de la barra en `useImageToolbarPosition.js`, y la interfaz en `ImageToolbar.jsx` y `TextAnnotationPanel.jsx`. La vista conserva el redimensionado, el pie de foto y el render.
+
 ### Mensajes de consola en español
 - Traducidos los `console.error`, `console.warn` y `console.log` con texto en inglés (renderizadores del blog, selector de GIFs, vista previa de PDF, utilidades del portapapeles, ErrorBoundary, analítica y el script de migraciones del backend) y quitados los emojis de la salida de `migrate.js`.
 
@@ -72,7 +75,6 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ## Pendiente
 
 ### Estructura y calidad de código
-- `editor/image/ResizableImageView.jsx` sigue en unas 650 líneas: separar la barra de imagen y la capa de anotaciones.
 - `MediaGroup` recibe unas 34 props y `RichEditor.jsx` sigue guardando 18 booleanos de menús abiertos: agrupar ese estado (por ejemplo un único menú abierto a la vez) simplificaría las props de todos los grupos de la barra.
 - Revisar con el mismo criterio el resto de comentarios en español: tono natural, explican el porqué.
 
