@@ -12,6 +12,7 @@ export function useFloatingMenus({
     showLinkMenu,
     showMermaidMenu,
     showYoutubeMenu,
+    fullscreen,
 }) {
     const editorScrollRef = useRef(null);
     const toolbarRef = useRef(null);
@@ -132,5 +133,39 @@ export function useFloatingMenus({
         refreshOpenFloatingMenus,
     ]);
 
-    return { audioToolRef, calloutToolRef, colorToolRef, editorContainerRef, editorScrollRef, emojiToolRef, floatingMenuPosition, highlightToolRef, imageToolRef, insertToolRef, linkToolRef, mermaidToolRef, setToolbarFixed, setToolbarPosition, toolbarFixed, toolbarPlaceholderRef, toolbarPosition, toolbarRef, updateFloatingMenuPosition, youtubeToolRef };
+    // La barra se fija arriba de la ventana cuando el editor sube por encima del viewport
+    useEffect(() => {
+        const toolbar = toolbarRef.current;
+        const container = editorContainerRef.current;
+        if (!toolbar || !container || fullscreen) return;
+
+        const handleScroll = () => {
+            const containerRect = container.getBoundingClientRect();
+
+            if (containerRect.top <= 0) {
+                if (!toolbarFixed) {
+                    // Se guardan posición y ancho exactos para que no salte al pasar a fixed
+                    setToolbarPosition({
+                        width: `${containerRect.width}px`,
+                        left: `${containerRect.left}px`,
+                    });
+                    setToolbarFixed(true);
+                }
+            } else if (toolbarFixed) {
+                setToolbarFixed(false);
+                setToolbarPosition({ width: 'auto', left: 'auto' });
+            }
+        };
+
+        handleScroll();
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleScroll);
+        };
+    }, [toolbarFixed, fullscreen]);
+
+    return { audioToolRef, calloutToolRef, colorToolRef, editorContainerRef, editorScrollRef, emojiToolRef, floatingMenuPosition, highlightToolRef, imageToolRef, insertToolRef, linkToolRef, mermaidToolRef, toolbarFixed, toolbarPlaceholderRef, toolbarPosition, toolbarRef, updateFloatingMenuPosition, youtubeToolRef };
 }

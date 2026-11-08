@@ -4,11 +4,10 @@ import { common, createLowlight } from 'lowlight';
 import { useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import BubbleMenuTooltip from './editor/BubbleMenuTooltip';
 import { canUseJustifyAlignment, isRichBlockNodeActive } from './editor/blockAlignment';
+import { getActiveBlock, setBlock } from './editor/blockCommands';
 import SlashMenu from './editor/SlashMenu';
-import { filterInsertMenuItems, groupInsertMenuItems, PLUS_MENU_ITEMS, PINNED_TOOLS, savePinnedTools, runInsertMenuEditorAction } from './editor/insertMenuConfig';
-import { DOCUMENT_INPUT_ACCEPT, validateAudioFile, validateDocumentFile, validateImageFile } from '../../lib/mediaUploadPolicy';
-import { cmsApi } from '../../lib/cmsApi';
-import { getUploadErrorMessage, uploadAudioFile } from './editor/uploadHelpers';
+import { filterInsertMenuItems, groupInsertMenuItems, PLUS_MENU_ITEMS, runInsertMenuEditorAction } from './editor/insertMenuConfig';
+import { DOCUMENT_INPUT_ACCEPT } from '../../lib/mediaUploadPolicy';
 import 'highlight.js/styles/github-dark.css';
 import FormatGroup from './editor/toolbar/groups/FormatGroup';
 import ColorGroup from './editor/toolbar/groups/ColorGroup';
@@ -27,10 +26,14 @@ import EditorStatusBar from './editor/panels/EditorStatusBar';
 import { buildEditorExtensions } from './editor/editorExtensions';
 import { cleanPastedTableHtml } from './editor/pasteUtils';
 import { useFloatingMenus } from './editor/hooks/useFloatingMenus';
+import { useMediaUploads } from './editor/hooks/useMediaUploads';
+import { usePinnedTools } from './editor/hooks/usePinnedTools';
+import { useSelectionFormat } from './editor/hooks/useSelectionFormat';
+import { useSlashMenu } from './editor/hooks/useSlashMenu';
+import { useTextColor } from './editor/hooks/useTextColor';
 
 const lowlight = createLowlight(common);
 
-// RichEditor
 export default function RichEditor({ value, onChange, token, fullscreen, onToggleFullscreen }) {
     const { isDark, toggleTheme } = useTheme();
     const fileInputRef  = useRef(null);
@@ -44,50 +47,28 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
     const [showAudioMenu,   setShowAudioMenu]   = useState(false);
     const [audioUrl,        setAudioUrl]        = useState('');
     const [showImageMenu,   setShowImageMenu]   = useState(false);
-    const [availableImages, setAvailableImages] = useState([]);
-    const [loadingImages,   setLoadingImages]   = useState(false);
     const [showColorPick,   setShowColorPick]   = useState(false);
     const [lastTextColor,   setLastTextColor]   = useState('#000000');
     const [showHighPick,    setShowHighPick]    = useState(false);
     const [showCalloutMenu, setShowCalloutMenu] = useState(false);
     const [showMermaidMenu, setShowMermaidMenu] = useState(false);
     const [showTableColors, setShowTableColors] = useState(false);
-    const [uploading,       setUploading]       = useState(false);
-    const [fontSize,        setFontSize]        = useState('16px');
-    const [lineHeight,      setLineHeight]      = useState('1.8');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showInsertMenu,  setShowInsertMenu]  = useState(false);
     const [insertMenuQuery, setInsertMenuQuery] = useState('');
     const [markdownMode,    setMarkdownMode]    = useState(false);
     const [markdownSource,  setMarkdownSource]  = useState('');
-    const [uploadError,     setUploadError]     = useState('');
-    const [codeBlockMeta,   setCodeBlockMeta]   = useState({ filename: '', title: '' });
     const [showPreview,     setShowPreview]     = useState(false);
 
-    // Slash commands
-    const [slashMenu, setSlashMenu] = useState({ open: false, query: '', coords: { top: 0, left: 0 } });
+    // El editor se crea antes que los hooks que lo necesitan, y sus manejadores de arrastrar y pegar
+    // necesitan subir imágenes: se conectan a través de esta referencia.
+    const imageFileHandlerRef = useRef(null);
 
-    // Herramientas fijadas por el usuario
-    const [pinnedTools, setPinnedTools] = useState(PINNED_TOOLS);
+    const { slashMenu, updateSlashMenu, closeSlashMenu } = useSlashMenu();
+    const { pinnedTools, handlePinTool, handleUnpinTool } = usePinnedTools();
 
     // Recoloca la barra flotante al hacer scroll
-    const { audioToolRef, calloutToolRef, colorToolRef, editorContainerRef, editorScrollRef, emojiToolRef, floatingMenuPosition, highlightToolRef, imageToolRef, insertToolRef, linkToolRef, mermaidToolRef, setToolbarFixed, setToolbarPosition, toolbarFixed, toolbarPlaceholderRef, toolbarPosition, toolbarRef, updateFloatingMenuPosition, youtubeToolRef } = useFloatingMenus({ showAudioMenu, showCalloutMenu, showColorPick, showEmojiPicker, showHighPick, showImageMenu, showInsertMenu, showLinkMenu, showMermaidMenu, showYoutubeMenu });
-
-    // Función para añadir herramienta a la barra de herramientas
-    const handlePinTool = (tool) => {
-        if (!pinnedTools.find(t => t.action === tool.action)) {
-            const newPinned = [...pinnedTools, tool];
-            setPinnedTools(newPinned);
-            savePinnedTools(newPinned);
-        }
-    };
-
-    // Función para quitar herramienta de la barra de herramientas
-    const handleUnpinTool = (action) => {
-        const newPinned = pinnedTools.filter(t => t.action !== action);
-        setPinnedTools(newPinned);
-        savePinnedTools(newPinned);
-    };
+    const { audioToolRef, calloutToolRef, colorToolRef, editorContainerRef, editorScrollRef, emojiToolRef, floatingMenuPosition, highlightToolRef, imageToolRef, insertToolRef, linkToolRef, mermaidToolRef, toolbarFixed, toolbarPlaceholderRef, toolbarPosition, toolbarRef, updateFloatingMenuPosition, youtubeToolRef } = useFloatingMenus({ fullscreen, showAudioMenu, showCalloutMenu, showColorPick, showEmojiPicker, showHighPick, showImageMenu, showInsertMenu, showLinkMenu, showMermaidMenu, showYoutubeMenu });
 
     // Cerrar popups al hacer clic fuera
     useEffect(() => {
@@ -114,21 +95,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         content: value || '',
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML());
-
-            // Slash command detection
-            try {
-                const { $from } = editor.state.selection;
-                const textBefore = $from.parent.textBetween(0, $from.parentOffset);
-                const slashMatch = textBefore.match(/\/(\w*)$/);
-                if (slashMatch && $from.parent.type.name === 'paragraph') {
-                    const coords = editor.view.coordsAtPos(editor.state.selection.from);
-                    setSlashMenu({ open: true, query: slashMatch[1], coords: { top: coords.bottom + 8, left: coords.left } });
-                } else if (slashMenu.open) {
-                    setSlashMenu(m => ({ ...m, open: false }));
-                }
-            } catch {
-                setSlashMenu(m => ({ ...m, open: false }));
-            }
+            updateSlashMenu(editor);
         },
         editorProps: {
             attributes: { class: 'outline-none min-h-[400px] text-gray-200 leading-relaxed' },
@@ -138,7 +105,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                     const file = event.dataTransfer.files[0];
                     if (file.type.startsWith('image/')) {
                         event.preventDefault();
-                        handleImageFile(file);
+                        imageFileHandlerRef.current?.(file);
                         return true;
                     }
                 }
@@ -150,7 +117,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                     for (const item of items) {
                         if (item.type.startsWith('image/')) {
                             event.preventDefault();
-                            handleImageFile(item.getAsFile());
+                            imageFileHandlerRef.current?.(item.getAsFile());
                             return true;
                         }
                     }
@@ -160,6 +127,13 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         },
     });
 
+    const closeImageMenu = useCallback(() => setShowImageMenu(false), []);
+    const { uploading, uploadError, availableImages, loadingImages, handleImageFile, handleImageInputChange, loadAvailableImages, insertExistingImage, handleAudioFile, handleDocumentUpload } = useMediaUploads({ editor, token, closeImageMenu });
+    useEffect(() => { imageFileHandlerRef.current = handleImageFile; }, [handleImageFile]);
+
+    const { applyTextColor, clearTextColor } = useTextColor(editor);
+    const { fontSize, setFontSize, lineHeight, setLineHeight, codeBlockMeta, setCodeBlockMeta } = useSelectionFormat(editor);
+
     // Sincronizar value externo
     useEffect(() => {
         if (!editor) return;
@@ -168,29 +142,6 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         }
     }, [value, editor]);
 
-    // Sincronizar selector de tamaño
-    useEffect(() => {
-        if (!editor) return;
-        const update = () => {
-            const attrs = editor.getAttributes('textStyle');
-            setFontSize(attrs.fontSize || '16px');
-            // Sync line-height
-            const blockAttrs = editor.getAttributes('paragraph');
-            const headingAttrs = editor.getAttributes('heading');
-            setLineHeight(blockAttrs.lineHeight || headingAttrs.lineHeight || '1.8');
-            if (editor.isActive('codeBlock')) {
-                const codeAttrs = editor.getAttributes('codeBlock');
-                setCodeBlockMeta({
-                    filename: codeAttrs.filename || '',
-                    title: codeAttrs.title || '',
-                });
-            }
-        };
-        editor.on('selectionUpdate', update);
-        editor.on('transaction',     update);
-        return () => { editor.off('selectionUpdate', update); editor.off('transaction', update); };
-    }, [editor]);
-
     // Cerrar preview con ESC
     useEffect(() => {
         if (!showPreview) return;
@@ -198,141 +149,6 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
     }, [showPreview]);
-
-    // Recoloca la barra flotante al hacer scroll en la ventana
-    useEffect(() => {
-        const toolbar = toolbarRef.current;
-        const container = editorContainerRef.current;
-        if (!toolbar || !container || fullscreen) return;
-
-        const handleScroll = () => {
-            const containerRect = container.getBoundingClientRect();
-            
-            // Si el contenedor del editor está por encima del viewport
-            if (containerRect.top <= 0) {
-                if (!toolbarFixed) {
-                    // Guardar posición y ancho exactos del toolbar
-                    setToolbarPosition({
-                        width: `${containerRect.width}px`,
-                        left: `${containerRect.left}px`,
-                    });
-                    setToolbarFixed(true);
-                }
-            } else {
-                // Si el contenedor vuelve a estar visible
-                if (toolbarFixed) {
-                    setToolbarFixed(false);
-                    setToolbarPosition({ width: 'auto', left: 'auto' });
-                }
-            }
-        };
-
-        // Ejecutar al montar para setear estado inicial
-        handleScroll();
-        
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        window.addEventListener('resize', handleScroll, { passive: true });
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', handleScroll);
-        };
-    }, [toolbarFixed, fullscreen, editorContainerRef, setToolbarFixed, setToolbarPosition, toolbarRef]);
-
-    const handleImageFile = useCallback(async (file) => {
-        if (!file || !token) return;
-        const validationError = validateImageFile(file);
-        if (validationError) {
-            setUploadError(validationError);
-            return;
-        }
-        setUploading(true);
-        setUploadError('');
-        try {
-            const uploaded = await cmsApi.uploadImage(token, file);
-            const url = uploaded.url;
-            editor?.chain().focus().setImage({ src: url, alt: file.name.replace(/\.[^.]+$/, '') }).run();
-        } catch (err) {
-            setUploadError(getUploadErrorMessage(err, 'No se ha podido subir la imagen.'));
-            console.error(err);
-        }
-        finally { setUploading(false); }
-    }, [editor, token]);
-
-    const handleImageInputChange = useCallback(async (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            await handleImageFile(file);
-            setShowImageMenu(false);
-        }
-        e.target.value = '';
-    }, [handleImageFile]);
-
-    const applyTextColor = useCallback((color) => {
-        if (!editor) return;
-
-        if (!editor.isActive('codeBlock')) {
-            editor.chain().focus().setColor(color).run();
-            return;
-        }
-
-        const { state, view } = editor;
-        const { from, to, empty } = state.selection;
-        const textStyleMark = state.schema.marks.textStyle;
-
-        if (!textStyleMark) return;
-        if (empty) {
-            editor.chain().focus().setColor(color).run();
-            return;
-        }
-
-        const currentAttrs = editor.getAttributes('textStyle') || {};
-        const nextAttrs = { ...currentAttrs, color };
-        const tr = state.tr.removeMark(from, to, textStyleMark).addMark(from, to, textStyleMark.create(nextAttrs));
-        view.dispatch(tr);
-        view.focus();
-    }, [editor]);
-
-    const clearTextColor = useCallback(() => {
-        if (!editor) return;
-
-        if (!editor.isActive('codeBlock')) {
-            editor.chain().focus().unsetColor().run();
-            return;
-        }
-
-        const { state, view } = editor;
-        const { from, to, empty } = state.selection;
-        const textStyleMark = state.schema.marks.textStyle;
-
-        if (!textStyleMark) return;
-        if (empty) {
-            editor.chain().focus().unsetColor().run();
-            return;
-        }
-
-        const currentAttrs = editor.getAttributes('textStyle') || {};
-        const { color: _unusedColor, ...restAttrs } = currentAttrs;
-        let tr = state.tr.removeMark(from, to, textStyleMark);
-        if (Object.keys(restAttrs).length > 0) {
-            tr = tr.addMark(from, to, textStyleMark.create(restAttrs));
-        }
-        view.dispatch(tr);
-        view.focus();
-    }, [editor]);
-
-    const loadAvailableImages = useCallback(async () => {
-        if (!token) return;
-        setLoadingImages(true);
-        try {
-            const images = await cmsApi.getImages(token);
-            setAvailableImages(Array.isArray(images) ? images : []);
-        } catch (err) {
-            setUploadError(getUploadErrorMessage(err, 'No se han podido cargar las imágenes guardadas.'));
-            setAvailableImages([]);
-        } finally {
-            setLoadingImages(false);
-        }
-    }, [token]);
 
     const openImageMenu = useCallback(() => {
         updateFloatingMenuPosition('image', imageToolRef.current, 352);
@@ -344,15 +160,6 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         setShowEmojiPicker(false);
         void loadAvailableImages();
     }, [imageToolRef, loadAvailableImages, updateFloatingMenuPosition]);
-
-    const insertExistingImage = useCallback((image) => {
-        if (!editor || !image?.url) return;
-        editor.chain().focus().setImage({
-            src: image.url,
-            alt: (image.filename || 'imagen').replace(/\.[^.]+$/, ''),
-        }).run();
-        setShowImageMenu(false);
-    }, [editor]);
 
     function applyLink() {
         if (!linkUrl) editor?.chain().focus().unsetLink().run();
@@ -373,79 +180,6 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         setAudioUrl('');
     }
 
-    async function handleAudioFile(e) {
-        const file = e.target.files?.[0];
-        if (!file || !token) return;
-        const validationError = validateAudioFile(file);
-        if (validationError) {
-            setUploadError(validationError);
-            e.target.value = '';
-            return;
-        }
-        setUploading(true);
-        setUploadError('');
-        try {
-            const url = await uploadAudioFile(file, token);
-            editor?.commands.insertAudio({ src: url, title: file.name });
-        } catch (err) {
-            setUploadError(getUploadErrorMessage(err, 'No se ha podido subir el audio.'));
-            console.error(err);
-        }
-        finally { setUploading(false); e.target.value = ''; }
-    }
-
-    function getActiveBlock() {
-        if (!editor) return 'p';
-        if (editor.isActive('heading', { level: 1 })) return 'h1';
-        if (editor.isActive('heading', { level: 2 })) return 'h2';
-        if (editor.isActive('heading', { level: 3 })) return 'h3';
-        if (editor.isActive('heading', { level: 4 })) return 'h4';
-        if (editor.isActive('blockquote')) return 'blockquote';
-        if (editor.isActive('codeBlock'))  return 'codeBlock';
-        return 'p';
-    }
-
-    function setBlock(v) {
-        if (!editor) return;
-        const map = { p: () => editor.chain().focus().setParagraph().run(),
-            h1: () => editor.chain().focus().setHeading({ level: 1 }).run(),
-            h2: () => editor.chain().focus().setHeading({ level: 2 }).run(),
-            h3: () => editor.chain().focus().setHeading({ level: 3 }).run(),
-            h4: () => editor.chain().focus().setHeading({ level: 4 }).run(),
-            blockquote: () => editor.chain().focus().setBlockquote().run(),
-            codeBlock:  () => editor.chain().focus().setCodeBlock().run(),
-        };
-        map[v]?.();
-    }
-
-    // Document upload
-    async function handleDocumentUpload(e) {
-        const file = e.target.files?.[0];
-        if (!file || !token) return;
-        const validationError = validateDocumentFile(file);
-        if (validationError) {
-            setUploadError(validationError);
-            e.target.value = '';
-            return;
-        }
-        setUploading(true);
-        setUploadError('');
-        try {
-            const data = await cmsApi.uploadDocument(token, file);
-            editor?.commands.insertDocument({
-                src: data.url,
-                filename: data.filename,
-                fileType: data.fileType,
-                fileSize: data.fileSize,
-            });
-        } catch (err) {
-            setUploadError(getUploadErrorMessage(err, 'No se ha podido subir el documento.'));
-            console.error(err);
-        }
-        finally { setUploading(false); e.target.value = ''; }
-    }
-
-    // Markdown mode toggle
     function toggleMarkdownMode() {
         if (!editor) return;
         if (!markdownMode) {
@@ -479,12 +213,12 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         editor.commands.updateAttributes('codeBlock', patch);
     }
 
-    // Keyboard hint contextual: debe estar ANTES del early return para respetar las reglas de hooks
+    // Debe ir ANTES del early return para respetar las reglas de hooks
     const contextHint = useMemo(() => {
         if (!editor) return '';
-        if (editor.isActive('table')) 
+        if (editor.isActive('table'))
             return 'Tab: siguiente celda · Shift+Tab: anterior · Ctrl+Shift+X: eliminar tabla';
-        if (editor.isActive('codeBlock')) 
+        if (editor.isActive('codeBlock'))
             return 'Shift+Enter: salir del bloque de código';
         if (editor.isActive('link'))
             return 'Ctrl+K: editar enlace · Ctrl+Shift+K: quitar enlace';
@@ -532,9 +266,9 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                 <FormatGroup
                     editor={editor}
                     fontSize={fontSize}
-                    getActiveBlock={getActiveBlock}
+                    getActiveBlock={() => getActiveBlock(editor)}
                     lineHeight={lineHeight}
-                    setBlock={setBlock}
+                    setBlock={value => setBlock(editor, value)}
                     setFontSize={setFontSize}
                     setLineHeight={setLineHeight}
                 />
@@ -723,7 +457,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
                     editor={editor}
                     coords={slashMenu.coords}
                     query={slashMenu.query}
-                    onClose={() => setSlashMenu(m => ({ ...m, open: false }))}
+                    onClose={closeSlashMenu}
                     onAction={handleSlashAction}
                 />
             )}

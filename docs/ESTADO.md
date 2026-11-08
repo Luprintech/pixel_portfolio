@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08 (modularización de la página del editor de posts).
+Última actualización: 2026-11-08 (hooks del editor rico).
 
 ## Hecho
 
@@ -49,20 +49,25 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - Borradas las 32 claves `about.expertise_*` de los dos idiomas, que quedaron sin uso al eliminar la página Expertise.
 - `/clasico` ya estaba en el sitemap del backend.
 
+### Hooks del editor rico
+- `RichEditor.jsx` pasó de 743 a unas 480 líneas, la mayoría ya JSX. La lógica se repartió en `editor/hooks/`: `useMediaUploads` (imagen, audio, documento y biblioteca), `useTextColor`, `useSelectionFormat`, `useSlashMenu` y `usePinnedTools`.
+- El efecto de la barra fija al hacer scroll pasó a `useFloatingMenus`, que ya tenía su estado; el selector de tipo de bloque a `editor/blockCommands.js`.
+- Prueba nueva de `blockCommands`.
+
 ### Arranque en local
 - `arrancar.cmd` (doble clic) deja todo el entorno en marcha: comprueba `backend/.env`, abre Docker Desktop si está cerrado, levanta PostgreSQL en un contenedor de desarrollo y arranca backend y frontend como dos pestañas de una misma ventana de Windows Terminal. El móvil se abre en otra ventana con las direcciones para entrar por la red Wi-Fi. Si algún servidor ya está en marcha, no lo lanza de nuevo. Sin Windows Terminal usa ventanas de cmd.
 
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
 - Documentación de contexto: `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN.md` y este archivo.
-- Tests al cierre de esta fecha: frontend 95 y backend 60, todos en verde; build y lint sin errores.
+- Tests al cierre de esta fecha: frontend 98 y backend 60, todos en verde; build y lint sin errores.
 
 ## Pendiente
 
 ### Estructura y calidad de código
 - `editor/extensions/contentButton.jsx` (unas 670 líneas) e `imageGrid.jsx` (unas 590) aún tienen la vista y la extensión juntas: separar el panel de personalización de cada una.
 - `editor/image/ResizableImageView.jsx` sigue en unas 650 líneas: separar la barra de imagen y la capa de anotaciones.
-- `RichEditor.jsx` todavía tiene los manejadores de subida, color, enlaces y bloques (unas 450 líneas de lógica): llevarlos a hooks por tema. `MediaGroup` recibe 34 props, señal de que ese estado debería agruparse.
+- `MediaGroup` recibe unas 34 props y `RichEditor.jsx` sigue guardando 18 booleanos de menús abiertos: agrupar ese estado (por ejemplo un único menú abierto a la vez) simplificaría las props de todos los grupos de la barra.
 - Revisar con el mismo criterio el resto de comentarios en español: tono natural, explican el porqué.
 - Revisar `console.warn` y `console.log` que queden con mensajes en inglés.
 
