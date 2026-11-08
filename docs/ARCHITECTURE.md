@@ -30,6 +30,15 @@ Modelo MVC general, no estricto: el frontend es la vista, el backend lleva la l�
 
 `/sobre-mi` y `/portfolio/desarrollo-web` redirigen a `/clasico#sobre-mi` y `/proyectos`.
 
+### Editor de posts
+
+`components/cms/RichEditor.jsx` monta el editor Tiptap y reparte el trabajo en `components/cms/editor/`:
+
+- `toolbar/groups/` y `panels/`: la barra de herramientas y los paneles (código, tabla, Markdown, vista previa, estado).
+- `image/`, `video/`, `audio/`, `callout/`, `mermaid/` y `tables/`: un módulo por tipo de nodo, con su vista y su extensión.
+- `blocks/` y `extensions.jsx`: bloques especiales del blog (encuestas, líneas de tiempo, citas...).
+- `editorExtensions.js`, `pasteUtils.js` y `hooks/`: configuración y lógica compartida.
+
 ### CMS (`/bitacora`)
 
 Protegido por login. Subrutas: `inicio`, `posts`, `proyectos`, `imagenes`, `cv`, `chat`, `usuarios`, `mi-perfil`, con editores de posts y proyectos (Tiptap).

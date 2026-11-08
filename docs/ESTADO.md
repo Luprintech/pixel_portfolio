@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08.
+Última actualización: 2026-11-08 (refactor de RichEditor).
 
 ## Hecho
 
@@ -21,15 +21,28 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ### Código y comentarios
 - Comentarios en inglés traducidos al español, banderines decorativos quitados y rayas largas sustituidas.
 
+### Modularización del editor de posts
+- `components/cms/RichEditor.jsx` pasó de 3.296 a unas 740 líneas sin cambiar su comportamiento.
+- Imagen, vídeo, audio, avisos, diagramas Mermaid y tablas viven ahora en módulos propios bajo `components/cms/editor/`.
+- La barra de herramientas y los paneles (código, tabla, Markdown, vista previa, estado) son componentes independientes en `editor/toolbar/groups/` y `editor/panels/`.
+- La lista de extensiones, la limpieza del HTML pegado y el cálculo de menús flotantes salieron a `editorExtensions.js`, `pasteUtils.js` y `hooks/useFloatingMenus.js`.
+- Nueva prueba `RichEditor.test.jsx` con el documento cargado y una instantánea de la barra de herramientas, para detectar cambios no intencionados al reorganizar.
+
+### Arranque en local
+- `arrancar.cmd` (doble clic) comprueba `backend/.env`, instala dependencias la primera vez y abre backend y frontend como dos pestañas de la misma ventana de Windows Terminal. Sin Windows Terminal usa dos ventanas de cmd. Muestra las direcciones para entrar desde el móvil por la red Wi-Fi.
+
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
 - Documentación de contexto: `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN.md` y este archivo.
-- Tests al cierre de esta fecha: frontend 81 y backend 60, todos en verde; build y lint sin errores.
+- Tests al cierre de esta fecha: frontend 84 y backend 60, todos en verde; build y lint sin errores.
 
 ## Pendiente
 
 ### Estructura y calidad de código
-- Modularizar los archivos más grandes: `components/cms/RichEditor.jsx` (más de 2.300 líneas), `components/cms/editor/extensions.jsx` y `pages/cms/BitacoraPostEditor.jsx`.
+- Modularizar `components/cms/editor/extensions.jsx` (unas 2.350 líneas con todas las extensiones de bloques) y `pages/cms/BitacoraPostEditor.jsx`.
+- `editor/image/ResizableImageView.jsx` sigue en unas 650 líneas: separar la barra de imagen y la capa de anotaciones.
+- `RichEditor.jsx` todavía tiene los manejadores de subida, color, enlaces y bloques (unas 450 líneas de lógica): llevarlos a hooks por tema. `MediaGroup` recibe 34 props, señal de que ese estado debería agruparse.
+- Tiptap avisa de extensiones duplicadas (`link` y `underline`) porque `StarterKit` ya las incluye. No afecta al resultado, pero conviene quitar las repetidas.
 - Revisar con el mismo criterio el resto de comentarios en español: tono natural, explican el porqué.
 - Revisar `console.warn` y `console.log` que queden con mensajes en inglés.
 - Los saltos de línea del repo mezclan LF y CRLF (Git avisa en cada commit): añadir un `.gitattributes`.
@@ -56,6 +69,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 | El CMS conserva sus colores fijos | Es una zona privada; solo recibe tokens para no romper el editor. |
 | Se conservan los colores y gradientes de los bloques del blog (`lib/gradients.js`, botones y avisos del editor) | Son opciones que elige quien escribe cada post, no el tema de la web. |
 | Repositorio nuevo con un único commit inicial | Partir de un historial limpio y dejar el repo anterior intacto como archivo. |
+| Refactor del editor hecho de forma mecánica y verificado con prueba de humo | Con un archivo de más de 3.000 líneas, mover código a mano es arriesgado; la prueba y el lint garantizan que no cambia lo que ve quien escribe. |
 | Nunca se commitea directo a `main`; cada funcionalidad va en rama y PR, con squash | Historial ordenado y `main` siempre estable. Detalle en `CLAUDE.md`. |
 | "mergea" solo si pasan todos los tests | Evita que `main` tenga fallos. |
 | La autoría de commits y PRs es solo de Guadalupe | Todo el trabajo es suyo; sin líneas `Co-Authored-By` ni menciones a herramientas. |
