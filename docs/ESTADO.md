@@ -44,6 +44,11 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - `editorExtensions.js` configura `link` desde `StarterKit` y ya no registra `Link` y `Underline` por separado: desaparece el aviso de Tiptap por extensiones duplicadas y el HTML generado es el mismo.
 - Añadido `.gitattributes` (`* text=auto`, y CRLF para los `.cmd`) y normalizados a LF los 21 archivos que estaban con CRLF o mezclados. Es un cambio solo de saltos de línea, sin tocar contenido.
 
+### Dependencias y textos sin uso
+- Quitadas las dependencias directas `@tiptap/extension-link` y `@tiptap/extension-underline`: `StarterKit` ya las incluye. Siguen en la lista de `editor-vendor` de `vite.config.js` para que continúen en el mismo chunk.
+- Borradas las 32 claves `about.expertise_*` de los dos idiomas, que quedaron sin uso al eliminar la página Expertise.
+- `/clasico` ya estaba en el sitemap del backend.
+
 ### Arranque en local
 - `arrancar.cmd` (doble clic) deja todo el entorno en marcha: comprueba `backend/.env`, abre Docker Desktop si está cerrado, levanta PostgreSQL en un contenedor de desarrollo y arranca backend y frontend como dos pestañas de una misma ventana de Windows Terminal. El móvil se abre en otra ventana con las direcciones para entrar por la red Wi-Fi. Si algún servidor ya está en marcha, no lo lanza de nuevo. Sin Windows Terminal usa ventanas de cmd.
 
@@ -58,19 +63,16 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - `editor/extensions/contentButton.jsx` (unas 670 líneas) e `imageGrid.jsx` (unas 590) aún tienen la vista y la extensión juntas: separar el panel de personalización de cada una.
 - `editor/image/ResizableImageView.jsx` sigue en unas 650 líneas: separar la barra de imagen y la capa de anotaciones.
 - `RichEditor.jsx` todavía tiene los manejadores de subida, color, enlaces y bloques (unas 450 líneas de lógica): llevarlos a hooks por tema. `MediaGroup` recibe 34 props, señal de que ese estado debería agruparse.
-- `@tiptap/extension-link` y `@tiptap/extension-underline` siguen como dependencias directas en `frontend/package.json` aunque ya no se importan: `StarterKit` las trae. Quitarlas y actualizar el lockfile.
 - Revisar con el mismo criterio el resto de comentarios en español: tono natural, explican el porqué.
 - Revisar `console.warn` y `console.log` que queden con mensajes en inglés.
 
 ### Funcionalidad
-- Añadir `/clasico` al sitemap del backend (`backend/lib/sitemap.js`).
 - Los sprites laterales y de espalda de la princesa son versiones simplificadas.
-- Claves de i18n `expertise_*` en `frontend/src/locales/*/common.json`, probablemente sin uso tras borrar la página Expertise.
 - Bloques del CMS `AudioPlayer.jsx` y `ChartsBlock.jsx`: no se importan en ningún sitio. Decidir si se conectan o se borran.
 - El chunk del juego (`boot`) pesa unos 1,4 MB por Phaser; está cargado de forma diferida, pero conviene medirlo.
 
 ### Infraestructura
-- No hay pipeline de despliegue ni CI. Valorar un workflow de GitHub Actions que ejecute build, lint y tests en cada PR.
+- El CI (`.github/workflows/ci.yml`) ya ejecuta lint, tests y build del frontend y tests y comprobación de sintaxis del backend en cada PR. Falta el despliegue automatizado.
 
 ## Decisiones
 
