@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08 (modularización de las extensiones del editor).
+Última actualización: 2026-11-08 (modularización de la página del editor de posts).
 
 ## Hecho
 
@@ -33,18 +33,24 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - `joinClassNames`, que compartían tres bloques, vive en `extensions/classNames.js`.
 - Tests (84), lint y build sin cambios respecto a antes.
 
+### Modularización de la página del editor de posts
+- `pages/cms/BitacoraPostEditor.jsx` pasó de 1.090 a unas 430 líneas: la página conserva el estado, la carga, el autoguardado y el envío; el resto salió a módulos.
+- Interfaz en `components/cms/postEditor/`: cabecera, metadatos, portada, opciones (destacado y TOC), revisiones, SEO, etiquetas, aviso y cargador.
+- Lógica en `lib/postEditorForm.js` (formulario inicial, conversión post a formulario, etiquetas, palabras) y `lib/postDrafts.js` (borradores en localStorage); hooks `useToast` y `useCoverUpload`.
+- La carga de un post y la restauración de una revisión comparten ahora `postToForm`, antes eran dos copias del mismo bloque.
+- Pruebas nuevas: `BitacoraPostEditor.test.jsx` (render, slug automático, post publicado) y `postEditorForm.test.js`. Frontend pasa a 95 tests.
+
 ### Arranque en local
 - `arrancar.cmd` (doble clic) deja todo el entorno en marcha: comprueba `backend/.env`, abre Docker Desktop si está cerrado, levanta PostgreSQL en un contenedor de desarrollo y arranca backend y frontend como dos pestañas de una misma ventana de Windows Terminal. El móvil se abre en otra ventana con las direcciones para entrar por la red Wi-Fi. Si algún servidor ya está en marcha, no lo lanza de nuevo. Sin Windows Terminal usa ventanas de cmd.
 
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
 - Documentación de contexto: `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN.md` y este archivo.
-- Tests al cierre de esta fecha: frontend 84 y backend 60, todos en verde; build y lint sin errores.
+- Tests al cierre de esta fecha: frontend 95 y backend 60, todos en verde; build y lint sin errores.
 
 ## Pendiente
 
 ### Estructura y calidad de código
-- Modularizar `pages/cms/BitacoraPostEditor.jsx`.
 - `editor/extensions/contentButton.jsx` (unas 670 líneas) e `imageGrid.jsx` (unas 590) aún tienen la vista y la extensión juntas: separar el panel de personalización de cada una.
 - `editor/image/ResizableImageView.jsx` sigue en unas 650 líneas: separar la barra de imagen y la capa de anotaciones.
 - `RichEditor.jsx` todavía tiene los manejadores de subida, color, enlaces y bloques (unas 450 líneas de lógica): llevarlos a hooks por tema. `MediaGroup` recibe 34 props, señal de que ese estado debería agruparse.
