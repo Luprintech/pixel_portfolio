@@ -70,8 +70,5 @@ Frontend: `npm run build`, `npm run lint` y `npm test` desde `frontend/`. Backen
 
 ## Pendientes conocidos
 
-- Añadir `/clasico` al sitemap del backend.
 - Sprites laterales y de espalda de la princesa son versiones simplificadas.
-- Claves de i18n `expertise_*` en `frontend/src/locales/*/common.json` quizá sin uso tras borrar Expertise.
-- Bloques CMS `AudioPlayer.jsx` y `ChartsBlock.jsx` no se importan en ningún sitio: revisar si son funciones previstas.
 - Los bloques de contenido del blog (gradientes de `lib/gradients.js`, botones y avisos del editor) conservan colores propios: son opciones del autor, no el tema.

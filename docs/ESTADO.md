@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-08 (menús de la barra del editor).
+Última actualización: 2026-11-08 (bloques sin uso borrados).
 
 ## Hecho
 
@@ -65,6 +65,10 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - Los 10 booleanos de menús abiertos de `RichEditor.jsx` (enlace, imagen, YouTube, audio, colores, resaltado, avisos, Mermaid, emojis, insertar y colores de tabla) se sustituyeron por el hook `editor/hooks/useToolbarMenus.js`, que guarda solo el nombre del menú abierto. Ya no hace falta que cada botón cierre a mano los demás.
 - Cada grupo de la barra recibe un único `menus` en lugar de un par `show` y `setShow` por menú (`MediaGroup` baja de unas 34 a unas 26 props) y `useFloatingMenus` solo recibe el menú abierto. `RichEditor.jsx` queda en unas 440 líneas. Prueba nueva del hook; frontend pasa a 101 tests.
 
+### Bloques del CMS sin uso
+- Borrados `blocks/AudioPlayer.jsx` y `blocks/ChartsBlock.jsx`: nada los importaba ni estaban registrados en el editor, así que ningún post podía contenerlos. El audio ya lo cubre la extensión de audio del editor.
+- Quitada la dependencia `recharts`, que solo usaba `ChartsBlock`.
+
 ### Mensajes de consola en español
 - Traducidos los `console.error`, `console.warn` y `console.log` con texto en inglés (renderizadores del blog, selector de GIFs, vista previa de PDF, utilidades del portapapeles, ErrorBoundary, analítica y el script de migraciones del backend) y quitados los emojis de la salida de `migrate.js`.
 
@@ -83,7 +87,6 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ### Funcionalidad
 - Los sprites laterales y de espalda de la princesa son versiones simplificadas.
-- Bloques del CMS `AudioPlayer.jsx` y `ChartsBlock.jsx`: no se importan en ningún sitio. Decidir si se conectan o se borran.
 - El chunk del juego (`boot`) pesa unos 1,4 MB por Phaser; está cargado de forma diferida, pero conviene medirlo.
 
 ### Infraestructura
@@ -101,6 +104,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 | El CMS conserva sus colores fijos | Es una zona privada; solo recibe tokens para no romper el editor. |
 | Se conservan los colores y gradientes de los bloques del blog (`lib/gradients.js`, botones y avisos del editor) | Son opciones que elige quien escribe cada post, no el tema de la web. |
 | Repositorio nuevo con un único commit inicial | Partir de un historial limpio y dejar el repo anterior intacto como archivo. |
+| Se borran `AudioPlayer` y `ChartsBlock` en lugar de conectarlos | Nunca llegaron a registrarse en el editor y no hay contenido que los use; si hacen falta más adelante, se recuperan del historial de git. |
 | Refactor del editor hecho de forma mecánica y verificado con prueba de humo | Con un archivo de más de 3.000 líneas, mover código a mano es arriesgado; la prueba y el lint garantizan que no cambia lo que ve quien escribe. |
 | Nunca se commitea directo a `main`; cada funcionalidad va en rama y PR, con squash | Historial ordenado y `main` siempre estable. Detalle en `CLAUDE.md`. |
 | "mergea" solo si pasan todos los tests | Evita que `main` tenga fallos. |
