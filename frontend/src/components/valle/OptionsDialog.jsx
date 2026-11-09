@@ -63,7 +63,7 @@ export default function OptionsDialog({ open, onClose, saved, onErase, actions =
             secundario, porque el botón principal es "Sí, borrar". */}
         <div className="flex items-center justify-between gap-3">
           <h2 id="options-title" tabIndex={-1} className="px-title text-3xl outline-none sm:text-4xl [@media(max-height:600px)]:text-3xl" style={{ color: tone('ink', PAL.bone) }}>{copy.options.title}</h2>
-          <button type="button" className={`${asking ? 'px-btn px-btn--bone' : 'px-btn'} ${BTN}`} onClick={onClose}>{copy.options.close}</button>
+          <button type="button" data-sound="back" className={`${asking ? 'px-btn px-btn--bone' : 'px-btn'} ${BTN}`} onClick={onClose}>{copy.options.close}</button>
         </div>
 
         <div className="px-text mt-4 grid gap-x-8 gap-y-4 sm:mt-4 sm:gap-y-6 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_1fr] [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
@@ -96,7 +96,7 @@ export default function OptionsDialog({ open, onClose, saved, onErase, actions =
                 <p className="text-sm">{copy.options.eraseAsk}</p>
                 <div className="mt-2 flex flex-wrap gap-4">
                   <button type="button" className={`px-btn ${BTN}`} onClick={erase}>{copy.options.eraseYes}</button>
-                  <button type="button" className={`px-btn px-btn--bone ${BTN}`} onClick={() => setAsking(false)}>{copy.options.eraseNo}</button>
+                  <button type="button" data-sound="back" className={`px-btn px-btn--bone ${BTN}`} onClick={() => setAsking(false)}>{copy.options.eraseNo}</button>
                 </div>
               </div>
             )}

@@ -9,6 +9,7 @@ import { LUPE_X, LUPE_Y, TITLE_H, TITLE_W, createTitleScene } from '../game/titl
 import OptionsDialog from '../components/valle/OptionsDialog'
 import { PAL } from '../game/palette'
 import { clearSave, loadSave } from '../game/save'
+import { useUiSounds } from '../hooks/useUiSounds'
 import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
 import { prefersReducedMotion } from '../lib/reducedMotion'
 import { playPetSound } from '../lib/petSounds'
@@ -50,6 +51,7 @@ export default function Title() {
     setSaved(null)
   }
 
+  useUiSounds()
   useEffect(() => acquireAmbience(), [])
 
   // Con la portada ya en marcha se adelanta el valle (el código de Phaser y sus dibujos) para que "Continuar"

@@ -149,7 +149,7 @@ export default function Editor({ look, pet, name, petName, replacing, returning,
               <h1 className="px-title text-5xl lg:text-4xl xl:text-5xl" style={{ color: tone('ink', PAL.bone) }}>{copy.editor.title}</h1>
               {/* En móvil "Volver al inicio" vive en la barra fija de abajo, que siempre se ve. */}
               <div className="hidden lg:block">
-                <Link className="px-btn px-btn--bone !min-h-[44px] !px-3 shrink-0" to="/">{copy.editor.back}</Link>
+                <Link className="px-btn px-btn--bone !min-h-[44px] !px-3 shrink-0" data-sound="back" to="/">{copy.editor.back}</Link>
               </div>
             </div>
             <p className="px-text mt-4" style={{ color: MUTED }}>{copy.editor.hint}</p>
@@ -250,7 +250,7 @@ export default function Editor({ look, pet, name, petName, replacing, returning,
             <button type="button" className="px-btn px-btn--bone whitespace-nowrap !px-2 lg:grow" onClick={announce(onReset, copy.editor.resetDone)}>{copy.editor.reset}</button>
             {/* Cuarto hueco de la rejilla de 2×2 en móvil: la barra no crece y el botón queda siempre a mano. */}
             <div className="grid lg:hidden">
-              <Link className="px-btn px-btn--bone !px-2 text-center" to="/">{copy.editor.back}</Link>
+              <Link className="px-btn px-btn--bone !px-2 text-center" data-sound="back" to="/">{copy.editor.back}</Link>
             </div>
           </div>
           <p role="status" className="sr-only">{status}</p>

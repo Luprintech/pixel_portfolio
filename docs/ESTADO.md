@@ -6,6 +6,11 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Sonidos de botones (16 bits)
+- `lib/uiSounds.js` sintetiza cinco pitidos de consola con Web Audio (`select`, `confirm`, `back`, `tab`, `pick`) y `hooks/useUiSounds.js` los dispara con un único oyente de clics en la portada y en el valle. Cada botón elige su sonido por su clase o su papel ARIA, y `data-sound` lo fuerza (`back`) o lo calla (`off`).
+- Salen por el bus de efectos del motor de audio, así que obedecen el volumen de efectos, el general y el silencio. No hay archivos de audio nuevos.
+- Visión: refuerza la inmersión de la fase del juego sin esconder información profesional; `/clasico` y el CMS no suenan.
+
 ### Rediseño visual: Valle del Bucle
 - Nueva capa visual: overworld pixel art estilo Zelda con Phaser 3 en `/valle`, portada en `/` y modo clásico en HTML en `/clasico`.
 - Casas para Sobre mí, Proyectos y Contacto, herrería para el Stack y mazmorra para el Blog. Se entra pisando la puerta.
@@ -472,6 +477,7 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 
 | Decisión | Motivo |
 | --- | --- |
+| Sonidos de botones sintetizados, no grabados | Cinco pitidos de unas décimas de segundo no justifican archivos que descargar; con Web Audio pasan por el mismo bus de efectos y el silencio los apaga sin código extra. Un oyente delegado evita un `onClick` por botón. |
 | Rediseño total con overworld Phaser más modo clásico | Quería un portfolio original y con personalidad propia, sin la estética genérica anterior. El modo clásico garantiza accesibilidad y SEO. |
 | La arquitectura (CMS, blog, API, BD) no se toca | El cambio es solo de capa visual; el backend y el contenido funcionaban. |
 | Contenido pintado una sola vez para ambos modos (`components/valle/Content.jsx`) | Evita duplicar datos y mantiene juego y modo clásico sincronizados. |

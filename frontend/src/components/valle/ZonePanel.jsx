@@ -54,7 +54,7 @@ export default function ZonePanel({ zone, onClose }) {
       >
         <header className="flex items-start justify-between gap-4 p-5 pb-2">
           <h2 id="zone-title" className="px-title text-4xl sm:text-5xl" style={{ color: tone('ink', PAL.bone) }}>{copy.zones[zone]}</h2>
-          <button ref={closeRef} type="button" className="px-btn px-btn--bone shrink-0" style={{ color: PAL.ink }} onClick={onClose}>
+          <button ref={closeRef} type="button" data-sound="back" className="px-btn px-btn--bone shrink-0" style={{ color: PAL.ink }} onClick={onClose}>
             {copy.hud.close}
           </button>
         </header>

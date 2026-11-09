@@ -14,6 +14,7 @@ import { PAL } from '../game/palette'
 import { clearSave, loadSave, sanitizeName, writeSave } from '../game/save'
 import { useThemeContext } from '../context/ThemeContext'
 import { warmWorld } from '../game/worldAssets'
+import { useUiSounds } from '../hooks/useUiSounds'
 import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
 import { tone } from '../lib/tone'
 import { useValleCopy } from '../lib/valleCopy'
@@ -27,6 +28,7 @@ const isTouch = () => typeof window !== 'undefined' && window.matchMedia?.('(poi
 
 export default function Valle() {
   const { copy } = useValleCopy()
+  useUiSounds()
   const [params] = useSearchParams()
   const mode = params.get('modo')
   // El tema se lee al entrar al valle, igual que el aspecto: dentro no hay botón para cambiarlo.
@@ -176,7 +178,7 @@ export default function Valle() {
   const hudActions = (
     <>
       <Link className={HUD_BUTTON} style={{ color: PAL.ink }} to="/clasico">{copy.hud.classic}</Link>
-      <Link className={HUD_BUTTON} style={{ color: PAL.ink }} to="/">{copy.hud.exit}</Link>
+      <Link className={HUD_BUTTON} data-sound="back" style={{ color: PAL.ink }} to="/">{copy.hud.exit}</Link>
     </>
   )
 

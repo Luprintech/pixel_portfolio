@@ -50,6 +50,7 @@ export default function Joystick({ game }) {
       <button
         type="button"
         aria-label="A"
+        data-sound="confirm"
         className="absolute bottom-10 right-8 z-20 h-16 w-16 touch-none select-none rounded-full px-title text-3xl"
         style={{ background: tone('berry', PAL.tile), color: tone('ivory', PAL.bone), boxShadow: ring, textShadow: 'none' }}
         onPointerDown={() => game?.events.emit('action')}
