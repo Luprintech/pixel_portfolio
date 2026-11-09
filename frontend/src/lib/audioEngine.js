@@ -82,9 +82,13 @@ function arm() {
   if (armed || typeof document === 'undefined') return
   armed = true
   GESTURES.forEach((name) => document.addEventListener(name, handleGesture, { capture: true, passive: true }))
-  // iOS deja el contexto "interrumpido" con una llamada o al bloquear la pantalla: se reanuda al volver.
+  // Con la página oculta (pestaña en segundo plano, panel cerrado) todo el sonido se para: el contexto se
+  // suspende y, al volver, se reanuda. También cubre el "interrumpido" de iOS con una llamada o al bloquear
+  // la pantalla, que solo se arregla reanudando.
   document.addEventListener('visibilitychange', () => {
-    if (buses && document.visibilityState === 'visible' && ctx.state !== 'running') ctx.resume().catch(() => {})
+    if (!buses) return
+    if (document.visibilityState === 'hidden') ctx.suspend().catch(() => {})
+    else if (ctx.state !== 'running') ctx.resume().catch(() => {})
   })
   subscribeSoundPrefs(refreshLevels)
 }
@@ -104,3 +108,6 @@ export function startEngineIfAllowed() {
   if (!buses && navigator.userActivation?.hasBeenActive) unlock()
   return buses
 }
+
+// En desarrollo, al recargar el módulo en caliente el contexto anterior seguiría vivo y sonando.
+if (import.meta.hot) import.meta.hot.dispose(() => ctx?.close().catch(() => {}))

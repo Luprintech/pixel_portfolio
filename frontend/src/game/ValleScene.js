@@ -2,17 +2,20 @@ import Phaser from 'phaser'
 import { PAL } from './palette.js'
 import { BRIDGE, BUILDINGS, COLS, PROPS, ROWS, SPAWN, TILE, blockedWaterTiles, treePositions } from './world.js'
 import { steppedZoom } from './viewport.js'
-import { DECK, STAIRS, climb } from './terrace.js'
+import { DECK, FOOT, STAIRS, climb } from './terrace.js'
 import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, POSES } from './avatar/index.js'
 import { shadowSprite } from './sprites.js'
-import { makeCanvas, rect } from './pixelKit.js'
+import { makeCanvas, wallRows } from './pixelKit.js'
 import { petCanvas } from './pets/index.js'
 import { bridgeAssets, buildingAssets, groundBase, groundSeasonJob, propAssets, treeAssets } from './worldAssets.js'
 import SkyLayer from './SkyLayer.js'
+import LitWindows from './litWindows.js'
 
 const SPEED = 90
 // Lo máximo que cambia la altura de los pies por fotograma al entrar en la escalera: más que la pendiente de la rampa.
 const CLIMB_EASE = 4
+// Alto del cuerpo físico de la viajera: lo que separa sus pies del borde de lo que la frena.
+const FEET_BODY = 4
 // Las ventanas encendidas y la luz de las farolas.
 const LIT_WINDOW = '#f8d77a'
 const SEASONS = ['autumn', 'winter']
@@ -41,6 +44,7 @@ export default class ValleScene extends Phaser.Scene {
     this.buildGround()
     this.solids = []
     this.doors = []
+    this.litWindows = []
     this.buildScenery()
     this.buildBuildings()
     this.buildProps()
@@ -223,25 +227,31 @@ export default class ValleScene extends Phaser.Scene {
       this.addPrepared(key, set)
       const px = b.door.x * TILE + TILE / 2 - sprite.doorCol
       const py = b.y * TILE
-      const height = sprite.canvas.height
-      // Cuerpo sólido: la parte baja del edificio. Deja libre la franja del escalón para llegar a la puerta.
-      const bodyTop = py + Math.round(height * 0.5)
-      const bodyBottom = py + height - 12
+      // Cuerpo sólido: el muro del dibujo, del borde del tejado a su base. Arriba no puede quedarse en la mitad
+      // baja (la viajera subiría al tejado y se ocultaría tras él) ni en el margen vacío del lienzo (muro
+      // invisible). Abajo, el cuerpo de la viajera mide 4 px sobre sus pies: se resta para que los pies lleguen
+      // justo a la base y no parezca que flota ante la fachada.
+      const { top, bottom } = wallRows(sprite.canvas)
+      const bodyTop = py + top
+      const bodyBottom = py + bottom - FEET_BODY
       this.placeScenery(key, px, py, [0, 0], bodyBottom)
-      this.solid(px + 2, bodyTop, sprite.canvas.width - 4, bodyBottom - bodyTop)
-      if (b.terrace) this.buildTerrace(px, py, bodyBottom)
+      if (b.terrace) this.buildTerrace(px, py, bodyTop, bodyBottom, sprite.canvas.width)
+      else this.solid(px + 2, bodyTop, sprite.canvas.width - 4, bodyBottom - bodyTop)
       this.addLitWindows(`${key}:lit`, sprite, px, py, i / (BUILDINGS.length - 1))
       if (b.zone) this.addDoor(b.zone, b.door.x, b.door.y)
     })
   }
 
-  // Escalera y cubierta de la casa: la viajera sube por ellas (ver `climb`). Una pared baja ante los peldaños
+  // Escalera y cubierta de la casa: la viajera sube por ellas (ver `climb`). Los peldaños se pisan desde la franja
+  // `FOOT`, así que bajo ellos el muro acaba antes que en el resto de la fachada. Una pared baja ante los peldaños
   // deja entrar solo por el primero, para que nadie aparezca a media altura. Mientras está arriba se dibuja por
   // encima del edificio, que en el suelo la taparía al quedar más al fondo.
-  buildTerrace(px, py, bodyBottom) {
+  buildTerrace(px, py, bodyTop, bodyBottom, width) {
     this.terrace = { px, py, depth: bodyBottom + 1 }
     const wallX = STAIRS.x + STAIRS.run
     this.solid(px + wallX, py + STAIRS.bottom + 1, DECK.left - wallX, 3)
+    this.solid(px + 2, bodyTop, DECK.left - 2, py + FOOT.top - FEET_BODY - bodyTop)
+    this.solid(px + DECK.left, bodyTop, width - DECK.left - 2, bodyBottom - bodyTop)
   }
 
   // Cambia entre suelo, escalera y cubierta: en el suelo chocan los edificios; arriba no, porque la cubierta
@@ -261,16 +271,20 @@ export default class ValleScene extends Phaser.Scene {
     if (next.mode === 'ground') return true
     // Al subir al primer peldaño desde el suelo la altura se alcanza en unos fotogramas, no de golpe.
     const y = next.mode === 'stairs' ? princess.y + Math.max(-CLIMB_EASE, Math.min(CLIMB_EASE, py + next.y - princess.y)) : py + next.y
+    const { x: beforeX, y: beforeY } = princess
     princess.setPosition(px + next.x, y)
+    // El cuerpo físico se alinea con la corrección y, en el eje donde ha topado con el límite, pierde la velocidad:
+    // si no, la física la empuja contra el borde en cada fotograma y se la devuelve, y todo vibra.
+    princess.body.updateFromGameObject()
+    if (Math.abs(princess.x - beforeX) > 0.01) princess.body.setVelocityX(0)
+    if (Math.abs(princess.y - beforeY) > 0.01) princess.body.setVelocityY(0)
     return false
   }
 
-  addLitWindows(key, { canvas, windows }, x, y, rank) {
-    if (!windows.length) return
-    const lit = makeCanvas(canvas.width, canvas.height)
-    const g = lit.getContext('2d')
-    windows.forEach((w) => rect(g, w.x, w.y, w.w, w.h, LIT_WINDOW))
-    this.addCanvas(key, lit)
+  addLitWindows(key, sprite, x, y, rank) {
+    if (!sprite.windows.length) return
+    if (this.textures.exists(key)) this.textures.remove(key)
+    this.litWindows.push(new LitWindows(this, key, sprite, x, y, LIT_WINDOW))
     this.sky.addWindows(this.add.image(x, y, key).setOrigin(0, 0), rank)
   }
 
@@ -302,16 +316,29 @@ export default class ValleScene extends Phaser.Scene {
   // Arroyo: colisión por tramos de teselas contiguas de cada fila, y destellos lentos en el agua.
   buildWater() {
     const blocked = blockedWaterTiles()
-    for (let y = 0; y < ROWS; y++) {
+    // Las filas con el mismo tramo se funden en un solo bloque: con una colisión por fila, al rozar el agua en
+    // diagonal la viajera se enganchaba en las juntas entre bloques y se sacudía.
+    const open = new Map()
+    const close = (key) => {
+      const { start, end, top, rows } = open.get(key)
+      this.solid(start * TILE, top * TILE, (end - start) * TILE, rows * TILE)
+      open.delete(key)
+    }
+    for (let y = 0; y <= ROWS; y++) {
+      const runs = new Set()
       let start = null
       for (let x = 0; x <= COLS; x++) {
-        const isWater = blocked.has(`${x},${y}`)
+        const isWater = y < ROWS && blocked.has(`${x},${y}`)
         if (isWater && start === null) start = x
         if (!isWater && start !== null) {
-          this.solid(start * TILE, y * TILE, (x - start) * TILE, TILE)
+          const key = `${start},${x}`
+          runs.add(key)
+          if (open.has(key)) open.get(key).rows++
+          else open.set(key, { start, end: x, top: y, rows: 1 })
           start = null
         }
       }
+      ;[...open.keys()].filter((key) => !runs.has(key)).forEach(close)
     }
     // Destellos: pequeños, lentos y sin repetirse a la vez.
     const tiles = [...blocked].map((k) => k.split(',').map(Number))
@@ -327,7 +354,7 @@ export default class ValleScene extends Phaser.Scene {
     this.shadow = this.add.image(SPAWN.x, SPAWN.y, 'shadow').setDepth(2)
 
     this.princess = this.physics.add.sprite(SPAWN.x, SPAWN.y, this.travellerKey, frameName('down', 0)).setOrigin(0.5, 1)
-    this.princess.body.setSize(8, 4).setOffset(5, 30)
+    this.princess.body.setSize(8, FEET_BODY).setOffset(5, 30)
     this.princess.setCollideWorldBounds(true)
     this.groundCollider = this.physics.add.collider(this.princess, this.solids)
 
@@ -400,6 +427,7 @@ export default class ValleScene extends Phaser.Scene {
     this.princess.setDepth(onGround ? py : this.terrace.depth)
     // La sombra usa la misma posición sin redondear que el sprite: si no, se desfasa de él al caminar.
     this.shadow.setPosition(this.princess.x, this.princess.y - 1)
+    this.litWindows.forEach((lit) => lit.update(this.princess))
 
     // La mascota espera al pie de la escalera: no sabe subir y se perdería tras la pared.
     if (this.companion) this.followPet(moving && onGround, px, py, delta)

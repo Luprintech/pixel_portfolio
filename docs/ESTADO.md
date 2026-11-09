@@ -6,6 +6,14 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Colisiones del valle: ventanas, tejados y vibración (2026-11-10)
+- Las ventanas encendidas se pintan por encima del oscurecimiento y tapaban a la viajera al pasar por delante. `game/litWindows.js` recorta la silueta del personaje en esa capa mientras se solapan.
+- El cuerpo sólido de cada edificio es su muro, del borde del tejado a su base (`wallRows` en `pixelKit.js`, que ignora el margen vacío del lienzo, las chimeneas y las juntas sueltas de abajo). Antes solo cubría la mitad baja: la viajera subía al tejado y quedaba oculta tras él, y por delante sus pies se quedaban 8 px por encima de la fachada. Ahora llegan justo a la base. Bajo la escalera de la casa de Lupe el muro acaba antes (`FOOT`) para poder empezar a subir.
+- El arroyo funde las filas con el mismo tramo en un solo bloque de colisión: con uno por fila se enganchaba en las juntas al rozarlo en diagonal.
+- En la escalera y la cubierta, al topar con el límite se alinea el cuerpo físico con la posición corregida y se anula la velocidad en ese eje; antes la física la empujaba y se la devolvía en cada fotograma, y la cámara vibraba.
+- Audio: con la página oculta el contexto de Web Audio se suspende y la música se pausa (`audioEngine.js`, `backgroundMusic.js`), y en desarrollo la recarga en caliente apaga el módulo anterior para que no quede música huérfana. Un fundido de salida solapado con otro ya no deja un intervalo repitiéndose. Pendiente: confirmar con la usuaria que ya no queda música al salir del valle.
+- Comprobado en el navegador (posición y cámara estables al empujar contra muros, agua, escalera y cubierta). Pendiente: revisar de noche y en móvil con joystick, y si queda algún objeto con cuerpo más pequeño que su dibujo.
+
 ### Casa de Lupe en la entrada, con escalera y cubierta (2026-11-09)
 - La casa (`id: 'about'`) pasó del oeste al hueco junto a la entrada del sur (`world.js`, x 20 a 35, puerta en el camino del sur). Se quitó el ramal de camino que llevaba a su sitio anterior y el hueco que dejó se llenó con un grupo de árboles.
 - `homeSprite` (`buildings/homes.js`) se redibujó a 256×160: escalera exterior de madera de ocho peldaños con pasamanos, cubierta con balaustrada, sombrilla, mesa, sillas, telescopio y guirnalda de bombillas, y en la casa buhardilla, esquinas de piedra, hiedra, marquesina, farol, macetas y la placa de Khalessi sobre la puerta.

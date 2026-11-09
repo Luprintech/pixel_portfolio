@@ -127,6 +127,15 @@ function switchTrack(name) {
   else fadeOut(begin)
 }
 
+// Sin motor de audio el contexto no la suspende: con la página oculta se pausa el elemento y, al volver,
+// se retoma si alguien la sigue usando.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') audio?.pause()
+    else if (users > 0 && getSoundPrefs().music > 0 && snapshot.available && snapshot.playing) start()
+  })
+}
+
 // Con la música bloqueada por el navegador, el primer gesto del visitante la hace sonar. En iPhone
 // la reproducción tiene que arrancar dentro del propio gesto, por eso se pide al motor de audio.
 onEngineGesture(() => {
@@ -162,6 +171,8 @@ export function acquireMusic(name = 'welcome') {
 // Fundido de salida: con el motor, bajando la ganancia del bus (única forma que funciona en iPhone);
 // sin él, el volumen del elemento. Al terminar se para y, si se pasa `then`, se llama después.
 function fadeOut(then) {
+  // Dos fundidos a la vez dejarían un intervalo huérfano repitiendo `finish` para siempre.
+  clearInterval(fadeTimer)
   const finish = () => {
     cancelFade()
     stop()
@@ -204,3 +215,13 @@ export const subscribeMusic = (listener) => {
   return () => listeners.delete(listener)
 }
 export const getMusicSnapshot = () => snapshot
+
+// En desarrollo, al recargar el módulo en caliente el elemento de audio del módulo anterior seguiría sonando
+// sin que nadie pudiera pararlo; se apaga aquí.
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    clearInterval(fadeTimer)
+    clearTimeout(graceTimer)
+    audio?.pause()
+  })
+}

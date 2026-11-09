@@ -324,3 +324,6 @@ export function acquireAmbience() {
     releaseTimer = setTimeout(teardown, RELEASE_MS)
   }
 }
+
+// En desarrollo, al recargar el módulo en caliente el ambiente anterior seguiría sonando.
+if (import.meta.hot) import.meta.hot.dispose(teardown)

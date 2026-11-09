@@ -104,3 +104,19 @@ export function ellipse(g, cx, cy, rx, ry, color) {
     }
   }
 }
+
+// Filas del dibujo que cuentan como muro: de la primera a la última que ocupan al menos `share` de lo que ocupa
+// la más ancha. Se salta el margen vacío, las chimeneas que sobresalen y las sombras o juntas sueltas de abajo, que
+// no deben frenar a quien pasa. Devuelve `{ top, bottom }` (bottom es la fila siguiente a la última).
+export function wallRows(canvas, share = 0.5) {
+  const { width, height } = canvas
+  const { data } = canvas.getContext('2d').getImageData(0, 0, width, height)
+  const counts = Array.from({ length: height }, (_, y) => {
+    let n = 0
+    for (let x = 0; x < width; x++) if (data[(y * width + x) * 4 + 3] > 0) n++
+    return n
+  })
+  const limit = Math.max(...counts) * share
+  const wide = (n) => n >= limit
+  return { top: Math.max(0, counts.findIndex(wide)), bottom: counts.findLastIndex(wide) + 1 }
+}
