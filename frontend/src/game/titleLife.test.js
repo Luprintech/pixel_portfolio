@@ -28,7 +28,7 @@ describe('titleLife', () => {
       const say = lifeAt(ms, skyOf(CLEAR)).say
       if (say && keys[keys.length - 1] !== say.key) keys.push(say.key)
     }
-    expect(keys).toEqual(['hello', 'welcome', 'journey', 'classic'])
+    expect(keys).toEqual(['hello', 'welcome1', 'welcome2', 'journey1', 'journey2', 'journey3', 'classic1', 'classic2'])
   })
 
   it('la bienvenida solo se cuenta una vez; después empieza el bucle', () => {
@@ -37,7 +37,7 @@ describe('titleLife', () => {
       const say = lifeAt(ms, skyOf(CLEAR)).say
       if (say) intro.add(say.key)
     }
-    ;['hello', 'welcome', 'journey', 'classic'].forEach((key) => expect(intro.has(key)).toBe(false))
+    ;['hello', 'welcome1', 'welcome2', 'journey1', 'journey2', 'journey3', 'classic1', 'classic2'].forEach((key) => expect(intro.has(key)).toBe(false))
     expect(intro.has('meetCat')).toBe(true)
   })
 
@@ -146,6 +146,16 @@ describe('titleLife', () => {
     expect(eventsBetween(meowAt, meowAt + 100)).toEqual([])
   })
 
+  it('con tormenta la gata no se acerca ni se acaricia ni maúlla', () => {
+    const stormy = { ...CLEAR, storm: 1, rain: 1 }
+    const frames = loopOf(stormy)
+    const keys = new Set(frames.map((f) => f.say?.key))
+    ;['notice', 'meetCat', 'petting', 'meow', 'catLoves'].forEach((key) => expect(keys.has(key), key).toBe(false))
+    expect(frames.some((f) => f.pose === 'pet')).toBe(false)
+    expect(frames.some((f) => f.cat.x === CAT_NEAR[0] && f.cat.y === CAT_NEAR[1])).toBe(false)
+    expect(eventsBetween(INTRO_MS, INTRO_MS + LOOP_MS * 3, skyOf(stormy))).toEqual([])
+  })
+
   it('el comentario del tiempo se ajusta al cielo', () => {
     expect(ambientKey({ ...CLEAR, storm: 1, rain: 1 })).toBe('ambientStorm')
     expect(ambientKey({ ...CLEAR, rain: 0.65 })).toBe('ambientRain')
@@ -163,14 +173,16 @@ describe('titleLife', () => {
         if (say?.key.startsWith('tip')) tips.add(say.key)
       }
     }
-    expect(tips.size).toBe(3)
+    // Tres consejos, y el último en dos bocadillos.
+    expect([...tips].sort()).toEqual(['tipCustomize', 'tipCustomize2', 'tipOptions', 'tipRelax'])
   })
 })
 
 describe('textos de la portada', () => {
   const KEYS = [
-    'hello', 'welcome', 'journeyNew', 'journeyBack', 'classic', 'notice', 'meetCat', 'petting', 'meow', 'catLoves',
-    'tipRelax', 'tipOptions', 'tipCustomize',
+    'hello', 'welcome1', 'welcome2', 'journeyNew1', 'journeyNew2', 'journeyNew3', 'journeyBack1', 'journeyBack2', 'journeyBack3',
+    'classic1', 'classic2', 'notice', 'meetCat', 'petting', 'meow', 'catLoves',
+    'tipRelax', 'tipOptions', 'tipCustomize', 'tipCustomize2', 'comfort1', 'comfort2',
     'ambientDawn', 'ambientDay', 'ambientNight', 'ambientRain', 'ambientStorm', 'ambientRainbow',
   ]
 
@@ -184,7 +196,7 @@ describe('textos de la portada', () => {
     skies.forEach((sky) => {
       for (let ms = 0; ms < INTRO_MS + LOOP_MS * 3; ms += 100) {
         const say = lifeAt(ms, skyOf(sky)).say
-        if (say) said.add(say.key === 'journey' ? 'journeyNew' : say.key)
+        if (say) said.add(say.key.replace(/^journey(\d)$/, 'journeyNew$1'))
       }
     })
     said.forEach((key) => expect(COPY.es.lupe[key], key).toBeTruthy())

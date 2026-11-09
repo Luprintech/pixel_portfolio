@@ -10,6 +10,8 @@ import { fxLevel } from './soundMixer'
 const SOUNDS = {
   gato: '/sounds/Maullido gato.mp3',
   perro: '/sounds/Ladrido perro.mp3',
+  // El maullido de Khalessi cuando un trueno la asusta en la portada; no es una opción del creador.
+  gatoAsustado: '/sounds/maullido gato asustado.mp3',
 }
 
 // Velocidad de cada raza respecto a la grabación: por encima de 1 es más agudo, por debajo, más grave.

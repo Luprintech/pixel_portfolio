@@ -25,6 +25,7 @@ let users = 0
 let lastApply = 0
 let releaseTimer = null
 let birdTimer = null
+const cricketTimers = []
 
 const randomBetween = (min, max) => min + Math.random() * (max - min)
 
@@ -95,23 +96,15 @@ function buildRain(context, out, noise) {
   return { gain }
 }
 
-// Grillos: un tono agudo troceado muy rápido y en ráfagas de unos tres golpes por segundo.
-function buildCrickets(context, out) {
-  const chirp = context.createGain()
-  chirp.gain.value = 0.5
-  const chirpDepth = context.createGain()
-  chirpDepth.gain.value = 0.5
-  chain(oscillator(context, 32), chirpDepth, chirp.gain)
-  const burst = context.createGain()
-  burst.gain.value = 0.5
-  const burstDepth = context.createGain()
-  burstDepth.gain.value = 0.5
-  chain(oscillator(context, 2.7), burstDepth, burst.gain)
-  const gain = context.createGain()
-  gain.gain.value = 0
-  chain(oscillator(context, 4300), chirp, burst, gain, out)
-  return { gain }
-}
+// Grillos: tres que cantan por su cuenta, cada uno con su tono y su lado del estéreo. Un trino son tres
+// pulsos secos de un tono agudo, y entre trino y trino hay silencio. El volumen de la capa de grillos
+// anterior (un tono continuo troceado) era tan bajo que no se oía nada.
+const CRICKET_VOICES = [
+  { pitch: 4200, pan: -0.6 },
+  { pitch: 4500, pan: 0.1 },
+  { pitch: 4750, pan: 0.65 },
+]
+const CRICKET_PEAK = 0.07
 
 // Monta el ambiente sobre el bus de efectos. `out` es solo para el fundido de salida.
 function ensureGraph() {
@@ -123,9 +116,10 @@ function ensureGraph() {
   const out = ctx.createGain()
   out.connect(engine.fx)
   const noise = noiseBuffer(ctx, 3)
-  graph = { ctx, out, noise, wind: buildWind(ctx, out, noise), rain: buildRain(ctx, out, noise), crickets: buildCrickets(ctx, out) }
+  graph = { ctx, out, noise, wind: buildWind(ctx, out, noise), rain: buildRain(ctx, out, noise) }
   applyScene(true)
   scheduleBird()
+  CRICKET_VOICES.forEach((voice, i) => scheduleCricket(i, voice))
   return graph
 }
 
@@ -139,7 +133,6 @@ function applyScene(force = false) {
   graph.wind.gain.gain.setTargetAtTime(0.1 * scene.wind, t, 0.5)
   graph.wind.swellDepth.gain.setTargetAtTime(0.06 * scene.wind, t, 0.5)
   graph.rain.gain.gain.setTargetAtTime(0.32 * scene.rain, t, 0.5)
-  graph.crickets.gain.gain.setTargetAtTime(0.012 * scene.crickets, t, 0.8)
 }
 
 const running = () => graph && graph.ctx.state === 'running'
@@ -178,6 +171,40 @@ function scheduleBird() {
     if (Math.random() < scene.birds) chirp()
     scheduleBird()
   }, randomBetween(1200, 3600))
+}
+
+// Un trino de grillo: tres pulsos cortos, cada uno un tono que sube y se corta enseguida.
+function cricketChirp({ pitch, pan }, level) {
+  if (!running()) return
+  const { ctx, out } = graph
+  const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : null
+  if (panner) {
+    panner.pan.value = pan
+    panner.connect(out)
+  }
+  for (let i = 0; i < 3; i++) {
+    const start = ctx.currentTime + i * 0.05
+    const tone = ctx.createOscillator()
+    tone.frequency.value = pitch
+    const env = ctx.createGain()
+    env.gain.setValueAtTime(0, start)
+    env.gain.linearRampToValueAtTime(CRICKET_PEAK * level, start + 0.006)
+    env.gain.linearRampToValueAtTime(0, start + 0.035)
+    chain(tone, env, panner || out)
+    tone.start(start)
+    tone.stop(start + 0.04)
+  }
+}
+
+// Cada grillo trina cada medio segundo más o menos, con pausas largas de vez en cuando, y solo cuando
+// la noche es cerrada y no llueve (`scene.crickets`).
+function scheduleCricket(index, voice) {
+  clearTimeout(cricketTimers[index])
+  cricketTimers[index] = setTimeout(() => {
+    if (!graph) return
+    if (scene.crickets > 0.15 && Math.random() > 0.2) cricketChirp(voice, scene.crickets)
+    scheduleCricket(index, voice)
+  }, randomBetween(380, 700))
 }
 
 // Trueno: un estallido de ruido grave que se apaga despacio, con un retumbo por debajo.
@@ -229,6 +256,7 @@ onEngineGesture(() => {
 // Desmonta el ambiente: para todas sus fuentes y suelta los nodos.
 function teardown() {
   clearTimeout(birdTimer)
+  cricketTimers.forEach(clearTimeout)
   started.forEach((node) => {
     try {
       node.stop()

@@ -25,14 +25,14 @@ const easeOut = (t) => 1 - (1 - Math.min(1, Math.max(0, t))) ** 3
 // Una ruta parte de `start` y sigue sus pasos: { to } camina hasta ahí y { stay, face, bat } se queda
 // quieta un rato mirando hacia `face` (con `bat`, dando un zarpazo). La duración sale de las
 // distancias, así que la gata siempre camina a la misma velocidad.
-export function buildRoute(start, steps, facing = -1) {
+export function buildRoute(start, steps, facing = -1, speed = SPEED) {
   const segments = []
   let position = start
   let face = facing
   let time = 0
   steps.forEach((step) => {
     if (step.to) {
-      const ms = (distance(position, step.to) / SPEED) * 1000
+      const ms = (distance(position, step.to) / speed) * 1000
       const dx = step.to[0] - position[0]
       if (Math.abs(dx) >= 1) face = dx > 0 ? 1 : -1
       segments.push({ from: time, to: time + ms, a: position, b: step.to, face, walking: true, bat: false })
@@ -159,6 +159,39 @@ export const GROOM_MS = 8000
 export function groomPlay(local) {
   const sit = local < 1600 || (local >= 6800 && local < GROOM_MS) ? 'sit' : local < 6800 ? 'wash' : null
   return { ...standAt(CAT_HOME), sit }
+}
+
+// Susto por un trueno: corre desde donde esté hasta quedar tras Lupe (el sprite de la gata queda casi
+// tapado por el de ella), tiembla allí con las orejas y el rabo caídos y, pasado el susto, vuelve a casa
+// andando. Con otro trueno mientras tanto, el susto empieza de nuevo desde donde esté.
+// Lupe está en x 190 (LUPE_X en titleArt.js, que no se importa aquí para evitar un ciclo); con y 128 la
+// gata se pinta detrás de ella.
+const SCARE_HIDE = [186, CAT_MIN_Y]
+const SCARE_RUN_SPEED = 55
+const SCARE_HIDE_MS = 4500
+const COMFORT_MS = 9000
+
+export function startScare(from, ms) {
+  const route = buildRoute(
+    [from.x, from.y],
+    // Al salir de detrás, se acerca a Lupe y se deja consolar antes de volver a casa.
+    [{ to: SCARE_HIDE }, { stay: SCARE_HIDE_MS }, { to: CAT_NEAR }, { stay: COMFORT_MS, face: -1 }, { to: CAT_HOME }],
+    -1,
+    SCARE_RUN_SPEED,
+  )
+  const [, hiding, , comfort] = route.segments
+  return { start: ms, route, fearEnd: hiding.to, comfort }
+}
+
+// La gata en el instante `ms` de un susto, o null cuando ya ha vuelto a casa. `scared` indica orejas y rabo
+// caídos. Mientras Lupe la consuela, `comfort` dice cuál de las dos frases toca ('comfort1' o 'comfort2').
+export function scaredCat(scare, ms) {
+  const local = ms - scare.start
+  if (local >= scare.route.ms) return null
+  const { from, to } = scare.comfort
+  const comforting = local >= from && local < to
+  const comfort = comforting ? (local < (from + to) / 2 ? 'comfort1' : 'comfort2') : null
+  return { ...scare.route.at(local), scared: local < scare.fearEnd, comfort }
 }
 
 // Tiempo que ocupa la escena de juego: el del juego más largo.

@@ -43,7 +43,7 @@ export default function LupeBubble({ text, anchor, canvasRef, avoidRef }) {
     <div
       ref={bubbleRef}
       aria-hidden="true"
-      className="pointer-events-none absolute z-10 w-max max-w-[min(19rem,calc(100%-1.5rem))]"
+      className="pointer-events-none absolute z-10 w-max max-w-[min(19rem,calc(100%-1.5rem))] lg:max-w-[min(28rem,calc(100%-1.5rem))]"
       style={{
         left: place?.left ?? 0,
         top: place?.top ?? 0,
@@ -53,7 +53,7 @@ export default function LupeBubble({ text, anchor, canvasRef, avoidRef }) {
       }}
     >
       {/* La clave reinicia la animación de entrada con cada frase nueva. */}
-      <p key={text} className="px-bubble text-base sm:text-lg">{text}</p>
+      <p key={text} className="px-bubble text-base sm:text-lg lg:text-2xl">{text}</p>
     </div>
   )
 }

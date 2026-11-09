@@ -174,6 +174,16 @@ const KHALESSI = {
 
 export const khalessiCanvas = (frame = 0, tail = 0) => drawPet(SPECS.comun, KHALESSI, frame, tail)
 
+// Khalessi asustada: orejas echadas hacia los lados y rabo caído y pegado a las patas traseras.
+const HEAD_EARS_DOWN = ['', '', '', '...........ppccsccsccpp', ...HEAD.slice(4)]
+const TAIL_DOWN = [
+  [[0, 1], [-1, 2], [-1, 3], [-1, 4]],
+  [[0, 1], [0, 2], [-1, 3], [0, 4]],
+]
+const SCARED_SPEC = { ...SPECS.comun, tail: { frames: TAIL_DOWN }, head: { ...SPECS.comun.head, rows: HEAD_EARS_DOWN } }
+
+export const khalessiScaredCanvas = (frame = 0, tail = 0) => drawPet(SCARED_SPEC, KHALESSI, frame, tail)
+
 // Khalessi sentada. Es la misma gata con el cuerpo erguido bajo la cabeza, las patas juntas y la cola
 // tendida en el suelo. Al asearse cierra los ojos, baja la cabeza y se lleva una pata a la cara; la
 // pata sube y baja entre los dos fotogramas.

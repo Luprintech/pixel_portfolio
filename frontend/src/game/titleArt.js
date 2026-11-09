@@ -7,7 +7,7 @@ import { dot, ellipse, makeCanvas, noise, rect } from './pixelKit.js'
 import { lupeFrame } from './lupePoses.js'
 import { LEAF_COLORS, buildAutumnLand } from './titleAutumn.js'
 import { dungeonSprite, houseSprite, shadowSprite, treeSprite } from './sprites.js'
-import { khalessiCanvas, khalessiSitCanvas } from './pets/index.js'
+import { khalessiCanvas, khalessiScaredCanvas, khalessiSitCanvas } from './pets/index.js'
 import {
   STILL_MS,
   birdsAt,
@@ -21,7 +21,7 @@ import {
   smokeAt,
   starAlpha,
 } from './titleMotion.js'
-import { CAT_HOME, standAt } from './titleCat.js'
+import { CAT_HOME, scaredCat, standAt, startScare } from './titleCat.js'
 import { eventsBetween, lifeAt } from './titleLife.js'
 import { butterfliesOut, mixHex, skyAt, strikesBetween, windowsLit } from './titleSky.js'
 import { paintCelestial, paintLightning, paintRain, paintSky, paintTint } from './titleSkyPaint.js'
@@ -234,9 +234,12 @@ export function createTitleScene(canvas, seed) {
   g.imageSmoothingEnabled = false
 
   const cats = new Map()
-  const catSprite = (frame, tail, sit) => {
-    const key = `${frame}${tail}${sit}`
-    if (!cats.has(key)) cats.set(key, sit ? khalessiSitCanvas(sit === 'wash', tail) : khalessiCanvas(frame, tail))
+  const catSprite = (frame, tail, sit, scared) => {
+    const key = `${frame}${tail}${sit}${scared ? 'S' : ''}`
+    if (!cats.has(key)) {
+      if (scared) cats.set(key, khalessiScaredCanvas(frame, tail))
+      else cats.set(key, sit ? khalessiSitCanvas(sit === 'wash', tail) : khalessiCanvas(frame, tail))
+    }
     return cats.get(key)
   }
 
@@ -245,19 +248,21 @@ export function createTitleScene(canvas, seed) {
     const jumping = cat.lift > 0.5
     const frame = cat.walking || jumping ? Math.floor(ms / 170) % 2 : 0
     // Sentada, el segundo fotograma es el vaivén de la cola o, aseándose, la pata que sube y baja.
-    const tail = cat.walking || still ? 0 : Math.floor(ms / (cat.sit === 'wash' ? 380 : petted ? 220 : 550)) % 2
+    // Asustada, el rabo caído tiembla rápido incluso corriendo.
+    const tail = cat.scared ? Math.floor(ms / 140) % 2 : cat.walking || still ? 0 : Math.floor(ms / (cat.sit === 'wash' ? 380 : petted ? 220 : 550)) % 2
     const x = Math.round(cat.x)
     const y = Math.round(cat.y)
     const top = y - Math.round(cat.lift)
+    const sprite = catSprite(frame, tail, cat.sit, cat.scared)
     g.drawImage(shadowSprite(16, 4), x + 3, y + 12)
     if (cat.facing < 0) {
       g.save()
       g.translate(x + 26, 0)
       g.scale(-1, 1)
-      g.drawImage(catSprite(frame, tail, cat.sit), 0, top)
+      g.drawImage(sprite, 0, top)
       g.restore()
     } else {
-      g.drawImage(catSprite(frame, tail, cat.sit), x, top)
+      g.drawImage(sprite, x, top)
     }
   }
 
@@ -283,6 +288,9 @@ export function createTitleScene(canvas, seed) {
   }
 
   let lastMs = 0
+  // Susto en curso y truenos aún por oírse (instantes absolutos): la gata se asusta al oírlo, no al verlo.
+  let scare = null
+  let pendingThunder = []
 
   function draw(rawMs, still = false) {
     // El primer fotograma del navegador puede llegar con una marca de tiempo anterior al arranque: nunca negativa.
@@ -291,7 +299,8 @@ export function createTitleScene(canvas, seed) {
     // Con la pestaña oculta el reloj da un salto: no se recuperan los rayos que hubo mientras tanto.
     const live = !still && ms - lastMs <= 500
     const thunder = live ? strikesBetween(lastMs, ms, seed).map((strike) => strike.delay) : []
-    const events = live ? eventsBetween(lastMs, ms) : []
+    const events = live ? eventsBetween(lastMs, ms, (t) => (t === ms ? sky : skyAt(t, seed, still))) : []
+    pendingThunder.push(...thunder.map((delay) => ms + delay * 1000))
     lastMs = ms
 
     g.globalAlpha = 1
@@ -332,7 +341,20 @@ export function createTitleScene(canvas, seed) {
     }
 
     // La escena de la bienvenida se queda en una pose fija con movimiento reducido.
-    const life = lifeAt(ms, (t) => (t === ms ? sky : skyAt(t, seed, still)))
+    const scripted = lifeAt(ms, (t) => (t === ms ? sky : skyAt(t, seed, still)))
+    if (!still && pendingThunder.some((t) => t <= ms)) {
+      pendingThunder = pendingThunder.filter((t) => t > ms)
+      scare = startScare(scare ? scaredCat(scare, ms) ?? scripted.cat : scripted.cat, ms)
+      events.push('scared')
+    }
+    const frightened = !still && scare ? scaredCat(scare, ms) : null
+    if (!frightened) scare = null
+    // Durante el susto el guion deja de valer (ni "rascadita" con la gata escondida): Lupe solo habla y
+    // acaricia cuando consuela a Khalessi al salir de detrás de ella.
+    const comfort = frightened?.comfort
+    const life = frightened
+      ? { ...scripted, cat: frightened, pose: comfort ? 'pet' : 'idle', say: comfort ? { key: comfort, who: 'lupe' } : null }
+      : scripted
     const pose = still ? 'idle' : life.pose
     const cat = still ? standAt(CAT_HOME) : life.cat
     // En otoño hay avellanas en el suelo, por debajo de todo lo que camina.

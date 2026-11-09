@@ -18,35 +18,59 @@ import { butterfliesOut } from './titleSky.js'
 
 const INTRO = [
   { ms: 900 },
-  { ms: 3200, pose: 'wave', say: 'hello' },
-  { ms: 4800, say: 'welcome' },
-  { ms: 5600, say: 'journey' },
-  { ms: 4600, say: 'classic' },
+  { ms: 4500, pose: 'wave', say: 'hello' },
+  { ms: 4200, say: 'welcome1' },
+  { ms: 4500, say: 'welcome2' },
+  { ms: 4500, say: 'journey1' },
+  { ms: 4500, say: 'journey2' },
+  { ms: 4800, say: 'journey3' },
+  { ms: 4500, say: 'classic1' },
+  { ms: 4500, say: 'classic2' },
   { ms: 2500 },
 ]
 
+// Cada bocadillo se queda unos 4,5 s. Las frases largas van partidas en varios (welcome1, welcome2...):
+// en pantallas estrechas un bocadillo alto subía hasta tapar el subtítulo bajo el título.
 const LOOP = [
   { ms: STROLL.ms, route: STROLL },
-  { ms: 3600, say: 'ambient' },
+  { ms: 5500, say: 'ambient' },
   { ms: PLAY_MS, cat: 'play' },
-  { ms: Math.max(COMING.ms, 2400), route: COMING, say: 'notice' },
-  { ms: 3600, cat: 'near', say: 'meetCat' },
-  { ms: 3800, cat: 'near', pose: 'pet', say: 'petting' },
-  { ms: 1600, cat: 'near', pose: 'pet', say: { key: 'meow', who: 'khalessi' }, events: [{ at: 0, name: 'meow' }] },
-  { ms: 3600, cat: 'near', pose: 'pet', say: 'catLoves' },
-  { ms: Math.max(LEAVING.ms, 2000), route: LEAVING },
+  // `fair`: la visita de la gata solo ocurre con buen tiempo (ver `visitIsOff`).
+  { ms: Math.max(COMING.ms, 3600), route: COMING, say: 'notice', fair: true },
+  { ms: 5200, cat: 'near', say: 'meetCat', fair: true },
+  { ms: 5200, cat: 'near', pose: 'pet', say: 'petting', fair: true },
+  { ms: 2200, cat: 'near', pose: 'pet', say: { key: 'meow', who: 'khalessi' }, events: [{ at: 0, name: 'meow' }], fair: true },
+  { ms: 6000, cat: 'near', pose: 'pet', say: 'catLoves', fair: true },
+  { ms: Math.max(LEAVING.ms, 2000), route: LEAVING, fair: true },
   { ms: 1400, cat: 'sit' },
   { ms: 4200, cat: 'wash' },
   { ms: 1000, cat: 'sit' },
-  { ms: 4200, say: 'tip' },
-  { ms: 5000 },
+  { ms: 4800, say: 'tip' },
+  { ms: 4200, say: 'tipMore' },
+  { ms: 2500 },
 ]
 
-const TIPS = ['tipRelax', 'tipOptions', 'tipCustomize']
+// Cada consejo es una lista de bocadillos; 'tipMore' dice el segundo si lo hay y, si no, hace una pausa.
+const TIPS = [['tipRelax'], ['tipOptions'], ['tipCustomize', 'tipCustomize2']]
 
 const total = (scenes) => scenes.reduce((sum, scene) => sum + scene.ms, 0)
 export const INTRO_MS = total(INTRO)
 export const LOOP_MS = total(LOOP)
+
+// Cada escena del bucle sabe dónde empieza dentro de la vuelta, y la visita de la gata (las escenas
+// `fair`) empieza en la primera de ellas.
+let loopAt = 0
+LOOP.forEach((scene) => {
+  scene.at = loopAt
+  loopAt += scene.ms
+})
+const VISIT_AT = LOOP.find((scene) => scene.fair).at
+
+// Con tormenta la gata no se acerca a que la acaricien: se queda en casa, y el susto de los truenos
+// (titleArt.js) ya cuenta cómo Lupe la consuela. Se decide una vez, al empezar la visita, con el cielo de
+// ese instante, para no cortarla a la mitad si el tiempo cambia.
+const STORM_NO_VISIT = 0.3
+const visitIsOff = (visitStart, skyOf) => skyOf(visitStart).storm > STORM_NO_VISIT
 
 // Qué comentario del tiempo toca: la tormenta manda sobre la lluvia, y esta sobre el arcoíris.
 export function ambientKey(sky) {
@@ -107,10 +131,14 @@ function catIn(scene, local, ms, kind) {
 // Lo que pasa en el instante `ms`. `skyOf(t)` da el estado del cielo en cualquier instante: decide el
 // comentario del tiempo y a qué juega la gata. `nuts` son las avellanas del suelo, si las hay.
 export function lifeAt(ms, skyOf) {
-  const { scene, local, start, lap } = sceneAt(ms)
+  const found = sceneAt(ms)
+  const { local, start, lap } = found
+  // Una visita cancelada por la tormenta se queda en una pausa: la gata en su sitio y Lupe quieta.
+  const scene = found.scene.fair && visitIsOff(start - found.scene.at + VISIT_AT, skyOf) ? { ms: found.scene.ms } : found.scene
   let say = scene.say
   if (say === 'ambient') say = ambientKey(skyOf(ms))
-  else if (say === 'tip') say = TIPS[(lap - 1) % TIPS.length]
+  else if (say === 'tip') say = TIPS[(lap - 1) % TIPS.length][0]
+  else if (say === 'tipMore') say = TIPS[(lap - 1) % TIPS.length][1]
   if (typeof say === 'string') say = { key: say, who: 'lupe' }
   const kind = scene.cat === 'play' ? playKind(skyOf(start)) : null
   return {
@@ -122,14 +150,17 @@ export function lifeAt(ms, skyOf) {
 }
 
 // Avisos puntuales (el maullido) cuyo instante cae entre `fromMs` (sin incluir) y `toMs`.
-export function eventsBetween(fromMs, toMs) {
+// Con `skyOf` se descartan los de la visita de la gata si la tormenta la canceló.
+export function eventsBetween(fromMs, toMs, skyOf) {
   const names = []
   const visit = (scenes, base) => {
     let from = base
     scenes.forEach((scene) => {
       scene.events?.forEach((event) => {
         const time = from + event.at
-        if (time > fromMs && time <= toMs) names.push(event.name)
+        if (time <= fromMs || time > toMs) return
+        if (skyOf && scene.fair && visitIsOff(base + VISIT_AT, skyOf)) return
+        names.push(event.name)
       })
       from += scene.ms
     })

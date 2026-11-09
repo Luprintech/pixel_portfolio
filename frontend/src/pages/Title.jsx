@@ -47,8 +47,8 @@ export default function Title() {
 
   useEffect(() => acquireAmbience(), [])
 
-  // "journey" cambia según haya partida guardada o no; el resto de frases salen tal cual.
-  const lineKey = line?.key === 'journey' ? (saved ? 'journeyBack' : 'journeyNew') : line?.key
+  // "journey1..3" cambian según haya partida guardada o no; el resto de frases salen tal cual.
+  const lineKey = line?.key.replace(/^journey(\d)$/, saved ? 'journeyBack$1' : 'journeyNew$1')
   const lineText = lineKey ? copy.lupe[lineKey] : null
 
   // El valle está vivo: pasa el día y la noche, llueve o truena, Lupe y la gata pasean y caen pétalos.
@@ -60,7 +60,7 @@ export default function Title() {
     if (reduceMotion) {
       setAmbienceScene(scene.draw(0, true))
       // Con la imagen quieta, Lupe deja puesto el mensaje que más ayuda: cómo empezar.
-      setLine(LUPE_LINE('journey', 'lupe', LUPE_ANCHOR))
+      setLine(LUPE_LINE('journey1', 'lupe', LUPE_ANCHOR))
       return undefined
     }
     const start = performance.now()
@@ -74,6 +74,7 @@ export default function Title() {
         sky.thunder.forEach(thunder)
         // Khalessi maúlla cuando le toca; Lupe y ella hablan una a una, y el bocadillo solo cambia con la frase.
         if (sky.events.includes('meow')) playPetSound('gato', 'comun')
+        if (sky.events.includes('scared')) playPetSound('gatoAsustado', 'comun')
         const say = sky.life.say
         const key = say ? `${say.who}:${say.key}` : ''
         if (key !== shown) {
@@ -127,25 +128,15 @@ export default function Title() {
         >
           {copy.gameTitle}
         </h1>
-        {/* En web va bajo el título; en móvil baja a la zona inferior del mapa (más abajo) */}
-        <p
-          className="px-text mx-auto mt-3 hidden px-3 py-1 text-lg sm:inline-block"
-          style={{ color: PAL.saffron, textShadow: OUTLINE }}
-        >
-          {copy.tagline}
+        {/* Bajo el título en todos los tamaños; en móvil usa la versión corta para que quepa. */}
+        <p className="px-text mx-auto -mt-1 px-3 text-base sm:-mt-2 sm:text-lg" style={{ color: PAL.saffron, textShadow: OUTLINE }}>
+          <span className="sm:hidden">{copy.taglineShort}</span>
+          <span className="hidden sm:inline">{copy.tagline}</span>
         </p>
       </header>
 
-      {/* En móvil el subtítulo se queda abajo del mapa, encima del menú: los bocadillos de Lupe
-          tapaban el que estaba bajo el título. En sm+ el contenedor desaparece (contents). */}
+      {/* En móvil el menú va abajo, pegado al borde; en sm+ el contenedor desaparece (contents). */}
       <div className="z-10 mt-8 flex flex-col sm:mt-0 sm:contents">
-        <p
-          className="px-text mx-auto mb-5 px-3 text-center text-base sm:hidden"
-          style={{ color: PAL.saffron, textShadow: OUTLINE }}
-        >
-          {copy.taglineShort}
-        </p>
-
         <section
           ref={menuRef}
           aria-label={copy.gameTitle}
