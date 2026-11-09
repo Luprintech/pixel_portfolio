@@ -132,6 +132,11 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 **Aviso de cookies bloqueante y centrado (2026-11-09)**
 - El aviso (`components/CookieBanner.jsx`) es ahora un diálogo modal: una capa a pantalla completa oscurece y bloquea la página, el foco entra en el diálogo, Tab no sale de él y las teclas no llegan al juego. En escritorio queda centrado en vertical (antes pegado abajo y pisaba el menú de la portada); en móvil sigue abajo. No hay cierre sin elegir opción.
 
+**Aviso de cookies: misma estructura en web y móvil (2026-11-09)**
+- Título, texto y tres botones centrados, apilados en todos los anchos (antes en web iba el texto a la izquierda y los botones a la derecha). En la configuración, cada tipo de cookie lleva título y control en una línea y la descripción debajo a todo el ancho; el título pasa a ser el de la vista principal, centrado.
+- El contenedor mide como máximo 42 rem (antes 56 rem) y el texto ocupa todo su ancho, sin márgenes vacíos a los lados.
+- El interruptor de análisis es un botón `role="switch"` (`.px-switch` en `pixel.css`): pista y ficha a saltos, con el estado escrito ("Activadas" / "Desactivadas") para no depender solo del color, y objetivo táctil de 44 px.
+
 **Bocadillos sin hueco a la derecha (2026-11-09)**
 - Norma para todos los bocadillos de texto: el texto aprovecha todo el ancho de la caja, sin hueco vacío a la derecha. Con `w-max` y ancho máximo, `text-wrap: balance` acortaba las líneas pero la caja seguía en el máximo. `fitToText` en `LupeBubble.jsx` mide la línea más larga y ajusta el ancho (se repite al redimensionar y al cargar la fuente). Comprobado en móvil (350 px) y escritorio (1280 px): hueco de 0 a 2 px.
 

@@ -103,17 +103,17 @@ export default function CookieBanner() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="w-full max-w-4xl"
+        className="w-full max-w-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="cookie-banner-title"
       >
-        <div className="px-frame mx-auto max-w-4xl p-5 sm:p-6">
+        <div className="px-frame mx-auto p-5 sm:p-6">
 
           {!showConfig ? (
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex-1">
-                <h2 id="cookie-banner-title" className="px-title mb-2 flex items-center gap-2 text-3xl">
+            <div className="relative z-10 flex flex-col items-center gap-6 text-center">
+              <div>
+                <h2 id="cookie-banner-title" className="px-title mb-3 flex items-center justify-center gap-3 text-3xl">
                   <svg className="h-5 w-5 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 10.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM15.5 14a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM8.5 14a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                   </svg>
@@ -124,7 +124,7 @@ export default function CookieBanner() {
                   Más información en la <Link to="/politica-cookies" className="px-link">Política de Cookies</Link> y <Link to="/politica-privacidad" className="px-link">Política de Privacidad</Link>.
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+              <div className="flex w-full flex-col items-stretch justify-center gap-4 pb-2 sm:w-auto sm:flex-row sm:items-center">
                 <button
                   onClick={() => setShowConfig(true)}
                   className="px-btn px-btn--bone"
@@ -147,42 +147,39 @@ export default function CookieBanner() {
             </div>
           ) : (
             <div className="relative z-10">
-              <h2 className="px-title mb-4 text-3xl">Configuración de Cookies</h2>
+              <h2 className="px-title mb-5 text-center text-3xl">Configuración de cookies</h2>
               <div className="space-y-4 mb-6">
                 
                 {/* Estrictamente necesarias */}
-                <div className="flex items-start justify-between p-4 border-2 border-[var(--border-color)] bg-[var(--bg-secondary)]">
-                  <div className="pr-4">
-                    <h3 className="font-semibold text-sm text-[var(--text-primary)] mb-1">Cookies Estrictamente Necesarias</h3>
-                    <p className="text-xs text-[var(--text-secondary)]">Son imprescindibles para que la página web funcione correctamente. Por ejemplo, guardar tu preferencia de tema oscuro/claro de forma local o tus propias preferencias sobre cookies.</p>
+                <div className="p-4 border-2 border-[var(--border-color)] bg-[var(--bg-secondary)]">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                    <h3 className="font-semibold text-base text-[var(--text-primary)]">Cookies estrictamente necesarias</h3>
+                    <span className="text-sm text-[var(--text-muted)]">Siempre activas</span>
                   </div>
-                  <div className="shrink-0 pt-1">
-                    <span className="text-xs font-bold text-[var(--text-muted)] cursor-not-allowed">Siempre activas</span>
-                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">Son imprescindibles para que la página web funcione correctamente. Por ejemplo, guardar tu preferencia de tema oscuro/claro de forma local o tus propias preferencias sobre cookies.</p>
                 </div>
 
                 {/* Analíticas */}
-                <div className="flex items-start justify-between p-4 border-2 border-[var(--border-color)] bg-[var(--bg-secondary)]">
-                  <div className="pr-4">
-                    <h3 className="font-semibold text-sm text-[var(--text-primary)] mb-1">Cookies de Análisis (GA4)</h3>
-                    <p className="text-xs text-[var(--text-secondary)]">Nos permiten medir de forma anónima cuántos usuarios visitan la web y qué secciones leen más. Nos ayuda enormemente a mejorar el contenido del portfolio. No cruzamos perfiles ni vendemos datos.</p>
+                <div className="p-4 border-2 border-[var(--border-color)] bg-[var(--bg-secondary)]">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                    <h3 id="cookie-analytics-label" className="font-semibold text-base text-[var(--text-primary)]">Cookies de análisis (GA4)</h3>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={analyticsEnabled}
+                      aria-labelledby="cookie-analytics-label"
+                      onClick={() => setAnalyticsEnabled(!analyticsEnabled)}
+                      className="px-switch"
+                    >
+                      <span aria-hidden="true">{analyticsEnabled ? 'Activadas' : 'Desactivadas'}</span>
+                      <span className="px-switch__track" aria-hidden="true"><span className="px-switch__thumb" /></span>
+                    </button>
                   </div>
-                  <div className="shrink-0 pt-1">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        className="sr-only peer" 
-                        checked={analyticsEnabled} 
-                        onChange={() => setAnalyticsEnabled(!analyticsEnabled)}
-                        aria-label="Habilitar o deshabilitar cookies analíticas"
-                      />
-                      <div className="h-6 w-11 border-2 border-[var(--px-ink)] bg-[var(--bg-primary)] peer peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-[var(--accent-secondary)] peer-checked:after:translate-x-5 after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:bg-[var(--text-primary)] after:content-[''] peer-checked:bg-[var(--accent-primary)]"></div>
-                    </label>
-                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">Nos permiten medir de forma anónima cuántos usuarios visitan la web y qué secciones leen más. Nos ayuda enormemente a mejorar el contenido del portfolio. No cruzamos perfiles ni vendemos datos.</p>
                 </div>
 
               </div>
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-wrap justify-center gap-4 pb-2">
                 <button
                   onClick={() => setShowConfig(false)}
                   className="px-btn px-btn--bone"

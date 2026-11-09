@@ -216,6 +216,56 @@
   outline-offset: 6px;
 }
 
+/* Interruptor de activar o desactivar: pista con la ficha que se desplaza a saltos, y el estado
+   escrito al lado para que no dependa solo del color. Es un botón con role="switch". */
+.px-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.px-switch__track {
+  position: relative;
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 2rem;
+  background: var(--bg-primary);
+  box-shadow:
+    0 0 0 3px var(--px-ink),
+    0 0 0 5px var(--border-color);
+  transition: background-color 120ms steps(2);
+}
+.px-switch__thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--text-muted);
+  transition: transform 120ms steps(3), background-color 120ms steps(2);
+}
+.px-switch[aria-checked='true'] {
+  color: var(--text-primary);
+}
+.px-switch[aria-checked='true'] .px-switch__track {
+  background: #f2b134;
+}
+.px-switch[aria-checked='true'] .px-switch__thumb {
+  background: #f1e6cf;
+  transform: translateX(1.5rem);
+}
+.px-switch:focus-visible {
+  outline: 3px solid var(--accent-secondary);
+  outline-offset: 6px;
+}
+
 /* Diálogo nativo: sin marco propio, el contenido lleva el suyo. */
 .px-dialog {
   width: min(28rem, calc(100vw - 2.5rem));
