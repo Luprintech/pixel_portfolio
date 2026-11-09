@@ -9,12 +9,14 @@ Auditoría de lo que existe hoy:
 | Elemento | Tamaño | Relación con la tesela (16 px) |
 | --- | --- | --- |
 | Tesela de terreno | 16×16 | 1 |
-| Protagonista | 16×28 (lienzo 18×31 con contorno) | casi dos teselas de alto |
+| Protagonista | 16×28 (lienzo 18×34 con contorno y margen para moños) | casi dos teselas de alto |
 | Gata Khalessi | 20×13 (lienzo 22×14) | algo menos de una tesela de alto |
 | Árbol | 44×60 | casi 3 de ancho, 3,75 de alto |
 | Casa | 64×64 | 4 × 4 teselas |
 | Mazmorra | 80×52 | 5 × 3,25 teselas |
 | Lienzo del juego | 320×180 | 20 × 11,25 teselas a la vista |
+
+> Cotas de la tabla comprobadas en el código el 2026-11-09: el lienzo de la viajera es de **18×34** (figura de 16×28, cuatro filas libres arriba para moños y pompones y un píxel de contorno; `avatarCanvas` en `game/avatar/paint.js`) y el de Khalessi de **26×16** (`catCanvas` en `game/sprites.js`). La base visual del avatar quedó **aprobada el 2026-11-09**, así que esas cotas de la viajera son definitivas. El 22×14 de Khalessi es anterior a sus rediseños. **Siguen sin fijarse** las dimensiones de las mascotas del visitante y de los NPC.
 
 **Decisión: mantener la tesela de 16 px** (Stardew también usa 16). Lo que crece es el detalle: la viajera pasa de 10×13 a 16×28 y casas y árboles ganan altura. Motivos:
 
@@ -33,7 +35,7 @@ Reglas que se derivan de la escala:
 
 ## 2. Estilo, paleta y contorno
 
-**Dirección: cute y cálido, a la manera de Stardew Valley.** Formas redondeadas, flores por todas partes, tonos suaves y personajes con carita. Es un estilo propio de Lupe: rosa pastel, cerezos en flor y la gata Khalessi como mascota.
+**Dirección: cute y cálido, a la manera de Stardew Valley.** Formas redondeadas, flores por todas partes, tonos suaves y personajes con carita. Es un estilo propio de Lupe: rosa pastel, cerezos en flor y la gata Khalessi, que es de Lupe (no del visitante).
 
 - Los colores base son los de `game/palette.js` y los tokens de `index.css`. Para sombrear, cada superficie usa una **escala de cuatro o cinco tonos** (`TONE` en `palette.js`): hierba, tierra, agua, madera, pared, piedra y cerezo. Un color base nuevo exige añadirlo primero a ambos sitios.
 - **Contorno de color**, no negro: cada borde sale del tono más oscuro de su vecino (`outline()` en `game/pixelKit.js`). El terreno no lleva contorno.

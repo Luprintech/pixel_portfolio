@@ -24,8 +24,14 @@ El valle se organiza alrededor de una plaza empedrada central con un cartel, de 
 
 ## 3. Personajes
 
-- **Protagonista**: princesa original (no es Zelda). El aspecto se edita (pelo, piel, vestido, aro) o se genera al azar; se guarda en `localStorage` con la clave `valle-del-bucle:look` (`game/look.js`).
-- **Compañera**: Khalessi, gata siamesa tabby real de la usuaria.
+Reparto de papeles (decidido el 2026-11-09; el detalle de producto está en `docs/VISION.md`, sección 6):
+
+- **La viajera o el viajero**: el personaje personalizable de quien visita el portfolio, independiente de Lupe. Es un avatar original (no es Zelda) con nombre propio. Su aspecto se edita por capas o se genera al azar y se guarda en `localStorage` dentro de la partida versionada `valle-del-bucle:save` (`game/save.js`, `game/look.js`, `game/avatar/`).
+- **Lupe**: la anfitriona y guía del pueblo. Recibe al visitante y orienta sin imponer recorrido. Aún no tiene sprite ni retrato.
+- **Khalessi**: la gata de Lupe y su pareja, gata siamesa tabby real. Acompaña a Lupe en la bienvenida y puede aparecer junto a ella. **No es la mascota del visitante**.
+- **Mascota del visitante** (futura, no implementada): perro o gato opcional con nombre propio y apariencia cosmética. No sustituye a Khalessi ni toma su nombre, historia o diálogos.
+
+La base visual del avatar está aprobada (2026-11-09): figura de 16×28 en un lienzo de 18×34 por fotograma, con tres poses (reposo y dos pasos) en cuatro direcciones. Las dimensiones de Khalessi, las mascotas del visitante y los NPC se fijan en `docs/IDENTIDAD-VISUAL.md` y siguen abiertas.
 
 ## 4. Color
 

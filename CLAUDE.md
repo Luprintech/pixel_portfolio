@@ -17,18 +17,30 @@ Portfolio full-stack de Guadalupe Cano (Luprintech): SPA React + Vite, API Expre
 | Sistema de diseño vigente (Valle del Bucle) | `frontend/docs/DESIGN.md` |
 | Qué se ha hecho, qué falta y por qué se decidió cada cosa | `docs/ESTADO.md` |
 | Visión de producto: a qué funcionalidades queremos llegar y en qué orden | `docs/VISION.md` |
+| Lore y mundo: hechos, cronología, reparto con seudónimos y mapa de lugares (borrador, no publicar) | `docs/LORE_Y_MUNDO.md` |
+| Guion de diálogos de cada interacción (borrador, no publicar) | `docs/DIALOGOS.md` |
 
 ## Hacia dónde vamos: visión de producto
 
-`docs/VISION.md` recoge la visión de Valle del Bucle: pantalla de título animada, pueblo con zonas (plaza, Casa de Lupe, Taller del Código, Biblioteca de los Logs, Taberna del Debug, Oficina de Correos), interiores de edificios, mecánicas de aventura (interacción contextual, NPC, diario, viaje rápido, misiones opcionales, guardado en `localStorage`), un modo clásico rediseñado como landing profesional y una hoja de ruta en seis fases. Es la guía para programar en esa dirección, no una lista de requisitos cerrados.
+`docs/VISION.md` recoge la visión de Valle del Bucle: pantalla de título animada, pueblo con zonas (plaza, Casa de Lupe, Taller del Código, Biblioteca de los Logs, Taberna del Debug, Oficina de Correos), interiores de edificios, mecánicas de aventura (interacción contextual, NPC, diario, viaje rápido, misiones opcionales, guardado en `localStorage`), un modo clásico rediseñado como landing profesional y una hoja de ruta por fases (con las capas de lore y diálogos de `LORE_Y_MUNDO.md` y `DIALOGOS.md`). Es la guía para programar en esa dirección, no una lista de requisitos cerrados.
 
 - Antes de empezar una tarea de juego, de `/clasico` o de la portada, léelo y comprueba en qué fase de su hoja de ruta cae. Después mira `docs/ESTADO.md` para saber qué existe ya.
-- Las propuestas del documento (nombres de zonas, mecánicas, estética del modo clásico) no son decisiones tomadas. Las pendientes están en su sección 13: si la tarea depende de una, pregunta a la usuaria antes de implementar.
+- Las propuestas del documento (nombres de zonas, mecánicas, estética del modo clásico) no son decisiones tomadas. Las pendientes están en su sección 16: si la tarea depende de una, pregunta a la usuaria antes de implementar.
 - Prioridades que marca: el modo clásico debe funcionar como portfolio profesional sin jugar; el primer edificio completo será el Taller del Código; ninguna mecánica puede esconder información profesional.
-- Aplica los criterios de su sección 14 a cada funcionalidad nueva y pospón la que añada complejidad sin mejorar la experiencia.
+- Aplica los criterios de su sección 17 a cada funcionalidad nueva y pospón la que añada complejidad sin mejorar la experiencia.
 - `/clasico` debe acabar siendo un portfolio clásico y profesional, sin estética de videojuego. Su rediseño se hará con las skills de diseño cuando la usuaria lo pida; hasta entonces, no cambies su aspecto.
 - Los proyectos y artículos siguen saliendo una sola vez de `/api/projects` y `/api/posts`; no se duplican por modo.
 - Al cerrar un bloque, anota en `docs/ESTADO.md` qué parte de la visión avanza.
+
+## Personajes: quién es quién
+
+Decidido el 2026-11-09 (detalle en `docs/VISION.md`, sección 6; pendientes en `docs/ESTADO.md`):
+
+- **La viajera o el viajero** es el personaje personalizable de quien visita el portfolio, independiente de Lupe.
+- **Lupe** es la anfitriona y guía del pueblo; no impone recorrido.
+- **Khalessi** es la gata de Lupe y su pareja, no la mascota del visitante. No le asignes el papel de compañera de la viajera.
+- Las mascotas del visitante (perro o gato, función futura) no sustituyen a Khalessi ni toman su nombre, historia o diálogos.
+- La base visual del avatar está aprobada (2026-11-09): figura de 16×28, lienzo de 18×34. No fijes dimensiones nuevas de sprites de mascotas ni de NPC sin hablarlo con la usuaria.
 
 ## Diseño vigente: "Valle del Bucle"
 
@@ -66,6 +78,8 @@ Repositorio: https://github.com/Luprintech/pixel_portfolio (rama `main`). Nunca 
 
 ## Convenciones de código
 
+El detalle de modularización y de comprobación visual está en `AGENTS.md` (buenas prácticas de código).
+
 - Los comentarios van en **español**, con el tono de una persona que explica a la siguiente: el porqué de una decisión, una trampa o una restricción, no lo que ya dice el código. Sin banderines decorativos, sin emojis y sin frases de relleno.
 - Nombres de variables, funciones y componentes claros; funciones pequeñas con una sola responsabilidad.
 - Frontend y backend siguen separados (`frontend/` y `backend/`) y no comparten código. El contrato entre ambos es la API.
@@ -83,5 +97,5 @@ Frontend: `npm run build`, `npm run lint` y `npm test` desde `frontend/`. Backen
 
 ## Pendientes conocidos
 
-- Sprites laterales y de espalda de la princesa son versiones simplificadas.
+- Khalessi sigue a la viajera en el valle y aparece en su creador, lo contrario de lo decidido; corrección pendiente en `docs/ESTADO.md`.
 - Los bloques de contenido del blog (gradientes de `lib/gradients.js`, botones y avisos del editor) conservan colores propios: son opciones del autor, no el tema.

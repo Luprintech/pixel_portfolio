@@ -4,8 +4,9 @@ import { Helmet } from 'react-helmet-async'
 import Editor from '../components/valle/Editor'
 import Joystick from '../components/valle/Joystick'
 import ZonePanel from '../components/valle/ZonePanel'
-import { loadLook, randomLook, saveLook } from '../game/look'
+import { DEFAULT_LOOK, randomLook } from '../game/look'
 import { PAL } from '../game/palette'
+import { loadSave, sanitizeName, writeSave } from '../game/save'
 import { useValleCopy } from '../lib/valleCopy'
 
 const isTouch = () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
@@ -15,12 +16,11 @@ export default function Valle() {
   const [params] = useSearchParams()
   const mode = params.get('modo')
 
-  const [look, setLook] = useState(() => {
-    const next = mode === 'azar' ? randomLook() : loadLook() || randomLook()
-    saveLook(next)
-    return next
-  })
-  const [phase, setPhase] = useState(mode === 'editar' ? 'editor' : 'play')
+  // «Nueva aventura» y «Personalizar» abren el creador; cualquier otra entrada va directa al valle.
+  const [existing] = useState(loadSave)
+  const [look, setLook] = useState(() => (mode === 'nueva' ? randomLook() : existing?.look || randomLook()))
+  const [name, setName] = useState(() => (mode === 'nueva' ? '' : existing?.name || ''))
+  const [phase, setPhase] = useState(mode === 'nueva' || mode === 'editar' ? 'editor' : 'play')
   const [status, setStatus] = useState('loading')
   const [game, setGame] = useState(null)
   const [near, setNear] = useState(null)
@@ -28,9 +28,16 @@ export default function Valle() {
   const hostRef = useRef(null)
   const touch = isTouch()
 
-  const updateLook = useCallback((next) => {
-    setLook(next)
-    saveLook(next)
+  // La partida se escribe al entrar al valle, no mientras se edita: abandonar el creador
+  // deja intacta la aventura anterior.
+  const enterValley = useCallback(() => {
+    writeSave({ name: sanitizeName(name), look })
+    setPhase('play')
+  }, [name, look])
+
+  const reset = useCallback(() => {
+    setLook(DEFAULT_LOOK)
+    setName('')
   }, [])
 
   // Phaser se carga solo aquí: el resto del sitio no paga su peso.
@@ -70,7 +77,16 @@ export default function Valle() {
     return (
       <>
         <Helmet><title>{copy.editor.title} | Valle del Bucle</title></Helmet>
-        <Editor look={look} onChange={updateLook} onRandom={() => updateLook(randomLook())} onDone={() => setPhase('play')} />
+        <Editor
+          look={look}
+          name={name}
+          replacing={mode === 'nueva' && !!existing}
+          onChange={setLook}
+          onName={setName}
+          onRandom={() => setLook(randomLook())}
+          onReset={reset}
+          onDone={enterValley}
+        />
       </>
     )
   }

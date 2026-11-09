@@ -2,11 +2,11 @@ import Phaser from 'phaser'
 import { PAL } from './palette.js'
 import { BUILDINGS, COLS, LAKE, ROWS, SIGNPOST, SPAWN, TILE, plazaTiles, roadTiles, treePositions } from './world.js'
 import { groundCanvas } from './ground.js'
+import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, POSES } from './avatar/index.js'
 import {
   catCanvas,
   dungeonSprite,
   houseSprite,
-  princessCanvas,
   shadowSprite,
   signpostSprite,
   treeSprite,
@@ -15,7 +15,6 @@ import {
 const SPEED = 90
 // Columna del dibujo donde está el centro de la puerta, según el tipo de edificio.
 const DOOR_CENTER = { house: 32, dungeon: 40 }
-const DIRS = ['down', 'up', 'left', 'right']
 
 export default class ValleScene extends Phaser.Scene {
   constructor() {
@@ -64,8 +63,21 @@ export default class ValleScene extends Phaser.Scene {
     this.textures.addCanvas(key, canvas)
   }
 
+  // La viajera es una sola hoja (poses en columnas, direcciones en filas) con un fotograma por
+  // pose y dirección: el perfil izquierdo ya viene dibujado, no se refleja al pintarlo.
+  addTravellerSheet() {
+    const texture = this.textures.addCanvas('traveller', avatarSheet(this.look))
+    DIRS.forEach((dir) => {
+      for (let pose = 0; pose < POSES; pose++) {
+        const { x, y, w, h } = frameRect(dir, pose)
+        texture.add(frameName(dir, pose), 0, x, y, w, h)
+      }
+    })
+  }
+
   buildTextures() {
-    DIRS.forEach((dir) => [0, 1].forEach((f) => this.addCanvas(`pr-${dir}-${f}`, princessCanvas(this.look, dir, f))))
+    if (this.textures.exists('traveller')) this.textures.remove('traveller')
+    this.addTravellerSheet()
     ;[0, 1].forEach((f) => this.addCanvas(`cat-${f}`, catCanvas(f)))
     ;[0, 1, 2].forEach((v) => this.addCanvas(`tree-${v}`, treeSprite(v)))
     this.addCanvas('shadow', shadowSprite(14, 5))
@@ -141,8 +153,8 @@ export default class ValleScene extends Phaser.Scene {
     this.shadow = this.add.image(SPAWN.x, SPAWN.y, 'shadow').setDepth(2)
     this.catShadow = this.add.image(SPAWN.x - 14, SPAWN.y + 4, 'shadow-cat').setDepth(2)
 
-    this.princess = this.physics.add.sprite(SPAWN.x, SPAWN.y, 'pr-down-0').setOrigin(0.5, 1)
-    this.princess.body.setSize(8, 4).setOffset(5, 27)
+    this.princess = this.physics.add.sprite(SPAWN.x, SPAWN.y, 'traveller', frameName('down', 0)).setOrigin(0.5, 1)
+    this.princess.body.setSize(8, 4).setOffset(5, 30)
     this.princess.setCollideWorldBounds(true)
     this.physics.add.collider(this.princess, this.solids)
 
@@ -150,7 +162,7 @@ export default class ValleScene extends Phaser.Scene {
     this.trail = []
     this.facing = 'down'
     this.stepTimer = 0
-    this.stepFrame = 0
+    this.walkStep = 0
   }
 
   buildInput() {
@@ -198,16 +210,14 @@ export default class ValleScene extends Phaser.Scene {
       this.stepTimer += delta
       if (this.stepTimer > 140) {
         this.stepTimer = 0
-        this.stepFrame = 1 - this.stepFrame
+        this.walkStep = (this.walkStep + 1) % WALK_CYCLE.length
       }
     } else {
       body.setVelocity(0, 0)
-      this.stepFrame = 0
+      this.walkStep = 0
     }
 
-    const side = this.facing === 'left' || this.facing === 'right'
-    this.princess.setTexture(`pr-${side ? 'right' : this.facing}-${this.stepFrame}`)
-    this.princess.setFlipX(this.facing === 'left')
+    this.princess.setFrame(frameName(this.facing, WALK_CYCLE[this.walkStep]))
 
     const px = Math.round(this.princess.x)
     const py = Math.round(this.princess.y)
@@ -234,7 +244,7 @@ export default class ValleScene extends Phaser.Scene {
       this.cat.x += Math.cos(angle) * step
       this.cat.y += Math.sin(angle) * step
       if (Math.abs(dx) > 0.4) this.cat.setFlipX(dx < 0)
-      this.cat.setTexture(`cat-${this.stepFrame}`)
+      this.cat.setTexture(`cat-${this.walkStep % 2}`)
     } else {
       this.cat.setTexture('cat-0')
     }

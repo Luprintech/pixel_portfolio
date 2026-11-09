@@ -1,5 +1,16 @@
 # AGENTS.md
 
+## Buenas prácticas de código
+
+- Los comentarios van en español y explican el porqué de una decisión, una trampa o una restricción, no lo que ya dice el código. Los nombres de archivos, carpetas, funciones y variables se quedan como están.
+- Modulariza por responsabilidad: cada módulo hace una cosa y se encuentra por lo que hace. Separa cálculo, dibujo, persistencia y efectos. No fragmentes un archivo estable solo para que parezca más modular y evita las importaciones circulares.
+- Funciones pequeñas y legibles, con un propósito reconocible. Si una función concentra muchas variantes (por ejemplo, las prendas de ropa), extrae una unidad por variante en lugar de un `switch` enorme.
+- Sin efectos ocultos: una función no escribe en almacenamiento ni modifica sus argumentos si su nombre no lo dice.
+- Antes de crear una función o un archivo, busca con `rg` si ya existe algo parecido, y reutilízalo.
+- Sin código muerto ni duplicado, ni dibujos repetidos para miniaturas y mundo: el editor, la portada y el juego usan el mismo generador de personaje (`frontend/src/game/avatar/`), y las piezas de dibujo no dependen de React ni de Phaser.
+- En cambios visuales, comprueba el aspecto renderizado a tamaño real, en el editor y en el valle, en las cuatro direcciones y con la animación de marcha. Que el build pase no demuestra que el dibujo se vea bien.
+- Al cerrar, ejecuta las comprobaciones aplicables y di cuáles fallan o no se pudieron ejecutar; nunca escribas «todo probado» si solo se ha revisado el código.
+
 ## General
 
 - Aplica buenas prácticas de desarrollo de software y desarrollo web en todos los cambios.

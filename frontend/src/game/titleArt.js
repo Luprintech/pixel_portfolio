@@ -4,7 +4,8 @@
 import { PAL, TONE, seeded } from './palette.js'
 import { drawFlower, drawTuft, grassColor, paintRoute } from './ground.js'
 import { dot, ellipse, makeCanvas, noise, rect } from './pixelKit.js'
-import { catCanvas, dungeonSprite, houseSprite, princessCanvas, shadowSprite, treeSprite } from './sprites.js'
+import { avatarCanvas } from './avatar/index.js'
+import { catCanvas, dungeonSprite, houseSprite, shadowSprite, treeSprite } from './sprites.js'
 import {
   STILL_MS,
   birdsAt,
@@ -202,7 +203,7 @@ export function createTitleScene(canvas, look) {
   const g = canvas.getContext('2d')
   g.imageSmoothingEnabled = false
 
-  const princess = { open: princessCanvas(look, 'down', 0), closed: princessCanvas(look, 'down', 0, true) }
+  const princess = { open: avatarCanvas(look, 'down', 0), closed: avatarCanvas(look, 'down', 0, true) }
   const cats = new Map()
   const catSprite = (frame, tail) => {
     const key = `${frame}${tail}`
@@ -243,7 +244,7 @@ export function createTitleScene(canvas, look) {
     cache.flowers.forEach((f, i) => drawFlower(g, f.x, f.y, f.kind, still ? 0 : flowerSway(i, ms)))
 
     g.drawImage(shadowSprite(14, 5), 193, 147)
-    g.drawImage(isBlinking(still ? 1000 : ms) ? princess.closed : princess.open, 186, 120)
+    g.drawImage(isBlinking(still ? 1000 : ms) ? princess.closed : princess.open, 186, 117)
 
     const cat = catAt(still ? 0 : ms)
     const frame = cat.walking ? Math.floor(ms / 170) % 2 : 0
@@ -252,12 +253,12 @@ export function createTitleScene(canvas, look) {
     g.drawImage(shadowSprite(16, 4), x + 3, 148)
     if (cat.facing < 0) {
       g.save()
-      g.translate(x + 22, 0)
+      g.translate(x + 26, 0)
       g.scale(-1, 1)
-      g.drawImage(catSprite(frame, tail), 0, 138)
+      g.drawImage(catSprite(frame, tail), 0, 136)
       g.restore()
     } else {
-      g.drawImage(catSprite(frame, tail), x, 138)
+      g.drawImage(catSprite(frame, tail), x, 136)
     }
 
     if (!still) {

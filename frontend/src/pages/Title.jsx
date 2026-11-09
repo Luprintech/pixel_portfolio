@@ -4,20 +4,34 @@ import { Helmet } from 'react-helmet-async'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import MusicControl from '../components/valle/MusicControl'
 import { TITLE_H, TITLE_W, createTitleScene } from '../game/titleArt'
-import { loadLook } from '../game/look'
+import OptionsDialog from '../components/valle/OptionsDialog'
+import { DEFAULT_LOOK } from '../game/look'
 import { PAL } from '../game/palette'
+import { clearSave, loadSave } from '../game/save'
+import { loadGameOptions, saveGameOptions } from '../lib/gameOptions'
 import { useValleCopy } from '../lib/valleCopy'
 
-const DEFAULT_LOOK = { hair: '#8a3f2c', skin: '#f0c09a', dress: '#2f8f8b', trim: '#f2b134' }
 // 20 fotogramas por segundo bastan para el pixel art y gastan poco.
 const FRAME_MS = 50
 
 export default function Title() {
   const { copy } = useValleCopy()
   const canvasRef = useRef(null)
-  const [saved] = useState(() => loadLook())
-  const look = saved || DEFAULT_LOOK
-  const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  const [saved, setSaved] = useState(loadSave)
+  const [options, setOptions] = useState(loadGameOptions)
+  const [optionsOpen, setOptionsOpen] = useState(false)
+  const look = saved?.look || DEFAULT_LOOK
+  const systemReduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  const reduceMotion = systemReduce || options.reduceMotion
+
+  const changeOptions = (next) => {
+    setOptions(next)
+    saveGameOptions(next)
+  }
+  const eraseSave = () => {
+    clearSave()
+    setSaved(null)
+  }
 
   // El valle está vivo: la gata pasea, caen estrellas fugaces y pétalos, y la viajera parpadea.
   // Con movimiento reducido se pinta una sola imagen en reposo.
@@ -57,7 +71,7 @@ export default function Title() {
         width={TITLE_W}
         height={TITLE_H}
         className={`px-canvas absolute inset-x-0 top-0 -z-10 w-full object-cover sm:bottom-0 sm:h-full ${
-          saved ? 'bottom-[22.5rem] h-[calc(100%-22.5rem)]' : 'bottom-[17.5rem] h-[calc(100%-17.5rem)]'
+          saved ? 'bottom-[26.25rem] h-[calc(100%-26.25rem)]' : 'bottom-[21.25rem] h-[calc(100%-21.25rem)]'
         }`}
         style={{ objectPosition: '72% 100%' }}
         aria-hidden="true"
@@ -100,13 +114,18 @@ export default function Title() {
               <Link
                 className={saved ? 'px-btn px-btn--bone w-full' : 'px-btn w-full'}
                 style={saved ? { color: PAL.ink } : undefined}
-                to="/valle?modo=azar"
+                to="/valle?modo=nueva"
               >
-                {copy.menu.random}
+                {copy.menu.newGame}
               </Link>
             </li>
             <li>
               <Link className="px-btn px-btn--bone w-full" style={{ color: PAL.ink }} to="/valle?modo=editar">{copy.menu.edit}</Link>
+            </li>
+            <li>
+              <button type="button" className="px-btn px-btn--bone w-full" style={{ color: PAL.ink }} onClick={() => setOptionsOpen(true)}>
+                {copy.menu.options}
+              </button>
             </li>
             <li>
               <Link className="px-btn px-btn--bone w-full" style={{ color: PAL.ink }} to="/clasico">{copy.menu.classic}</Link>
@@ -120,6 +139,15 @@ export default function Title() {
           <Link className="px-link" to="/contacto">{copy.sections.contact}</Link>
         </p>
       </section>
+
+      <OptionsDialog
+        open={optionsOpen}
+        onClose={() => setOptionsOpen(false)}
+        options={options}
+        onChange={changeOptions}
+        saved={!!saved}
+        onErase={eraseSave}
+      />
 
       {/* Firma de estudio, como en las pantallas de título de los juegos. */}
       <p

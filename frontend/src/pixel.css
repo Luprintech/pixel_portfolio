@@ -96,6 +96,7 @@
 
 .px-btn:focus-visible,
 .px-link:focus-visible,
+.px-pick:focus-visible,
 .px-chip:focus-visible {
   outline: 3px solid var(--accent-secondary);
   outline-offset: 5px;
@@ -165,6 +166,68 @@
   color: var(--text-primary);
   background: var(--bg-secondary);
   box-shadow: 0 0 0 2px var(--border-color);
+}
+
+/* Campo de texto: papel hueso con borde duro, como los botones. */
+.px-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: #1c1b3a;
+  background: #f1e6cf;
+  border: 0;
+  border-radius: 0;
+  box-shadow:
+    0 0 0 3px var(--px-ink),
+    0 0 0 5px #4b4380;
+}
+.px-input::placeholder {
+  color: #5f5a7d;
+}
+.px-input:focus-visible {
+  outline: 3px solid var(--accent-secondary);
+  outline-offset: 5px;
+}
+
+/* Casilla cuadrada: vacía es papel hueso; marcada se rellena de azafrán dentro de un marco hueso. */
+.px-check {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+  cursor: pointer;
+  background: #f1e6cf;
+  box-shadow:
+    0 0 0 3px var(--px-ink),
+    0 0 0 5px #4b4380;
+}
+.px-check:checked {
+  background: #f2b134;
+  box-shadow:
+    inset 0 0 0 4px #f1e6cf,
+    0 0 0 3px var(--px-ink),
+    0 0 0 5px #4b4380;
+}
+.px-check:focus-visible {
+  outline: 3px solid var(--accent-secondary);
+  outline-offset: 6px;
+}
+
+/* Diálogo nativo: sin marco propio, el contenido lleva el suyo. */
+.px-dialog {
+  width: min(28rem, calc(100vw - 2.5rem));
+  /* El reseteo de Tailwind quita el margin automático que centra los diálogos modales. */
+  margin: auto;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+}
+.px-dialog::backdrop {
+  background: rgba(15, 14, 34, 0.82);
 }
 
 .px-rule {

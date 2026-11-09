@@ -1,0 +1,76 @@
+import { useEffect, useRef, useState } from 'react'
+import { PAL } from '../../game/palette'
+import { useValleCopy } from '../../lib/valleCopy'
+
+// Ventana de opciones de la portada. Usa <dialog> nativo: el navegador atrapa el foco,
+// cierra con Escape y devuelve el foco al botón que la abrió.
+export default function OptionsDialog({ open, onClose, options, onChange, saved, onErase }) {
+  const { copy } = useValleCopy()
+  const ref = useRef(null)
+  const [asking, setAsking] = useState(false)
+  const [erased, setErased] = useState(false)
+
+  useEffect(() => {
+    const dialog = ref.current
+    if (!dialog) return
+    if (open && !dialog.open) {
+      setAsking(false)
+      setErased(false)
+      dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', '')
+    } else if (!open && dialog.open) {
+      dialog.close ? dialog.close() : dialog.removeAttribute('open')
+    }
+  }, [open])
+
+  const erase = () => {
+    onErase()
+    setAsking(false)
+    setErased(true)
+  }
+
+  return (
+    <dialog ref={ref} className="px-dialog" aria-labelledby="options-title" onClose={onClose}>
+      <div
+        className="px-frame p-5"
+        style={{ background: PAL.ink, color: PAL.bone, ['--px-ink']: '#0f0e22', ['--px-ring']: PAL.saffron }}
+      >
+        <h2 id="options-title" className="px-title text-4xl" style={{ color: PAL.bone }}>{copy.options.title}</h2>
+
+        <label className="px-text mt-5 flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            className="px-check mt-0.5"
+            checked={options.reduceMotion}
+            onChange={(event) => onChange({ ...options, reduceMotion: event.target.checked })}
+          />
+          <span>
+            {copy.options.motion}
+            <span className="block text-sm" style={{ color: '#cfc5e0' }}>{copy.options.motionHint}</span>
+          </span>
+        </label>
+
+        <div className="px-text mt-6">
+          <h3 className="text-sm" style={{ color: '#cfc5e0' }}>{copy.options.saveTitle}</h3>
+          {saved && !asking && (
+            <button type="button" className="px-btn px-btn--bone mt-3" onClick={() => setAsking(true)}>{copy.options.erase}</button>
+          )}
+          {saved && asking && (
+            <div role="alert" className="mt-3">
+              <p>{copy.options.eraseAsk}</p>
+              <div className="mt-3 flex flex-wrap gap-4">
+                <button type="button" className="px-btn" onClick={erase}>{copy.options.eraseYes}</button>
+                <button type="button" className="px-btn px-btn--bone" onClick={() => setAsking(false)}>{copy.options.eraseNo}</button>
+              </div>
+            </div>
+          )}
+          {!saved && <p className="mt-2" role="status">{erased ? copy.options.erased : copy.options.noSave}</p>}
+        </div>
+
+        <div className="mt-6">
+          {/* Con la confirmación abierta el botón principal es «Sí, borrar»; cerrar pasa a secundario. */}
+          <button type="button" className={asking ? 'px-btn px-btn--bone' : 'px-btn'} onClick={onClose}>{copy.options.close}</button>
+        </div>
+      </div>
+    </dialog>
+  )
+}

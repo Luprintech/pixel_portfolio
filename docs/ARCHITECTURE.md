@@ -50,6 +50,28 @@ Protegido por login. Subrutas: `inicio`, `posts`, `proyectos`, `imagenes`, `cv`,
 - El mapa es datos puros en `world.js`: edificios, lago, caminos y árboles. Para mover o añadir una zona se edita ahí.
 - Los sprites se dibujan por código en `sprites.js`; no hay hojas de imágenes externas.
 
+### Personajes: arquitectura actual (comprobada el 2026-11-09)
+
+- **Viajera:** `game/look.js` define las opciones y valida el aspecto (`upgradeLook` completa partidas antiguas). El dibujo sale de un único generador, `game/avatar/`, que usan el creador, la portada y el juego:
+  - `stance.js` da la geometría según vista, cuerpo y pose (0 reposo, 1 y 2 los dos pasos); es lo único que cambia al girar o caminar.
+  - `parts/` tiene una función por parte: `head`, `face`, `facialHair`, `hair` (peinados), `body` (prendas de arriba), `arms`, `legs` (piernas y cadera), `shoes` y `accessories`. Cada una pinta en su sitio de la rejilla de 16×28 (`grid.js`, con cuatro filas libres encima de la cabeza).
+  - `compose.js` apila las partes, hunde el cuerpo un píxel en los pasos, añade el contorno y devuelve una matriz de letras, sin canvas ni Phaser. Frente, perfil derecho y espalda tienen dibujo propio; el perfil izquierdo es el derecho reflejado salvo en lo asimétrico (guiño, rapado lateral, lazo y flor), que se dibuja desde el lado que enseña.
+  - `palette.js` resuelve cada letra a un color del aspecto; `paint.js` y `sheet.js` son lo único que usa canvas: `avatarCanvas` pinta un fotograma y `avatarSheet` una hoja de 3 poses × 4 direcciones (lienzo de cada fotograma 18×34). `ValleScene.js` registra esa hoja como una textura con un fotograma por pose y dirección y recorre `WALK_CYCLE` al andar.
+  El creador es `components/valle/Editor.jsx`; `game/sprites.js` ya no dibuja a la viajera.
+- **Partida:** `game/save.js` guarda `{ version, name, look }` en `localStorage` (`valle-del-bucle:save`, versión 1) y migra la clave anterior `valle-del-bucle:look`.
+- **Khalessi:** `catCanvas` en `game/sprites.js` (lienzo de 26×16). Se usa en la portada (`titleMotion.js` y `titleArt.js`), en la vista previa del creador y en el valle, donde `ValleScene.js` la hace seguir a la viajera con un rastro de posiciones. Ese seguimiento en el valle y su aparición en el creador chocan con la decisión de que Khalessi es la gata de Lupe, no la mascota del visitante; el cambio está pendiente en `docs/ESTADO.md`.
+- **Lupe:** no existe en el código; no hay NPC ni sistema de diálogo todavía.
+- **Mascota del visitante:** no existe.
+
+### Personajes: propuesta futura (no implementada)
+
+Resumen de lo que implicaría la mascota del visitante; las reglas de producto están en `docs/VISION.md` (sección 6.4) y no se repiten aquí.
+
+- El bloque `pet` viviría dentro de la misma partida local y exigiría subir `SAVE_VERSION` a 2 con migración desde la versión 1.
+- La mascota sería un módulo propio, separado de `catCanvas` (Khalessi) para que ambas no compartan código ni nombre.
+- Seguimiento, interiores, diálogos y viaje rápido son comportamientos de `ValleScene.js` que dependen de que existan interiores y diálogos (fases 3 y 5 de la visión).
+- CMS, API y base de datos no cambian: todo es del navegador.
+
 ## Flujo de contenido
 
 1. El CMS escribe en PostgreSQL y en `CONTENT_PATH`.

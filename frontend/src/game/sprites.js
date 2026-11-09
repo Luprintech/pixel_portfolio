@@ -1,154 +1,77 @@
 // Sprites dibujados por código: sin ficheros de imagen. Estilo cálido de pueblo,
 // con contornos de color, cuatro o cinco tonos por superficie y luz desde arriba a la izquierda.
 import { PAL, TONE, shade, tint, seeded } from './palette.js'
-import { dot, ellipse, makeCanvas, noise, outline, rect } from './pixelKit.js'
+import { OUTLINE } from './avatar/index.js'
+import { dot, ellipse, makeCanvas, noise, outline, outlineSolid, rect } from './pixelKit.js'
 
 const [WOOD0, WOOD1, WOOD2, WOOD3] = TONE.wood
 const [WALL0, WALL1, WALL2] = TONE.wall
 const [STONE0, STONE1, STONE2] = TONE.stone
 
-// Viajera
-// Cada fila mide 16 columnas. Letras: d/H/h pelo (oscuro, medio, claro), S/s piel y su sombra,
-// B mejilla, E ojo, D/L/M vestido (medio, claro, oscuro), T ribete, F zapato.
-const HEAD = {
-  down: [
-    '....dddddddd....',
-    '...dHHHHHHHHd...',
-    '..dHHhhhHHHHHd..',
-    '..dHhhHHHHHHHd..',
-    '..dHHHHHHHHHHd..',
-    '..dHHSSSSSSHHd..',
-    '..dHSSSSSSSSHd..',
-    '..dHSESSSSESHd..',
-    '..dHSBSSSSBSHd..',
-    '..dHSSSssSSSHd..',
-    '..dHHSSSSSSHHd..',
-    '...dHHSSSSHHd...',
-    '...dHHHSSHHHd...',
-  ],
-  up: [
-    '....dddddddd....',
-    '...dHHHHHHHHd...',
-    '..dHHhhhHHHHHd..',
-    '..dHhhHHHHHHHd..',
-    '..dHHHHHHHHHHd..',
-    '..dHHHHhHHHHHd..',
-    '..dHHHHHHHHHHd..',
-    '..dHHHHHHHHHHd..',
-    '..dHHHhHHHHHHd..',
-    '..dHHHHHHHHHHd..',
-    '..dHHHHHHHHHHd..',
-    '...dHHHHHHHHd...',
-    '...dHHHHHHHHd...',
-  ],
-  side: [
-    '....dddddddd....',
-    '...dHHHHHHHHd...',
-    '..dHHhhhHHHHHd..',
-    '..dHhhHHHHHHHHd.',
-    '..dHHHHHHHHHSSd.',
-    '..dHHHHHHHSSSSd.',
-    '..dHHHHHHSSSSSd.',
-    '..dHHHHHHSSESSd.',
-    '..dHHHHHHSSBSSd.',
-    '..dHHHHHHHSSsSd.',
-    '..dHHHHHHHSSSd..',
-    '...dHHHHHHHSd...',
-    '...dHHHHHHHHd...',
-  ],
-}
-const BODY = [
-  '..dHHDDTTDDHHd..',
-  '..dHDDLLLLDDHd..',
-  '.dHHDDLLLLDDHHd.',
-  '.dHSDDLLLLDDSHd.',
-  '.dHHDDDTTDDDHHd.',
-  '..dHDDLLLLDDHd..',
-  '..ddDLLLLLLDdd..',
-  '...DDLLLLLLDD...',
-  '..DDLLLLLLLLDD..',
-  '..DLLLLLLLLLLD..',
-  '.DDLLLLLLLLLLDD.',
-  '.DMMMMMMMMMMMMD.',
-  '.TTTTTTTTTTTTTT.',
-]
-const FEET = [
-  ['....FF....FF....', '....FF....FF....'],
-  ['...FF......FF...', '...FF......FF...'],
-]
-
-// De espalda no se ve el cuello ni las manos; de lado se esconden las manos tras el pelo.
-function bodyFor(dir) {
-  if (dir === 'up') return BODY.map((row, i) => (i === 0 ? row.replace(/T/g, 'D') : row.replace(/S/g, 'H')))
-  if (dir === 'down') return BODY
-  return BODY.map((row) => row.replace(/S/g, 'H'))
-}
-
-// Con `blink` los ojos se cierran: el párpado toma el tono de sombra de la piel.
-export function princessCanvas(look, dir = 'down', frame = 0, blink = false) {
-  const kind = dir === 'left' || dir === 'right' ? 'side' : dir
-  const colors = {
-    d: shade(look.hair, 0.62),
-    H: look.hair,
-    h: tint(look.hair, 0.3),
-    S: look.skin,
-    s: shade(look.skin, 0.86),
-    B: '#e89a8c',
-    E: blink ? shade(look.skin, 0.8) : '#2a1a2e',
-    M: shade(look.dress, 0.7),
-    D: look.dress,
-    L: tint(look.dress, 0.22),
-    T: look.trim,
-    F: WOOD1,
-  }
-  const canvas = makeCanvas(18, 31)
-  const g = canvas.getContext('2d')
-  const rows = [...HEAD[kind], ...bodyFor(kind), ...FEET[frame % 2]]
-  // En el segundo paso el cuerpo sube un píxel: el balanceo da sensación de caminar.
-  const top = frame % 2 ? 1 : 2
-  rows.forEach((row, y) => {
-    for (let x = 0; x < row.length; x++) {
-      const ch = row[x]
-      if (ch !== '.') dot(g, x + 1, y + top, colors[ch])
-    }
-  })
-  return outline(canvas)
-}
-
-// Khalessi, la gata siamesa: crema con máscara y extremidades marrones, ojos azules.
-// Dos posturas de cola: erguida y arqueada hacia delante. Alternarlas da el meneo.
+// Khalessi, la gata siamesa: crema con máscara y extremidades marrones, ojos azules con pupila.
+// La cabeza va dibujada a mano (orejas triangulares con el interior rosa, máscara, cachetes con
+// pelusa, nariz rosa, boca y bigotes) para que no se confunda con un ratón; el cuerpo es una elipse
+// con lomo y rayas. Dos posturas de cola: erguida y arqueada. Alternarlas da el meneo.
 const CAT_TAIL = [
-  [[3, 9], [2, 8], [2, 6], [3, 4], [4, 4]],
-  [[3, 9], [3, 7], [4, 5], [5, 4], [6, 4]],
+  [[0, 9], [0, 7], [0, 5], [1, 3], [2, 3]],
+  [[0, 9], [1, 7], [2, 5], [3, 4], [4, 4]],
+]
+// p máscara y orejas, c crema, s raya de la frente, i interior de la oreja, e iris, q pupila,
+// n nariz, m boca.
+const CAT_HEAD = [
+  '.............p......p.',
+  '.............pp....pp.',
+  '.............pip..pip.',
+  '.............ccsccscc.',
+  '............cccpppccc.',
+  '............ccepppecc.',
+  '............ccqpppqcc.',
+  '...........cccppnppccc',
+  '.............cppmppc..',
+  '..............ccccc...',
+]
+const CAT_COLORS = { p: '#5a4038', c: '#eadbc0', s: '#c9a982', i: '#e89a8c', e: '#5bb4e5', q: '#1e1420', n: '#e8828f', m: '#3a2a2a' }
+const CAT_OFFSET = 2
+// Bigotes: tres por lado, abiertos hacia fuera. Se pintan al final y finos, sin contorno.
+// Los de la derecha caen sobre el fondo y son claros; los de la izquierda cruzan el lomo crema,
+// así que van en un marrón suave para que se vean.
+const WHISKERS = [
+  ['#f6f0e0', [24, 7], [25, 6]],
+  ['#f6f0e0', [24, 8], [25, 8]],
+  ['#f6f0e0', [24, 9], [25, 10]],
+  ['#9b8576', [12, 7], [11, 6]],
+  ['#9b8576', [12, 8], [11, 8]],
+  ['#9b8576', [12, 9], [11, 10]],
 ]
 
 export function catCanvas(frame = 0, tail = 0) {
-  const canvas = makeCanvas(22, 14)
+  const canvas = makeCanvas(26, 16)
   const g = canvas.getContext('2d')
   const cream = '#eadbc0'
   const creamDark = '#cbb694'
   const point = '#5a4038'
-  const eye = '#5bb4e5'
 
-  CAT_TAIL[tail % 2].forEach(([x, y]) => rect(g, x, y, 2, 2, point))
-  // Cuerpo con la barriga más oscura y unas rayas de gata atigrada
-  ellipse(g, 9, 10, 6.6, 3.6, creamDark)
-  ellipse(g, 9, 9, 6.3, 3.1, cream)
-  ;[[6, 6], [9, 6], [12, 7]].forEach(([x, y]) => rect(g, x, y, 1, 2, '#c9a982'))
+  CAT_TAIL[tail % 2].forEach(([x, y]) => rect(g, x + CAT_OFFSET, y + 1, 2, 2, point))
+  // Cuerpo con la barriga más oscura, lomo marrón claro y unas rayas de gata atigrada
+  ellipse(g, 10, 10, 7.4, 3.6, creamDark)
+  ellipse(g, 10, 9.2, 7.2, 3.1, cream)
+  for (let x = 5; x <= 14; x++) dot(g, x, 6 + (x % 3 === 0 ? 1 : 0), '#d6c19b')
+  ;[[7, 7], [10, 7], [13, 8]].forEach(([x, y]) => rect(g, x, y, 1, 2, '#c9a982'))
   // Patas: en el segundo fotograma se abren para dar el paso
-  const legs = frame % 2 ? [4, 8, 10, 14] : [5, 7, 11, 13]
-  legs.forEach((x) => rect(g, x, 11, 2, 2, point))
-  // Cabeza con orejas, máscara, ojos azules y nariz rosa
-  ellipse(g, 15, 6.5, 4.4, 3.7, cream)
-  ellipse(g, 16, 7.4, 2.9, 2.5, point)
-  rect(g, 12, 1, 2, 3, point)
-  rect(g, 18, 1, 2, 3, point)
-  dot(g, 13, 2, '#e89a8c')
-  dot(g, 18, 2, '#e89a8c')
-  dot(g, 14, 6, eye)
-  dot(g, 17, 6, eye)
-  dot(g, 19, 8, '#e89a8c')
-  return outline(canvas)
+  const legs = frame % 2 ? [6, 10, 12, 16] : [7, 9, 13, 15]
+  legs.forEach((x) => rect(g, x, 12, 2, 3, point))
+  CAT_HEAD.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] !== '.') dot(g, x + CAT_OFFSET, y + 1, CAT_COLORS[row[x]])
+    }
+  })
+  outlineSolid(canvas, OUTLINE)
+  WHISKERS.forEach(([color, a, b]) => {
+    g.fillStyle = color
+    g.fillRect(a[0], a[1], 1, 1)
+    g.fillRect(b[0], b[1], 1, 1)
+  })
+  return canvas
 }
 
 // Árbol de copa irregular: racimos de hojas con luz arriba a la izquierda y tronco con raíces.

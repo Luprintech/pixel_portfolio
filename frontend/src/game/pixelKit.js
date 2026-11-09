@@ -75,6 +75,24 @@ export function outline(canvas, strength = 0.5) {
   return canvas
 }
 
+// Contorno de un solo color (negro azulado) alrededor de lo que hay dibujado: es el de los
+// personajes, para que se separen del fondo y de la ropa de cualquier color.
+export function outlineSolid(canvas, color) {
+  const w = canvas.width
+  const h = canvas.height
+  const g = canvas.getContext('2d')
+  const src = g.getImageData(0, 0, w, h)
+  const filled = (x, y) => x >= 0 && y >= 0 && x < w && y < h && src.data[(y * w + x) * 4 + 3] >= 200
+  g.fillStyle = color
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (filled(x, y)) continue
+      if (filled(x + 1, y) || filled(x - 1, y) || filled(x, y + 1) || filled(x, y - 1)) g.fillRect(x, y, 1, 1)
+    }
+  }
+  return canvas
+}
+
 // Elipse rellena con píxeles enteros.
 export function ellipse(g, cx, cy, rx, ry, color) {
   g.fillStyle = color
