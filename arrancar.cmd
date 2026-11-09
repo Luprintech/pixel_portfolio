@@ -128,6 +128,9 @@ echo Frontend: http://localhost:5173
 echo.
 echo Desde el movil (misma red Wi-Fi):
 powershell -NoProfile -Command "Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -like '192.168.*' -or $_.IPAddress -like '10.*' } | ForEach-Object { '  http://' + $_.IPAddress + ':5173' }"
+echo Android: Chrome solo ofrece el boton de instalar con HTTPS o localhost.
+echo Para probarlo por HTTP abre chrome://flags/#unsafely-treat-insecure-origin-as-secure
+echo en el movil, anade la direccion de arriba, activalo y reinicia Chrome.
 echo.
 exit /b 0
 

@@ -6,6 +6,20 @@ import './i18n'
 import App from './App.jsx'
 import { HelmetProvider } from 'react-helmet-async'
 import { swrGlobalConfig } from './lib/swrConfig'
+import { captureInstallEvents } from './lib/installStore'
+
+// El evento de instalación puede llegar antes de que React monte nada: se escucha desde ya
+captureInstallEvents()
+
+// Se registra también en desarrollo: sin service worker Chrome no lanza el aviso de instalación y
+// no se podría probar. En localhost el propio sw.js no cachea, así que no esconde cambios.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((error) => {
+      console.warn('No se pudo registrar el service worker:', error)
+    })
+  })
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

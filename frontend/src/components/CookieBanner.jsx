@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { loadGoogleAnalytics, disableGoogleAnalytics } from '../utils/analytics';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { COOKIE_CONSENT_KEY, saveCookieConsent } from '../lib/cookieConsent';
 
 // Sustituye con tu ID real de medición de GA4
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';
-const COOKIE_CONSENT_KEY = 'user_cookie_consent';
 
 export default function CookieBanner() {
   const [showBanner, setShowBanner] = useState(false);
@@ -39,21 +39,21 @@ export default function CookieBanner() {
 
   const handleAcceptAll = () => {
     const consentObj = { status: 'accepted', analytics: true, timestamp: new Date().toISOString() };
-    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consentObj));
+    saveCookieConsent(consentObj);
     setShowBanner(false);
     loadGoogleAnalytics(GA_MEASUREMENT_ID);
   };
 
   const handleRejectAll = () => {
     const consentObj = { status: 'rejected', analytics: false, timestamp: new Date().toISOString() };
-    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consentObj));
+    saveCookieConsent(consentObj);
     setShowBanner(false);
     disableGoogleAnalytics(GA_MEASUREMENT_ID);
   };
 
   const handleSaveConfig = () => {
     const consentObj = { status: 'configured', analytics: analyticsEnabled, timestamp: new Date().toISOString() };
-    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consentObj));
+    saveCookieConsent(consentObj);
     setShowBanner(false);
     setShowConfig(false);
 

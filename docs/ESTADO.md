@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-09 (silencio y volumen general de todo el sonido).
+Última actualización: 2026-11-09 (PWA instalable en Android e iPhone).
 
 ## Hecho
 
@@ -189,6 +189,16 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - Si la pista ya sonaba antes del primer gesto, el primer gesto la conecta al motor. Sin Web Audio, el elemento usa también `muted`, no solo `volume`.
 - **Comprobado:** pruebas nuevas del cableado y del mezclador, y en Chrome de escritorio midiendo la señal a la salida del nodo general (general a 0,25 baja la señal y silenciar la deja en cero). **Sin probar en un Android ni en un Safari/iPhone reales.**
 
+### PWA: instalar la web en Android y iPhone (2026-11-09)
+- **Hecho:** `public/manifest.webmanifest`, iconos de casita pixel art en `public/icons/` (generados con `frontend/scripts/make-pwa-icons.mjs`, sin dependencias; hay versión maskable y `apple-touch-icon`), service worker propio en `public/sw.js` y las metaetiquetas de `index.html` que Safari necesita aparte.
+- **Aviso de instalación** (`components/InstallPrompt.jsx`; estado en `lib/installStore.js`, que escucha `beforeinstallprompt` desde `main.jsx` para no perder el evento; lógica de sistema en `lib/pwaInstall.js`): con el aviso del navegador (Chrome o Edge, en móvil o escritorio) sale un cartel con botón "Instalar" que abre su diálogo. En iPhone, sin diálogo, explica los pasos (Compartir y "Añadir a pantalla de inicio") adaptados a Safari, Chrome y otros. En Android sin aviso del navegador explica el menú. Todos dicen que se recomienda para una mejor experiencia. Opciones de la portada tiene un botón fijo "Instalar aplicación" para quien lo descartó.
+- Se muestra a los 4 s de visita y solo tras decidir sobre las cookies (`lib/cookieConsent.js` emite un evento al guardar), abajo a la derecha en pantallas medianas para no tapar el menú de la portada. No sale dentro de `/valle`, ni si la web ya está instalada, y descartarlo lo silencia 14 días.
+- **Corregido (2026-11-09):** el cartel no salía porque `InstallPrompt` nunca se había montado en `App.jsx` (mi edición no se aplicó por los saltos de línea CRLF). Detectado al probarlo en el panel del navegador.
+- El manifest añade accesos directos ("Continuar aventura", "Modo clásico"), `display_override` y categorías.
+- El service worker se registra también en desarrollo (Chrome no lanza el aviso de instalación sin él) pero en localhost no cachea nada. Cachea `/assets/*` y la portada (sin conexión abre esa); no toca `/api/` ni `/posts/`. `nginx.conf` sirve `sw.js` y el manifest sin caché.
+- **Comprobado:** tests de plataforma, del store y del cartel; lint y build; y en el navegador del panel con un evento de instalación simulado (el cartel sale, "Instalar" lanza `prompt()` y el botón de Opciones funciona). **Sin probar:** el registro del service worker (el panel no admite service workers), la instalación real y el iPhone.
+- **Pendiente:** capturas de pantalla en el manifest para el diálogo de instalación ampliado de Chrome (hacen falta capturas reales del juego); pasar el cartel por las skills de diseño.
+
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
 - Documentación de contexto: `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN.md` y este archivo.
@@ -352,3 +362,4 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 | "Personalizar viajera" sale del menú de la portada; se hace al empezar una nueva aventura y desde el botón dentro del juego | Una portada más limpia y un flujo más claro: quien vuelve continúa. |
 | Comillas siempre rectas, nunca angulares | Preferencia expresa de Guadalupe. |
 | La visita principal son reclutadores y clientes freelance por igual, y el objetivo actual es conseguir empleo (2026-11-09) | Marca la prioridad del modo clásico profesional y de que ninguna mecánica esconda información. Recogido en `PRODUCT.md`. |
+| Cartel de instalación propio, sin dependencias de PWA (ni `vite-plugin-pwa`) | El service worker necesario es de 50 líneas y una dependencia más de build no aportaba nada. En iPhone no existe diálogo de instalación, así que el cartel tiene que explicar los pasos. |

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { PAL } from '../../game/palette'
+import { useInstallPrompt } from '../../hooks/useInstallPrompt'
 import { useSoundPrefs } from '../../hooks/useSoundPrefs'
 import { useValleCopy } from '../../lib/valleCopy'
 import VolumeSlider from './VolumeSlider'
@@ -9,6 +10,7 @@ import VolumeSlider from './VolumeSlider'
 export default function OptionsDialog({ open, onClose, options, onChange, saved, onErase }) {
   const { copy } = useValleCopy()
   const sound = useSoundPrefs()
+  const install = useInstallPrompt()
   const ref = useRef(null)
   const [asking, setAsking] = useState(false)
   const [erased, setErased] = useState(false)
@@ -29,6 +31,12 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
     onErase()
     setAsking(false)
     setErased(true)
+  }
+
+  // El cartel con pasos (iPhone) queda por debajo del diálogo modal: se cierra Opciones primero
+  const installApp = () => {
+    onClose()
+    install.request()
   }
 
   return (
@@ -82,6 +90,14 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
           )}
           {!saved && <p className="mt-2" role="status">{erased ? copy.options.erased : copy.options.noSave}</p>}
         </div>
+
+        {install.available && (
+          <div className="px-text mt-6">
+            <h3 className="text-sm" style={{ color: '#cfc5e0' }}>{copy.options.installTitle}</h3>
+            <p className="mt-2 text-sm">{copy.options.installHint}</p>
+            <button type="button" className="px-btn mt-3" onClick={installApp}>{copy.options.install}</button>
+          </div>
+        )}
 
         <div className="mt-6">
           {/* Con la confirmación abierta el botón principal es "Sí, borrar"; cerrar pasa a secundario. */}

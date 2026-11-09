@@ -356,5 +356,22 @@
     "help_alias": "→ Usa 'ayuda' (o 'help')",
     "not_found_1": "Comando no encontrado:",
     "not_found_2": "Escribe 'ayuda' para ver los comandos disponibles."
+  },
+  "install": {
+    "title": "Instala Valle del Bucle",
+    "recommend": "Se recomienda instalarla para una mejor experiencia: pantalla completa sin las barras del navegador, acceso directo desde tu dispositivo y carga más rápida.",
+    "action": "Instalar",
+    "android": {
+      "insecure": "Esta dirección no es segura (HTTP): Chrome solo instala la app, a pantalla completa, desde HTTPS. Desde aquí el menú solo crea un acceso directo que abre en Chrome.",
+      "manual": "Abre el menú (los tres puntos) de Chrome y elige \"Instalar aplicación\" o \"Añadir a la pantalla de inicio\"."
+    },
+    "close": "Entendido",
+    "later": "Ahora no",
+    "ios": {
+      "share_safari": "Toca el botón Compartir de la barra inferior de Safari.",
+      "share_chrome": "Toca el botón Compartir de la barra de direcciones de Chrome (arriba a la derecha).",
+      "add": "Elige \"Añadir a pantalla de inicio\" y confirma con \"Añadir\".",
+      "other": "Para instalarla, abre esta página en Safari o en Chrome, toca Compartir y elige \"Añadir a pantalla de inicio\"."
+    }
   }
 }

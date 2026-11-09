@@ -1,0 +1,70 @@
+{
+  "name": "Valle del Bucle · Guadalupe Cano",
+  "short_name": "Valle del Bucle",
+  "description": "Portfolio de Guadalupe Cano (Luprintech): un pueblo pixel art para recorrer y un modo clásico con todo el contenido.",
+  "lang": "es",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1c1b3a",
+  "theme_color": "#1c1b3a",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "categories": [
+    "portfolio",
+    "games"
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Continuar aventura",
+      "short_name": "Aventura",
+      "description": "Volver al Valle del Bucle",
+      "url": "/valle",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Modo clásico",
+      "short_name": "Clásico",
+      "description": "Todo el contenido de corrido, sin jugar",
+      "url": "/clasico",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './context/AuthContext'
 import CookieBanner from './components/CookieBanner'
+import InstallPrompt from './components/InstallPrompt'
 
 const ChatBot = lazy(() => import('./components/ChatBot'))
 
@@ -72,6 +73,7 @@ function AppContent() {
         </Suspense>
       )}
       <CookieBanner />
+      <InstallPrompt />
     </>
   );
 }

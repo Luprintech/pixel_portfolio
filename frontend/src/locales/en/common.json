@@ -354,5 +354,22 @@
     "help_alias": "→ Use 'help' (or 'ayuda')",
     "not_found_1": "Command not found:",
     "not_found_2": "Type 'help' to see available commands."
+  },
+  "install": {
+    "title": "Install Valle del Bucle",
+    "recommend": "Installing it is recommended for a better experience: full screen without the browser bars, a direct shortcut on your device and faster loading.",
+    "action": "Install",
+    "android": {
+      "insecure": "This address is not secure (HTTP): Chrome only installs the full-screen app over HTTPS. From here the menu only creates a shortcut that opens in Chrome.",
+      "manual": "Open Chrome's menu (the three dots) and choose \"Install app\" or \"Add to Home screen\"."
+    },
+    "close": "Got it",
+    "later": "Not now",
+    "ios": {
+      "share_safari": "Tap the Share button in Safari's bottom bar.",
+      "share_chrome": "Tap the Share button in Chrome's address bar (top right).",
+      "add": "Choose \"Add to Home Screen\" and confirm with \"Add\".",
+      "other": "To install it, open this page in Safari or Chrome, tap Share and choose \"Add to Home Screen\"."
+    }
   }
 }

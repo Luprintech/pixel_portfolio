@@ -72,6 +72,9 @@ export default defineConfig({
   // Optimización de servidor de desarrollo
   server: {
     port: 5173,
+    // Túneles HTTPS para probar la instalación de la app en el móvil: Vite rechaza por defecto
+    // cualquier nombre de host que no conozca
+    allowedHosts: ['.trycloudflare.com', '.ngrok-free.app', '.loca.lt'],
     open: true,
     // Proxy solo en desarrollo: redirige /api/ al backend local
     // En producción esto no existe; nginx.docker.conf hace el proxy

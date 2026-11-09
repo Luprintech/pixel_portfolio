@@ -74,6 +74,9 @@ export const COPY = {
     hud: {
       customize: 'Personalizar viajera',
       enter: 'Entrar',
+      installTitle: 'Aplicación',
+      installHint: 'Instálala para jugar a pantalla completa y abrirla desde tu dispositivo.',
+      install: 'Instalar aplicación',
       close: 'Cerrar',
       exit: 'Salir',
       classic: 'Modo clásico',
@@ -196,6 +199,9 @@ export const COPY = {
     hud: {
       customize: 'Customize traveller',
       enter: 'Enter',
+      installTitle: 'App',
+      installHint: 'Install it to play full screen and open it from your device.',
+      install: 'Install app',
       close: 'Close',
       exit: 'Exit',
       classic: 'Classic mode',
