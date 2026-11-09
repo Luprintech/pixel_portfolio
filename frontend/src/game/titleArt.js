@@ -25,7 +25,7 @@ import {
 import { CAT_HOME, endHuddle, huddleCat, scaredCat, standAt, startHuddle, startScare } from './titleCat.js'
 import { INTRO_MS, eventsBetween, lifeAt, winterAt } from './titleLife.js'
 import { butterfliesOut, mixHex, skyAt, strikesBetween, windowsLit } from './titleSky.js'
-import { paintCelestial, paintLightning, paintRain, paintSky, paintSnow, paintTint } from './titleSkyPaint.js'
+import { paintCelestial, paintLightning, paintRain, paintSky, paintSnow, paintTint, skyTopColor } from './titleSkyPaint.js'
 
 export const TITLE_W = 320
 export const TITLE_H = 180
@@ -157,7 +157,8 @@ function buildLand(withFlowers, snowy = false) {
     g.drawImage(shadowSprite(30, 7), x + 7, baseY - 6)
     g.drawImage(sprite(treeSprite(variant)), x, baseY - 58)
   }
-  tree(1, 40, 160)
+  // El árbol de la izquierda queda dentro de la franja que siempre se ve en móvil (ver Title.jsx).
+  tree(1, 90, 160)
   g.drawImage(shadowSprite(70, 8), 143, 118)
   g.drawImage(sprite(houseSprite({ roof: '#5c5a7a', shutter: PAL.tile, glow: true })), 146, 60)
   g.drawImage(shadowSprite(70, 8), 232, 118)
@@ -461,7 +462,7 @@ export function createTitleScene(canvas, seed) {
     if (!still) paintLightning(g, ms, seed)
 
     // La gata que tirita no maúlla con las caricias de la escena normal.
-    return { ...sky, thunder, events: cold && !cold.leaving ? events.filter((name) => name !== 'meow') : events, life }
+    return { ...sky, skyTop: skyTopColor(sky), thunder, events: cold && !cold.leaving ? events.filter((name) => name !== 'meow') : events, life }
   }
 
   return { draw }

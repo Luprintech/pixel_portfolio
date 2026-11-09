@@ -115,6 +115,6 @@ export function buildWinterLand(land) {
   ice.forEach(({ x, y, rx }) => icePatch(g, x, y, rx))
   drifts.sort((a, b) => a.y - b.y).forEach(({ x, y, rx }) => drift(g, x, y, rx))
   twinkles.forEach(({ x, y }, i) => dot(g, x, y, i % 3 === 0 ? '#ffffff' : SNOW_SHADE))
-  snowman(g, 104, 160)
+  snowman(g, 150, 164)
   return land
 }

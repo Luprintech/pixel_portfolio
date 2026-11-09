@@ -27,6 +27,7 @@ export default function Title() {
   const { copy } = useValleCopy()
   const canvasRef = useRef(null)
   const menuRef = useRef(null)
+  const rootRef = useRef(null)
   const [saved, setSaved] = useState(loadSave)
   const [options, setOptions] = useState(loadGameOptions)
   const [optionsOpen, setOptionsOpen] = useState(false)
@@ -51,6 +52,24 @@ export default function Title() {
   const lineKey = line?.key.replace(/^journey(\d)$/, saved ? 'journeyBack$1' : 'journeyNew$1')
   const lineText = lineKey ? copy.lupe[lineKey] : null
 
+  // El lienzo termina justo donde empieza el menú, sea cual sea la altura de este (con o sin partida
+  // guardada, con la fuente cargada o no): se mide y se deja en `--menu-h`, que usan el lienzo y el título.
+  useEffect(() => {
+    const root = rootRef.current
+    const menu = menuRef.current
+    if (!root || !menu) return undefined
+    const fit = () => {
+      const space = root.getBoundingClientRect().bottom - menu.getBoundingClientRect().top
+      // Diez píxeles más por el doble anillo del marco, que sobresale del menú.
+      root.style.setProperty('--menu-h', `${Math.round(space + 10)}px`)
+    }
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(menu)
+    observer.observe(root)
+    return () => observer.disconnect()
+  }, [])
+
   // El valle está vivo: pasa el día y la noche, llueve o truena, Lupe y la gata pasean y caen pétalos.
   // El sonido ambiente sigue al cielo. Con movimiento reducido se pinta una sola imagen en reposo.
   useEffect(() => {
@@ -58,7 +77,9 @@ export default function Title() {
     if (!canvas) return undefined
     const scene = createTitleScene(canvas, seed)
     if (reduceMotion) {
-      setAmbienceScene(scene.draw(0, true))
+      const still = scene.draw(0, true)
+      rootRef.current.style.background = still.skyTop
+      setAmbienceScene(still)
       // Con la imagen quieta, Lupe deja puesto el mensaje que más ayuda: cómo empezar.
       setLine(LUPE_LINE('journey1', 'lupe', LUPE_ANCHOR))
       return undefined
@@ -70,6 +91,7 @@ export default function Title() {
       if (now - last >= FRAME_MS) {
         last = now
         const sky = scene.draw(now - start)
+        rootRef.current.style.background = sky.skyTop
         setAmbienceScene(sky)
         sky.thunder.forEach(thunder)
         // Khalessi maúlla cuando le toca; Lupe y ella hablan una a una, y el bocadillo solo cambia con la frase.
@@ -89,7 +111,7 @@ export default function Title() {
   }, [seed, reduceMotion])
 
   return (
-    <div className="relative isolate flex min-h-dvh flex-col justify-between overflow-hidden" style={{ background: PAL.ink }}>
+    <div ref={rootRef} className="relative isolate flex min-h-dvh flex-col justify-between overflow-hidden" style={{ background: PAL.ink }}>
       <Helmet>
         <title>Valle del Bucle | Guadalupe Cano, desarrolladora web full stack</title>
         <meta
@@ -99,13 +121,17 @@ export default function Title() {
         <link rel="canonical" href="https://guadalupecano.es/" />
       </Helmet>
 
+      {/* El lienzo se amplía para llenar el hueco, pero nunca tanto que se recorten los lados: con
+          `max-h-[106vw]` siempre se ven al menos 170 de los 320 px de ancho de la escena, que deja
+          asomar la copa del árbol de la izquierda (la app instalada es más alta que el navegador y antes
+          se acercaba tanto que desaparecía). Si sobra altura, el lienzo se queda sobre el menú y lo de
+          encima se rellena con el color del cielo (rootRef). */}
       <canvas
         ref={canvasRef}
         width={TITLE_W}
         height={TITLE_H}
-        className={`px-canvas absolute inset-x-0 top-0 -z-10 w-full object-cover sm:bottom-0 sm:h-full ${
-          saved ? 'bottom-[21.25rem] h-[calc(100%-21.25rem)]' : 'bottom-[16.25rem] h-[calc(100%-16.25rem)]'
-        }`}
+        className="px-canvas absolute inset-x-0 bottom-[var(--menu-h,17rem)] -z-10 h-[calc(100%-var(--menu-h,17rem))] max-h-[106vw] w-full object-cover sm:bottom-0 sm:h-full"
+
         style={{ objectPosition: '72% 100%' }}
         aria-hidden="true"
       />
@@ -121,7 +147,7 @@ export default function Title() {
         <LanguageSwitcher />
       </div>
 
-      <header className="px-4 pt-[4.75rem] text-center sm:pt-10">
+      <header className="px-title-header px-4 pt-[4.75rem] text-center sm:pt-10">
         <h1
           className="px-title mx-auto text-[clamp(3.25rem,13vw,7.5rem)]"
           style={{ color: PAL.bone, textShadow: `0 4px 0 ${PAL.ink}, 3px 4px 0 ${PAL.ink}, -3px 4px 0 ${PAL.ink}` }}
@@ -140,7 +166,7 @@ export default function Title() {
         <section
           ref={menuRef}
           aria-label={copy.gameTitle}
-          className="px-frame z-10 mb-6 self-stretch p-4 sm:mb-10 sm:ml-10 sm:mt-8 sm:w-[19rem] sm:self-start sm:p-5"
+          className="px-frame px-title-menu z-10 self-stretch p-4 sm:mb-10 sm:ml-10 sm:mt-8 sm:w-[19rem] sm:self-start sm:p-5"
           style={{ background: PAL.ink, color: PAL.bone, ['--px-ink']: '#0f0e22', ['--px-ring']: PAL.saffron }}
         >
           <nav aria-label="Menú principal">

@@ -427,6 +427,27 @@
   }
 }
 
+/* Menú de la portada en móvil: `.px-frame` fija su margen en 9px y pisa las utilidades de Tailwind, y la
+   sombra del marco baja otros 15px, así que el panel quedaba pegado al borde de la pantalla. Aquí se le
+   deja aire debajo, más si el dispositivo tiene zona segura (el indicador de inicio del iPhone). */
+@media (max-width: 639px) {
+  .px-title-menu.px-title-menu {
+    margin-bottom: max(1.75rem, calc(env(safe-area-inset-bottom) + 1.25rem));
+  }
+}
+
+/* Con la app instalada en el móvil no hay barras del navegador y el lienzo (Title.jsx) deja arriba un
+   cielo vacío. Solo en ese caso el título baja para quedar centrado en la franja de cielo sobre el
+   paisaje: entre los botones de la esquina (unos 3,5rem) y el primer tercio del lienzo, que mide
+   lo que el alto libre sobre el menú (`--menu-h`) o el 106 % del ancho, lo que sea menor. */
+@media (display-mode: standalone) and (max-width: 639px) {
+  .px-title-header.px-title-header {
+    --canvas-h: min(106vw, 100dvh - var(--menu-h, 17rem));
+    --sky-bottom: calc(100dvh - var(--menu-h, 17rem) - var(--canvas-h) * 2 / 3);
+    padding-top: max(4.75rem, calc((3.5rem + var(--sky-bottom)) / 2 - 3.25rem));
+  }
+}
+
 /* Entrada de los avisos que suben desde abajo (el de instalar la aplicación): un solo movimiento
    corto, con la curva de frenado de las demás entradas, y sin él si se pide menos movimiento. */
 @keyframes px-prompt-rise {

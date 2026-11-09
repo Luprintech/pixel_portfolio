@@ -93,3 +93,12 @@ export function paintTint(g, sky) {
   rect(g, 0, 0, WIDTH, HEIGHT, '#b9d4f2')
   g.globalAlpha = 1
 }
+
+// Color de la franja más alta del cielo ya con el oscurecimiento, las nubes cargadas y el velo de
+// invierno encima (los mismos que `paintTint`). Es el que se extiende por encima del lienzo cuando la
+// pantalla es más alta de lo que la imagen puede ampliarse (Title.jsx), para que no se vea el corte.
+export function skyTopColor(sky) {
+  const night = mixHex(sky.bands[0], '#1c1b3a', 0.5 * sky.dark)
+  const overcast = mixHex(night, '#2e2d5a', 0.22 * Math.max(sky.rain, sky.storm))
+  return mixHex(overcast, '#b9d4f2', 0.16 * sky.winter)
+}
