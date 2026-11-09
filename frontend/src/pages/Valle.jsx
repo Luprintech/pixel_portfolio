@@ -220,7 +220,7 @@ export default function Valle() {
           </Helmet>
         )}
 
-        <div ref={hostRef} className="absolute inset-0" aria-hidden={!!zone} />
+        <div ref={hostRef} className="valle-host absolute inset-0" aria-hidden={!!zone} />
 
         {status === 'loading' && started && slow && (
           <p className="px-text absolute inset-0 grid place-items-center text-xl" style={{ color: tone('ink', PAL.bone) }} role="status">{copy.hud.loading}</p>

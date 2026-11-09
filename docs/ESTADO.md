@@ -412,6 +412,12 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - **Medido** en el navegador de pruebas: durante toda la preparación (7 s) no hubo ninguna tarea larga imputable a ella (las que salieron fueron la carga inicial de la página y la de Phaser, de unos 140 ms); entrar con todo preparado, 238 ms y sin texto de carga; entrar en frío (recargar `/valle` directamente), de unos 4,1 s a 2,5 s, con una tarea de 1,8 s que es la creación de la escena. 5 pruebas nuevas de `sliced.js`; 288 en total.
 - **Sin probar en el iPhone.** Si la transición aún se nota, el siguiente paso es sacar la preparación a un Web Worker con `OffscreenCanvas`, o trocear también la creación de la escena en frío.
 
+### La viajera ya no vibra al caminar en continuo (2026-11-09)
+- **Síntoma:** con una flecha pulsada de forma continua, la viajera vibraba y se veía borrosa en el navegador a pantalla completa; con pasos cortos, y en el modo móvil del navegador, no pasaba.
+- **Causa 1, lienzo en píxeles CSS (`game/boot.js`):** con una escala del sistema fraccionaria (125 % en Windows) el lienzo en píxeles CSS se estiraba con un factor no entero y los píxeles salían con anchos desiguales. Ahora el lienzo se dibuja con el tamaño real del dispositivo (factor máximo 2, para no cargar los móviles), en modo `NONE` con un `ResizeObserver`, y `.valle-host canvas` lo estira al contenedor. El zoom de la cámara sigue siendo entero y se calcula sobre ese tamaño.
+- **Causa 2, redondeos desfasados (`ValleScene.js`):** la cámara seguía con un lerp suave y redondeaba su scroll a píxeles de mundo, mientras el sprite se redondeaba a píxeles de lienzo y la sombra usaba su propia posición redondeada. Ahora la cámara sigue sin retardo y sin redondear, y la sombra de la viajera y la de la mascota usan la posición sin redondear; el redondeo lo hace solo el renderizador (`roundPixels` del juego).
+- **Comprobado** en el navegador de pruebas (factor 1,25): lienzo de 679×788 para 543×630 px CSS. La mejora del movimiento la confirmó la usuaria a mano; no se midió el movimiento por script porque la pestaña de pruebas estaba oculta.
+
 ## Pendiente
 
 ### Tema "valle": lo que queda (2026-11-09)

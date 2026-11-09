@@ -294,6 +294,13 @@
   opacity: 0.8;
 }
 
+/* El lienzo de Phaser tiene el tamaño del dispositivo, no el CSS: se estira al contenedor con !important porque
+   Phaser reescribe su estilo en línea. */
+.valle-host canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .px-canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;

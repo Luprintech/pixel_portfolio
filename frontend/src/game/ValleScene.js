@@ -44,9 +44,13 @@ export default class ValleScene extends Phaser.Scene {
 
     const cam = this.cameras.main
     cam.setBounds(0, 0, COLS * TILE, ROWS * TILE)
-    cam.startFollow(this.princess, true, 0.12, 0.12)
+    // Seguimiento sin retardo: con un lerp suave, al caminar en continuo el scroll fraccionario de la cámara y el
+    // redondeo del sprite van desfasados y la viajera vibra 1 px. Pegada a ella, ambos redondean a la vez.
+    cam.startFollow(this.princess, true, 1, 1)
     cam.centerOn(this.princess.x, this.princess.y)
-    cam.setRoundPixels(true)
+    // El scroll no se redondea: el redondeo a píxel lo hace el renderizador (`roundPixels` del juego) igual para todo
+    // lo que se dibuja. Si la cámara redondeaba aparte, a zoom 3 la viajera oscilaba hasta 1,5 px respecto al centro.
+    cam.setRoundPixels(false)
     this.fitCamera()
     this.scale.on('resize', this.fitCamera, this)
 
@@ -340,7 +344,8 @@ export default class ValleScene extends Phaser.Scene {
     const px = Math.round(this.princess.x)
     const py = Math.round(this.princess.y)
     this.princess.setDepth(py)
-    this.shadow.setPosition(px, py - 1)
+    // La sombra usa la misma posición sin redondear que el sprite: si no, se desfasa de él al caminar.
+    this.shadow.setPosition(this.princess.x, this.princess.y - 1)
 
     if (this.companion) this.followPet(moving, px, py, delta)
     this.checkDoors(px, py)
@@ -371,7 +376,7 @@ export default class ValleScene extends Phaser.Scene {
     }
     pet.setDepth(Math.round(pet.y))
     const bodyShift = Math.round(this.petWidth * 0.12) * (pet.flipX ? 1 : -1)
-    this.petShadow.setPosition(Math.round(pet.x) + bodyShift, Math.round(pet.y) - 1)
+    this.petShadow.setPosition(pet.x + bodyShift, pet.y - 1)
   }
 
   checkDoors(px, py) {
