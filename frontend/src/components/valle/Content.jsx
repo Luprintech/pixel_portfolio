@@ -14,7 +14,7 @@ export function AboutBlock() {
         <p key={line} className="max-w-[60ch] leading-relaxed">{line}</p>
       ))}
       <p className="flex flex-wrap gap-x-5 gap-y-2 pt-2">
-        <a className="px-link" href={LINKS.cv} target="_blank" rel="noopener noreferrer">{copy.about.cv}</a>
+        <Link className="px-link" to="/cv">{copy.about.cv}</Link>
         <a className="px-link" href={LINKS.linkedin} target="_blank" rel="noopener noreferrer">{copy.about.linkedin}</a>
         <a className="px-link" href={LINKS.youtube} target="_blank" rel="noopener noreferrer">{copy.about.youtube}</a>
       </p>

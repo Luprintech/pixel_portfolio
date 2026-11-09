@@ -11,7 +11,7 @@ import { clearSave, loadSave } from '../game/save'
 import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
 import { loadGameOptions, saveGameOptions, prefersReducedMotion } from '../lib/gameOptions'
 import { playPetSound } from '../lib/petSounds'
-import { LINKS, useValleCopy } from '../lib/valleCopy'
+import { useValleCopy } from '../lib/valleCopy'
 
 // 20 fotogramas por segundo bastan para el pixel art y gastan poco.
 const FRAME_MS = 50
@@ -183,7 +183,7 @@ export default function Title() {
             <span className="sr-only">{copy.shortcuts}</span>
             <Link className="px-link" to="/proyectos">{copy.sections.projects}</Link>
             <Link className="px-link" to="/contacto">{copy.sections.contact}</Link>
-            <a className="px-link" href={LINKS.cv} target="_blank" rel="noopener noreferrer">{copy.sections.cv}</a>
+            <Link className="px-link" to="/cv">{copy.sections.cv}</Link>
           </p>
         </section>
       </div>

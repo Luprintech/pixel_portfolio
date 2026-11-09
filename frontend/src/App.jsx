@@ -16,7 +16,7 @@ const ChatBot = lazy(() => import('./components/ChatBot'))
 function AppContent() {
   const location = useLocation();
   const isCms = location.pathname.startsWith('/bitacora');
-  const isFullScreen = location.pathname === '/' || location.pathname === '/valle';
+  const isFullScreen = location.pathname === '/' || location.pathname === '/valle' || location.pathname === '/cv';
   const [shouldLoadChatBot, setShouldLoadChatBot] = useState(false);
 
   useEffect(() => {

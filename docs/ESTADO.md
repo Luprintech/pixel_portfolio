@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-09 (portada y opciones en móvil, sin blog en los accesos).
+Última actualización: 2026-11-09 (página del CV con visor y botón de volver).
 
 ## Hecho
 
@@ -376,3 +376,5 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 | Opciones de la portada: una columna compacta en móvil y dos columnas desde 640 px de ancho; en pantallas de menos de 600 px de alto se ocultan los textos de ayuda y se aprieta el espaciado | Debe caber sin desplazarse en móvil vertical y horizontal. Medido sin desplazamiento en 320×568, 360×640, 390×844, 667×375 y 768×1024. Los avisos siguen ligados a su control (`aria-describedby`) aunque no se vean. |
 | Portada: en móvil el subtítulo baja al pie del mapa (sobre el menú) y sin apellido; la firma de la esquina pasa de "Luprintech" a "Guadalupe Cano" (2026-11-09) | Los bocadillos de Lupe tapaban el subtítulo bajo el título, y sin el apellido cabe en una fila. En web el subtítulo sigue bajo el título y con el nombre completo. |
 | Portada: sin firma en la esquina y menú de accesos con Proyectos, Contacto y CV centrados, sin Blog (2026-11-09) | Guadalupe retirará el blog del portfolio; el resto de su limpieza queda anotada en "Quitar el blog del portfolio" y se hará con el modo clásico. |
+| El CV se ve en una página propia `/cv` (visor de PDF con "Volver" y "Descargar PDF") en vez de abrir el PDF suelto (2026-11-09) | En iPhone, y sobre todo en la app instalada, un PDF abierto a pantalla completa no tiene forma de volver atrás. `/cv` es pantalla completa sin la barra del modo clásico y reutiliza `PdfPreview`. Los enlaces "CV" de la portada y de Sobre mí apuntan ahí. Sin probar en un iPhone real. |
+| La barra del visor del CV es compacta: "Pagina 1 / 1", "-", porcentaje de zoom, "+" y flechas de página, sin "Ajustar ancho", "Pagina completa" ni el botón "100%" (2026-11-09) | Menos controles y cabe en una fila en móvil. Es la opción `compact` de `PdfCanvasViewer`; el editor del CMS y los documentos del blog conservan la barra completa. |

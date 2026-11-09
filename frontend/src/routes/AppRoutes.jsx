@@ -7,6 +7,7 @@ import ProtectedRoute from "../components/cms/ProtectedRoute";
 const Title                  = lazy(() => import("../pages/Title"));
 const Valle                  = lazy(() => import("../pages/Valle"));
 const Clasico                = lazy(() => import("../pages/Clasico"));
+const Cv                     = lazy(() => import("../pages/Cv"));
 const Portfolio              = lazy(() => import("../pages/Portfolio"));
 const PortfolioDesarrolloWeb = lazy(() => import("../pages/portfolio/desarrollo-web"));
 const PortfolioDocumentacion = lazy(() => import("../pages/portfolio/documentacion-tecnica"));
@@ -61,6 +62,7 @@ export default function AppRoutes() {
           {/* Portfolio */}
           <Route path="/" element={<Title />} />
           <Route path="/valle" element={<Valle />} />
+          <Route path="/cv" element={<Cv />} />
           <Route path="/clasico" element={<Motion.div {...pageTransition}><Clasico /></Motion.div>} />
           <Route path="/sobre-mi" element={<Navigate to="/clasico#sobre-mi" replace />} />
           <Route path="/portfolio" element={<Motion.div {...pageTransition}><Portfolio /></Motion.div>} />

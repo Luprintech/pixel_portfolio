@@ -74,4 +74,35 @@ describe('PdfPreview', () => {
 
     expect(screen.getByText('Si el archivo sigue fallando, abrilo o descargalo desde el CTA del documento.')).toBeInTheDocument();
   });
+
+  it('en modo compacto quita los ajustes de ancho y página completa y usa flechas', async () => {
+    getDocumentMock.mockReturnValue({
+      promise: Promise.resolve({
+        numPages: 2,
+        destroy: vi.fn().mockResolvedValue(undefined),
+        getPage: vi.fn(async () => ({
+          getViewport: ({ scale }) => ({ width: 600 * scale, height: 800 * scale }),
+          render: () => ({ promise: Promise.resolve(), cancel: vi.fn() }),
+        })),
+      }),
+    });
+
+    const user = userEvent.setup();
+    render(<PdfPreview src="/docs/cv.pdf" title="CV" height={640} compact />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Pagina 1 / 2')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('button', { name: 'Ajustar ancho' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Pagina completa' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '100%' })).not.toBeInTheDocument();
+    expect(screen.getByText('100%')).toBeInTheDocument();
+    expect(screen.queryByText(/^Zoom/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Pagina siguiente' }));
+    await waitFor(() => {
+      expect(screen.getByText('Pagina 2 / 2')).toBeInTheDocument();
+    });
+  });
 });

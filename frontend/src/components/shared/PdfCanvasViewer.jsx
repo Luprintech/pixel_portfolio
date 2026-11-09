@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const MIN_VIEWER_HEIGHT = 420;
 const DEFAULT_VIEWER_HEIGHT = 560;
@@ -29,6 +30,8 @@ export default function PdfCanvasViewer({
   src = '',
   title = 'Documento PDF',
   height = DEFAULT_VIEWER_HEIGHT,
+  // Barra reducida: sin los botones de ajuste de ancho, página completa y 100 %, el zoom solo como porcentaje entre - y +, y flechas para cambiar de página
+  compact = false,
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
@@ -210,76 +213,91 @@ export default function PdfCanvasViewer({
           <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)]">
+        <div className={`flex flex-wrap items-center text-xs ${compact ? 'gap-1.5' : 'gap-2'}`}>
+          <span className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)]`}>
             Pagina {getVisiblePage(page, numPages)} / {Math.max(numPages, 1)}
           </span>
-          <span className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)]">
-            Zoom {Math.round(zoomFactor * 100)}%
-          </span>
+          {!compact && (
+            <span className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)]`}>
+              Zoom {Math.round(zoomFactor * 100)}%
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setZoomFactor((currentZoom) => clampZoomFactor(currentZoom - ZOOM_STEP))}
             disabled={loading || Boolean(error) || zoomFactor <= MIN_ZOOM_FACTOR}
-            className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45"
+            className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45`}
             aria-label="Alejar"
           >
             -
           </button>
-          <button
-            type="button"
-            onClick={() => setZoomFactor(1)}
-            disabled={loading || Boolean(error) || zoomFactor === 1}
-            className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            100%
-          </button>
+          {compact && (
+            <span className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)]`} aria-label={`Zoom ${Math.round(zoomFactor * 100)}%`}>
+              {Math.round(zoomFactor * 100)}%
+            </span>
+          )}
+          {!compact && (
+            <button
+              type="button"
+              onClick={() => setZoomFactor(1)}
+              disabled={loading || Boolean(error) || zoomFactor === 1}
+              className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45`}
+            >
+              100%
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setZoomFactor((currentZoom) => clampZoomFactor(currentZoom + ZOOM_STEP))}
             disabled={loading || Boolean(error) || zoomFactor >= MAX_ZOOM_FACTOR}
-            className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45"
+            className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45`}
             aria-label="Acercar"
           >
             +
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setFitMode('width');
-              setZoomFactor(1);
-            }}
-            disabled={loading || Boolean(error) || fitMode === 'width'}
-            className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            Ajustar ancho
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setFitMode('page');
-              setZoomFactor(1);
-            }}
-            disabled={loading || Boolean(error) || fitMode === 'page'}
-            className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            Pagina completa
-          </button>
+          {!compact && (
+            <>
+            <button
+              type="button"
+              onClick={() => {
+                setFitMode('width');
+                setZoomFactor(1);
+              }}
+              disabled={loading || Boolean(error) || fitMode === 'width'}
+              className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45`}
+            >
+              Ajustar ancho
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFitMode('page');
+                setZoomFactor(1);
+              }}
+              disabled={loading || Boolean(error) || fitMode === 'page'}
+              className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45`}
+            >
+              Pagina completa
+            </button>
+            </>
+          )}
           <button
             type="button"
             onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
             disabled={page <= 1 || loading || Boolean(error)}
-            className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45"
+            aria-label={compact ? 'Pagina anterior' : undefined}
+            className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45`}
           >
-            Anterior
+            {compact ? <ArrowLeft className="h-4 w-4" aria-hidden="true" /> : 'Anterior'}
           </button>
           <button
             type="button"
             onClick={() => setPage((currentPage) => Math.min(numPages, currentPage + 1))}
             disabled={page >= numPages || loading || Boolean(error)}
-            className="rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 px-3 py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45"
+            aria-label={compact ? 'Pagina siguiente' : undefined}
+            className={`rounded-none border border-[var(--border-default)] bg-[var(--bg-primary)]/75 ${compact ? 'px-2' : 'px-3'} py-1.5 font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-secondary)]/35 hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-45`}
           >
-            Siguiente
+            {compact ? <ArrowRight className="h-4 w-4" aria-hidden="true" /> : 'Siguiente'}
           </button>
         </div>
       </div>
