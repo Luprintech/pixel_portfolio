@@ -1,4 +1,5 @@
 import { PAL } from '../../../game/palette'
+import { tone } from '../../../lib/tone'
 import { RING } from '../pickStyle'
 import TurnButton from './TurnButton'
 import { useStageScene } from './useStageScene'
@@ -13,13 +14,13 @@ export default function StageFrame({ title, turnLabel, onTurn, headerEnd, minCol
   return (
     <section className="flex min-h-0 min-w-0 flex-col gap-5 lg:gap-4">
       <header className="flex min-h-[44px] items-center justify-between gap-2">
-        <h2 className="px-title text-2xl" style={{ color: PAL.bone }}>{title}</h2>
+        <h2 className="px-title text-2xl" style={{ color: tone('ink', PAL.bone) }}>{title}</h2>
         {headerEnd}
       </header>
       <div
         ref={boxRef}
         className="relative mx-[6px] flex h-[var(--stage-h)] items-end justify-center overflow-hidden lg:h-auto lg:min-h-[8rem] lg:flex-1"
-        style={{ background: PAL.moss, boxShadow: `0 0 0 3px ${PAL.ink}, 0 0 0 6px ${RING}` }}
+        style={{ background: PAL.moss, boxShadow: `0 0 0 3px ${tone('ink', PAL.ink)}, 0 0 0 6px ${RING}` }}
       >
         <canvas
           ref={canvasRef}

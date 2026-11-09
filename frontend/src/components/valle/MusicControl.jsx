@@ -1,5 +1,6 @@
 import { useBackgroundMusic } from '../../hooks/useBackgroundMusic'
 import { PAL } from '../../game/palette'
+import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
 
 // Altavoz dibujado píxel a píxel (10×10): cuerpo y cono siempre, y ondas o aspa según el estado.
@@ -11,7 +12,7 @@ function SpeakerIcon({ on }) {
   return (
     <svg viewBox="0 0 10 10" width="24" height="24" shapeRendering="crispEdges" aria-hidden="true" focusable="false">
       {[...SPEAKER, ...(on ? WAVES : CROSS)].map((d) => (
-        <path key={d} d={d} fill={on ? PAL.ink : PAL.tile} />
+        <path key={d} d={d} style={{ fill: on ? tone('ink', PAL.ink) : tone('muted', PAL.tile) }} />
       ))}
     </svg>
   )
@@ -27,14 +28,14 @@ export default function MusicControl({ compact = false, track = 'welcome' }) {
   const label = muted ? copy.audio.play : copy.audio.mute
 
   return (
-    <div className={compact ? 'flex' : 'flex items-center gap-3 px-1 py-1'} style={compact ? undefined : { background: PAL.ink }}>
+    <div className={compact ? 'flex' : 'flex items-center gap-3 px-1 py-1'} style={compact ? undefined : { background: tone('lavender', PAL.ink) }}>
       <button
         type="button"
         onClick={toggle}
         aria-pressed={!muted}
         aria-label={label}
         title={label}
-        className="px-btn px-btn--bone !min-h-10 !w-10 !p-0"
+        className="px-btn px-btn--bone !min-h-[var(--ctl,2.5rem)] !w-[var(--ctl,2.5rem)] !p-0"
         style={{ color: PAL.ink }}
       >
         <SpeakerIcon on={!muted && volume > 0} />

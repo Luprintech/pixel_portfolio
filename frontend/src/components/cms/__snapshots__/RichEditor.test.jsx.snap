@@ -7,7 +7,7 @@ exports[`RichEditor > muestra la barra de herramientas con sus acciones 1`] = `
   "Añadir columna izquierda",
   "Añadir fila abajo",
   "Añadir fila arriba",
-  "Cambiar a modo claro",
+  "Cambiar a modo oscuro",
   "Cambiar color de texto",
   "Centrar",
   "Color de celda",

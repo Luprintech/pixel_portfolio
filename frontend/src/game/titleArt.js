@@ -2,6 +2,7 @@
 // el juego) y con los mismos sprites que el mundo, para que portada y juego se vean como uno solo.
 // El paisaje se dibuja una vez; el cielo, el tiempo y lo vivo se pintan encima en cada fotograma.
 import { PAL, TONE, seeded } from './palette.js'
+import { lightenWorld, softenCanvas, softenColor } from './titleSoften.js'
 import { drawFlower, drawTuft, grassColor, paintRoute } from './ground.js'
 import { dot, ellipse, makeCanvas, noise, rect } from './pixelKit.js'
 import { lupeFrame } from './lupePoses.js'
@@ -145,7 +146,7 @@ function meadow(g, withFlowers) {
 
 // Paisaje completo del valle. Sin flores es la base de los biomas de otoño y de invierno; este último
 // además lleva nieve en cumbres, copas y tejados antes de repintar la hierba.
-function buildLand(withFlowers, snowy = false) {
+function buildLand(withFlowers, snowy = false, pastel = false) {
   const land = makeCanvas(TITLE_W, TITLE_H)
   const g = land.getContext('2d')
   const sprite = (canvas) => (snowy ? snowCap(canvas) : canvas)
@@ -164,6 +165,7 @@ function buildLand(withFlowers, snowy = false) {
   g.drawImage(shadowSprite(70, 8), 232, 118)
   g.drawImage(sprite(dungeonSprite()), 232, 72)
   tree(2, 284, 156)
+  if (pastel) lightenWorld(land)
   return { land, flowers }
 }
 
@@ -185,15 +187,20 @@ function buildRainbow() {
   return canvas
 }
 
-let cache = null
+// Una caché por variante: la de siempre y la pastel no comparten dibujo.
+const caches = new Map()
 
 // Todo lo que no cambia entre fotogramas se dibuja una sola vez: el valle de primavera, el de otoño,
 // el de invierno y el arcoíris.
-function buildLayers() {
-  const spring = buildLand(true)
-  const autumn = buildAutumnLand(buildLand(false).land)
-  const winter = buildWinterLand(buildLand(false, true).land)
-  return { land: spring.land, autumn, winter, flowers: spring.flowers, rainbow: buildRainbow() }
+// Con `pastel` (prueba de paleta de la portada) la hierba y la tierra se aclaran antes de repintar las
+// estaciones, y cada capa del valle se suaviza al final; los sprites que se dibujan encima no.
+function buildLayers(pastel) {
+  const spring = buildLand(true, false, pastel)
+  const autumn = buildAutumnLand(buildLand(false, false, pastel).land)
+  const winter = buildWinterLand(buildLand(false, true, pastel).land)
+  const layers = { land: spring.land, autumn, winter, flowers: spring.flowers, rainbow: buildRainbow() }
+  if (pastel) ['land', 'autumn', 'winter', 'rainbow'].forEach((name) => softenCanvas(layers[name]))
+  return layers
 }
 
 // Mariposa de dos o cuatro píxeles de ala, según la tenga abierta o cerrada.
@@ -239,8 +246,9 @@ const FAR_HOUSES = [
 // La escena guarda los sprites ya dibujados; `draw(ms, still)` pinta un fotograma y devuelve el estado
 // del cielo (para el sonido ambiente) con los truenos que toca oír. `seed` fija el día de la visita.
 // Con `still` (movimiento reducido) solo se dibuja la imagen en reposo.
-export function createTitleScene(canvas, seed) {
-  if (!cache) cache = buildLayers()
+export function createTitleScene(canvas, seed, { pastel = false } = {}) {
+  if (!caches.has(pastel)) caches.set(pastel, buildLayers(pastel))
+  const cache = caches.get(pastel)
   const g = canvas.getContext('2d')
   g.imageSmoothingEnabled = false
 
@@ -331,7 +339,9 @@ export function createTitleScene(canvas, seed) {
   function draw(rawMs, still = false) {
     // El primer fotograma del navegador puede llegar con una marca de tiempo anterior al arranque: nunca negativa.
     const ms = still ? STILL_MS : Math.max(0, rawMs)
-    const sky = skyAt(ms, seed, still)
+    const rawSky = skyAt(ms, seed, still)
+    // El cielo pastel baja la saturación de sus franjas; el resto del estado (hora, tiempo) es el mismo.
+    const sky = pastel ? { ...rawSky, bands: rawSky.bands.map((band) => softenColor(band)) } : rawSky
     // Con la pestaña oculta el reloj da un salto: no se recuperan los rayos que hubo mientras tanto.
     const live = !still && ms - lastMs <= 500
     const thunder = live ? strikesBetween(lastMs, ms, seed).map((strike) => strike.delay) : []

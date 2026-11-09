@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { PAL } from '../../game/palette'
 import { useInstallPrompt } from '../../hooks/useInstallPrompt'
 import { useSoundPrefs } from '../../hooks/useSoundPrefs'
+import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
 import VolumeSlider from './VolumeSlider'
 
@@ -39,7 +40,7 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
     install.request()
   }
 
-  const muted = { color: '#cfc5e0' }
+  const muted = { color: tone('muted', '#cfc5e0') }
 
   // En pantallas bajas (menos de 600 px de alto: móvil pequeño o horizontal) los textos de ayuda se ocultan a la vista para que
   // todo quepa sin desplazarse; el del volumen de efectos sigue ligado a su barra para lectores de pantalla.
@@ -49,9 +50,9 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
     <dialog ref={ref} className="px-dialog" aria-labelledby="options-title" onClose={onClose}>
       <div
         className="px-frame p-4 sm:p-5 [@media(max-height:600px)]:p-3"
-        style={{ background: PAL.ink, color: PAL.bone, ['--px-ink']: '#0f0e22', ['--px-ring']: PAL.saffron }}
+        style={{ background: tone('lavender', PAL.ink), color: tone('ink', PAL.bone), ['--px-ink']: tone('ink', '#0f0e22'), ['--px-ring']: tone('lavender-deep', PAL.saffron) }}
       >
-        <h2 id="options-title" className="px-title text-3xl sm:text-4xl [@media(max-height:600px)]:text-3xl" style={{ color: PAL.bone }}>{copy.options.title}</h2>
+        <h2 id="options-title" className="px-title text-3xl sm:text-4xl [@media(max-height:600px)]:text-3xl" style={{ color: tone('ink', PAL.bone) }}>{copy.options.title}</h2>
 
         <div className="px-text mt-3 grid gap-x-8 gap-y-4 sm:mt-4 sm:gap-y-6 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_1fr] [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
           <label className="flex cursor-pointer items-start gap-3 sm:col-start-1 sm:row-start-1">

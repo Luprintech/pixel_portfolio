@@ -9,6 +9,7 @@ import { defaultLook, randomLook, selectBody } from '../game/look'
 import { DEFAULT_PET } from '../game/pet'
 import { PAL } from '../game/palette'
 import { loadSave, sanitizeName, writeSave } from '../game/save'
+import { tone } from '../lib/tone'
 import { useValleCopy } from '../lib/valleCopy'
 
 const isTouch = () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
@@ -114,10 +115,14 @@ export default function Valle() {
     )
   }
 
-  const hudStyle = { background: PAL.ink, color: PAL.bone, boxShadow: `0 0 0 3px ${PAL.ink}, 0 0 0 6px ${PAL.saffron}` }
+  const hudStyle = {
+    background: tone('lavender', PAL.ink),
+    color: tone('ink', PAL.bone),
+    boxShadow: `0 0 0 3px ${tone('ink', PAL.ink)}, 0 0 0 6px ${tone('lavender-deep', PAL.saffron)}`,
+  }
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden" style={{ background: PAL.ink }}>
+    <div className="relative h-dvh w-full overflow-hidden" style={{ background: tone('lavender', PAL.ink) }}>
       <Helmet>
         <title>Valle del Bucle | Juego</title>
         <meta name="robots" content="noindex, follow" />
@@ -126,10 +131,10 @@ export default function Valle() {
       <div ref={hostRef} className="absolute inset-0" aria-hidden={!!zone} />
 
       {status === 'loading' && (
-        <p className="px-text absolute inset-0 grid place-items-center text-xl" style={{ color: PAL.bone }} role="status">{copy.hud.loading}</p>
+        <p className="px-text absolute inset-0 grid place-items-center text-xl" style={{ color: tone('ink', PAL.bone) }} role="status">{copy.hud.loading}</p>
       )}
       {status === 'error' && (
-        <p className="px-text absolute inset-0 z-10 grid place-items-center p-6 text-center text-lg" style={{ color: PAL.bone }} role="alert">
+        <p className="px-text absolute inset-0 z-10 grid place-items-center p-6 text-center text-lg" style={{ color: tone('ink', PAL.bone) }} role="alert">
           <span>
             {copy.hud.error}{' '}
             <Link className="px-link" to="/clasico">{copy.hud.classic}</Link>

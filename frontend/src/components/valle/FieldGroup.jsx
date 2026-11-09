@@ -1,4 +1,6 @@
-const MUTED = '#cfc5e0'
+import { tone } from '../../lib/tone'
+
+const MUTED = tone('muted', '#cfc5e0')
 
 // Un campo del creador: su nombre y, debajo, las opciones.
 export default function FieldGroup({ legend, children }) {

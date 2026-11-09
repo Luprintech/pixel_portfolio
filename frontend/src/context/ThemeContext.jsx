@@ -4,53 +4,42 @@ import { createContext, useContext, useEffect, useState } from 'react'
 const ThemeContext = createContext(null)
 
 // Utilidades
-/**
- * Fuerza modo oscuro como tema inicial siempre.
- */
+// Temas: "valle" (pastel, el de siempre al entrar), "dark" (modo noche, el azul marino anterior) y "light".
+// Solo se guarda la elección explícita del botón de tema, con una clave nueva: la antigua ('theme') la
+// escribía cada visita con 'dark' y habría dejado a los visitantes de antes en azul marino.
+const THEME_KEY = 'valle-del-bucle:theme'
+const THEMES = ['valle', 'dark', 'light']
+
 function getInitialTheme() {
-  // Tema forzado: modo oscuro (ignora localStorage al iniciar)
-  return 'dark'
+  try {
+    const saved = localStorage.getItem(THEME_KEY)
+    return THEMES.includes(saved) ? saved : 'valle'
+  } catch {
+    return 'valle'
+  }
 }
 
 // Provider
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(getInitialTheme)
 
-  // Aplica la clase al <html> y persiste en localStorage
+  // Aplica el tema al <html>: el atributo elige los tokens y la clase "dark" es la de Tailwind.
   useEffect(() => {
     const root = document.documentElement
     root.setAttribute('data-theme', theme)
-
-    // Tailwind dark: también necesita la clase "dark" en <html>
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-
-    try {
-      localStorage.setItem('theme', theme)
-    } catch {
-      // silencioso
-    }
+    root.classList.toggle('dark', theme === 'dark')
   }, [theme])
 
-  // Escucha cambios en la preferencia del SO mientras la app está abierta
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleChange = (e) => {
-      // Solo actualiza si el usuario no ha elegido manualmente
-      const saved = localStorage.getItem('theme')
-      if (!saved) {
-        setTheme(e.matches ? 'dark' : 'light')
-      }
+  // El botón de tema alterna entre el valle y el modo noche; desde el claro (heredado) vuelve al valle.
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'valle' : 'dark'
+    setTheme(next)
+    try {
+      localStorage.setItem(THEME_KEY, next)
+    } catch {
+      // Sin almacenamiento: el tema dura solo esta visita.
     }
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
-
-  const toggleTheme = () =>
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === 'dark' }}>

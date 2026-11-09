@@ -35,7 +35,27 @@ La base visual del avatar está aprobada (2026-11-09): figura de 16×28 en un li
 
 ## 4. Color
 
-Todos los colores viven como tokens en `frontend/src/index.css`; el juego usa los mismos valores en `game/palette.js`. Modo claro = Hueso, modo oscuro = Tinta.
+Todos los colores viven como tokens en `frontend/src/index.css`; el juego usa los mismos valores en `game/palette.js`.
+
+Hay tres temas (`data-theme` en `<html>`, `context/ThemeContext.jsx`): **`valle`** (por defecto, pastel), **`dark`** (modo noche: el azul marino y el azafrán de antes) y `light` (hueso, heredado). El botón de tema de la barra alterna entre el valle y el modo noche. La elección solo se guarda si se pulsa el botón (clave `valle-del-bucle:theme`).
+
+### Tema valle (por defecto)
+
+Lavanda, rosa empolvado, azul cielo y marfil, con texto y contornos en ciruela oscuro. La frambuesa se reserva para la acción principal y lo seleccionado; no se reparte por marcos, enlaces ni controles en reposo. Los valores viven como `--t-*` en el bloque `:root[data-theme="valle"]` de `index.css`.
+
+| Nombre | Hex | Uso |
+| --- | --- | --- |
+| Ciruela | `#3a1c47` | Texto, contornos, sombras duras (`--t-ink`) |
+| Lavanda | `#dccbf0` | Fondo de página y paneles flotantes (`--t-lavender`); `#bfa6dd` para anillos y sombras (`--t-lavender-deep`) |
+| Marfil | `#fff6e6` | Tarjetas, botones secundarios, bocadillos (`--t-ivory`) |
+| Rosa empolvado | `#fbd3e3` | Apoyo y hover suave (`--t-powder`) |
+| Azul cielo | `#bfe3f7` | Apoyo (`--t-sky`) |
+| Frambuesa | `#d81b6a` | Solo acción principal y selección (`--t-berry`); `#a30f4c` para texto, enlaces y foco (`--t-berry-deep`); `#f27ab0` en hover (`--t-berry-soft`) |
+| Pistacho | `#b5d19a` | Fondo de las tarjetas con dibujo del creador (`--t-tile`); la cruz de "sin opción" va en `#a30f4c` |
+
+Contrastes comprobados: ciruela sobre lavanda 9,6:1, frambuesa honda sobre lavanda 5,1:1, marfil sobre frambuesa 4,6:1, contorno de los sprites sobre el pistacho 11:1.
+
+**Cómo se usa en el código.** Las piezas que llevan colores en línea (creador, panel de zona, HUD, joystick) los piden con `tone('ink', PAL.ink)` (`lib/tone.js`): la variable del tema si existe y, si no (modo noche), el color de siempre. Las piezas compartidas (botones, enlaces, volumen, marcos, diálogos, campos) se tiñen en la sección "Tema valle" de `pixel.css`; la portada, en `title.css`. El paisaje de la portada y el prado de las escenas del creador se aclaran y suavizan en el propio dibujo (`game/titleSoften.js`), no con un filtro CSS, para que Lupe, Khalessi y las flores móviles conserven su color. El mapa del juego (`/valle`) sigue con su paleta.
 
 | Nombre | Hex | Uso |
 | --- | --- | --- |

@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-09 (portada: invierno con nieve, Lupe con mangas y collar, música del valle y aviso de instalación compacto).
+Última actualización: 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
 
 ## Hecho
 
@@ -349,7 +349,28 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - **Verificado:** móvil (375 y 320 px) y escritorio en el navegador; 245 pruebas del frontend, 60 del backend, lint y build sin errores. No se probaron tablet ni el clic de "Sin mascota" en escritorio.
 - **Visión:** pule la fase 1b (creador) sin tocar el modo clásico.
 
+### Tema "valle": paleta pastel en toda la aplicación (2026-11-09)
+- **Recorrido:** primero una prueba reversible solo en la portada (rama `prueba/paleta-pastel-portada`), después un pulido (`prueba/pastel-pulido`) y, aprobado, la extensión al resto. El diseño anterior, azul marino y azafrán, se conserva en la rama `archivo/portada-azul-noche-azafran` y como **modo noche** dentro de la aplicación.
+- **Temas:** `valle` (por defecto, pastel), `dark` (modo noche) y `light`. El botón de tema alterna valle y noche. La clave antigua `theme` la escribía cada visita con `dark`; ahora solo se guarda la elección explícita, con la clave `valle-del-bucle:theme`, para que los visitantes de antes no se queden en azul marino. `index.html` aplica el tema antes de pintar y `theme-color` y `manifest.webmanifest` pasan a lavanda.
+- **Paleta y tokens:** lavanda, rosa empolvado, azul cielo y marfil; texto y contornos en ciruela; frambuesa solo para la acción principal y la selección. Bloque `:root[data-theme="valle"]` en `index.css`; componentes en la sección "Tema valle" de `pixel.css`. Las piezas con colores en línea usan `lib/tone.js`. Detalle y contrastes en `frontend/docs/DESIGN.md`.
+- **Portada:** menú que crece con la pantalla (los 304 px fijos pasan a 19-27 rem), "Nueva aventura" mayor y secundarios en marfil, "Opciones" convertido en engranaje junto a la música (`OptionsButton.jsx`), música, engranaje e idioma con el mismo alto (52 px, objetivos de 44 px), subtítulo de 22-28 px en escritorio, título centrado en el cielo en móvil, enlaces con zona táctil de 44 px. Un solo marco en el menú y contornos de 2 px. Hoja propia `title.css`.
+- **Paisaje:** la hierba y la tierra se aclaran hacia salvia y barro claro y el valle se suaviza en el propio dibujo (`game/titleSoften.js`: `lightenPixel`, `softenCanvas`), también en otoño e invierno. Sin filtro CSS: Lupe, Khalessi y las flores que se mecen conservan su color.
+- **Creador:** tarjetas con dibujo en pistacho `#b5d19a` (el contorno de los sprites pasa de 3,9:1 a 11:1), línea de ciruela entre dibujo y etiqueta, cruz de "sin opción" en frambuesa honda, prado de las escenas aclarado.
+- **Diálogos de Lupe en la portada:** el consejo del sonido apunta al engranaje de arriba, y los consejos sobre personalizar el aspecto se quitaron (se descubre dentro del valle).
+- **Pequeños arreglos:** el botón de música lee su tamaño de `--ctl`, porque las utilidades de Tailwind con `!important` dentro de una capa ganan a cualquier regla suelta; la cruz de silencio ya no va en frambuesa.
+- **Verificado:** mediciones en el navegador a 320, 360, 390, 1440 y 1920 px (sin desbordamiento, objetivos de 44 px o más, subtítulo en una línea), capturas de portada, creador, cookies, clásico, blog, juego y modo noche, y otoño, invierno y arcoíris del paisaje; 275 pruebas del frontend, lint y build sin errores. Se actualizó una instantánea del editor del CMS (el botón de tema ahora arranca en "modo oscuro").
+- **No verificado:** el aviso de instalar la aplicación (necesita el evento de instalación del navegador), un iPhone real, daltonismo en las pieles claras sobre el pistacho (el melocotón `#f0c09a` casi coincide en luminosidad), y el CMS, que conserva sus colores fijos con fondo lavanda.
+- **Visión:** acerca el modo clásico y el creador a la identidad cute y personal del valle. No toca la arquitectura.
+
 ## Pendiente
+
+### Tema "valle": lo que queda (2026-11-09)
+- **Mapa del juego (`/valle`):** conserva su paleta verde de siempre; solo su interfaz (HUD, panel de zona, joystick) es pastel. Decidir si se suaviza como la portada.
+- **Aviso de instalar la aplicación:** usa tokens pero no se ha visto en pantalla con el tema nuevo.
+- **Bocadillo de Lupe sobre la casa:** al estar Lupe delante, el bocadillo tapa parte de la fachada; moverlo lo pasa a tapar la cueva. Probar una variante.
+- **Pieles claras sobre el pistacho:** comprobar con simulación de daltonismo rojo-verde.
+- **Modo claro heredado (`light`):** solo se alcanza con un valor guardado; decidir si se retira.
+- **Documentación de identidad:** `docs/IDENTIDAD-VISUAL.md` y `docs/VISION.md` aún hablan de los colores anteriores.
 
 ### Quitar el blog del portfolio (decidido el 2026-11-09)
 - Guadalupe ha decidido **retirar el blog** porque no le da uso. Hoy solo se ha quitado el acceso directo "Blog" del menú de la portada, que ahora muestra Proyectos, Contacto y CV centrados.
@@ -453,3 +474,9 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 | Invierno como cuarto tiempo de la portada, con Khalessi pegada a Lupe mientras nieva (2026-11-09) | Khalessi es friolera por decisión de Lupe. El frío manda sobre las visitas y juegos de la gata, y el susto de un trueno manda sobre el frío. Con movimiento reducido no hay nieve, como no hay lluvia. |
 | Dos pistas de música: `welcome` en portada y creador, `valley` en el valle (2026-11-09) | Cada pantalla tiene su ambiente; la música se apaga con un fundido al cambiar y el valle lleva su botón de silenciar. |
 | "Personalizar aspecto" y "Al azar" en lugar de "Personalizar viajera" y "Aleatoria" (2026-11-09) | Textos que sirven igual para viajera y viajero, sin duplicar etiquetas. |
+| Tema "valle" (pastel) por defecto y el diseño azul marino como modo noche (2026-11-09) | Guadalupe lo aprobó tras compararlo con el diseño anterior: encaja mejor con Lupe, Khalessi y un valle acogedor. El anterior se conserva como modo noche y en la rama `archivo/portada-azul-noche-azafran`, por si se quiere volver. |
+| Frambuesa solo para la acción principal y lo seleccionado (2026-11-09) | Repartida por marco, volumen y enlaces competía con el botón principal. Los enlaces van en ciruela y los controles en reposo en marfil o lavanda. |
+| "Opciones" como engranaje junto a la música, con el mismo alto que música e idioma (2026-11-09) | Libera el menú para lo importante (Nueva aventura y Modo clásico) y agrupa los ajustes. Un visitante con prisa llega a los proyectos con "Modo clásico" o, con partida guardada, con "Continuar". |
+| Pistacho `#b5d19a` para las tarjetas del creador (2026-11-09) | El verde oscuro era la masa más pesada de una pantalla pastel. El contorno de los sprites sube a 11:1; ningún fondo da 3:1 a los 39 colores elegibles, pero el contorno sostiene la silueta. |
+| Suavizar el paisaje en el dibujo y no con un filtro CSS (2026-11-09) | El filtro afectaba también a Lupe, Khalessi y las flores móviles y obligaba a repetir la cuenta en CSS y JS. Con el repintado por tono solo se tocan hierba, tierra y cielo. |
+| Lupe no explica la personalización en la portada (2026-11-09) | Se descubre dentro del valle; la portada se queda con la bienvenida y el sonido. |

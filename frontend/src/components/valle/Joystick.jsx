@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { PAL } from '../../game/palette'
+import { tone } from '../../lib/tone'
 
 const RADIUS = 38
 
@@ -22,7 +23,8 @@ export default function Joystick({ game }) {
     setVector((dx / len) * (clamped / RADIUS), (dy / len) * (clamped / RADIUS))
   }
 
-  const ring = `0 0 0 3px ${PAL.ink}, 0 0 0 6px ${PAL.saffron}, 0 0 0 9px ${PAL.ink}`
+  const ink = tone('ink', PAL.ink)
+  const ring = `0 0 0 3px ${ink}, 0 0 0 6px ${tone('lavender-deep', PAL.saffron)}, 0 0 0 9px ${ink}`
 
   return (
     <>
@@ -31,7 +33,7 @@ export default function Joystick({ game }) {
         role="application"
         aria-label="Joystick"
         className="absolute bottom-8 left-8 z-20 h-28 w-28 touch-none select-none rounded-full"
-        style={{ background: 'rgba(28,27,58,0.8)', boxShadow: ring }}
+        style={{ background: tone('joy', 'rgba(28,27,58,0.8)'), boxShadow: ring }}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId)
           handleMove(e)
@@ -42,14 +44,14 @@ export default function Joystick({ game }) {
       >
         <div
           className="absolute left-1/2 top-1/2 h-12 w-12 rounded-full"
-          style={{ background: PAL.saffron, boxShadow: `0 0 0 3px ${PAL.ink}`, transform: `translate(calc(-50% + ${knob.x}px), calc(-50% + ${knob.y}px))` }}
+          style={{ background: tone('berry', PAL.saffron), boxShadow: `0 0 0 3px ${ink}`, transform: `translate(calc(-50% + ${knob.x}px), calc(-50% + ${knob.y}px))` }}
         />
       </div>
       <button
         type="button"
         aria-label="A"
         className="absolute bottom-10 right-8 z-20 h-16 w-16 touch-none select-none rounded-full px-title text-3xl"
-        style={{ background: PAL.tile, color: PAL.bone, boxShadow: ring, textShadow: 'none' }}
+        style={{ background: tone('berry', PAL.tile), color: tone('ivory', PAL.bone), boxShadow: ring, textShadow: 'none' }}
         onPointerDown={() => game?.events.emit('action')}
       >
         A

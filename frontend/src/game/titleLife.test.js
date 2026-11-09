@@ -207,8 +207,8 @@ describe('titleLife', () => {
         if (say?.key.startsWith('tip')) tips.add(say.key)
       }
     }
-    // Tres consejos, y el último en dos bocadillos.
-    expect([...tips].sort()).toEqual(['tipCustomize', 'tipCustomize2', 'tipOptions', 'tipRelax'])
+    // Dos consejos: la personalización no se explica en la portada, se descubre dentro del valle.
+    expect([...tips].sort()).toEqual(['tipOptions', 'tipRelax'])
   })
 })
 
@@ -216,7 +216,7 @@ describe('textos de la portada', () => {
   const KEYS = [
     'hello', 'welcome1', 'welcome2', 'journeyNew1', 'journeyNew2', 'journeyNew3', 'journeyBack1', 'journeyBack2', 'journeyBack3',
     'classic1', 'classic2', 'notice', 'meetCat', 'petting', 'meow', 'catLoves',
-    'tipRelax', 'tipOptions', 'tipCustomize', 'tipCustomize2', 'comfort1', 'comfort2',
+    'tipRelax', 'tipOptions', 'comfort1', 'comfort2',
     'ambientDawn', 'ambientDay', 'ambientNight', 'ambientRain', 'ambientStorm', 'ambientRainbow', 'ambientSnow',
     'winterStart', 'winterCat1', 'winterCat2', 'winterWarm', 'shiver', 'winterPurr', 'winterTip',
   ]

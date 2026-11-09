@@ -51,7 +51,7 @@ const LOOP = [
 ]
 
 // Cada consejo es una lista de bocadillos; 'tipMore' dice el segundo si lo hay y, si no, hace una pausa.
-const TIPS = [['tipRelax'], ['tipOptions'], ['tipCustomize', 'tipCustomize2']]
+const TIPS = [['tipRelax'], ['tipOptions']]
 
 const total = (scenes) => scenes.reduce((sum, scene) => sum + scene.ms, 0)
 export const INTRO_MS = total(INTRO)

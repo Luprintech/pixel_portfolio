@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { styleChoices } from '../../game/look'
 import { PAL } from '../../game/palette'
+import { tone } from '../../lib/tone'
 import { avatarCanvas } from '../../game/avatar/index.js'
-import { CROSS, TILE_BACKGROUND, pickShadow } from './pickStyle'
+import { useThemeContext } from '../../context/ThemeContext'
+import { CROSS, TILE_BACKGROUND, crossColor, pickShadow } from './pickStyle'
 
 // Recortes del sprite (18×34) para enseñar cada opción dibujada: qué parte del cuerpo se enseña. La
 // ampliación la decide la celda (ver `.px-sprite` en pixel.css), así que las tarjetas son iguales
@@ -20,6 +22,7 @@ const NONE_VALUES = ['ninguno']
 // Cada opción se dibuja con el aspecto actual y solo cambia lo que representa, así se ve
 // exactamente cómo quedaría, y lleva su nombre debajo.
 function PixelTile({ look, field, value, view, active, label, name, onPick }) {
+  const { theme } = useThemeContext()
   const ref = useRef(null)
   const { sx, sy, sw, sh } = VIEWS[view]
   useEffect(() => {
@@ -27,10 +30,10 @@ function PixelTile({ look, field, value, view, active, label, name, onPick }) {
     g.clearRect(0, 0, sw, sh)
     g.drawImage(avatarCanvas({ ...look, [field]: value }, 'down', 0), sx, sy, sw, sh, 0, 0, sw, sh)
     if (NONE_VALUES.includes(value)) {
-      g.fillStyle = PAL.tile
+      g.fillStyle = crossColor(theme)
       CROSS.forEach(([x, y]) => g.fillRect(sw - 6 + x, 1 + y, 1, 1))
     }
-  }, [look, field, value, sx, sy, sw, sh])
+  }, [look, field, value, sx, sy, sw, sh, theme])
   return (
     <button
       type="button"
@@ -38,12 +41,12 @@ function PixelTile({ look, field, value, view, active, label, name, onPick }) {
       aria-label={label}
       onClick={onPick}
       className="px-pick flex w-full cursor-pointer flex-col p-0"
-      style={{ background: PAL.ink, boxShadow: pickShadow(active) }}
+      style={{ background: tone('ivory', PAL.ink), boxShadow: pickShadow(active) }}
     >
       <span className="px-tile flex aspect-square w-full items-center justify-center" style={{ background: TILE_BACKGROUND }}>
         <canvas ref={ref} width={sw} height={sh} className="px-canvas px-sprite block" style={{ '--sw': sw, '--sh': sh }} aria-hidden="true" />
       </span>
-      <span className="px-caption" style={{ color: active ? PAL.saffronLight : PAL.bone }}>{name}</span>
+      <span className="px-caption" style={{ color: active ? tone('berry-deep', PAL.saffronLight) : tone('ink', PAL.bone) }}>{name}</span>
     </button>
   )
 }

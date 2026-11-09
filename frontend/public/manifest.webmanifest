@@ -8,8 +8,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#1c1b3a",
-  "theme_color": "#1c1b3a",
+  "background_color": "#dccbf0",
+  "theme_color": "#dccbf0",
   "display_override": [
     "standalone",
     "minimal-ui"

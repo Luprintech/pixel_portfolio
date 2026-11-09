@@ -1,7 +1,8 @@
+import { tone } from '../../lib/tone'
 import Swatches from './Swatches'
 
-const MUTED = '#cfc5e0'
-const BONE = '#f1e6cf'
+const MUTED = tone('muted', '#cfc5e0')
+const BONE = tone('ink', '#f1e6cf')
 
 // La fila de colores de un campo: su título, el nombre del color elegido a la derecha y debajo las
 // muestras. Va siempre justo debajo de las opciones dibujadas a las que tiñe. `nested` la pone un

@@ -136,7 +136,124 @@
 
 }
 
-/* Tema claro (por defecto) */
+/* Tema "valle" (por defecto): lavanda, rosa empolvado, azul cielo y marfil, con texto y contornos en ciruela
+   oscuro. La frambuesa se reserva para la acción principal y lo seleccionado. El oscuro de siempre sigue
+   disponible como modo noche (botón del menú). Contrastes comprobados: ciruela sobre lavanda 9,6:1, frambuesa
+   honda sobre lavanda 5,1:1, marfil sobre frambuesa 4,6:1. */
+:root[data-theme="valle"] {
+  color-scheme: light;
+  --nav-height: 5rem;
+  --section-gutter-x: clamp(1.25rem, 2vw, 2.5rem);
+  --section-gutter-y: clamp(1rem, 2.2vh, 1.75rem);
+
+  /* Familias de la portada (las usa pixel.css y title.css) */
+  --t-ink: #3a1c47;
+  --t-lavender: #dccbf0;
+  --t-lavender-deep: #bfa6dd;
+  --t-powder: #fbd3e3;
+  --t-sky: #bfe3f7;
+  --t-ivory: #fff6e6;
+  --t-berry: #d81b6a;
+  --t-berry-deep: #a30f4c;
+  --t-berry-soft: #f27ab0;
+  --t-muted: #6b4a7a;
+  --t-tile: #b5d19a;
+  --t-cross: #a30f4c;
+  --t-scrim: rgba(58, 28, 71, 0.7);
+  --t-joy: rgba(220, 203, 240, 0.85);
+  --t-title-shadow: 2px 0 0 var(--t-ink), -2px 0 0 var(--t-ink), 0 2px 0 var(--t-ink), 0 -2px 0 var(--t-ink), 2px 2px 0 var(--t-ink), -2px 2px 0 var(--t-ink), 2px -2px 0 var(--t-ink), -2px -2px 0 var(--t-ink), 0 4px 0 var(--t-ink);
+
+  /* Fondos */
+  --bg-primary: #dccbf0;
+  --bg-secondary: #cdb9e6;
+  --bg-surface: #fff6e6;
+  --bg-elevated: #fff6e6;
+  --bg-overlay: rgba(220, 203, 240, 0.94);
+
+  /* Código: siempre oscuro en todos los temas */
+  --bg-code: #15142c;
+  --bg-code-header: #0f0e22;
+
+  /* Textos */
+  --text-primary: #3a1c47;
+  --text-secondary: #54356a;
+  --text-muted: #6b4a7a;
+  --text-inverse: #fff6e6;
+  --hero-typewriter-color: #3a1c47;
+
+  /* Bordes */
+  --border-color: #3a1c47;
+  --border-subtle: #cdb9e6;
+  --border-default: #bfa6dd;
+  --border-card: #3a1c47;
+
+  /* Acentos: la frambuesa honda es el color de lo seleccionado y de los enlaces */
+  --accent-primary: #a30f4c;
+  --accent-primary-dim: rgba(163, 15, 76, 0.14);
+  --accent-secondary: #a30f4c;
+  --accent-secondary-dim: rgba(216, 27, 106, 0.16);
+  --accent-violet: #7a4fa8;
+  --accent-rose: #f27ab0; /* Respuestas al puntero (hover) */
+
+  --accent-green: #5c8a50;
+  --accent-green-dim: rgba(92, 138, 80, 0.18);
+  --accent-orange: #c4572a;
+  --accent-orange-dim: rgba(196, 87, 42, 0.16);
+  --accent-purple: #7a4fa8;
+  --accent-purple-dim: rgba(122, 79, 168, 0.16);
+  --accent-cream: #fff6e6;
+
+  --gradient-logo: linear-gradient(to right, #a30f4c, #a30f4c);
+
+  /* Navbar */
+  --nav-bg-scrolled: #dccbf0;
+  --nav-bg-mobile: #dccbf0;
+  --nav-border: #3a1c47;
+
+  /* Cards */
+  --card-bg: #fff6e6;
+  --card-border: #3a1c47;
+  --card-shadow: 0 4px 0 #bfa6dd;
+  --card-hover-shadow: 0 6px 0 #bfa6dd;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 0 #bfa6dd;
+  --shadow-md: 0 4px 0 #bfa6dd;
+  --shadow-nav: 0 4px 0 #bfa6dd;
+
+  /* Footer */
+  --footer-bg: #cdb9e6;
+  --footer-border: #3a1c47;
+
+  /* Scroll + misc */
+  --gradient-inner-bg: #dccbf0;
+  --scrollbar-track: #cdb9e6;
+  --scrollbar-thumb: #8d6bb0;
+
+  /* Toggle */
+  --toggle-bg: #fff6e6;
+  --toggle-hover: #fbd3e3;
+  --toggle-border: #3a1c47;
+  --toggle-icon: #a30f4c;
+
+  /* Blog surfaces */
+  --blog-bg: #dccbf0;
+  --blog-surface: #fff6e6;
+  --blog-surface-low: #f4ecff;
+  --blog-surface-high: #fff6e6;
+  --blog-text-primary: #3a1c47;
+  --blog-text-secondary: #54356a;
+  --blog-text-muted: #6b4a7a;
+  --blog-outline-variant: #8d6bb0;
+  --blog-glow-primary: rgba(216, 27, 106, 0.08);
+  --blog-glow-secondary: rgba(122, 79, 168, 0.08);
+
+  /* Piezas de píxel */
+  --px-ink: #3a1c47;
+  --px-ring: #bfa6dd;
+}
+
+/* Tema claro */
 /* Personalidad: misma estética del oscuro en clave clara.
    Fondos con toque azul/índigo. Acentos siempre vibrantes.
    Bordes índigo-pastel, NO grises neutros.               */

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { useThemeContext } from '../../../context/ThemeContext'
+import { lightenWorld, softenCanvas } from '../../../game/titleSoften'
 import { paintMeadow } from './meadow'
 
 // Tope de la ampliación: a partir de aquí un sprite ocupa media pantalla y deja de ser un detalle.
@@ -14,6 +16,9 @@ export function useStageScene({ minCols, minRows, paint }) {
   const canvasRef = useRef(null)
   const meadowRef = useRef(null)
   const [size, setSize] = useState({ scale: 4, cols: minCols, rows: minRows })
+  // En el tema valle el prado se aclara un poco y se suaviza, como el de la portada; la figura se dibuja
+  // después y conserva su color.
+  const pastel = useThemeContext().theme === 'valle'
 
   useEffect(() => {
     const box = boxRef.current
@@ -35,8 +40,9 @@ export function useStageScene({ minCols, minRows, paint }) {
     meadow.width = size.cols
     meadow.height = size.rows
     paintMeadow(meadow.getContext('2d'), size.cols, size.rows)
+    if (pastel) softenCanvas(lightenWorld(meadow))
     meadowRef.current = meadow
-  }, [size])
+  }, [size, pastel])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -45,7 +51,7 @@ export function useStageScene({ minCols, minRows, paint }) {
     const g = canvas.getContext('2d')
     g.drawImage(meadowRef.current, 0, 0)
     paint(g, size)
-  }, [size, paint])
+  }, [size, paint, pastel])
 
   return { boxRef, canvasRef, size }
 }

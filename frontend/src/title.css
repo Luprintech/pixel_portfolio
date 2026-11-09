@@ -1,0 +1,133 @@
+/* Diseño de la portada (Title.jsx) en el tema "valle": controles de las esquinas, título, subtítulo y menú.
+   Los colores salen de los tokens del tema (index.css); en modo noche esta hoja no se aplica. */
+
+/* Controles de las esquinas: música, opciones e idioma miden lo mismo (44 px de botón y 4 px de aire,
+   52 en total) y llevan el mismo contorno. La caja y el aspa de la música llevan colores en línea; aquí
+   se pisan solo dentro de la portada. */
+:root[data-theme='valle'] .px-title-music > div,
+:root[data-theme='valle'] .px-title-gear,
+:root[data-theme='valle'] .px-title-lang {
+  box-sizing: border-box;
+  height: 52px;
+  border-radius: 0;
+  box-shadow: 0 0 0 2px var(--t-ink), 0 4px 0 2px var(--t-ink);
+}
+/* El botón de música lee su tamaño de `--ctl` (MusicControl.jsx); las utilidades de Tailwind llevan
+   !important dentro de una capa y ganarían a cualquier regla de aquí, así que se cambia la variable. */
+:root[data-theme='valle'] .px-title-music {
+  --ctl: 44px;
+}
+:root[data-theme='valle'] .px-title-lang {
+  display: flex;
+  align-items: center;
+  padding-block: 4px;
+}
+:root[data-theme='valle'] .px-title-lang button {
+  min-height: 44px;
+}
+
+/* Paisaje: sin filtro de color. La hierba y la tierra se aclaran y el valle se suaviza en el propio dibujo
+   (game/titleSoften.js, activado desde Title.jsx), para que Lupe, Khalessi y las flores conserven su color. */
+
+/* Título: contorno uniforme y una sola sombra plana debajo, en vez de tres sombras laterales, y más aire entre los controles, el título y el tejado. */
+@media (max-width: 639px) and (not (display-mode: standalone)) {
+  :root[data-theme='valle'] .px-title-header {
+    padding-top: 6rem;
+  }
+}
+@media (min-width: 640px) {
+  :root[data-theme='valle'] .px-title-header {
+    padding-top: 3.25rem;
+  }
+}
+
+/* Menú: la acción principal manda por tamaño y color, y el resto se queda en marfil. En escritorio el
+   panel crece con la pantalla (antes medía 304 px a cualquier ancho) y el texto sube de 16 a 17-22 px. */
+:root[data-theme='valle'] .px-title-primary {
+  min-height: 3.25rem;
+  font-size: 1.125rem;
+}
+:root[data-theme='valle'] .px-title-menu nav + p {
+  font-size: 1rem;
+}
+@media (min-width: 640px) {
+  :root[data-theme='valle'] .px-title-menu {
+    width: clamp(19rem, 24vw, 27rem);
+    padding: clamp(1.25rem, 1.6vw, 1.75rem);
+  }
+  :root[data-theme='valle'] .px-title-menu .px-btn {
+    min-height: 3rem;
+    font-size: clamp(1.0625rem, 0.9vw + 0.5rem, 1.25rem);
+  }
+  :root[data-theme='valle'] .px-title-menu .px-title-primary {
+    min-height: clamp(3.5rem, 4.4vw, 4.25rem);
+    font-size: clamp(1.25rem, 1.2vw + 0.6rem, 1.625rem);
+  }
+  :root[data-theme='valle'] .px-title-menu nav + p {
+    font-size: clamp(1rem, 0.6vw + 0.5rem, 1.125rem);
+  }
+}
+
+/* Título y subtítulo: el subtítulo pasa de 18 a 22-28 px en escritorio (de 16 a 18 en móvil) y se separa
+   un poco más del título; el título sube su tope de 120 a 136 px. */
+:root[data-theme='valle'] .px-title-header .px-title {
+  font-size: clamp(3.25rem, 13vw, 8.5rem);
+}
+:root[data-theme='valle'] .px-title-header p {
+  margin-top: 0.25rem;
+  font-size: 1.125rem;
+}
+/* En móvil estrecho el subtítulo corto mide unos 289 px a 16 px: se quita su relleno lateral y se baja
+   un punto en los 320 px para que siga cabiendo en una línea. */
+@media (max-width: 379px) {
+  :root[data-theme='valle'] .px-title-header p {
+    padding-inline: 0;
+    font-size: 1rem;
+  }
+}
+@media (max-width: 339px) {
+  :root[data-theme='valle'] .px-title-header p {
+    font-size: 0.9375rem;
+  }
+}
+@media (min-width: 640px) {
+  :root[data-theme='valle'] .px-title-header p {
+    margin-top: 0.5rem;
+    font-size: clamp(1.375rem, 1.5vw + 0.5rem, 1.75rem);
+  }
+}
+
+/* Enlaces del menú (Proyectos, Contacto, CV): zona táctil de 44 px sin cambiar el texto ni el subrayado,
+   que se quedan centrados en su caja. */
+:root[data-theme='valle'] .px-title-menu .px-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: 0.25rem;
+}
+:root[data-theme='valle'] .px-title-menu nav + p {
+  /* La zona táctil de 44 px deja aire de sobra alrededor del texto; se recorta para que el panel quede equilibrado. */
+  margin-top: 0.25rem;
+  margin-bottom: -0.5rem;
+}
+
+/* Móvil: con el menú más bajo, el título se centra en la franja de cielo sobre el paisaje (la misma cuenta
+   que ya usa la app instalada en pixel.css) en vez de quedar pegado arriba con un hueco debajo. */
+@media (max-width: 639px) {
+  :root[data-theme='valle'] .px-title-header.px-title-header {
+    --canvas-h: min(106vw, 100dvh - var(--menu-h, 17rem));
+    --sky-bottom: calc(100dvh - var(--menu-h, 17rem) - var(--canvas-h) * 2 / 3);
+    padding-top: max(6rem, calc((3.5rem + var(--sky-bottom)) / 2 - 3.25rem));
+  }
+}
+
+/* En escritorio, más aire entre el último botón (y su sombra) y la fila de enlaces. Va al final para
+   ganar a la regla general de arriba. */
+@media (min-width: 640px) {
+  :root[data-theme='valle'] .px-title-menu nav + p {
+    margin-top: 0.875rem;
+  }
+}
+

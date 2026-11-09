@@ -27,15 +27,23 @@ import PetPicker from './PetPicker'
 import PetStage from './PetStage'
 import StyleGrid from './StyleGrid'
 import { RING } from './pickStyle'
+import { tone } from '../../lib/tone'
 import { useScrollPadding } from './useScrollPadding'
 
-const MUTED = '#cfc5e0'
+const MUTED = tone('muted', '#cfc5e0')
+const PAGE_BG = tone('lavender', PAL.ink2)
 
 // Alto de las dos escenas: pequeñas y fijas arriba en móvil, y altas en pantalla ancha, donde hay
 // sitio de sobra. Cada escena se amplía con un entero para llenar su caja (`useStageScene`).
 const STAGE_HEIGHT = '[--stage-h:clamp(9rem,22svh,13rem)] md:[--stage-h:clamp(11rem,24svh,16rem)] lg:[--stage-h:clamp(12rem,32svh,34rem)]'
 
-const sectionStyle = { background: PAL.ink, color: PAL.bone, ['--px-ink']: '#0f0e22', ['--px-ring']: PAL.saffron, ['--border-color']: RING }
+const sectionStyle = {
+  background: tone('ivory', PAL.ink),
+  color: tone('ink', PAL.bone),
+  ['--px-ink']: tone('ink', '#0f0e22'),
+  ['--px-ring']: tone('lavender-deep', PAL.saffron),
+  ['--border-color']: RING,
+}
 
 // Cada apartado es una tarjeta igual y del mismo ancho: título y debajo sus campos. Con el mismo ancho,
 // las opciones de todos los apartados miden lo mismo en cada tamaño de pantalla.
@@ -46,7 +54,7 @@ function Section({ id, title, children }) {
       className="px-frame px-frame--quiet px-card min-w-0 space-y-6 p-5 sm:p-6"
       style={sectionStyle}
     >
-      <h2 id={`section-${id}`} className="px-title text-3xl" style={{ color: PAL.bone }}>{title}</h2>
+      <h2 id={`section-${id}`} className="px-title text-3xl" style={{ color: tone('ink', PAL.bone) }}>{title}</h2>
       {children}
     </section>
   )
@@ -126,7 +134,7 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
   )
 
   return (
-    <div className={`min-h-dvh overflow-x-clip ${STAGE_HEIGHT}`} style={{ background: PAL.ink2 }}>
+    <div className={`min-h-dvh overflow-x-clip ${STAGE_HEIGHT}`} style={{ background: PAGE_BG }}>
       <div className="mx-auto grid w-full max-w-[2200px] gap-x-10 gap-y-5 px-4 pb-44 pt-4 lg:grid-cols-[minmax(24rem,34vw)_minmax(0,1fr)] lg:px-8 lg:pb-4 lg:pt-4">
         {/* En pantalla ancha la columna ocupa el alto de la ventana y no se desplaza: las escenas se estiran
             (flex-1) para absorber lo que sobra o falta, con un tope para que en pantallas altas no queden como
@@ -138,7 +146,7 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
               El texto de ayuda baja 16 px: la sombra dura del botón (9 px) no puede tocarlo. */}
           <header>
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-              <h1 className="px-title text-5xl lg:text-4xl xl:text-5xl" style={{ color: PAL.bone }}>{copy.editor.title}</h1>
+              <h1 className="px-title text-5xl lg:text-4xl xl:text-5xl" style={{ color: tone('ink', PAL.bone) }}>{copy.editor.title}</h1>
               {/* En móvil "Volver al inicio" vive en la barra fija de abajo, que siempre se ve. */}
               <div className="hidden lg:block">
                 <Link className="px-btn px-btn--bone !min-h-[44px] !px-3 shrink-0" to="/">{copy.editor.back}</Link>
@@ -157,13 +165,13 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
 
           {/* Lo primero que se lee al entrar: entrar al valle sustituye la aventura guardada. */}
           {replacing && (
-            <p className="px-text px-3 py-2 text-sm" role="note" style={{ background: PAL.ink, color: PAL.saffronLight }}>
+            <p className="px-text px-3 py-2 text-sm" role="note" style={{ background: tone('powder', PAL.ink), color: tone('berry-deep', PAL.saffronLight) }}>
               {copy.editor.replace}
             </p>
           )}
 
           {/* Escenas fijas: cada cambio se ve sin tener que volver a subir. */}
-          <div ref={stageRef} className="sticky top-0 z-10 -mx-4 px-4 py-3 lg:static lg:mx-0 lg:min-h-0 lg:max-h-[26rem] lg:flex-1 lg:p-0" style={{ background: PAL.ink2 }} role="group" aria-label={copy.editor.preview}>
+          <div ref={stageRef} className="sticky top-0 z-10 -mx-4 px-4 py-3 lg:static lg:mx-0 lg:min-h-0 lg:max-h-[26rem] lg:flex-1 lg:p-0" style={{ background: PAGE_BG }} role="group" aria-label={copy.editor.preview}>
             <div className="grid grid-cols-2 gap-5 lg:h-full lg:grid-rows-[minmax(0,1fr)]">
               <AvatarStage look={look} walking={walking} />
               <PetStage
@@ -235,7 +243,7 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
           <div
             ref={barRef}
             className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-3 p-3 lg:static lg:flex lg:flex-wrap lg:p-0 lg:pb-1"
-            style={{ background: PAL.ink2, boxShadow: `0 -3px 0 ${RING}` }}
+            style={{ background: PAGE_BG, boxShadow: `0 -3px 0 ${RING}` }}
           >
             <button type="button" className="px-btn whitespace-nowrap !px-2 lg:flex-[1.6]" onClick={onDone}>{copy.editor.go}</button>
             <button type="button" className="px-btn px-btn--bone whitespace-nowrap !px-2 lg:grow" onClick={announce(onRandom, copy.editor.randomDone)}>{copy.editor.random}</button>
@@ -249,7 +257,7 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
         </div>
 
         <div className="min-w-0">
-          <div ref={tabsRef} className="px-1 py-3 lg:sticky lg:top-0 lg:z-10" style={{ background: PAL.ink2 }}>
+          <div ref={tabsRef} className="px-1 py-3 lg:sticky lg:top-0 lg:z-10" style={{ background: PAGE_BG }}>
             <EditorTabs tabs={LOOK_TABS} names={TAB_NAMES[lang]} value={tab} label={copy.editor.tabs} onChange={setTab} />
           </div>
           <div role="tabpanel" id="editor-panel" aria-labelledby={`tab-${tab}`} className="mt-3 grid content-start gap-8">
