@@ -8,6 +8,7 @@ import CustomizeButton from '../components/valle/CustomizeButton'
 import OptionsButton from '../components/valle/OptionsButton'
 import OptionsDialog from '../components/valle/OptionsDialog'
 import ZonePanel from '../components/valle/ZonePanel'
+import ZoomControl from '../components/valle/ZoomControl'
 import { defaultLook, randomLook, selectBody } from '../game/look'
 import { DEFAULT_PET } from '../game/pet'
 import { PAL } from '../game/palette'
@@ -51,6 +52,8 @@ export default function Valle() {
   const [game, setGame] = useState(null)
   const [near, setNear] = useState(null)
   const [zone, setZone] = useState(null)
+  // Límites del zoom que publica la escena; hasta que existe, ambos botones valen.
+  const [zoomState, setZoomState] = useState({ canIn: true, canOut: true })
   const hostRef = useRef(null)
   const touch = isTouch()
 
@@ -107,6 +110,10 @@ export default function Valle() {
         // El sonido ambiente sigue al cielo del valle, igual que en la portada.
         instance.events.on('sky', setAmbienceScene)
         instance.events.on('thunder', thunder)
+        // La escena puede haber publicado ya el zoom antes de que escuchemos: se lee el valor actual y se siguen los cambios.
+        const syncZoom = (_parent, value) => value && setZoomState(value)
+        syncZoom(null, instance.registry.get('zoom'))
+        instance.registry.events.on('changedata-zoom', syncZoom)
         setGame(instance)
         setStatus('ready')
       })
@@ -159,6 +166,7 @@ export default function Valle() {
   }, [game, zone, optionsOpen])
 
   const closeZone = useCallback(() => setZone(null), [])
+  const zoomView = useCallback((delta) => game?.events.emit('zoom', delta), [game])
 
   // Las opciones son las mismas que en la portada: el sonido se guarda en el navegador y "Borrar partida" borra la
   // guardada (la de esta visita se vuelve a escribir al cambiar el aspecto o el nombre).
@@ -238,10 +246,19 @@ export default function Valle() {
 
         {!editing && (
           <nav aria-label="Valle" className="absolute left-4 right-4 top-4 z-10 flex items-center justify-between gap-3" style={{ '--ctl': HUD_SIZE }}>
-            <p className="px-text hidden max-w-[22rem] px-3 py-1 text-sm lg:block" style={hudStyle}>
-              {touch ? copy.hud.touchControls : copy.hud.controls}
-            </p>
-            <span className="flex-1 lg:hidden" />
+            <span className="flex items-center gap-3">
+              <ZoomControl
+                labels={copy.hud.zoom}
+                canIn={status === 'ready' && zoomState.canIn}
+                canOut={status === 'ready' && zoomState.canOut}
+                onZoom={zoomView}
+                className="!min-h-[var(--ctl)] !w-[var(--ctl)]"
+              />
+              <p className="px-text hidden max-w-[22rem] px-3 py-1 text-sm lg:block" style={hudStyle}>
+                {touch ? copy.hud.touchControls : copy.hud.controls}
+              </p>
+            </span>
+            <span className="flex-1" />
             <span className="flex flex-wrap items-center justify-end gap-2">
               <MusicControl track="valley" flush />
               <CustomizeButton label={copy.hud.customize} onClick={() => setPhase('editor')} className="!min-h-[var(--ctl)] !w-[var(--ctl)]" />

@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { PAL } from './palette.js'
 import { BRIDGE, BUILDINGS, COLS, PROPS, ROWS, SPAWN, TILE, blockedWaterTiles, treePositions } from './world.js'
-import { cameraZoom } from './viewport.js'
+import { steppedZoom } from './viewport.js'
 import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, POSES } from './avatar/index.js'
 import { shadowSprite } from './sprites.js'
 import { makeCanvas, rect } from './pixelKit.js'
@@ -26,6 +26,7 @@ export default class ValleScene extends Phaser.Scene {
     this.seed = data.seed ?? Math.floor(Math.random() * 1e9)
     this.near = null
     this.armed = true
+    this.zoomSteps = 0
   }
 
   create() {
@@ -62,6 +63,7 @@ export default class ValleScene extends Phaser.Scene {
     this.game.registry.events.on('changedata-locked', onLock)
     this.game.events.on('action', this.tryEnter, this)
     this.game.events.on('appearance', this.setAppearance, this)
+    this.game.events.on('zoom', this.stepZoom, this)
     // Entrar al valle: un fundido corto desde el color de la página en lugar de un corte.
     cam.fadeIn(350, 220, 203, 240)
     this.events.once('shutdown', () => {
@@ -69,6 +71,7 @@ export default class ValleScene extends Phaser.Scene {
       this.game.registry.events.off('changedata-locked', onLock)
       this.game.events.off('action', this.tryEnter, this)
       this.game.events.off('appearance', this.setAppearance, this)
+      this.game.events.off('zoom', this.stepZoom, this)
     })
   }
 
@@ -76,8 +79,19 @@ export default class ValleScene extends Phaser.Scene {
     const { width, height } = this.scale
     // Con la página oculta el lienzo mide 0: no hay nada que ajustar.
     if (!width || !height) return
-    this.cameras.main.setZoom(cameraZoom(width, height, COLS * TILE, ROWS * TILE))
+    // Los pasos de zoom del visitante se miden sobre el zoom de la pantalla: al girar el móvil se recortan a lo posible.
+    const { zoom, steps, canIn, canOut } = steppedZoom(this.zoomSteps, width, height, COLS * TILE, ROWS * TILE)
+    this.zoomSteps = steps
+    this.cameras.main.setZoom(zoom)
     this.sky.resize()
+    // React lee el estado del registro para activar o apagar los botones + y -.
+    this.game.registry.set('zoom', { canIn, canOut })
+  }
+
+  // Acerca (+1) o aleja (-1) la vista un nivel entero.
+  stepZoom(delta) {
+    this.zoomSteps += delta
+    this.fitCamera()
   }
 
   // Texturas

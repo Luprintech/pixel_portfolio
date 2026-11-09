@@ -92,6 +92,7 @@ export const COPY = {
     stackLead: 'Las herramientas que uso a diario.',
     hud: {
       customize: 'Personalizar aspecto',
+      zoom: { group: 'Zoom del mapa', in: 'Acercar la vista', out: 'Alejar la vista' },
       enter: 'Entrar',
       close: 'Cerrar',
       exit: 'Salir',
@@ -235,6 +236,7 @@ export const COPY = {
     stackLead: 'The tools I use every day.',
     hud: {
       customize: 'Customize traveller',
+      zoom: { group: 'Map zoom', in: 'Zoom in', out: 'Zoom out' },
       enter: 'Enter',
       close: 'Close',
       exit: 'Exit',

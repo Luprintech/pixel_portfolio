@@ -8,11 +8,12 @@ const pathOf = (rows) =>
     .flatMap((row, y) => [...row.matchAll(/X+/g)].map((run) => `M${run.index} ${y}h${run[0].length}v1h-${run[0].length}z`))
     .join('')
 
-export default function PixelIconButton({ rows, label, onClick, popup = false, className = '!min-h-11 !w-11' }) {
+export default function PixelIconButton({ rows, label, onClick, popup = false, disabled = false, className = '!min-h-11 !w-11' }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
       aria-haspopup={popup ? 'dialog' : undefined}
       title={label}

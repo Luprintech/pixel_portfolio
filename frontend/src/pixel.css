@@ -81,6 +81,12 @@
   color: #1c1b3a;
   background: #f1e6cf;
 }
+/* Un botón sin efecto posible se apaga y deja de reaccionar al ratón (sin hover ni pulsación). */
+.px-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 /* Los botones secundarios se tiñen de rosa al apuntarlos: el amarillo queda
    reservado al botón principal y el rosa premia la exploración. */
 .px-btn--bone:hover {

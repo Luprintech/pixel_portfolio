@@ -6,6 +6,12 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Zoom del valle con + y - (2026-11-09)
+- Dos botones arriba a la izquierda del valle (`components/valle/ZoomControl.jsx`) acercan o alejan la vista un nivel entero. La escena (`ValleScene.stepZoom`) escucha el evento `zoom` y publica en el registro `zoom` si se puede seguir en cada sentido; la página apaga el botón que ya no puede actuar.
+- Decisión: los pasos se miden sobre el zoom que da la pantalla (`steppedZoom` en `game/viewport.js`), con hasta 3 niveles de acercamiento. El zoom sigue siendo entero para que el pixel art no tenga costuras, y no se puede alejar más de lo que cabe en el mapa para que no asome el vacío; en un móvil vertical el botón - queda apagado.
+- No se guarda la elección: cada visita arranca con el zoom de la pantalla.
+- Visión: mejora la comodidad del juego sin tocar contenido profesional.
+
 ### Sonidos de botones (16 bits)
 - `lib/uiSounds.js` sintetiza cinco pitidos de consola con Web Audio (`select`, `confirm`, `back`, `tab`, `pick`) y `hooks/useUiSounds.js` los dispara con un único oyente de clics en la portada y en el valle. Cada botón elige su sonido por su clase o su papel ARIA, y `data-sound` lo fuerza (`back`) o lo calla (`off`).
 - Salen por el bus de efectos del motor de audio, así que obedecen el volumen de efectos, el general y el silencio. No hay archivos de audio nuevos.
