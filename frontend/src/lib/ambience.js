@@ -1,7 +1,8 @@
 // Sonido ambiente de la portada: viento, lluvia, grillos de noche, pájaros de día y truenos. Se genera
 // con Web Audio (ruido filtrado y osciladores), así que no hay archivos que descargar. Lo que suena
-// sale del estado del cielo (`setAmbienceScene`) y su volumen es el de efectos por el general.
-import { fxLevel, subscribeSoundPrefs } from './soundMixer'
+// sale del estado del cielo (`setAmbienceScene`) y pasa por el bus de efectos del motor de audio, que
+// le pone el volumen de efectos por el general y lo calla con el silencio.
+import { getEngine, onEngineGesture, startEngineIfAllowed } from './audioEngine'
 
 // Cuánto suena cada capa para un cielo dado. Función pura: se prueba sin audio.
 export function ambienceLevels({ dark = 0, rain = 0, storm = 0, wind = 0.25 }) {
@@ -17,16 +18,21 @@ export function ambienceLevels({ dark = 0, rain = 0, storm = 0, wind = 0.25 }) {
 const APPLY_EVERY_MS = 250
 const RELEASE_MS = 1200
 
-let ctx = null
 let graph = null
+let started = []
 let scene = ambienceLevels({})
 let users = 0
 let lastApply = 0
-let closeTimer = null
+let releaseTimer = null
 let birdTimer = null
-let removeUnlock = null
 
 const randomBetween = (min, max) => min + Math.random() * (max - min)
+
+// Anota cada fuente que arranca para poder pararlas todas al soltar el ambiente.
+const track = (node) => {
+  started.push(node)
+  return node
+}
 
 function noiseBuffer(context, seconds) {
   const buffer = context.createBuffer(1, context.sampleRate * seconds, context.sampleRate)
@@ -36,11 +42,18 @@ function noiseBuffer(context, seconds) {
 }
 
 const noiseSource = (context, buffer) => {
-  const source = context.createBufferSource()
+  const source = track(context.createBufferSource())
   source.buffer = buffer
   source.loop = true
   source.start()
   return source
+}
+
+const oscillator = (context, frequency) => {
+  const osc = track(context.createOscillator())
+  osc.frequency.value = frequency
+  osc.start()
+  return osc
 }
 
 function chain(...nodes) {
@@ -60,18 +73,12 @@ function buildWind(context, out, noise) {
   const gain = context.createGain()
   gain.gain.value = 0
   chain(noiseSource(context, noise), filter, gain, out)
-  const swell = context.createOscillator()
-  swell.frequency.value = 0.13
   const swellDepth = context.createGain()
   swellDepth.gain.value = 0
-  chain(swell, swellDepth, gain.gain)
-  const gust = context.createOscillator()
-  gust.frequency.value = 0.07
+  chain(oscillator(context, 0.13), swellDepth, gain.gain)
   const gustDepth = context.createGain()
   gustDepth.gain.value = 160
-  chain(gust, gustDepth, filter.frequency)
-  swell.start()
-  gust.start()
+  chain(oscillator(context, 0.07), gustDepth, filter.frequency)
   return { gain, swellDepth }
 }
 
@@ -90,39 +97,33 @@ function buildRain(context, out, noise) {
 
 // Grillos: un tono agudo troceado muy rápido y en ráfagas de unos tres golpes por segundo.
 function buildCrickets(context, out) {
-  const tone = context.createOscillator()
-  tone.frequency.value = 4300
   const chirp = context.createGain()
   chirp.gain.value = 0.5
-  const chirpRate = context.createOscillator()
-  chirpRate.frequency.value = 32
   const chirpDepth = context.createGain()
   chirpDepth.gain.value = 0.5
-  chain(chirpRate, chirpDepth, chirp.gain)
+  chain(oscillator(context, 32), chirpDepth, chirp.gain)
   const burst = context.createGain()
   burst.gain.value = 0.5
-  const burstRate = context.createOscillator()
-  burstRate.frequency.value = 2.7
   const burstDepth = context.createGain()
   burstDepth.gain.value = 0.5
-  chain(burstRate, burstDepth, burst.gain)
+  chain(oscillator(context, 2.7), burstDepth, burst.gain)
   const gain = context.createGain()
   gain.gain.value = 0
-  chain(tone, chirp, burst, gain, out)
-  ;[tone, chirpRate, burstRate].forEach((node) => node.start())
+  chain(oscillator(context, 4300), chirp, burst, gain, out)
   return { gain }
 }
 
+// Monta el ambiente sobre el bus de efectos. `out` es solo para el fundido de salida.
 function ensureGraph() {
   if (graph) return graph
-  const Context = window.AudioContext || window.webkitAudioContext
-  if (!Context) return null
-  ctx = new Context()
+  const engine = getEngine()
+  if (!engine) return null
+  const { ctx } = engine
+  started = []
   const out = ctx.createGain()
-  out.gain.value = fxLevel()
-  out.connect(ctx.destination)
+  out.connect(engine.fx)
   const noise = noiseBuffer(ctx, 3)
-  graph = { out, noise, wind: buildWind(ctx, out, noise), rain: buildRain(ctx, out, noise), crickets: buildCrickets(ctx, out) }
+  graph = { ctx, out, noise, wind: buildWind(ctx, out, noise), rain: buildRain(ctx, out, noise), crickets: buildCrickets(ctx, out) }
   applyScene(true)
   scheduleBird()
   return graph
@@ -134,20 +135,25 @@ function applyScene(force = false) {
   const now = performance.now()
   if (!force && now - lastApply < APPLY_EVERY_MS) return
   lastApply = now
-  const t = ctx.currentTime
+  const t = graph.ctx.currentTime
   graph.wind.gain.gain.setTargetAtTime(0.1 * scene.wind, t, 0.5)
   graph.wind.swellDepth.gain.setTargetAtTime(0.06 * scene.wind, t, 0.5)
   graph.rain.gain.gain.setTargetAtTime(0.32 * scene.rain, t, 0.5)
   graph.crickets.gain.gain.setTargetAtTime(0.012 * scene.crickets, t, 0.8)
 }
 
+const running = () => graph && graph.ctx.state === 'running'
+
 // Un gorjeo: dos a cuatro notas cortas que suben de tono, a un lado u otro del estéreo.
 function chirp() {
-  if (!graph || ctx.state !== 'running') return
+  if (!running()) return
+  const { ctx, out } = graph
   const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null
-  if (pan) pan.pan.value = randomBetween(-0.7, 0.7)
-  const target = pan || graph.out
-  if (pan) chain(pan, graph.out)
+  if (pan) {
+    pan.pan.value = randomBetween(-0.7, 0.7)
+    pan.connect(out)
+  }
+  const target = pan || out
   const base = randomBetween(2200, 3600)
   const notes = 2 + Math.floor(Math.random() * 3)
   for (let i = 0; i < notes; i++) {
@@ -176,10 +182,11 @@ function scheduleBird() {
 
 // Trueno: un estallido de ruido grave que se apaga despacio, con un retumbo por debajo.
 export function thunder(delaySeconds = 0.5) {
-  if (!graph || ctx.state !== 'running') return
+  if (!running()) return
+  const { ctx, out, noise } = graph
   const start = ctx.currentTime + delaySeconds
   const rumble = ctx.createBufferSource()
-  rumble.buffer = graph.noise
+  rumble.buffer = noise
   const filter = ctx.createBiquadFilter()
   filter.type = 'lowpass'
   filter.frequency.setValueAtTime(900, start)
@@ -188,7 +195,7 @@ export function thunder(delaySeconds = 0.5) {
   env.gain.setValueAtTime(0, start)
   env.gain.linearRampToValueAtTime(1.1, start + 0.05)
   env.gain.setTargetAtTime(0, start + 0.3, 0.9)
-  chain(rumble, filter, env, graph.out)
+  chain(rumble, filter, env, out)
   rumble.start(start, Math.random() * 2)
   rumble.stop(start + 4)
   const sub = ctx.createOscillator()
@@ -197,7 +204,7 @@ export function thunder(delaySeconds = 0.5) {
   subEnv.gain.setValueAtTime(0, start)
   subEnv.gain.linearRampToValueAtTime(0.5, start + 0.08)
   subEnv.gain.setTargetAtTime(0, start + 0.3, 0.8)
-  chain(sub, subEnv, graph.out)
+  chain(sub, subEnv, out)
   sub.start(start)
   sub.stop(start + 4)
 }
@@ -205,7 +212,6 @@ export function thunder(delaySeconds = 0.5) {
 // Un gorjeo suelto para oír cómo suenan los efectos al mover su volumen.
 export function previewFx() {
   if (!ensureGraph()) return
-  ctx.resume?.()
   chirp()
 }
 
@@ -214,48 +220,39 @@ export function setAmbienceScene(sky) {
   applyScene()
 }
 
-subscribeSoundPrefs(() => {
-  if (graph) graph.out.gain.setTargetAtTime(fxLevel(), ctx.currentTime, 0.05)
+// En iPhone el audio solo arranca dentro de un gesto: el motor avisa en cada uno y aquí se monta el
+// ambiente la primera vez que hay contexto.
+onEngineGesture(() => {
+  if (users > 0) ensureGraph()
 })
 
-// El navegador solo deja arrancar el audio tras un gesto; si ya hubo alguno, arranca en el acto.
-function unlock() {
-  const events = ['pointerdown', 'keydown']
-  const start = () => {
-    removeUnlock?.()
-    if (users > 0 && ensureGraph()) ctx.resume?.()
-  }
-  events.forEach((name) => document.addEventListener(name, start))
-  removeUnlock = () => {
-    events.forEach((name) => document.removeEventListener(name, start))
-    removeUnlock = null
-  }
+// Desmonta el ambiente: para todas sus fuentes y suelta los nodos.
+function teardown() {
+  clearTimeout(birdTimer)
+  started.forEach((node) => {
+    try {
+      node.stop()
+    } catch {
+      // Ya estaba parada.
+    }
+  })
+  started = []
+  graph?.out.disconnect()
+  graph = null
 }
 
 // Una pantalla que quiere sonido ambiente lo pide al montarse y lo suelta al desmontarse.
 export function acquireAmbience() {
   users += 1
-  clearTimeout(closeTimer)
-  if (graph) {
-    graph.out.gain.setTargetAtTime(fxLevel(), ctx.currentTime, 0.1)
-    if (ctx.state === 'suspended') ctx.resume?.()
-  }
-  if (users === 1 && !graph) {
-    if (navigator.userActivation?.hasBeenActive && ensureGraph()) ctx.resume?.()
-    else unlock()
-  }
+  clearTimeout(releaseTimer)
+  startEngineIfAllowed()
+  if (graph) graph.out.gain.setTargetAtTime(1, graph.ctx.currentTime, 0.1)
+  else ensureGraph()
 
   return () => {
     users -= 1
-    if (users > 0) return
-    removeUnlock?.()
-    if (!graph) return
-    graph.out.gain.setTargetAtTime(0, ctx.currentTime, 0.25)
-    closeTimer = setTimeout(() => {
-      clearTimeout(birdTimer)
-      ctx.close()
-      ctx = null
-      graph = null
-    }, RELEASE_MS)
+    if (users > 0 || !graph) return
+    graph.out.gain.setTargetAtTime(0, graph.ctx.currentTime, 0.25)
+    releaseTimer = setTimeout(teardown, RELEASE_MS)
   }
 }
