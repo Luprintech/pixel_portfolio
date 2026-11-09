@@ -2,9 +2,15 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
+Última actualización: 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
 
 ## Hecho
+
+### Entrada del valle: arco en la línea de la valla y cartel (2026-11-10)
+- El arco de piedra (`kind: 'arch'`) baja de `y=48.4` a `y=50.4`, la misma fila que las vallas, y cierra su hueco en vez de quedar tras ellas.
+- Cartel de bienvenida `welcomeSign` en `props.js`, a la derecha del camino nada más entrar (`[42.5, 48.2]`), con "VALLE DEL BUCLE" en dos líneas. El juego no tenía forma de pintar texto: `game/pixelFont.js` trae letras de 3×5 píxeles, solo las que usa el cartel (A, B, C, D, E, L, U, V). Un rótulo nuevo pide añadir sus letras ahí.
+- El cartel va dibujado en el sprite, así que no pasa por i18n; si el nombre del valle cambia hay que tocar el sprite.
+- Comprobado en el navegador a tamaño real. Pendiente: revisarlo de noche y con la nieve.
 
 ### Colisiones del valle: ventanas, tejados y vibración (2026-11-10)
 - Las ventanas encendidas se pintan por encima del oscurecimiento y tapaban a la viajera al pasar por delante. `game/litWindows.js` recorta la silueta del personaje en esa capa mientras se solapan.

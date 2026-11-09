@@ -3,6 +3,7 @@
 // en píxeles, con `t` y `b` negativos hacia arriba. Un `glow` marca la luz que se enciende de noche.
 import { PAL, TONE } from './palette.js'
 import { dot, ellipse, makeCanvas, outline, rect } from './pixelKit.js'
+import { drawText, textWidth } from './pixelFont.js'
 
 const [WOOD0, WOOD1, WOOD2, WOOD3] = TONE.wood
 const [STONE0, STONE1, STONE2] = TONE.stone
@@ -103,6 +104,27 @@ function arch() {
     dot(g, x + 1, y + 1, '#f09ab6')
   }
   return { canvas: done(s), body: [{ l: -34, t: -42, r: -20, b: -1 }, { l: 20, t: -42, r: 34, b: -1 }] }
+}
+
+// Cartel de bienvenida: tablón sobre dos postes con el nombre del valle en dos líneas.
+function welcomeSign() {
+  const s = sprite(48, 38)
+  const { g } = s
+  rect(g, 7, 22, 4, 16, WOOD1)
+  rect(g, 7, 22, 1, 16, WOOD3)
+  rect(g, 37, 22, 4, 16, WOOD1)
+  rect(g, 37, 22, 1, 16, WOOD3)
+  rect(g, 2, 2, 44, 22, WOOD0)
+  rect(g, 3, 3, 42, 20, WOOD2)
+  rect(g, 3, 3, 42, 1, WOOD3)
+  rect(g, 3, 22, 42, 1, WOOD1)
+  ;[[5, 5], [42, 5], [5, 20], [42, 20]].forEach(([x, y]) => dot(g, x, y, WOOD0))
+  const cream = '#f6f0e0'
+  const first = 'VALLE DEL'
+  const second = 'BUCLE'
+  drawText(g, 3 + Math.floor((42 - textWidth(first)) / 2), 6, first, cream)
+  drawText(g, 3 + Math.floor((42 - textWidth(second)) / 2), 13, second, cream)
+  return { canvas: done(s), body: [{ l: -17, t: -8, r: 17, b: -1 }] }
 }
 
 function busStop() {
@@ -325,7 +347,7 @@ export function bridgeSprite(widthTiles, heightTiles) {
 }
 
 export const PROP_KINDS = {
-  fountain, noticeboard, postbox, arch, busStop, bus, towTruck, pool, statue, easel, bench, lamp, rocks, umbrella, fence,
+  fountain, noticeboard, postbox, arch, welcomeSign, busStop, bus, towTruck, pool, statue, easel, bench, lamp, rocks, umbrella, fence,
 }
 
 // Cada objeto se dibuja una sola vez por variante: devuelve `{ canvas, body, glow? }`.

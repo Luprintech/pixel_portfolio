@@ -43,7 +43,10 @@ export const PROPS = [
   { kind: 'fountain', at: [37, 29.2] },
   { kind: 'noticeboard', at: [33.5, 31.6] },
   { kind: 'postbox', at: [47.5, 24.2], zone: 'contact', door: { x: 47, y: 24 } },
-  { kind: 'arch', at: [37, 48.4] },
+  // El arco cierra el hueco de la valla: está a su misma altura.
+  { kind: 'arch', at: [37, 50.4] },
+  // Cartel a la derecha del camino nada más entrar (mirando al norte).
+  { kind: 'welcomeSign', at: [42.5, 48.2] },
   { kind: 'busStop', at: [43.5, 34.6] },
   { kind: 'bus', at: [48, 35.4] },
   { kind: 'towTruck', at: [58.6, 44.6] },
