@@ -3,7 +3,7 @@
 // misma matriz y la pintan cada uno a su manera (`paint.js`, `sheet.js`).
 //
 // El dibujo sale de partes independientes (`parts/`): pelo, piernas con calzado, cadera, prenda de
-// arriba, brazos, cabeza, rostro, vello facial y complementos. Cada una pinta en su sitio según la
+// arriba, brazos, cabeza, rostro, rasgos faciales y complementos. Cada una pinta en su sitio según la
 // geometría de `stance.js`, que es lo único que cambia con la vista y la pose. Frente, perfil y
 // espalda tienen dibujo propio; el perfil izquierdo es el derecho reflejado, salvo en lo que no es
 // simétrico (guiño, rapado, lazo y flor), que se dibuja desde el lado que enseña.
@@ -13,7 +13,7 @@ import { paintArms } from './parts/arms.js'
 import { paintTop } from './parts/body.js'
 import { dressHair } from './parts/accessories.js'
 import { paintFace } from './parts/face.js'
-import { paintFacialHair } from './parts/facialHair.js'
+import { paintTraits } from './parts/traits.js'
 import { hairCells } from './parts/hair.js'
 import { paintHead } from './parts/head.js'
 import { paintHips, paintLegs } from './parts/legs.js'
@@ -54,7 +54,7 @@ export function composeAvatar(look, dir = 'down', pose = 0) {
   paintArms(upper, ctx, paintTop(upper, ctx))
   paintHead(upper, ctx)
   paintFace(upper, ctx)
-  paintFacialHair(upper, ctx)
+  paintTraits(upper, ctx)
   upper.cells(hair.front)
 
   let rows = addOutline(grid).map((row) => row.join(''))

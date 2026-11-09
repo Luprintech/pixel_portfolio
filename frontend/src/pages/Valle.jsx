@@ -4,7 +4,8 @@ import { Helmet } from 'react-helmet-async'
 import Editor from '../components/valle/Editor'
 import Joystick from '../components/valle/Joystick'
 import ZonePanel from '../components/valle/ZonePanel'
-import { DEFAULT_LOOK, randomLook } from '../game/look'
+import { defaultLook, randomLook, selectBody } from '../game/look'
+import { DEFAULT_PET } from '../game/pet'
 import { PAL } from '../game/palette'
 import { loadSave, sanitizeName, writeSave } from '../game/save'
 import { useValleCopy } from '../lib/valleCopy'
@@ -19,7 +20,11 @@ export default function Valle() {
   // «Nueva aventura» y «Personalizar» abren el creador; cualquier otra entrada va directa al valle.
   const [existing] = useState(loadSave)
   const [look, setLook] = useState(() => (mode === 'nueva' ? randomLook() : existing?.look || randomLook()))
+  const [pet, setPet] = useState(() => (mode === 'nueva' ? DEFAULT_PET : existing?.pet || DEFAULT_PET))
   const [name, setName] = useState(() => (mode === 'nueva' ? '' : existing?.name || ''))
+  const [petName, setPetName] = useState(() => (mode === 'nueva' ? '' : existing?.petName || ''))
+  // Aspecto guardado del avatar que no está seleccionado; el seleccionado vive en `look`.
+  const [otherLooks, setOtherLooks] = useState({})
   const [phase, setPhase] = useState(mode === 'nueva' || mode === 'editar' ? 'editor' : 'play')
   const [status, setStatus] = useState('loading')
   const [game, setGame] = useState(null)
@@ -31,14 +36,25 @@ export default function Valle() {
   // La partida se escribe al entrar al valle, no mientras se edita: abandonar el creador
   // deja intacta la aventura anterior.
   const enterValley = useCallback(() => {
-    writeSave({ name: sanitizeName(name), look })
+    writeSave({ name: sanitizeName(name), look, pet, petName })
     setPhase('play')
-  }, [name, look])
+  }, [name, look, pet, petName])
 
+  const selectAvatar = useCallback((body) => {
+    if (body === look.body) return
+    setOtherLooks((prev) => ({ ...prev, [look.body]: look }))
+    setLook(selectBody(otherLooks, body))
+  }, [look, otherLooks])
+
+  // Restablecer y «al azar» afectan solo al avatar seleccionado.
   const reset = useCallback(() => {
-    setLook(DEFAULT_LOOK)
+    setLook(defaultLook(look.body))
+    setPet(DEFAULT_PET)
     setName('')
-  }, [])
+    setPetName('')
+  }, [look.body])
+
+  const randomize = useCallback(() => setLook({ ...randomLook(), body: look.body }), [look.body])
 
   // Phaser se carga solo aquí: el resto del sitio no paga su peso.
   useEffect(() => {
@@ -49,7 +65,7 @@ export default function Valle() {
     import('../game/boot')
       .then(({ startGame }) => {
         if (cancelled || !hostRef.current) return
-        instance = startGame(hostRef.current, look)
+        instance = startGame(hostRef.current, look, pet)
         instance.events.on('near', setNear)
         instance.events.on('enter', setZone)
         setGame(instance)
@@ -79,11 +95,16 @@ export default function Valle() {
         <Helmet><title>{copy.editor.title} | Valle del Bucle</title></Helmet>
         <Editor
           look={look}
+          pet={pet}
+          onPet={setPet}
+          petName={petName}
+          onPetName={setPetName}
           name={name}
           replacing={mode === 'nueva' && !!existing}
           onChange={setLook}
+          onBody={selectAvatar}
           onName={setName}
-          onRandom={() => setLook(randomLook())}
+          onRandom={randomize}
           onReset={reset}
           onDone={enterValley}
         />

@@ -6,9 +6,10 @@
 //   D/L/M prenda de arriba, luz y sombra     T ribete
 //   N/u/n prenda de abajo, luz y sombra      W blanco hueso (camisa, suela, cordones)
 //   R/Q calzado y suela              A/a complemento y su sombra     G gafas   P/Y pétalo y centro
+//   Z cejas y párpados (un tono muy oscuro de la piel)   F peca o lunar   C cicatriz   q lágrima
+//   r tono claro del calzado (cordones, puños)
 //   X contorno (también el que separa el brazo del torso en el perfil)
 import { PAL, shade, tint } from '../palette.js'
-
 // Negro azulado del contorno; es el mismo del resto de personajes.
 export const OUTLINE = '#14102a'
 const EYE_WHITE = '#f6f0e0'
@@ -93,6 +94,10 @@ export function avatarColors(look, blink = false) {
     m: shade(mix(look.skin, '#c0405a', 0.65), 0.86),
     O: '#2a1a2e',
     K: shade(look.beardColor, 0.85),
+    Z: shade(look.skin, 0.42),
+    F: shade(mix(look.skin, '#8a3f2c', 0.4), 0.78),
+    C: tint(look.skin, 0.55),
+    q: '#7fd0dc',
     w: blink ? look.skin : EYE_WHITE,
     e: blink ? look.skin : pupil,
     v: blink ? lash : EYE_WHITE,
@@ -112,6 +117,7 @@ export function avatarColors(look, blink = false) {
     n: shade(look.bottomColor, 0.72),
     R: look.shoesColor,
     Q: shade(look.shoesColor, 0.6),
+    r: tint(look.shoesColor, 0.38),
     W: '#f1e6cf',
     G: '#3a3050',
     P: '#f29bb4',

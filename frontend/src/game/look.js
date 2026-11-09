@@ -16,15 +16,43 @@ export const LOOK_COLORS = {
   trim: ['#f2b134', '#cfd6e6', '#d4503a', '#4cb3c9'],
 }
 
+// Peinados de cada avatar: los doce de su lámina de referencia, tres prestados del otro avatar para
+// que la rejilla quede en 16 y `calvo` como último. Los que comparten las dos láminas (largo
+// ondulado, rizado corto y moño) se dibujan igual en los dos.
+const HAIR_STYLES_BY_BODY = {
+  mujer: ['largo', 'pixie', 'bob', 'ondulado', 'rizadoCorto', 'voluminoso', 'colaAlta', 'colaBaja', 'coletas', 'trenzas', 'rodete', 'rapado', 'cortoClasico', 'mediaMelena', 'dePunta', 'calvo'],
+  hombre: ['rasurado', 'cortoClasico', 'dePunta', 'flequilloLargo', 'rizadoCorto', 'afro', 'degradado', 'tupe', 'mediaMelena', 'ondulado', 'rodete', 'cresta', 'bob', 'pixie', 'colaBaja', 'calvo'],
+}
+
 export const LOOK_STYLES = {
   body: ['mujer', 'hombre'],
-  face: ['serena', 'sonrisa', 'sorpresa', 'guino', 'timida'],
-  hairStyle: ['largo', 'pixie', 'bob', 'ondulado', 'rizadoCorto', 'voluminoso', 'colaAlta', 'colaBaja', 'coletas', 'trenzas', 'rodete', 'rapado', 'calvo'],
-  beard: ['ninguna', 'barba', 'bigote', 'perilla', 'patillas'],
-  accessory: ['ninguno', 'gafas', 'gafasSol', 'lazo', 'flor', 'diadema', 'gorro', 'gorra', 'pendientes'],
-  top: ['camiseta', 'oversize', 'tirantes', 'camisa', 'sudadera', 'cremallera', 'jersey', 'vaquera', 'vestido', 'vestidoTirantes', 'vestidoLargo', 'vestidoCamisero', 'peto'],
-  bottom: ['pantalon', 'cargo', 'ancho', 'shorts', 'falda', 'plisada', 'faldaLarga'],
-  shoes: ['zapatillas', 'botas', 'sandalias'],
+  face: [
+    'serena', 'sonrisa', 'risa', 'guino', 'sorpresa', 'enfado', 'tristeza', 'llanto',
+    'concentracion', 'duda', 'sueno', 'verguenza', 'picardia', 'miedo', 'aburrimiento', 'ternura',
+  ],
+  hairStyle: [...new Set([...HAIR_STYLES_BY_BODY.mujer, ...HAIR_STYLES_BY_BODY.hombre])],
+  trait: [
+    'ninguno', 'incipiente', 'barbaCorta', 'barba', 'bigoteFino', 'bigote', 'perilla', 'patillas',
+    'pecas', 'pecasMuchas', 'lunarMejilla', 'lunarLabio', 'cejas', 'cejaPartida', 'cicatrizCeja', 'cicatrizMejilla',
+  ],
+  accessory: [
+    'ninguno', 'gafas', 'gafasRect', 'gafasSol', 'pendientes', 'aros', 'piercing', 'auriculares',
+    'diadema', 'lazo', 'horquillas', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja',
+  ],
+  top: [
+    'camiseta', 'oversize', 'tirantes', 'camisa', 'sudadera', 'cremallera', 'jersey', 'vaquera',
+    'polo', 'chaleco', 'cardigan', 'vestido', 'vestidoTirantes', 'vestidoLargo', 'vestidoCamisero', 'peto',
+  ],
+  bottom: ['pantalon', 'cargo', 'ancho', 'pirata', 'shorts', 'falda', 'plisada', 'faldaLarga'],
+  shoes: [
+    'zapatillas', 'deportivas', 'altas', 'lona', 'botines', 'montana', 'botasAltas', 'lluvia',
+    'clasicos', 'mocasines', 'merceditas', 'bailarinas', 'sandalias', 'chanclas', 'tacon', 'aventura',
+  ],
+}
+
+// Lo que se enseña en cada campo de estilos: casi siempre toda la lista, pero el peinado depende del avatar.
+export function styleChoices(field, look) {
+  return field === 'hairStyle' ? HAIR_STYLES_BY_BODY[look.body] : LOOK_STYLES[field]
 }
 
 export const LOOK_OPTIONS = { ...LOOK_COLORS, ...LOOK_STYLES }
@@ -32,53 +60,79 @@ export const LOOK_OPTIONS = { ...LOOK_COLORS, ...LOOK_STYLES }
 // Los vestidos y el peto son de una pieza: no se elige prenda de abajo, y en los vestidos tampoco su color.
 const DRESSES = ['vestido', 'vestidoTirantes', 'vestidoLargo', 'vestidoCamisero']
 const ONE_PIECE = [...DRESSES, 'peto']
-const hasBeard = (look) => look.beard !== 'ninguna'
+// Los rasgos que se tiñen con el color del vello; pecas, lunares y cicatrices llevan su propio tono.
+const HAIRY_TRAITS = ['incipiente', 'barbaCorta', 'barba', 'bigoteFino', 'bigote', 'perilla', 'patillas', 'cejas', 'cejaPartida', 'cicatrizCeja']
+// Las gafas, el piercing y los auriculares son de un solo color; el resto se tiñe.
+const TINTED_ACCESSORIES = ['pendientes', 'aros', 'diadema', 'lazo', 'horquillas', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja']
+const hasBeard = (look) => HAIRY_TRAITS.includes(look.trait)
 const hasHair = (look) => look.hairStyle !== 'calvo'
-const hasAccessoryColor = (look) => ['lazo', 'diadema', 'gorro', 'gorra', 'pendientes'].includes(look.accessory)
+const hasAccessoryColor = (look) => TINTED_ACCESSORIES.includes(look.accessory)
 const showsBottom = (look) => !ONE_PIECE.includes(look.top)
 // El color de abajo también tiñe el peto, que lleva su propia tela sobre la camiseta.
 const showsBottomColor = (look) => !DRESSES.includes(look.top)
 
-// Los apartados con muchas tarjetas (`wide`) ocupan las dos columnas.
-// Cada campo se enseña con una vista en píxeles: `view` dice qué parte del cuerpo se recorta.
-// Los campos de color (`kind: 'color'`) se enseñan como muestras.
+// El creador se reparte en pestañas (cuerpo, ropa y mascota) y cada una en apartados, todos del mismo
+// ancho. Dentro de un apartado todo sigue el mismo orden: primero las opciones dibujadas (`view` dice
+// qué parte del cuerpo se recorta) y justo debajo sus colores (`colors`, con su condición `when`).
+// Un campo sin `view` es solo de color (piel, ojos, ribetes). El avatar (mujer u hombre) no es un
+// apartado: se elige bajo el nombre, porque cambia todo lo demás.
+export const LOOK_TABS = ['body', 'clothes', 'pet']
+
 export const LOOK_SECTIONS = [
-  { id: 'avatar', fields: [{ key: 'body', view: 'full' }] },
   {
     id: 'face',
-    fields: [{ key: 'skin' }, { key: 'eyes' }, { key: 'face', view: 'head' }],
+    tab: 'body',
+    fields: [{ key: 'face', view: 'head' }, { key: 'skin' }, { key: 'eyes' }],
   },
   {
     id: 'hair',
-    wide: true,
-    fields: [{ key: 'hairStyle', view: 'hair' }, { key: 'hair', when: hasHair }],
+    tab: 'body',
+    fields: [{ key: 'hairStyle', view: 'hair', colors: [{ key: 'hair', when: hasHair }] }],
   },
   {
-    id: 'beard',
-    fields: [{ key: 'beard', view: 'head' }, { key: 'beardColor', when: hasBeard }],
-  },
-  {
-    id: 'extras',
-    fields: [{ key: 'accessory', view: 'head' }, { key: 'accessoryColor', when: hasAccessoryColor }],
+    id: 'traits',
+    tab: 'body',
+    fields: [{ key: 'trait', view: 'head', colors: [{ key: 'beardColor', when: hasBeard }] }],
   },
   {
     id: 'clothes',
-    wide: true,
+    tab: 'clothes',
     fields: [
-      { key: 'top', view: 'torso' },
-      { key: 'topColor' },
-      { key: 'bottom', view: 'legs', when: showsBottom },
-      { key: 'bottomColor', when: showsBottomColor },
-      { key: 'shoes', view: 'feet' },
-      { key: 'shoesColor' },
+      { key: 'top', view: 'torso', colors: [{ key: 'topColor' }] },
+      { key: 'bottom', view: 'legs', when: showsBottom, colors: [{ key: 'bottomColor', when: showsBottomColor }] },
+      // Con peto no hay prenda de abajo que elegir, pero su tela sigue teniendo color.
+      { key: 'bottomColor', when: (look) => !showsBottom(look) && showsBottomColor(look) },
+      { key: 'shoes', view: 'feet', colors: [{ key: 'shoesColor' }] },
       { key: 'trim' },
     ],
   },
+  {
+    id: 'extras',
+    tab: 'clothes',
+    fields: [{ key: 'accessory', view: 'head', colors: [{ key: 'accessoryColor', when: hasAccessoryColor }] }],
+  },
 ]
 
+// Los campos de un apartado que se ven con este aspecto, ya con sus colores resueltos:
+// `{ key, view, colors: [claves] }`. Lo usa el creador para pintar y las pruebas para comprobarlo.
+export function visibleBlocks(section, look) {
+  return section.fields
+    .filter((field) => !field.when || field.when(look))
+    .map((field) => ({
+      key: field.key,
+      view: field.view,
+      colors: (field.colors ?? []).filter((color) => !color.when || color.when(look)).map((color) => color.key),
+    }))
+}
+
+export const TAB_NAMES = {
+  es: { body: 'Cuerpo', clothes: 'Ropa', pet: 'Mascota' },
+  en: { body: 'Body', clothes: 'Clothes', pet: 'Pet' },
+}
+
 export const SECTION_NAMES = {
-  es: { avatar: 'Avatar', face: 'Rostro', hair: 'Pelo', beard: 'Vello facial', extras: 'Complementos', clothes: 'Ropa' },
-  en: { avatar: 'Avatar', face: 'Face', hair: 'Hair', beard: 'Facial hair', extras: 'Accessories', clothes: 'Clothes' },
+  es: { face: 'Rostro', hair: 'Pelo', traits: 'Rasgos faciales', extras: 'Complementos', clothes: 'Ropa' },
+  en: { face: 'Face', hair: 'Hair', traits: 'Facial features', extras: 'Accessories', clothes: 'Clothes' },
 }
 
 export const LOOK_LABELS = {
@@ -89,8 +143,8 @@ export const LOOK_LABELS = {
     face: 'Expresión',
     hairStyle: 'Peinado',
     hair: 'Color de pelo',
-    beard: 'Estilo',
-    beardColor: 'Color del vello',
+    trait: 'Rasgo',
+    beardColor: 'Color del vello y de las cejas',
     accessory: 'Complemento',
     accessoryColor: 'Color del complemento',
     top: 'Prenda de arriba',
@@ -108,8 +162,8 @@ export const LOOK_LABELS = {
     face: 'Expression',
     hairStyle: 'Hairstyle',
     hair: 'Hair colour',
-    beard: 'Style',
-    beardColor: 'Hair colour',
+    trait: 'Feature',
+    beardColor: 'Hair and brow colour',
     accessory: 'Accessory',
     accessoryColor: 'Accessory colour',
     top: 'Top',
@@ -124,15 +178,79 @@ export const LOOK_LABELS = {
 
 // Nombre de cada estilo. No se ve en pantalla (cada opción se enseña dibujada), pero es el
 // nombre accesible del botón y lo que sale al pasar el ratón.
+const CLOTHES_ES = {
+  camiseta: 'Camiseta básica',
+  oversize: 'Camiseta oversize',
+  tirantes: 'Top sin mangas',
+  camisa: 'Camisa',
+  sudadera: 'Sudadera con capucha',
+  cremallera: 'Sudadera con zip',
+  jersey: 'Jersey',
+  vaquera: 'Chaqueta vaquera',
+  polo: 'Polo',
+  chaleco: 'Chaleco',
+  cardigan: 'Cárdigan',
+  vestido: 'Vestido casual',
+  vestidoTirantes: 'Vestido de tirantes',
+  vestidoLargo: 'Vestido largo',
+  vestidoCamisero: 'Vestido camisero',
+  peto: 'Peto vaquero',
+  pantalon: 'Vaqueros rectos',
+  cargo: 'Pantalón cargo',
+  ancho: 'Pantalón ancho',
+  pirata: 'Pantalón pirata',
+  shorts: 'Pantalón corto',
+  falda: 'Falda corta',
+  plisada: 'Falda plisada',
+  faldaLarga: 'Falda larga',
+}
+const CLOTHES_EN = {
+  camiseta: 'Basic T-shirt',
+  oversize: 'Oversized T-shirt',
+  tirantes: 'Sleeveless top',
+  camisa: 'Shirt',
+  sudadera: 'Hoodie',
+  cremallera: 'Zip hoodie',
+  jersey: 'Sweater',
+  vaquera: 'Denim jacket',
+  polo: 'Polo shirt',
+  chaleco: 'Waistcoat',
+  cardigan: 'Cardigan',
+  vestido: 'Casual dress',
+  vestidoTirantes: 'Pinafore dress',
+  vestidoLargo: 'Long dress',
+  vestidoCamisero: 'Shirt dress',
+  peto: 'Denim overalls',
+  pantalon: 'Straight jeans',
+  cargo: 'Cargo trousers',
+  ancho: 'Wide trousers',
+  pirata: 'Capri trousers',
+  shorts: 'Shorts',
+  falda: 'Short skirt',
+  plisada: 'Pleated skirt',
+  faldaLarga: 'Long skirt',
+}
+
 export const STYLE_NAMES = {
   es: {
     mujer: 'Mujer',
     hombre: 'Hombre',
-    serena: 'Serena',
+    serena: 'Neutral',
     sonrisa: 'Sonrisa',
-    sorpresa: 'Sorpresa',
+    risa: 'Risa',
     guino: 'Guiño',
-    timida: 'Tímida',
+    sorpresa: 'Sorpresa',
+    enfado: 'Enfado',
+    tristeza: 'Tristeza',
+    llanto: 'Llanto',
+    concentracion: 'Concentración',
+    duda: 'Duda',
+    sueno: 'Sueño',
+    verguenza: 'Vergüenza',
+    picardia: 'Picardía',
+    miedo: 'Miedo',
+    aburrimiento: 'Aburrimiento',
+    ternura: 'Ternura',
     largo: 'Largo liso',
     pixie: 'Corto pixie',
     bob: 'Bob',
@@ -145,53 +263,84 @@ export const STYLE_NAMES = {
     trenzas: 'Dos trenzas',
     rodete: 'Moño alto',
     rapado: 'Rapado lateral',
+    rasurado: 'Rapado',
+    cortoClasico: 'Corto clásico',
+    dePunta: 'De punta',
+    flequilloLargo: 'Flequillo largo',
+    afro: 'Afro',
+    degradado: 'Degradado',
+    tupe: 'Tupé',
+    mediaMelena: 'Media melena',
+    cresta: 'Cresta',
     calvo: 'Sin pelo',
-    ninguna: 'Sin vello',
-    barba: 'Barba',
-    bigote: 'Bigote',
+    ninguno: 'Ninguno',
+    incipiente: 'Barba incipiente',
+    barbaCorta: 'Barba corta',
+    barba: 'Barba completa',
+    bigoteFino: 'Bigote fino',
+    bigote: 'Bigote ancho',
     perilla: 'Perilla',
     patillas: 'Patillas',
-    ninguno: 'Ninguno',
-    gafas: 'Gafas',
+    pecas: 'Pecas suaves',
+    pecasMuchas: 'Pecas abundantes',
+    lunarMejilla: 'Lunar en la mejilla',
+    lunarLabio: 'Lunar junto al labio',
+    cejas: 'Cejas pobladas',
+    cejaPartida: 'Ceja partida',
+    cicatrizCeja: 'Cicatriz en la ceja',
+    cicatrizMejilla: 'Cicatriz en la mejilla',
+    gafas: 'Gafas redondas',
+    gafasRect: 'Gafas cuadradas',
     gafasSol: 'Gafas de sol',
-    lazo: 'Lazo',
-    flor: 'Flor',
+    pendientes: 'Pendientes pequeños',
+    aros: 'Pendientes de aro',
+    piercing: 'Piercing de nariz',
+    auriculares: 'Auriculares',
     diadema: 'Diadema',
-    gorro: 'Gorro',
+    lazo: 'Lazo',
+    horquillas: 'Horquillas',
+    panuelo: 'Pañuelo',
     gorra: 'Gorra',
-    pendientes: 'Pendientes',
-    camiseta: 'Camiseta básica',
-    oversize: 'Camiseta oversize',
-    tirantes: 'Top sin mangas',
-    camisa: 'Camisa',
-    sudadera: 'Sudadera con capucha',
-    cremallera: 'Sudadera con cremallera',
-    jersey: 'Jersey',
-    vaquera: 'Chaqueta vaquera',
-    vestido: 'Vestido casual',
-    vestidoTirantes: 'Vestido de tirantes',
-    vestidoLargo: 'Vestido largo',
-    vestidoCamisero: 'Vestido camisero',
-    peto: 'Peto vaquero',
-    pantalon: 'Vaqueros rectos',
-    cargo: 'Pantalón cargo',
-    ancho: 'Pantalón ancho',
-    shorts: 'Pantalón corto',
-    falda: 'Falda corta',
-    plisada: 'Falda plisada',
-    faldaLarga: 'Falda larga',
-    zapatillas: 'Zapatillas',
-    botas: 'Botas',
+    gorro: 'Gorro de lana',
+    sombreroPaja: 'Sombrero de paja',
+    sombreroBruja: 'Sombrero de bruja',
+    ...CLOTHES_ES,
+    zapatillas: 'Zapatillas básicas',
+    deportivas: 'Zapatillas deportivas',
+    altas: 'Zapatillas altas',
+    lona: 'Zapatillas de lona',
+    botines: 'Botines',
+    montana: 'Botas de montaña',
+    botasAltas: 'Botas altas',
+    lluvia: 'Botas de lluvia',
+    clasicos: 'Zapatos clásicos',
+    mocasines: 'Mocasines',
+    merceditas: 'Merceditas',
+    bailarinas: 'Bailarinas',
     sandalias: 'Sandalias',
+    chanclas: 'Chanclas',
+    tacon: 'Zapatos de tacón',
+    aventura: 'Botas de aventura',
   },
   en: {
     mujer: 'Woman',
     hombre: 'Man',
-    serena: 'Calm',
+    serena: 'Neutral',
     sonrisa: 'Smile',
-    sorpresa: 'Surprised',
+    risa: 'Laughing',
     guino: 'Wink',
-    timida: 'Shy',
+    sorpresa: 'Surprised',
+    enfado: 'Angry',
+    tristeza: 'Sad',
+    llanto: 'Crying',
+    concentracion: 'Focused',
+    duda: 'Doubtful',
+    sueno: 'Sleepy',
+    verguenza: 'Embarrassed',
+    picardia: 'Mischief',
+    miedo: 'Fear',
+    aburrimiento: 'Boredom',
+    ternura: 'Tenderness',
     largo: 'Long straight',
     pixie: 'Short pixie',
     bob: 'Bob',
@@ -204,44 +353,64 @@ export const STYLE_NAMES = {
     trenzas: 'Two braids',
     rodete: 'High bun',
     rapado: 'Side undercut',
+    rasurado: 'Buzz cut',
+    cortoClasico: 'Classic short',
+    dePunta: 'Spiky',
+    flequilloLargo: 'Long fringe',
+    afro: 'Afro',
+    degradado: 'Fade',
+    tupe: 'Quiff',
+    mediaMelena: 'Shoulder length',
+    cresta: 'Mohawk',
     calvo: 'No hair',
-    ninguna: 'No facial hair',
-    barba: 'Beard',
-    bigote: 'Moustache',
+    ninguno: 'None',
+    incipiente: 'Stubble',
+    barbaCorta: 'Short beard',
+    barba: 'Full beard',
+    bigoteFino: 'Thin moustache',
+    bigote: 'Thick moustache',
     perilla: 'Goatee',
     patillas: 'Sideburns',
-    ninguno: 'None',
-    gafas: 'Glasses',
+    pecas: 'Light freckles',
+    pecasMuchas: 'Many freckles',
+    lunarMejilla: 'Mole on the cheek',
+    lunarLabio: 'Mole by the lip',
+    cejas: 'Thick eyebrows',
+    cejaPartida: 'Split eyebrow',
+    cicatrizCeja: 'Scar through the eyebrow',
+    cicatrizMejilla: 'Scar on the cheek',
+    gafas: 'Round glasses',
+    gafasRect: 'Rectangular glasses',
     gafasSol: 'Sunglasses',
-    lazo: 'Bow',
-    flor: 'Flower',
+    pendientes: 'Stud earrings',
+    aros: 'Hoop earrings',
+    piercing: 'Nose piercing',
+    auriculares: 'Headphones',
     diadema: 'Headband',
-    gorro: 'Beanie',
+    lazo: 'Bow',
+    horquillas: 'Hair clips',
+    panuelo: 'Bandana',
     gorra: 'Cap',
-    pendientes: 'Earrings',
-    camiseta: 'Basic T-shirt',
-    oversize: 'Oversized T-shirt',
-    tirantes: 'Sleeveless top',
-    camisa: 'Shirt',
-    sudadera: 'Hoodie',
-    cremallera: 'Zip hoodie',
-    jersey: 'Sweater',
-    vaquera: 'Denim jacket',
-    vestido: 'Casual dress',
-    vestidoTirantes: 'Pinafore dress',
-    vestidoLargo: 'Long dress',
-    vestidoCamisero: 'Shirt dress',
-    peto: 'Denim overalls',
-    pantalon: 'Straight jeans',
-    cargo: 'Cargo trousers',
-    ancho: 'Wide trousers',
-    shorts: 'Shorts',
-    falda: 'Short skirt',
-    plisada: 'Pleated skirt',
-    faldaLarga: 'Long skirt',
-    zapatillas: 'Sneakers',
-    botas: 'Boots',
+    gorro: 'Wool beanie',
+    sombreroPaja: 'Straw hat',
+    sombreroBruja: 'Witch hat',
+    ...CLOTHES_EN,
+    zapatillas: 'Basic sneakers',
+    deportivas: 'Running shoes',
+    altas: 'High-top sneakers',
+    lona: 'Canvas sneakers',
+    botines: 'Ankle boots',
+    montana: 'Hiking boots',
+    botasAltas: 'Tall boots',
+    lluvia: 'Rain boots',
+    clasicos: 'Oxford shoes',
+    mocasines: 'Loafers',
+    merceditas: 'Mary Janes',
+    bailarinas: 'Ballet flats',
     sandalias: 'Sandals',
+    chanclas: 'Flip-flops',
+    tacon: 'Heels',
+    aventura: 'Adventure boots',
   },
 }
 
@@ -272,6 +441,14 @@ const ACCESSORY_EN = { '#f2b134': 'Saffron', '#d4503a': 'Tile red', '#b8527a': '
 const TOP_ES = { '#2f8f8b': 'Turquesa', '#7a3f8f': 'Morado', '#d4503a': 'Teja', '#3e6fb0': 'Azul', '#4f7f3f': 'Musgo', '#f1e6cf': 'Hueso', '#f2b134': 'Azafrán', '#b8527a': 'Rosa', '#1c1b3a': 'Negro', '#5c5a7a': 'Gris' }
 const TOP_EN = { '#2f8f8b': 'Teal', '#7a3f8f': 'Purple', '#d4503a': 'Tile red', '#3e6fb0': 'Blue', '#4f7f3f': 'Moss', '#f1e6cf': 'Bone', '#f2b134': 'Saffron', '#b8527a': 'Pink', '#1c1b3a': 'Black', '#5c5a7a': 'Grey' }
 
+// Nombre del color elegido: el de su paleta o, si lo eligió con el selector personalizado, «Personalizado».
+// Un color propio se nombra con su código, para que se pueda saber cuál es sin verlo.
+export function colorName(lang, field, value) {
+  return COLOR_NAMES[lang][field]?.[value] ?? `${CUSTOM_COLOR_NAME[lang]} ${value.toUpperCase()}`
+}
+
+const CUSTOM_COLOR_NAME = { es: 'Personalizado', en: 'Custom' }
+
 export const COLOR_NAMES = {
   es: {
     skin: { '#f6d9c0': 'Clara', '#f0c09a': 'Melocotón', '#d9a07a': 'Dorada', '#a8714f': 'Morena', '#6b4430': 'Oscura', '#4a2f22': 'Muy oscura' },
@@ -300,7 +477,7 @@ export const COLOR_NAMES = {
 // Peinado y prenda con los que cada avatar empieza.
 const BODY_DEFAULTS = {
   mujer: { hairStyle: 'largo', top: 'vestido' },
-  hombre: { hairStyle: 'pixie', top: 'camiseta' },
+  hombre: { hairStyle: 'cortoClasico', top: 'camiseta' },
 }
 
 export const DEFAULT_LOOK = {
@@ -310,7 +487,7 @@ export const DEFAULT_LOOK = {
   face: 'serena',
   hairStyle: 'largo',
   hair: '#8a3f2c',
-  beard: 'ninguna',
+  trait: 'ninguno',
   beardColor: '#5a3a28',
   accessory: 'ninguno',
   accessoryColor: '#f2b134',
@@ -318,40 +495,46 @@ export const DEFAULT_LOOK = {
   topColor: '#2f8f8b',
   bottom: 'pantalon',
   bottomColor: '#3a4a7a',
-  shoes: 'botas',
+  shoes: 'botines',
   shoesColor: '#7a4f35',
   trim: '#f2b134',
 }
 
-// Cambiar de avatar no debe deshacer lo que la persona ya eligió: solo se cambian el peinado y la
-// prenda si seguían siendo los de partida del avatar anterior.
-export function switchBody(look, body) {
-  if (look.body === body) return look
-  const from = BODY_DEFAULTS[look.body]
-  const to = BODY_DEFAULTS[body]
-  return {
-    ...look,
-    body,
-    hairStyle: look.hairStyle === from.hairStyle ? to.hairStyle : look.hairStyle,
-    top: look.top === from.top ? to.top : look.top,
-  }
+export function defaultLook(body) {
+  return { ...DEFAULT_LOOK, ...BODY_DEFAULTS[body], body }
+}
+
+// Cada avatar guarda su propio aspecto: lo que se cambia en uno no toca al otro. Al elegir un
+// avatar se recupera lo que ya se le había hecho, o su aspecto de partida si aún no se ha tocado.
+export function selectBody(bodyLooks, body) {
+  return bodyLooks[body] ?? defaultLook(body)
 }
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)]
 
-// Al azar sin vello facial ni complemento: se eligen a propósito, no por sorteo.
+// Al azar sin rasgos faciales ni complemento: se eligen a propósito, no por sorteo. El peinado sale
+// de los del avatar, para que un hombre no estrene uno de la lámina de mujer.
 export function randomLook() {
   const look = {}
   Object.keys(LOOK_OPTIONS).forEach((key) => {
     look[key] = pick(LOOK_OPTIONS[key])
   })
-  look.beard = 'ninguna'
+  look.hairStyle = pick(styleChoices('hairStyle', look))
+  look.trait = 'ninguno'
   look.accessory = 'ninguno'
   return look
 }
 
+// Cualquier color #rrggbb es válido en un campo de color (el selector personalizado del creador);
+// los campos de estilo solo admiten los de su lista. El formato estricto evita que un valor
+// manipulado en el almacenamiento llegue al dibujo con otra forma.
+export const isHexColor = (value) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
+
 export function isValidLook(look) {
-  return !!look && Object.keys(LOOK_OPTIONS).every((key) => LOOK_OPTIONS[key].includes(look[key]))
+  return (
+    !!look &&
+    Object.keys(LOOK_OPTIONS).every((key) => LOOK_OPTIONS[key].includes(look[key]) || (key in LOOK_COLORS && isHexColor(look[key])))
+  )
 }
 
 // Peinados que ya no existen y el que los sustituye.
@@ -365,10 +548,21 @@ const HAIR_LEGACY = {
   rizado: 'rizadoCorto',
 }
 
-// Traduce lo guardado antes de que la ropa se separara en prenda de arriba, de abajo y calzado, y
-// antes de los doce peinados actuales.
+// Estilos de antes de las láminas de referencia y el que los sustituye: `beard` pasó a `trait`,
+// la flor es un par de horquillas y la tímida es la vergüenza.
+const FACE_LEGACY = { timida: 'verguenza' }
+const TRAIT_LEGACY = { ninguna: 'ninguno' }
+const ACCESSORY_LEGACY = { flor: 'horquillas' }
+const SHOES_LEGACY = { botas: 'botines' }
+
+// Traduce lo guardado antes de que la ropa se separara en prenda de arriba, de abajo y calzado, de
+// los doce peinados actuales y de las láminas de rostro, complementos y calzado.
 function fromLegacy(look) {
   const next = { ...look }
+  if ('beard' in look) next.trait = TRAIT_LEGACY[look.beard] ?? look.beard
+  if (FACE_LEGACY[look.face]) next.face = FACE_LEGACY[look.face]
+  if (ACCESSORY_LEGACY[look.accessory]) next.accessory = ACCESSORY_LEGACY[look.accessory]
+  if (SHOES_LEGACY[look.shoes]) next.shoes = SHOES_LEGACY[look.shoes]
   if (look.outfit) {
     next.top = look.outfit === 'falda' ? 'camiseta' : look.outfit === 'mono' ? 'peto' : look.outfit
     next.bottom = look.outfit === 'falda' ? 'falda' : 'pantalon'

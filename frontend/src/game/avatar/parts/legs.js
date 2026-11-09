@@ -2,10 +2,10 @@
 // caminar; la cadera, la falda y el pantalón corto van con el cuerpo. De perfil las piernas se
 // solapan: en reposo solo se ve la de delante y al caminar aparece la de atrás en sombra.
 import { DRESSES } from './body.js'
-import { paintFoot } from './shoes.js'
+import { paintFoot, shoeTop } from './shoes.js'
 import { BODY_TOP, LEG_TOP } from '../stance.js'
 
-const PANTS = ['pantalon', 'cargo', 'ancho']
+const PANTS = ['pantalon', 'cargo', 'ancho', 'pirata']
 const hipRow = (r) => BODY_TOP + r
 
 // ¿Las piernas llevan pantalón largo? Los vestidos y las faldas las dejan a la vista; el peto es de
@@ -13,8 +13,9 @@ const hipRow = (r) => BODY_TOP + r
 const longTrousers = ({ top, bottom }) => !DRESSES.includes(top) && (top === 'peto' || PANTS.includes(bottom))
 
 // Letras de una pierna: [primera columna, ..., última], con la cara interior en sombra.
-function legLetters(look, leg, view) {
-  const trousers = longTrousers(look)
+function legLetters(look, leg, view, row) {
+  // El pantalón pirata acaba en la rodilla: de ahí para abajo la pierna queda a la vista.
+  const trousers = longTrousers(look) && !(look.bottom === 'pirata' && row > LEG_TOP)
   const wide = look.bottom === 'ancho' && look.top !== 'peto'
   if (view === 'side') {
     if (leg.far) return trousers ? ['n', 'n', 'n'] : ['s', 's', 's']
@@ -37,12 +38,12 @@ function legColumns(leg, view, letters) {
 
 export function paintLegs(p, ctx) {
   const { look, view, g } = ctx
-  const boots = look.shoes === 'botas'
   g.legs.forEach((leg) => {
-    const letters = legLetters(look, leg, view)
-    const cols = legColumns(leg, view, letters)
-    const last = (boots ? LEG_TOP + 1 : LEG_TOP + 2) - (leg.lift || 0)
-    for (let r = LEG_TOP; r <= last; r++) cols.forEach((x, i) => p.put(x, BODY_TOP + r, letters[i]))
+    const last = shoeTop(look) - 1 - (leg.lift || 0)
+    for (let r = LEG_TOP; r <= last; r++) {
+      const letters = legLetters(look, leg, view, r)
+      legColumns(leg, view, letters).forEach((x, i) => p.put(x, BODY_TOP + r, letters[i]))
+    }
     paintFoot(p, ctx, leg)
   })
 }

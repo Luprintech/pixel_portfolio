@@ -59,3 +59,6 @@ nul
 
 # Caché local de herramientas de diseño
 .impeccable/
+
+# Láminas de referencia de estilo (no se suben al repositorio)
+/img/

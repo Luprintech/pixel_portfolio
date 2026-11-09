@@ -1,11 +1,14 @@
 // Partida guardada en el navegador. Es una sola clave versionada: si el formato cambia,
 // se sube `version` y se migra aquí, sin que el resto del código se entere.
 import { upgradeLook } from './look.js'
+import { DEFAULT_PET, upgradePet } from './pet.js'
 
 const SAVE_KEY = 'valle-del-bucle:save'
 // Clave de antes del creador de personaje: solo guardaba el aspecto, sin nombre.
 const LEGACY_LOOK_KEY = 'valle-del-bucle:look'
-export const SAVE_VERSION = 1
+// Versión 2: añade la mascota. Versión 3: añade el nombre de la mascota. Las partidas anteriores se
+// leen igual: sin mascota, o con ella pero sin nombre.
+export const SAVE_VERSION = 3
 export const NAME_MAX = 16
 
 // Deja solo letras, números, espacios, guion y apóstrofo, sin espacios repetidos ni sobrantes.
@@ -19,6 +22,11 @@ export function sanitizeName(value) {
     .trim()
 }
 
+// El nombre de la mascota solo existe si hay mascota; se limpia igual que el de la viajera.
+function petNameFor(pet, value) {
+  return pet.kind === 'ninguna' ? '' : sanitizeName(value)
+}
+
 function readJson(key) {
   try {
     const raw = localStorage.getItem(key)
@@ -28,20 +36,23 @@ function readJson(key) {
   }
 }
 
-// Devuelve { version, name, look } o null si no hay partida o está dañada.
+// Devuelve { version, name, look, pet, petName } o null si no hay partida o está dañada.
 export function loadSave() {
   const saved = readJson(SAVE_KEY)
-  if (saved && saved.version === SAVE_VERSION) {
+  if (saved && [1, 2, SAVE_VERSION].includes(saved.version)) {
     const look = upgradeLook(saved.look)
-    if (look) return { version: SAVE_VERSION, name: sanitizeName(saved.name), look }
+    if (look) {
+      const pet = upgradePet(saved.pet)
+      return { version: SAVE_VERSION, name: sanitizeName(saved.name), look, pet, petName: petNameFor(pet, saved.petName) }
+    }
   }
   const legacy = upgradeLook(readJson(LEGACY_LOOK_KEY))
-  return legacy ? { version: SAVE_VERSION, name: '', look: legacy } : null
+  return legacy ? { version: SAVE_VERSION, name: '', look: legacy, pet: DEFAULT_PET, petName: '' } : null
 }
 
-export function writeSave({ name, look }) {
+export function writeSave({ name, look, pet = DEFAULT_PET, petName = '' }) {
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({ version: SAVE_VERSION, name: sanitizeName(name), look }))
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ version: SAVE_VERSION, name: sanitizeName(name), look, pet, petName: petNameFor(pet, petName) }))
     localStorage.removeItem(LEGACY_LOOK_KEY)
   } catch {
     // Sin almacenamiento disponible: la partida dura solo esta visita.

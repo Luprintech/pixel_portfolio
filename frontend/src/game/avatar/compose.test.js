@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_LOOK, LOOK_STYLES } from '../look'
+import { DEFAULT_LOOK, LOOK_STYLES, styleChoices } from '../look'
 import { DIRS, FRAME_H, FRAME_W, composeAvatar } from './compose'
 import { LETTERS, avatarColors } from './palette'
 import { POSES, stance } from './stance'
@@ -21,7 +21,7 @@ function looks() {
       LOOK_STYLES.bottom.forEach((bottom) => LOOK_STYLES.shoes.forEach((shoes) => list.push({ ...DEFAULT_LOOK, body, top, bottom, shoes }))),
     )
   })
-  LOOK_STYLES.face.forEach((face) => LOOK_STYLES.beard.forEach((beard) => list.push({ ...DEFAULT_LOOK, face, beard })))
+  LOOK_STYLES.face.forEach((face) => LOOK_STYLES.trait.forEach((trait) => list.push({ ...DEFAULT_LOOK, face, trait })))
   return list
 }
 
@@ -33,7 +33,7 @@ describe('composeAvatar', () => {
       DIRS.forEach((dir) =>
         POSE_LIST.forEach((pose) => {
           const { rows, width, height } = composeAvatar(look, dir, pose)
-          const where = `${look.body} ${look.hairStyle} ${look.top} ${look.bottom} ${look.shoes} ${look.face} ${look.beard} ${look.accessory} ${dir} ${pose}`
+          const where = `${look.body} ${look.hairStyle} ${look.top} ${look.bottom} ${look.shoes} ${look.face} ${look.trait} ${look.accessory} ${dir} ${pose}`
           if (width !== FRAME_W || height !== FRAME_H || rows.length !== FRAME_H) problems.push(`tamaño: ${where}`)
           rows.forEach((row) => {
             if (row.length !== FRAME_W) problems.push(`ancho ${row.length}: ${where}`)
@@ -90,10 +90,10 @@ describe('composeAvatar', () => {
     // El guiño cierra el ojo izquierdo del personaje: solo cambia el perfil izquierdo.
     expect(mirrored({ ...BASE, face: 'guino' })).toBe(false)
     expect(rowsOf({ ...BASE, face: 'guino' }, 'right')).toEqual(rowsOf({ ...BASE, face: 'sonrisa' }, 'right'))
-    // El rapado lateral solo se ve por el lado rapado, y el lazo y la flor por el lado en que se llevan.
+    // El rapado lateral solo se ve por el lado rapado, y el lazo, las horquillas y el nudo del pañuelo
+    // por el lado en que se llevan.
     expect(mirrored({ ...BASE, hairStyle: 'rapado' })).toBe(false)
-    expect(mirrored({ ...BASE, accessory: 'lazo' })).toBe(false)
-    expect(mirrored({ ...BASE, accessory: 'flor' })).toBe(false)
+    ;['lazo', 'horquillas', 'panuelo'].forEach((accessory) => expect(mirrored({ ...BASE, accessory }), accessory).toBe(false))
   })
 
   it('los dos pasos y el reposo son tres dibujos distintos en cada dirección', () => {
@@ -154,7 +154,7 @@ describe('composeAvatar', () => {
     distinct('bottom', (bottom) => rowsOf({ ...BASE, top: 'camiseta', bottom }, 'down').join('|'))
     distinct('shoes', (shoes) => rowsOf({ ...BASE, shoes }, 'down').join('|'))
     // Sin pelo: un peinado largo taparía las patillas y no se vería la diferencia.
-    ;['face', 'beard', 'accessory'].forEach((field) => distinct(field, (value) => rowsOf({ ...BASE, hairStyle: 'calvo', [field]: value }, 'down').join('|')))
+    ;['face', 'trait', 'accessory'].forEach((field) => distinct(field, (value) => rowsOf({ ...BASE, hairStyle: 'calvo', [field]: value }, 'down').join('|')))
   })
 
   it('cada prenda de arriba y de abajo se ve distinta también de perfil y de espalda', () => {
@@ -171,14 +171,14 @@ describe('composeAvatar', () => {
     expect(width('hombre')).toBeGreaterThan(width('mujer'))
   })
 
-  it('el vello facial y las gafas no se dibujan de espaldas', () => {
+  it('los rasgos de la cara y las gafas no se dibujan de espaldas', () => {
     const plain = rowsOf(BASE, 'up')
-    expect(rowsOf({ ...BASE, beard: 'barba', accessory: 'gafas' }, 'up')).toEqual(plain)
+    expect(rowsOf({ ...BASE, trait: 'barba', accessory: 'gafas' }, 'up')).toEqual(plain)
   })
 
   it('una combinación nueva no altera la de por defecto', () => {
     const before = rowsOf(BASE, 'down').join('')
-    composeAvatar({ ...BASE, hairStyle: 'rizadoCorto', accessory: 'gorro', beard: 'barba' }, 'down', 1)
+    composeAvatar({ ...BASE, hairStyle: 'rizadoCorto', accessory: 'gorro', trait: 'barba' }, 'down', 1)
     expect(rowsOf(BASE, 'down').join('')).toBe(before)
   })
 
@@ -198,6 +198,47 @@ describe('composeAvatar', () => {
     expect(shut.w).toBe(BASE.skin)
     expect(shut.e).toBe(BASE.skin)
     expect(shut.f).not.toBe(open.f)
+  })
+})
+
+describe('catálogo de las láminas de referencia', () => {
+  it('cada avatar ofrece dieciséis peinados distintos, con los doce de su lámina primero', () => {
+    const women = styleChoices('hairStyle', { body: 'mujer' })
+    const men = styleChoices('hairStyle', { body: 'hombre' })
+    ;[women, men].forEach((list) => {
+      expect(list).toHaveLength(16)
+      expect(new Set(list).size).toBe(16)
+      expect(list.at(-1)).toBe('calvo')
+    })
+    expect(women.slice(0, 3)).toEqual(['largo', 'pixie', 'bob'])
+    expect(men.slice(0, 3)).toEqual(['rasurado', 'cortoClasico', 'dePunta'])
+  })
+
+  it('las rejillas de expresiones, rasgos, complementos, calzados, prendas de arriba y peinados tienen 16 opciones', () => {
+    ;['face', 'trait', 'accessory', 'shoes', 'top'].forEach((field) => expect(LOOK_STYLES[field], field).toHaveLength(16))
+    expect(LOOK_STYLES.bottom).toHaveLength(8)
+  })
+
+  it('los sombreros más altos y más anchos caben en el lienzo sin tocar el borde', () => {
+    ;['sombreroBruja', 'sombreroPaja'].forEach((accessory) =>
+      DIRS.forEach((dir) => {
+        const rows = rowsOf({ ...BASE, accessory }, dir)
+        expect(rows[0]).toMatch(/^[.X]+$/)
+        expect(rows.map((row) => row[0] + row[FRAME_W - 1]).join('')).toMatch(/^[.X]+$/)
+        // La punta o la copa llega por encima de la cabeza.
+        expect(rows.slice(0, 5).join('')).toMatch(/[A-Za-z]/)
+      }),
+    )
+  })
+
+  it('las botas altas tapan más pierna que las zapatillas', () => {
+    const legRows = (shoes) => rowsOf({ ...BASE, bottom: 'shorts', shoes }, 'down').join('').split('').filter((ch) => ch === 'S' || ch === 's').length
+    expect(legRows('botasAltas')).toBeLessThan(legRows('zapatillas'))
+  })
+
+  it('la expresión de llanto dibuja lágrimas y la de risa cierra los ojos', () => {
+    expect(rowsOf({ ...BASE, face: 'llanto' }, 'down').join('')).toContain('q')
+    expect(rowsOf({ ...BASE, face: 'risa' }, 'down').join('')).not.toMatch(/[we]{2}/)
   })
 })
 

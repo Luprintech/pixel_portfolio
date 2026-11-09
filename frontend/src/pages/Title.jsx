@@ -8,7 +8,7 @@ import OptionsDialog from '../components/valle/OptionsDialog'
 import { DEFAULT_LOOK } from '../game/look'
 import { PAL } from '../game/palette'
 import { clearSave, loadSave } from '../game/save'
-import { loadGameOptions, saveGameOptions } from '../lib/gameOptions'
+import { loadGameOptions, saveGameOptions, prefersReducedMotion } from '../lib/gameOptions'
 import { useValleCopy } from '../lib/valleCopy'
 
 // 20 fotogramas por segundo bastan para el pixel art y gastan poco.
@@ -21,8 +21,7 @@ export default function Title() {
   const [options, setOptions] = useState(loadGameOptions)
   const [optionsOpen, setOptionsOpen] = useState(false)
   const look = saved?.look || DEFAULT_LOOK
-  const systemReduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  const reduceMotion = systemReduce || options.reduceMotion
+  const reduceMotion = prefersReducedMotion(options)
 
   const changeOptions = (next) => {
     setOptions(next)

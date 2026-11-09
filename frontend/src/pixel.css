@@ -242,6 +242,88 @@
   image-rendering: crisp-edges;
 }
 
+/* Rejillas del creador. Todas las tarjetas del creador tienen el mismo ancho y todas las rejillas (estilos,
+   especies y razas) siguen las mismas reglas, así que cada opción mide lo mismo en cualquier apartado.
+   Cada tarjeta es un contenedor y su rejilla se adapta a su ancho: 3 columnas en una estrecha, 4 en una
+   media y 8 en una ancha. Todas las filas de una rejilla miden lo mismo (la del nombre más largo), y el
+   nombre reserva el mismo hueco en todas. */
+.px-card {
+  container-type: inline-size;
+}
+.px-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 0.75rem;
+}
+@container (min-width: 30rem) {
+  .px-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+@container (min-width: 62rem) {
+  .px-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+/* Dibujo de una opción dentro de su celda: la mayor ampliación entera con la que cabe (con un 5 % de
+   aire), así que ningún dibujo se emborrona ni se corta sea cual sea el tamaño de la celda. La celda
+   es un contenedor de tamaño y el dibujo declara cuántos píxeles de juego mide en `--sw` y `--sh`. */
+.px-tile {
+  container-type: size;
+}
+.px-sprite {
+  width: calc(var(--sw) * 3px);
+  height: calc(var(--sh) * 3px);
+}
+@supports (width: round(down, 10px, 1px)) {
+  .px-sprite {
+    --scale: round(down, min(90cqw / var(--sw), 90cqh / var(--sh)), 1px);
+    width: calc(var(--sw) * var(--scale));
+    height: calc(var(--sh) * var(--scale));
+  }
+}
+
+/* Nombre de cada opción, debajo de su dibujo. Reserva tres líneas, que es lo más que ocupa el nombre
+   más largo en la celda más estrecha, para que todas las tarjetas midan lo mismo aunque el nombre sea
+   corto. */
+.px-caption {
+  display: block;
+  min-height: 3.6em;
+  padding: 0.4rem 0.3rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Selector de cualquier color: un cuadrado con un más dibujado en píxeles mientras no hay un color
+   propio elegido. El campo de color nativo va encima, invisible, y abre la paleta del navegador. */
+.px-custom:focus-within {
+  outline: 3px solid var(--accent-secondary);
+  outline-offset: 5px;
+}
+.px-custom--empty::before,
+.px-custom--empty::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  background: var(--px-ink);
+  pointer-events: none;
+}
+.px-custom--empty::before {
+  width: 16px;
+  height: 4px;
+}
+.px-custom--empty::after {
+  width: 4px;
+  height: 16px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .px-btn {
     transition: none;

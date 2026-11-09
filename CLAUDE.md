@@ -40,7 +40,7 @@ Decidido el 2026-11-09 (detalle en `docs/VISION.md`, sección 6; pendientes en `
 - **Lupe** es la anfitriona y guía del pueblo; no impone recorrido.
 - **Khalessi** es la gata de Lupe y su pareja, no la mascota del visitante. No le asignes el papel de compañera de la viajera.
 - Las mascotas del visitante (perro o gato, función futura) no sustituyen a Khalessi ni toman su nombre, historia o diálogos.
-- La base visual del avatar está aprobada (2026-11-09): figura de 16×28, lienzo de 18×34. No fijes dimensiones nuevas de sprites de mascotas ni de NPC sin hablarlo con la usuaria.
+- La base visual del avatar está aprobada (2026-11-09): figura de 16×28, lienzo de 18×34. Las mascotas del visitante tienen el tamaño de lienzo de su raza (decidido el 2026-11-09). No fijes dimensiones nuevas de sprites de NPC sin hablarlo con la usuaria.
 
 ## Diseño vigente: "Valle del Bucle"
 
@@ -97,5 +97,5 @@ Frontend: `npm run build`, `npm run lint` y `npm test` desde `frontend/`. Backen
 
 ## Pendientes conocidos
 
-- Khalessi sigue a la viajera en el valle y aparece en su creador, lo contrario de lo decidido; corrección pendiente en `docs/ESTADO.md`.
+- Khalessi ya no acompaña a la viajera ni sale en el creador; falta que aparezca junto a Lupe en la bienvenida (`docs/ESTADO.md`).
 - Los bloques de contenido del blog (gradientes de `lib/gradients.js`, botones y avisos del editor) conservan colores propios: son opciones del autor, no el tema.

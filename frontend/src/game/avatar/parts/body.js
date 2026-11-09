@@ -172,6 +172,56 @@ const GARMENTS = {
     return sleeve(4, 'M')
   },
 
+  // Polo: cuello de ribete abierto con dos botones y mangas con puño.
+  polo(b) {
+    b.shoulders()
+    b.body(1, 5)
+    b.row(6, b.tl, b.tr, 'M')
+    b.row(0, 6, 9, 'T')
+    if (b.front) {
+      b.dot(1, b.c0, 'T')
+      b.dot(1, b.c1, 'T')
+      ;[2, 3].forEach((r) => b.dot(r, b.c0, 'T'))
+    } else {
+      b.skinNeck()
+    }
+    return sleeve(3, 'T')
+  },
+
+  // Chaleco abierto sobre una camiseta blanca: dos paneles del color de la prenda y el centro blanco.
+  chaleco(b) {
+    b.shoulders('W')
+    b.body(1, 6, 'W')
+    if (b.front) [b.c0, b.c1].forEach((x) => b.dot(0, x, 'S'))
+    if (b.front) {
+      for (let r = 1; r <= 6; r++) {
+        b.row(r, b.tl, b.c0 - 1, 'D', 'L')
+        b.row(r, b.c1 + 1, b.tr, 'D', null, 'M')
+      }
+    } else {
+      b.body(1, 6)
+    }
+    return sleeve(3, null, 'W')
+  },
+
+  // Cárdigan abierto: mangas y paneles de punto, con la camiseta blanca asomando por el centro.
+  cardigan(b) {
+    b.shoulders()
+    b.body(1, 6, 'W')
+    if (b.front) {
+      for (let r = 1; r <= 6; r++) {
+        b.row(r, b.tl, b.tl + 1, 'D', 'L')
+        b.row(r, b.tr - 1, b.tr, 'D', null, 'M')
+      }
+      b.row(0, b.tl, b.tr, 'L')
+      ;[b.c0, b.c1].forEach((x) => b.dot(0, x, 'S'))
+      ;[2, 4].forEach((r) => b.dot(r, b.tl + 1, 'T'))
+    } else {
+      b.body(1, 6)
+    }
+    return sleeve(4, 'T')
+  },
+
   vestido(b) {
     b.shoulders()
     b.body(1, 3)

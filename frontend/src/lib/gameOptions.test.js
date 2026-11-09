@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { loadGameOptions, saveGameOptions } from './gameOptions'
+import { loadGameOptions, prefersReducedMotion, saveGameOptions } from './gameOptions'
 
 describe('gameOptions', () => {
   beforeEach(() => localStorage.clear())
@@ -11,6 +11,11 @@ describe('gameOptions', () => {
   it('recuerda la elección', () => {
     saveGameOptions({ reduceMotion: true })
     expect(loadGameOptions()).toEqual({ reduceMotion: true })
+  })
+
+  it('deja quieto lo que se mueve si el visitante lo pidió, aunque el sistema no lo pida', () => {
+    expect(prefersReducedMotion({ reduceMotion: false })).toBe(false)
+    expect(prefersReducedMotion({ reduceMotion: true })).toBe(true)
   })
 
   it('ignora datos dañados o con otro tipo', () => {

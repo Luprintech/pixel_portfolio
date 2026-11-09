@@ -2,15 +2,16 @@ import Phaser from 'phaser'
 import { PAL } from './palette.js'
 import { BUILDINGS, COLS, LAKE, ROWS, SIGNPOST, SPAWN, TILE, plazaTiles, roadTiles, treePositions } from './world.js'
 import { groundCanvas } from './ground.js'
+import { cameraZoom } from './viewport.js'
 import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, POSES } from './avatar/index.js'
 import {
-  catCanvas,
   dungeonSprite,
   houseSprite,
   shadowSprite,
   signpostSprite,
   treeSprite,
 } from './sprites.js'
+import { petCanvas } from './pets/index.js'
 
 const SPEED = 90
 // Columna del dibujo donde está el centro de la puerta, según el tipo de edificio.
@@ -23,6 +24,7 @@ export default class ValleScene extends Phaser.Scene {
 
   init(data) {
     this.look = data.look
+    this.pet = data.pet
     this.near = null
     this.armed = true
   }
@@ -43,6 +45,8 @@ export default class ValleScene extends Phaser.Scene {
     cam.startFollow(this.princess, true, 0.12, 0.12)
     cam.centerOn(this.princess.x, this.princess.y)
     cam.setRoundPixels(true)
+    this.fitCamera()
+    this.scale.on('resize', this.fitCamera, this)
 
     // Con un panel abierto, las teclas vuelven a la página (Enter y Espacio activan botones).
     const onLock = (_parent, locked) => {
@@ -52,9 +56,15 @@ export default class ValleScene extends Phaser.Scene {
     this.game.registry.events.on('changedata-locked', onLock)
     this.game.events.on('action', this.tryEnter, this)
     this.events.once('shutdown', () => {
+      this.scale.off('resize', this.fitCamera, this)
       this.game.registry.events.off('changedata-locked', onLock)
       this.game.events.off('action', this.tryEnter, this)
     })
+  }
+
+  fitCamera() {
+    const { width, height } = this.scale
+    this.cameras.main.setZoom(cameraZoom(width, height, COLS * TILE, ROWS * TILE))
   }
 
   // Texturas
@@ -78,10 +88,15 @@ export default class ValleScene extends Phaser.Scene {
   buildTextures() {
     if (this.textures.exists('traveller')) this.textures.remove('traveller')
     this.addTravellerSheet()
-    ;[0, 1].forEach((f) => this.addCanvas(`cat-${f}`, catCanvas(f)))
+    if (this.pet.kind !== 'ninguna') {
+      const frames = [0, 1].map((f) => petCanvas(this.pet, f))
+      frames.forEach((canvas, f) => this.addCanvas(`pet-${f}`, canvas))
+      // Cada raza tiene su tamaño: la sombra cubre el cuerpo y se desplaza con él, no con la cabeza.
+      this.petWidth = frames[0].width
+      this.addCanvas('shadow-pet', shadowSprite(Math.round(this.petWidth * 0.62), 4))
+    }
     ;[0, 1, 2].forEach((v) => this.addCanvas(`tree-${v}`, treeSprite(v)))
     this.addCanvas('shadow', shadowSprite(14, 5))
-    this.addCanvas('shadow-cat', shadowSprite(16, 4))
     this.addCanvas('dungeon', dungeonSprite())
     this.addCanvas('signpost', signpostSprite())
     BUILDINGS.filter((b) => b.kind === 'house').forEach((b) => this.addCanvas(`house-${b.id}`, houseSprite(b.style)))
@@ -151,14 +166,17 @@ export default class ValleScene extends Phaser.Scene {
   // Personajes
   buildCharacters() {
     this.shadow = this.add.image(SPAWN.x, SPAWN.y, 'shadow').setDepth(2)
-    this.catShadow = this.add.image(SPAWN.x - 14, SPAWN.y + 4, 'shadow-cat').setDepth(2)
 
     this.princess = this.physics.add.sprite(SPAWN.x, SPAWN.y, 'traveller', frameName('down', 0)).setOrigin(0.5, 1)
     this.princess.body.setSize(8, 4).setOffset(5, 30)
     this.princess.setCollideWorldBounds(true)
     this.physics.add.collider(this.princess, this.solids)
 
-    this.cat = this.add.sprite(SPAWN.x - 14, SPAWN.y + 4, 'cat-0').setOrigin(0.5, 1)
+    if (this.pet.kind !== 'ninguna') {
+      const startX = SPAWN.x - Math.round(this.petWidth / 2) - 4
+      this.petShadow = this.add.image(startX, SPAWN.y + 4, 'shadow-pet').setDepth(2)
+      this.companion = this.add.sprite(startX, SPAWN.y + 4, 'pet-0').setOrigin(0.5, 1)
+    }
     this.trail = []
     this.facing = 'down'
     this.stepTimer = 0
@@ -224,32 +242,34 @@ export default class ValleScene extends Phaser.Scene {
     this.princess.setDepth(py)
     this.shadow.setPosition(px, py - 1)
 
-    this.followCat(moving, px, py, delta)
+    if (this.companion) this.followPet(moving, px, py, delta)
     this.checkDoors(px, py)
   }
 
-  followCat(moving, px, py, delta) {
+  followPet(moving, px, py, delta) {
+    const pet = this.companion
     if (moving) {
       const last = this.trail[this.trail.length - 1]
       if (!last || Math.hypot(last.x - px, last.y - py) > 1.5) this.trail.push({ x: px, y: py })
       if (this.trail.length > 11) this.trail.shift()
     }
     const target = this.trail.length > 9 ? this.trail[0] : null
-    const dist = Phaser.Math.Distance.Between(this.cat.x, this.cat.y, px, py)
+    const dist = Phaser.Math.Distance.Between(pet.x, pet.y, px, py)
     if (target && dist > 12) {
-      const dx = target.x - this.cat.x
-      const dy = target.y - this.cat.y
+      const dx = target.x - pet.x
+      const dy = target.y - pet.y
       const step = Math.min(Math.hypot(dx, dy), (SPEED * 1.05 * delta) / 1000)
       const angle = Math.atan2(dy, dx)
-      this.cat.x += Math.cos(angle) * step
-      this.cat.y += Math.sin(angle) * step
-      if (Math.abs(dx) > 0.4) this.cat.setFlipX(dx < 0)
-      this.cat.setTexture(`cat-${this.walkStep % 2}`)
+      pet.x += Math.cos(angle) * step
+      pet.y += Math.sin(angle) * step
+      if (Math.abs(dx) > 0.4) pet.setFlipX(dx < 0)
+      pet.setTexture(`pet-${this.walkStep % 2}`)
     } else {
-      this.cat.setTexture('cat-0')
+      pet.setTexture('pet-0')
     }
-    this.cat.setDepth(Math.round(this.cat.y))
-    this.catShadow.setPosition(Math.round(this.cat.x), Math.round(this.cat.y) - 1)
+    pet.setDepth(Math.round(pet.y))
+    const bodyShift = Math.round(this.petWidth * 0.12) * (pet.flipX ? 1 : -1)
+    this.petShadow.setPosition(Math.round(pet.x) + bodyShift, Math.round(pet.y) - 1)
   }
 
   checkDoors(px, py) {

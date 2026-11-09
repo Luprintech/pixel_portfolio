@@ -5,7 +5,8 @@ import { PAL, TONE, seeded } from './palette.js'
 import { drawFlower, drawTuft, grassColor, paintRoute } from './ground.js'
 import { dot, ellipse, makeCanvas, noise, rect } from './pixelKit.js'
 import { avatarCanvas } from './avatar/index.js'
-import { catCanvas, dungeonSprite, houseSprite, shadowSprite, treeSprite } from './sprites.js'
+import { dungeonSprite, houseSprite, shadowSprite, treeSprite } from './sprites.js'
+import { khalessiCanvas } from './pets/index.js'
 import {
   STILL_MS,
   birdsAt,
@@ -207,7 +208,7 @@ export function createTitleScene(canvas, look) {
   const cats = new Map()
   const catSprite = (frame, tail) => {
     const key = `${frame}${tail}`
-    if (!cats.has(key)) cats.set(key, catCanvas(frame, tail))
+    if (!cats.has(key)) cats.set(key, khalessiCanvas(frame, tail))
     return cats.get(key)
   }
 

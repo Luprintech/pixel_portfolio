@@ -419,6 +419,216 @@ const STYLES = {
     rect(B, 4, 5, 9, 9)
     rect(B, 10, 6, 11, 9, 'z')
   },
+
+  // Rapado: pelo a máquina, pegado al cráneo, con la línea de la frente alta y las orejas libres.
+  rasurado(kind, B, F) {
+    rect(F, 5, 0, 10, 0)
+    rect(F, 4, 1, 11, 1)
+    if (kind === 'side') {
+      rect(F, 3, 2, 13, 3)
+      rect(F, 3, 4, 7, 8)
+      return
+    }
+    rect(F, 3, 2, 12, 3)
+    if (kind === 'up') {
+      rect(F, 3, 4, 12, 7)
+      rect(F, 4, 8, 11, 8)
+      return
+    }
+    ;[3, 12].forEach((x) => put(F, x, 4))
+  },
+
+  // Corto clásico: raya a un lado, flequillo corto peinado y patillas; orejas a la vista.
+  cortoClasico(kind, B, F) {
+    rect(F, 5, 0, 10, 0)
+    rect(F, 3, 1, 12, 1)
+    rect(F, 2, 2, 13, 3)
+    if (kind === 'side') {
+      rect(F, 3, 4, 12, 4)
+      put(F, 13, 4)
+      rect(F, 3, 5, 6, 8)
+      rect(F, 10, 5, 10, 5)
+      return
+    }
+    if (kind === 'up') {
+      rect(F, 3, 4, 12, 7)
+      rect(F, 4, 8, 11, 8)
+      ;[1, 2].forEach((y) => put(F, 10, y, 'd'))
+      return
+    }
+    rect(F, 3, 4, 7, 4)
+    put(F, 12, 4)
+    ;[3, 12].forEach((x) => rect(F, x, 5, x, 6))
+    ;[1, 2].forEach((y) => put(F, 9, y, 'd'))
+  },
+
+  // De punta: pelo corto con mechones que se levantan en picos de distinta altura.
+  dePunta(kind, B, F) {
+    // Una base ancha y, encima, picos sueltos de dos alturas.
+    const spikes = (profile) => {
+      rect(F, profile ? 5 : 3, -1, 12, -1)
+      ;(profile ? [5, 7, 8, 10, 12] : [4, 6, 7, 9, 11]).forEach((x) => put(F, x, -2))
+      ;(profile ? [8, 12] : [7, 11]).forEach((x) => put(F, x, -3))
+    }
+    if (kind === 'side') {
+      spikes(true)
+      rect(F, 5, 0, 10, 0)
+      rect(F, 3, 1, 12, 1)
+      rect(F, 2, 2, 13, 3)
+      rect(F, 3, 4, 12, 4)
+      rect(F, 3, 5, 6, 8)
+      return
+    }
+    spikes(false)
+    rect(F, 4, 0, 11, 0)
+    rect(F, 3, 1, 12, 1)
+    rect(F, 2, 2, 13, 3)
+    if (kind === 'up') {
+      rect(F, 2, 4, 13, 8)
+      rect(F, 3, 9, 12, 9)
+      return
+    }
+    ;[3, 4, 7, 8, 11, 12].forEach((x) => put(F, x, 4))
+    ;[3, 12].forEach((x) => put(F, x, 5))
+  },
+
+  // Flequillo largo: un mechón largo barrido sobre un lado de la cara que le tapa el ojo.
+  flequilloLargo(kind, B, F) {
+    rect(F, 5, 0, 10, 0)
+    rect(F, 3, 1, 12, 1)
+    rect(F, 2, 2, 13, 3)
+    if (kind === 'side') {
+      rect(F, 3, 4, 13, 4)
+      rect(F, 3, 5, 6, 9)
+      rect(F, 10, 5, 13, 6)
+      return
+    }
+    if (kind === 'up') {
+      rect(F, 2, 4, 13, 8)
+      rect(F, 3, 9, 12, 9)
+      return
+    }
+    rect(F, 2, 4, 8, 4)
+    rect(F, 2, 5, 7, 5)
+    rect(F, 2, 6, 6, 8)
+    rect(F, 12, 4, 13, 4)
+    put(F, 12, 5)
+  },
+
+  // Afro: una esfera de rizos mucho más ancha y alta que la cabeza.
+  afro(kind, B, F) {
+    if (kind === 'side') {
+      rect(F, 3, -3, 11, -3)
+      rect(F, 1, -2, 12, -2)
+      rect(F, 0, -1, 13, -1)
+      rect(F, 0, 0, 14, 3)
+      rect(F, 0, 4, 12, 4)
+      rect(F, 0, 5, 8, 9)
+      rect(F, 1, 10, 7, 10)
+      return
+    }
+    rect(F, 4, -3, 11, -3)
+    rect(F, 2, -2, 13, -2)
+    rect(F, 1, -1, 14, -1)
+    rect(F, 0, 0, 15, 3)
+    if (kind === 'up') {
+      rect(F, 0, 4, 15, 9)
+      rect(F, 1, 10, 14, 10)
+      rect(F, 3, 11, 12, 11)
+      return
+    }
+    mir(F, 0, 4, 3, 4)
+    mir(F, 0, 5, 2, 7)
+    mir(F, 1, 8, 2, 9)
+    rect(B, 2, 4, 13, 10)
+  },
+
+  // Degradado: mucho volumen arriba y los lados rapados, con un tono intermedio hacia las orejas.
+  degradado(kind, B, F) {
+    rect(F, 4, -1, 11, -1)
+    rect(F, 3, 0, 12, 3)
+    if (kind === 'side') {
+      rect(F, 3, 4, 12, 4)
+      rect(F, 3, 5, 7, 6)
+      rect(F, 3, 7, 8, 8, 'z')
+      return
+    }
+    if (kind === 'up') {
+      rect(F, 3, 4, 12, 5)
+      rect(F, 3, 6, 12, 8, 'z')
+      return
+    }
+    rect(F, 3, 4, 3, 6, 'z')
+    rect(F, 12, 4, 12, 6, 'z')
+    rect(F, 4, 4, 11, 4)
+  },
+
+  // Tupé: el flequillo se levanta hacia delante y se riza en la punta.
+  tupe(kind, B, F) {
+    if (kind === 'side') {
+      rect(F, 8, -3, 13, -3)
+      rect(F, 12, -4, 14, -4)
+      rect(F, 6, -2, 14, -2)
+      rect(F, 5, -1, 14, -1)
+      rect(F, 4, 0, 13, 0)
+      rect(F, 3, 1, 13, 3)
+      rect(F, 3, 4, 12, 4)
+      rect(F, 3, 5, 6, 8)
+      return
+    }
+    rect(F, 7, -3, 11, -3)
+    rect(F, 11, -4, 13, -4)
+    rect(F, 5, -2, 13, -2)
+    rect(F, 4, -1, 13, -1)
+    rect(F, 3, 0, 12, 1)
+    rect(F, 2, 2, 13, 3)
+    if (kind === 'up') {
+      rect(F, 2, 4, 13, 8)
+      rect(F, 4, 9, 11, 9)
+      return
+    }
+    rect(F, 3, 4, 4, 4)
+    rect(F, 11, 4, 12, 4)
+  },
+
+  // Media melena: raya al medio y el pelo cae a los lados hasta los hombros.
+  mediaMelena(kind, B, F) {
+    if (kind === 'side') {
+      capSide(F)
+      rect(F, 3, 5, 9, 10)
+      rect(B, 2, 11, 7, 14)
+      return
+    }
+    capDown(F)
+    if (kind === 'up') {
+      rect(F, 3, 5, 12, 12)
+      rect(F, 4, 13, 11, 14)
+      return
+    }
+    mir(F, 3, 5, 4, 10)
+    mir(F, 2, 11, 3, 14)
+    rect(B, 4, 6, 11, 12)
+    ;[7, 8].forEach((x) => put(F, x, 1, 'd'))
+  },
+
+  // Cresta: una franja alta de pelo en el centro y los lados rapados.
+  cresta(kind, B, F) {
+    if (kind === 'side') {
+      rect(F, 4, -3, 12, -1)
+      rect(F, 4, 0, 12, 0)
+      rect(F, 3, 1, 13, 4, 'z')
+      rect(F, 3, 5, 6, 8, 'z')
+      return
+    }
+    rect(F, 7, -4, 8, -4)
+    rect(F, 6, -3, 9, -1)
+    rect(F, 5, 0, 10, 3)
+    rect(F, 3, 2, 4, 4, 'z')
+    rect(F, 11, 2, 12, 4, 'z')
+    put(F, 4, 1, 'z')
+    put(F, 11, 1, 'z')
+    if (kind === 'up') rect(F, 3, 5, 12, 8, 'z')
+  },
 }
 
 // Textura de cada peinado: cómo se reparten reflejos y sombras dentro de la masa de pelo.
@@ -427,6 +637,7 @@ const TEXTURE = {
   ondulado: 'waves',
   rizadoCorto: 'curls',
   voluminoso: 'curls',
+  afro: 'curls',
 }
 
 export const HAIR_STYLE_IDS = [...Object.keys(SHAPED), ...Object.keys(STYLES)]

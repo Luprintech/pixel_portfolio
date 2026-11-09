@@ -13,6 +13,12 @@ export function loadGameOptions() {
   }
 }
 
+// ¿Hay que dejar quieto lo que se mueve solo? Sí si lo pide el sistema o si el visitante lo eligió.
+export function prefersReducedMotion(options = loadGameOptions()) {
+  const system = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  return Boolean(system) || options.reduceMotion
+}
+
 export function saveGameOptions(options) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ reduceMotion: options.reduceMotion === true }))
