@@ -79,6 +79,20 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ### Arranque en local
 - `arrancar.cmd` (doble clic) deja todo el entorno en marcha: comprueba `backend/.env`, abre Docker Desktop si está cerrado, levanta PostgreSQL en un contenedor de desarrollo y arranca backend y frontend como dos pestañas de una misma ventana de Windows Terminal. El móvil se abre en otra ventana con las direcciones para entrar por la red Wi-Fi. Si algún servidor ya está en marcha, no lo lanza de nuevo. Sin Windows Terminal usa ventanas de cmd.
 
+### Visión, fase 1 (parcial): identidad visual y mapa
+- Nuevo `docs/IDENTIDAD-VISUAL.md`: auditoría de la escala (se mantiene la tesela de 16 px), reglas de paleta y contorno, criterios de terreno, vegetación y edificios, y el reparto del valle.
+- `game/world.js` reorganiza el mapa alrededor de una plaza empedrada central (`PLAZA`) con un cartel (`SIGNPOST`) y un camino principal de este a oeste. Taller al norte, casa de Lupe y taberna al oeste, biblioteca y correos al este, lago al sur. Los ids de los edificios y sus contenidos no cambian.
+- `sprites.js` suma `plazaTile` y `signpostSprite`; `ValleScene.js` los dibuja y el cartel tiene colisión.
+- Portada recompuesta: subtítulo «El portfolio interactivo de Guadalupe Cano», firma «Luprintech», menú de tres opciones (Nueva aventura, Personalizar viajera, Modo clásico), aldea lejana en el paisaje para no taparla con el menú y, en móvil, ilustración arriba y menú debajo. Se quita el párrafo de introducción del menú.
+- Rosa pastel `--accent-rose` como hover de los botones secundarios; el botón principal sigue en azafrán.
+- Nuevo estilo de píxel cute y cálido, tipo Stardew, elegido por Lupe tras ver una muestra: terreno con manchas, caminos y laguna de borde irregular, plaza de adoquines, árboles de copa irregular (con cerezos rosas), casas con tejas, postigos y jardineras, mazmorra de roca con musgo, viajera de 16×28 con cuatro direcciones y paso, y Khalessi rediseñada. Todo sale de `game/pixelKit.js` (ruido, contorno de color), `game/ground.js` (suelo) y `game/sprites.js`.
+- Portada redibujada en el estilo nuevo a 320×180 (la escala del juego) con los mismos sprites del mundo: cielo de atardecer con nubes y estrellas, montañas, aldea lejana con ventanas que se encienden, la herrería con humo, la mazmorra, un cerezo en flor, la viajera y Khalessi. `game/titleArt.js` guarda en caché lo estático y `game/ground.js` exporta `grassColor`, `drawTuft`, `drawFlower` y `paintRoute` para reutilizarlos.
+- Portada viva: Khalessi pasea y descansa moviendo la cola, caen estrellas fugaces y pétalos del cerezo, las nubes derivan, cruza una bandada de pájaros, el humo sube de la chimenea, hay luciérnagas, las flores se mecen y la viajera parpadea. Todo el movimiento son funciones puras del tiempo en `game/titleMotion.js` (con tests) y `game/titleArt.js` solo dibuja. Con movimiento reducido se pinta una imagen fija. Dibuja a 20 fotogramas por segundo con `requestAnimationFrame`.
+- Música de la portada: «Flowerbed Fields» de Zane Little Music (CC0, dominio público, [OpenGameArt](https://opengameart.org/content/flowerbed-fields-loop)), en `frontend/public/audio/flowerbed-fields.ogg` (1,7 MB). Botón de altavoz dibujado en píxeles y barra de volumen arriba a la izquierda (`components/valle/MusicControl.jsx`, hook `useBackgroundMusic`). Empieza apagada, no descarga la pista hasta que se enciende y recuerda la elección en `localStorage` (`valle-del-bucle:audio`). Si falta el archivo, los controles no aparecen. Atribución no obligatoria; se acredita igualmente aquí. A Lupe le resulta demasiado rápida: es provisional y la sustituirá ella cuando encuentre otra más lenta (basta con reemplazar el archivo o cambiar `MUSIC_SRC` en `MusicControl.jsx`).
+- «Continuar aventura»: aparece como botón principal si hay una viajera guardada en `localStorage` (`valle-del-bucle:look`, que se escribe al entrar al valle); «Nueva aventura» pasa a secundario.
+- Las casas se colocan con la puerta del dibujo alineada con la tesela de la puerta, y el escalón queda libre para llegar al felpudo.
+- Sin cambios en el modo clásico.
+
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
 - Documentación de contexto: `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN.md` y este archivo.
@@ -88,6 +102,9 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ### Visión de producto
 - La hoja de ruta de `docs/VISION.md` marca seis fases: identidad visual, `/clasico` como landing profesional, primer edificio completo (Taller del Código), resto del pueblo, mecánicas de aventura y pulido. El rediseño de `/clasico` (fase 2) lo hará la usuaria con las skills de diseño cuando termine el trabajo en curso. Antes de la fase 3 hay que cerrar las decisiones pendientes de su sección 13 (mapa, escala de tiles y sprites, estilo de edificios, diseño del modo clásico, interiores, NPC y mecánicas de la primera versión).
+
+- Fase 1b de la visión (portada viva y creador de personaje): la música también debe sonar dentro del valle (hoy solo suena en la portada), ampliar el guardado de «Continuar» a una partida versionada (`valle-del-bucle:save`) cuando llegue el creador de personaje, y el propio creador (nombre, cuerpo, cara, pelo, barba, complementos, ropa y colores), detallado en la sección 6 de `docs/VISION.md`.
+- Fase 1 de la visión, lo que falta: perfil lateral de la viajera con la cara más legible; vallas, flores en macetas y otros detalles de cariño; diseño propio del Taller y renombrar los edificios (Taller, Biblioteca, Taberna, Correos).
 
 ### Estructura y calidad de código
 - Revisar con el mismo criterio el resto de comentarios en español: tono natural, explican el porqué.

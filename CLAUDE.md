@@ -26,7 +26,7 @@ Portfolio full-stack de Guadalupe Cano (Luprintech): SPA React + Vite, API Expre
 - Las propuestas del documento (nombres de zonas, mecánicas, estética del modo clásico) no son decisiones tomadas. Las pendientes están en su sección 13: si la tarea depende de una, pregunta a la usuaria antes de implementar.
 - Prioridades que marca: el modo clásico debe funcionar como portfolio profesional sin jugar; el primer edificio completo será el Taller del Código; ninguna mecánica puede esconder información profesional.
 - Aplica los criterios de su sección 14 a cada funcionalidad nueva y pospón la que añada complejidad sin mejorar la experiencia.
-- `/clasico` debe acabar siendo un portfolio clásico y profesional, sin estética de videojuego. Ese rediseño lo hará la usuaria con las skills de diseño cuando termine el trabajo actual: no lo empieces por tu cuenta y, hasta entonces, no cambies su aspecto.
+- `/clasico` debe acabar siendo un portfolio clásico y profesional, sin estética de videojuego. Su rediseño se hará con las skills de diseño cuando la usuaria lo pida; hasta entonces, no cambies su aspecto.
 - Los proyectos y artículos siguen saliendo una sola vez de `/api/projects` y `/api/posts`; no se duplican por modo.
 - Al cerrar un bloque, anota en `docs/ESTADO.md` qué parte de la visión avanza.
 
@@ -46,7 +46,7 @@ Desde 2026-11-08 el portfolio es un overworld pixel art estilo Zelda (Phaser 3) 
 - No uses gradientes, halos radiales, sombras difuminadas ni colores fucsia/cian/violeta sueltos: usa tokens y sombras duras (`var(--px-ink)`).
 - No cambies slugs públicos sin revisar `backend/lib/sitemap.js`.
 - No importes Phaser fuera de `pages/Valle.jsx` (carga diferida a propósito para no pesar en el resto del sitio).
-- No ejecutes las skills de diseño por tu cuenta: las lanza la usuaria.
+- Todo trabajo de diseño visual (portada, juego, `/clasico`, componentes) se hace cargando las skills `impeccable` y `ui-ux-pro-max` (y `frontend-design` si aplica). La usuaria no tiene que invocarlas cada vez: cárgalas tú al empezar cualquier tarea de diseño.
 
 ## Flujo de Git
 

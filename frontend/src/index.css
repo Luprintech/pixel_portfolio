@@ -78,6 +78,7 @@
   --accent-secondary: #4cb3c9;
   --accent-secondary-dim: rgba(76, 179, 201, 0.16);
   --accent-violet: #b8a2e0;
+  --accent-rose: #f4b8cc; /* Rosa: solo para respuestas al puntero (hover), nunca como color de reposo */
 
   /* Acentos extras: verde · naranja · violeta (stack tecnológico) */
   --accent-green: #a3c14f;

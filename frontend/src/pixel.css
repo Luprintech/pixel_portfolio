@@ -81,8 +81,10 @@
   color: #1c1b3a;
   background: #f1e6cf;
 }
+/* Los botones secundarios se tiñen de rosa al apuntarlos: el amarillo queda
+   reservado al botón principal y el rosa premia la exploración. */
 .px-btn--bone:hover {
-  background: #fff6e0;
+  background: var(--accent-rose);
 }
 .px-btn--ghost {
   color: var(--text-primary);
@@ -107,6 +109,53 @@
 }
 .px-link:hover {
   color: var(--accent-primary);
+}
+
+/* Barra de volumen: carril recto y mando cuadrado con borde duro, sin degradados ni sombras difusas. */
+.px-range {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+.px-range::-webkit-slider-runnable-track {
+  height: 8px;
+  background: var(--border-color);
+  box-shadow: 0 0 0 2px var(--px-ink);
+}
+.px-range::-moz-range-track {
+  height: 8px;
+  background: var(--border-color);
+  box-shadow: 0 0 0 2px var(--px-ink);
+}
+.px-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 20px;
+  margin-top: -6px;
+  background: var(--accent-primary);
+  border: 0;
+  border-radius: 0;
+  box-shadow: 0 0 0 2px var(--px-ink), 0 3px 0 2px var(--px-ink);
+}
+.px-range::-moz-range-thumb {
+  width: 14px;
+  height: 20px;
+  background: var(--accent-primary);
+  border: 0;
+  border-radius: 0;
+  box-shadow: 0 0 0 2px var(--px-ink), 0 3px 0 2px var(--px-ink);
+}
+.px-range:hover::-webkit-slider-thumb {
+  background: var(--accent-rose);
+}
+.px-range:hover::-moz-range-thumb {
+  background: var(--accent-rose);
+}
+.px-range:focus-visible {
+  outline: 3px solid var(--accent-secondary);
+  outline-offset: 5px;
 }
 
 .px-chip {

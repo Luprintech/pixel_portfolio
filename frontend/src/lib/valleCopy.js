@@ -15,10 +15,10 @@ export const LINKS = {
 const COPY = {
   es: {
     gameTitle: 'Valle del Bucle',
-    tagline: 'El portfolio de Luprintech, para recorrer a pie',
-    intro:
-      'Guadalupe Cano, desarrolladora web full stack. Aquí puedes pasear por el valle y entrar en cada casa, o leerlo todo de corrido en modo clásico.',
-    menu: { random: 'Entrar con una viajera al azar', edit: 'Editar mi viajera', classic: 'Modo clásico' },
+    tagline: 'El portfolio interactivo de Guadalupe Cano',
+    studio: 'Luprintech',
+    audio: { play: 'Activar música', mute: 'Silenciar música', volume: 'Volumen de la música' },
+    menu: { continue: 'Continuar aventura', random: 'Nueva aventura', edit: 'Personalizar viajera', classic: 'Modo clásico' },
     shortcuts: 'Atajos',
     zones: {
       about: 'Casa de Sobre mí',
@@ -67,10 +67,10 @@ const COPY = {
   },
   en: {
     gameTitle: 'Valle del Bucle',
-    tagline: "Luprintech's portfolio, to explore on foot",
-    intro:
-      'Guadalupe Cano, full stack web developer. Wander the valley and step into each house, or read it all in one go in classic mode.',
-    menu: { random: 'Enter with a random traveller', edit: 'Edit my traveller', classic: 'Classic mode' },
+    tagline: "Guadalupe Cano's interactive portfolio",
+    studio: 'Luprintech',
+    audio: { play: 'Turn music on', mute: 'Mute music', volume: 'Music volume' },
+    menu: { continue: 'Continue adventure', random: 'New adventure', edit: 'Customize traveller', classic: 'Classic mode' },
     shortcuts: 'Shortcuts',
     zones: {
       about: 'About me house',

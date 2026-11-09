@@ -1,293 +1,367 @@
-// Sprites dibujados a mano con mapas de píxeles. Sin ficheros de imagen: todo sale de aquí.
-import { PAL, shade, seeded } from './palette.js'
+// Sprites dibujados por código: sin ficheros de imagen. Estilo cálido de pueblo,
+// con contornos de color, cuatro o cinco tonos por superficie y luz desde arriba a la izquierda.
+import { PAL, TONE, shade, tint, seeded } from './palette.js'
+import { dot, ellipse, makeCanvas, noise, outline, rect } from './pixelKit.js'
 
-const parse = (rows) => rows.map((row) => row.split(' '))
+const [WOOD0, WOOD1, WOOD2, WOOD3] = TONE.wood
+const [WALL0, WALL1, WALL2] = TONE.wall
+const [STONE0, STONE1, STONE2] = TONE.stone
 
-const makeCanvas = (w, h) => {
-  const c = document.createElement('canvas')
-  c.width = w
-  c.height = h
-  return c
-}
-
-function paint(ctx, grid, colors, ox = 0, oy = 0) {
-  grid.forEach((row, y) =>
-    row.forEach((ch, x) => {
-      if (ch !== '.' && colors[ch]) {
-        ctx.fillStyle = colors[ch]
-        ctx.fillRect(ox + x, oy + y, 1, 1)
-      }
-    }),
-  )
-}
-
-// Princesa (10×13)
-const BODY = [
-  '. . o d t t d o . .',
-  '. o d d d d d d o .',
-  '. o d d t t d d o .',
-  'o d d d t t d d d o',
-  'o d D d d d d D d o',
-  'o t t t t t t t t o',
-]
-const FEET = [
-  '. . o s o o s o . .',
-  '. . o o s s o o . .',
-]
+// Viajera
+// Cada fila mide 16 columnas. Letras: d/H/h pelo (oscuro, medio, claro), S/s piel y su sombra,
+// B mejilla, E ojo, D/L/M vestido (medio, claro, oscuro), T ribete, F zapato.
 const HEAD = {
   down: [
-    '. . o o o o o o . .',
-    '. o h h h h h h o .',
-    '. o h c t t c h h o',
-    'o h h s s s s h h o',
-    'o h h s e s s e h o',
-    '. o h s s s s h o .',
+    '....dddddddd....',
+    '...dHHHHHHHHd...',
+    '..dHHhhhHHHHHd..',
+    '..dHhhHHHHHHHd..',
+    '..dHHHHHHHHHHd..',
+    '..dHHSSSSSSHHd..',
+    '..dHSSSSSSSSHd..',
+    '..dHSESSSSESHd..',
+    '..dHSBSSSSBSHd..',
+    '..dHSSSssSSSHd..',
+    '..dHHSSSSSSHHd..',
+    '...dHHSSSSHHd...',
+    '...dHHHSSHHHd...',
   ],
   up: [
-    '. . o o o o o o . .',
-    '. o h h h h h h o .',
-    '. o h c t t c h h o',
-    'o h h h h h h h h o',
-    'o h h h h h h h h o',
-    '. o h h h h h h o .',
+    '....dddddddd....',
+    '...dHHHHHHHHd...',
+    '..dHHhhhHHHHHd..',
+    '..dHhhHHHHHHHd..',
+    '..dHHHHHHHHHHd..',
+    '..dHHHHhHHHHHd..',
+    '..dHHHHHHHHHHd..',
+    '..dHHHHHHHHHHd..',
+    '..dHHHhHHHHHHd..',
+    '..dHHHHHHHHHHd..',
+    '..dHHHHHHHHHHd..',
+    '...dHHHHHHHHd...',
+    '...dHHHHHHHHd...',
   ],
   side: [
-    '. . o o o o o o . .',
-    '. o h h h h h h o .',
-    '. o h h c t t h h o',
-    '. o h h s s s s o .',
-    '. o h h s s e s o .',
-    '. . o h s s s o . .',
+    '....dddddddd....',
+    '...dHHHHHHHHd...',
+    '..dHHhhhHHHHHd..',
+    '..dHhhHHHHHHHHd.',
+    '..dHHHHHHHHHSSd.',
+    '..dHHHHHHHSSSSd.',
+    '..dHHHHHHSSSSSd.',
+    '..dHHHHHHSSESSd.',
+    '..dHHHHHHSSBSSd.',
+    '..dHHHHHHHSSsSd.',
+    '..dHHHHHHHSSSd..',
+    '...dHHHHHHHSd...',
+    '...dHHHHHHHHd...',
   ],
 }
-
-export function princessCanvas(look, dir = 'down', frame = 0) {
-  const canvas = makeCanvas(10, 13)
-  const ctx = canvas.getContext('2d')
-  const colors = {
-    o: PAL.ink,
-    h: look.hair,
-    s: look.skin,
-    e: PAL.ink,
-    c: look.trim,
-    t: look.trim,
-    d: look.dress,
-    D: shade(look.dress),
-  }
-  const head = HEAD[dir === 'left' || dir === 'right' ? 'side' : dir]
-  const body = dir === 'up' ? BODY.map((r) => r.replace(/t/g, 'd')).map((r, i) => (i === 5 ? BODY[5] : r)) : BODY
-  paint(ctx, parse([...head, ...body, FEET[frame % 2]]), colors)
-  return canvas
-}
-
-// Khalessi, gata siamesa tabby (12×9)
-const CAT = [
-  [
-    '. . . . . . . . k . . k',
-    '. . . . . . . . k k k k',
-    '. . . k . . . . k e k e',
-    '. . . k . c c c k k k k',
-    '. . k . c b c b c c c .',
-    '. . k . c c c c c c c .',
-    '. . . k c c c c c c c .',
-    '. . . . k c k . k c k .',
-    '. . . . k . k . k . k .',
-  ],
-  [
-    '. . . . . . . . k . . k',
-    '. . . . . . . . k k k k',
-    '. . k . . . . . k e k e',
-    '. . k . . c c c k k k k',
-    '. . . k c b c b c c c .',
-    '. . . k c c c c c c c .',
-    '. . . k c c c c c c c .',
-    '. . . . k c . k c k . .',
-    '. . . . k . . k . k . .',
-  ],
+const BODY = [
+  '..dHHDDTTDDHHd..',
+  '..dHDDLLLLDDHd..',
+  '.dHHDDLLLLDDHHd.',
+  '.dHSDDLLLLDDSHd.',
+  '.dHHDDDTTDDDHHd.',
+  '..dHDDLLLLDDHd..',
+  '..ddDLLLLLLDdd..',
+  '...DDLLLLLLDD...',
+  '..DDLLLLLLLLDD..',
+  '..DLLLLLLLLLLD..',
+  '.DDLLLLLLLLLLDD.',
+  '.DMMMMMMMMMMMMD.',
+  '.TTTTTTTTTTTTTT.',
+]
+const FEET = [
+  ['....FF....FF....', '....FF....FF....'],
+  ['...FF......FF...', '...FF......FF...'],
 ]
 
-export function catCanvas(frame = 0) {
-  const canvas = makeCanvas(12, 9)
-  paint(canvas.getContext('2d'), parse(CAT[frame % 2]), {
-    k: '#4a3730',
-    c: '#eadbc0',
-    b: '#6b5246',
-    e: '#5bb4e5',
+// De espalda no se ve el cuello ni las manos; de lado se esconden las manos tras el pelo.
+function bodyFor(dir) {
+  if (dir === 'up') return BODY.map((row, i) => (i === 0 ? row.replace(/T/g, 'D') : row.replace(/S/g, 'H')))
+  if (dir === 'down') return BODY
+  return BODY.map((row) => row.replace(/S/g, 'H'))
+}
+
+// Con `blink` los ojos se cierran: el párpado toma el tono de sombra de la piel.
+export function princessCanvas(look, dir = 'down', frame = 0, blink = false) {
+  const kind = dir === 'left' || dir === 'right' ? 'side' : dir
+  const colors = {
+    d: shade(look.hair, 0.62),
+    H: look.hair,
+    h: tint(look.hair, 0.3),
+    S: look.skin,
+    s: shade(look.skin, 0.86),
+    B: '#e89a8c',
+    E: blink ? shade(look.skin, 0.8) : '#2a1a2e',
+    M: shade(look.dress, 0.7),
+    D: look.dress,
+    L: tint(look.dress, 0.22),
+    T: look.trim,
+    F: WOOD1,
+  }
+  const canvas = makeCanvas(18, 31)
+  const g = canvas.getContext('2d')
+  const rows = [...HEAD[kind], ...bodyFor(kind), ...FEET[frame % 2]]
+  // En el segundo paso el cuerpo sube un píxel: el balanceo da sensación de caminar.
+  const top = frame % 2 ? 1 : 2
+  rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      const ch = row[x]
+      if (ch !== '.') dot(g, x + 1, y + top, colors[ch])
+    }
   })
-  return canvas
+  return outline(canvas)
 }
 
-// Terreno
-export function grassTile(variant = 0) {
-  const canvas = makeCanvas(16, 16)
-  const ctx = canvas.getContext('2d')
-  const rand = seeded(11 + variant * 97)
-  ctx.fillStyle = PAL.moss
-  ctx.fillRect(0, 0, 16, 16)
-  for (let i = 0; i < 9; i++) {
-    ctx.fillStyle = rand() > 0.45 ? PAL.meadow : PAL.mossDark
-    ctx.fillRect(Math.floor(rand() * 16), Math.floor(rand() * 16), 1, 1)
-  }
-  if (variant === 2) {
-    const flower = [PAL.tile, PAL.saffron, PAL.bone][Math.floor(rand() * 3)]
-    const x = 3 + Math.floor(rand() * 9)
-    const y = 3 + Math.floor(rand() * 9)
-    ctx.fillStyle = flower
-    ctx.fillRect(x, y, 2, 1)
-    ctx.fillRect(x, y + 1, 1, 1)
-    ctx.fillStyle = PAL.mossDark
-    ctx.fillRect(x, y + 2, 1, 2)
-  }
-  return canvas
+// Khalessi, la gata siamesa: crema con máscara y extremidades marrones, ojos azules.
+// Dos posturas de cola: erguida y arqueada hacia delante. Alternarlas da el meneo.
+const CAT_TAIL = [
+  [[3, 9], [2, 8], [2, 6], [3, 4], [4, 4]],
+  [[3, 9], [3, 7], [4, 5], [5, 4], [6, 4]],
+]
+
+export function catCanvas(frame = 0, tail = 0) {
+  const canvas = makeCanvas(22, 14)
+  const g = canvas.getContext('2d')
+  const cream = '#eadbc0'
+  const creamDark = '#cbb694'
+  const point = '#5a4038'
+  const eye = '#5bb4e5'
+
+  CAT_TAIL[tail % 2].forEach(([x, y]) => rect(g, x, y, 2, 2, point))
+  // Cuerpo con la barriga más oscura y unas rayas de gata atigrada
+  ellipse(g, 9, 10, 6.6, 3.6, creamDark)
+  ellipse(g, 9, 9, 6.3, 3.1, cream)
+  ;[[6, 6], [9, 6], [12, 7]].forEach(([x, y]) => rect(g, x, y, 1, 2, '#c9a982'))
+  // Patas: en el segundo fotograma se abren para dar el paso
+  const legs = frame % 2 ? [4, 8, 10, 14] : [5, 7, 11, 13]
+  legs.forEach((x) => rect(g, x, 11, 2, 2, point))
+  // Cabeza con orejas, máscara, ojos azules y nariz rosa
+  ellipse(g, 15, 6.5, 4.4, 3.7, cream)
+  ellipse(g, 16, 7.4, 2.9, 2.5, point)
+  rect(g, 12, 1, 2, 3, point)
+  rect(g, 18, 1, 2, 3, point)
+  dot(g, 13, 2, '#e89a8c')
+  dot(g, 18, 2, '#e89a8c')
+  dot(g, 14, 6, eye)
+  dot(g, 17, 6, eye)
+  dot(g, 19, 8, '#e89a8c')
+  return outline(canvas)
 }
 
-export function pathTile(variant = 0) {
-  const canvas = makeCanvas(16, 16)
-  const ctx = canvas.getContext('2d')
-  const rand = seeded(5 + variant * 31)
-  ctx.fillStyle = PAL.earth
-  ctx.fillRect(0, 0, 16, 16)
-  for (let i = 0; i < 10; i++) {
-    ctx.fillStyle = rand() > 0.5 ? PAL.earthLight : PAL.earthDark
-    ctx.fillRect(Math.floor(rand() * 15), Math.floor(rand() * 15), rand() > 0.6 ? 2 : 1, 1)
-  }
-  return canvas
-}
-
-export function waterTile() {
-  const canvas = makeCanvas(16, 16)
-  const ctx = canvas.getContext('2d')
-  ctx.fillStyle = PAL.lagoon
-  ctx.fillRect(0, 0, 16, 16)
-  ctx.fillStyle = PAL.lagoonLight
-  ctx.fillRect(2, 4, 4, 1)
-  ctx.fillRect(9, 10, 5, 1)
-  return canvas
-}
+// Árbol de copa irregular: racimos de hojas con luz arriba a la izquierda y tronco con raíces.
+const LEAVES = [
+  ['#2e5a3a', '#4a8040', '#6a9a46', '#8cb44a', '#b0cc58'],
+  TONE.grass,
+  TONE.blossom,
+]
+const CLUMPS = [[22, 14, 11], [11, 22, 10], [33, 22, 10], [16, 32, 10], [28, 32, 10], [22, 26, 11]]
 
 export function treeSprite(variant = 0) {
-  const canvas = makeCanvas(18, 26)
-  const ctx = canvas.getContext('2d')
-  const leaf = variant ? PAL.mossDark : PAL.moss
-  const light = variant ? PAL.moss : PAL.meadow
-  ctx.fillStyle = PAL.ink
-  ctx.fillRect(7, 18, 4, 8)
-  ctx.fillStyle = '#6b4430'
-  ctx.fillRect(8, 18, 2, 7)
-  for (let y = 0; y < 20; y++) {
-    const half = Math.round(8 * Math.sqrt(Math.max(0, 1 - Math.pow((y - 10) / 10, 2))))
-    ctx.fillStyle = PAL.ink
-    ctx.fillRect(9 - half - 1, y, half * 2 + 2, 1)
-  }
-  for (let y = 1; y < 19; y++) {
-    const half = Math.round(8 * Math.sqrt(Math.max(0, 1 - Math.pow((y - 10) / 10, 2))))
-    ctx.fillStyle = leaf
-    ctx.fillRect(9 - half, y, half * 2, 1)
-  }
-  ctx.fillStyle = light
-  ctx.fillRect(5, 4, 4, 1)
-  ctx.fillRect(4, 5, 3, 1)
-  ctx.fillRect(11, 8, 2, 1)
-  return canvas
-}
-
-// Edificios
-// Devuelven el canvas y la posición de la puerta (centro inferior) en píxeles.
-export function houseSprite({ roof = PAL.tile, roofDark = PAL.tileDark, wall = PAL.wall, chimney = false, glow = false } = {}) {
-  const w = 64
-  const h = 56
-  const canvas = makeCanvas(w, h)
-  const ctx = canvas.getContext('2d')
-  // Paredes
-  ctx.fillStyle = PAL.ink
-  ctx.fillRect(4, 24, 56, 32)
-  ctx.fillStyle = wall
-  ctx.fillRect(5, 24, 54, 30)
-  ctx.fillStyle = PAL.wallDark
-  ctx.fillRect(5, 52, 54, 2)
-  // Tejado en filas, cada fila 2 px más ancha
-  for (let i = 0; i < 12; i++) {
-    const inset = 14 - i
-    const y = 8 + i * 2
-    ctx.fillStyle = PAL.ink
-    ctx.fillRect(inset - 1, y - 1, w - inset * 2 + 2, 3)
-    ctx.fillStyle = i % 2 ? roofDark : roof
-    ctx.fillRect(inset, y, w - inset * 2, 2)
-  }
-  if (chimney) {
-    ctx.fillStyle = PAL.ink
-    ctx.fillRect(44, 0, 8, 16)
-    ctx.fillStyle = PAL.stone
-    ctx.fillRect(45, 1, 6, 14)
-  }
-  // Puerta
-  ctx.fillStyle = PAL.ink
-  ctx.fillRect(26, 36, 12, 20)
-  ctx.fillStyle = glow ? PAL.saffron : '#6b4430'
-  ctx.fillRect(28, 38, 8, 18)
-  if (glow) {
-    ctx.fillStyle = PAL.tile
-    ctx.fillRect(30, 44, 4, 12)
-  }
-  // Ventanas
-  ;[10, 44].forEach((x) => {
-    ctx.fillStyle = PAL.ink
-    ctx.fillRect(x, 32, 10, 10)
-    ctx.fillStyle = PAL.saffron
-    ctx.fillRect(x + 1, 33, 8, 8)
-    ctx.fillStyle = PAL.ink
-    ctx.fillRect(x + 4, 33, 2, 8)
-    ctx.fillRect(x + 1, 36, 8, 2)
+  const leaf = LEAVES[variant % LEAVES.length]
+  const seed = 5 + variant * 7
+  const canvas = makeCanvas(44, 60)
+  const g = canvas.getContext('2d')
+  rect(g, 18, 40, 8, 18, WOOD1)
+  rect(g, 17, 54, 10, 4, WOOD1)
+  rect(g, 15, 56, 4, 2, WOOD1)
+  rect(g, 25, 56, 4, 2, WOOD1)
+  rect(g, 18, 40, 3, 16, WOOD2)
+  rect(g, 24, 42, 2, 16, WOOD0)
+  rect(g, 19, 44, 1, 5, WOOD3)
+  CLUMPS.forEach(([cx, cy, r]) => {
+    for (let y = cy - r; y <= cy + r; y++) {
+      for (let x = cx - r; x <= cx + r; x++) {
+        const dx = x - cx
+        const dy = y - cy
+        const dist = Math.hypot(dx, dy) + (noise(x, y, 2.2, seed) - 0.5) * 2.6
+        if (dist > r) continue
+        const light = (-dx * 0.7 - dy * 0.9) / r + (noise(x, y, 3, seed + 4) - 0.5) * 0.7
+        const tone = light < -0.55 ? 0 : light < -0.1 ? 1 : light < 0.35 ? 2 : light < 0.7 ? 3 : 4
+        dot(g, x, y, leaf[tone])
+      }
+    }
   })
-  return canvas
+  const rand = seeded(seed)
+  for (let i = 0; i < 26; i++) {
+    const x = 6 + Math.floor(rand() * 32)
+    const y = 8 + Math.floor(rand() * 34)
+    dot(g, x, y, leaf[4])
+    dot(g, x + 1, y, leaf[3])
+  }
+  return outline(canvas)
 }
 
+// Casa de pueblo de 4×4 teselas: tejado de tejas, postigos, jardineras y cimiento de piedra.
+export function houseSprite({ roof = PAL.tile, shutter = PAL.teal, chimney = true, glow = false } = {}) {
+  const canvas = makeCanvas(64, 64)
+  const g = canvas.getContext('2d')
+  const r = [shade(roof, 0.55), shade(roof, 0.78), roof, tint(roof, 0.28)]
+  const s = [shade(shutter, 0.7), shutter, tint(shutter, 0.3)]
+
+  if (chimney) {
+    rect(g, 47, 2, 9, 24, STONE1)
+    rect(g, 47, 2, 3, 24, STONE2)
+    rect(g, 54, 2, 2, 24, STONE0)
+    rect(g, 45, 0, 13, 3, STONE2)
+    rect(g, 45, 3, 13, 1, STONE0)
+    for (let y = 7; y < 24; y += 4) rect(g, 47, y, 9, 1, STONE0)
+  }
+
+  // Paredes con sombra bajo el alero, esquinas de madera y cimiento
+  rect(g, 4, 30, 56, 30, WALL1)
+  rect(g, 4, 30, 56, 4, WALL0)
+  rect(g, 4, 34, 56, 1, '#d8c496')
+  rect(g, 4, 30, 3, 30, WOOD1)
+  rect(g, 57, 30, 3, 30, WOOD0)
+  rect(g, 4, 30, 1, 30, WOOD2)
+  rect(g, 5, 55, 54, 6, STONE1)
+  for (let x = 5; x < 59; x += 7) rect(g, x + ((x / 7) % 2 ? 3 : 0), 55, 1, 6, STONE0)
+  rect(g, 5, 55, 54, 1, STONE2)
+  rect(g, 5, 60, 54, 1, STONE0)
+
+  // Tejado en filas de tejas, cada fila desfasada
+  for (let row = 0; row < 7; row++) {
+    const y = 8 + row * 4
+    const left = 19 - row * 3
+    const right = 45 + row * 3
+    rect(g, left, y, right - left, 4, r[2])
+    rect(g, left, y + 3, right - left, 1, r[0])
+    rect(g, left, y, right - left, 1, r[3])
+    for (let x = left + (row % 2) * 3; x < right; x += 6) {
+      rect(g, x, y + 1, 1, 3, r[1])
+      rect(g, x + 1, y + 1, 1, 1, r[3])
+    }
+    rect(g, left, y, 2, 4, r[3])
+    rect(g, right - 2, y, 2, 4, r[1])
+  }
+  rect(g, 19, 7, 26, 2, r[3])
+
+  // Puerta con arco y escalón de piedra
+  rect(g, 26, 41, 12, 19, WOOD0)
+  rect(g, 27, 40, 10, 1, WOOD0)
+  rect(g, 28, 39, 8, 1, WOOD0)
+  rect(g, 27, 42, 10, 18, glow ? PAL.saffron : WOOD2)
+  rect(g, 28, 41, 8, 1, glow ? PAL.saffron : WOOD2)
+  for (let x = 29; x < 37; x += 3) rect(g, x, 42, 1, 18, glow ? PAL.tile : WOOD1)
+  rect(g, 27, 42, 1, 18, glow ? PAL.saffronLight : WOOD3)
+  rect(g, 34, 51, 2, 2, PAL.saffron)
+  dot(g, 34, 51, PAL.saffronLight)
+  rect(g, 24, 60, 16, 3, STONE2)
+  rect(g, 24, 62, 16, 1, STONE0)
+
+  // Ventanas con postigos y jardinera de flores
+  const bloom = [PAL.rose, '#f6f0e0', PAL.saffron, PAL.rose, '#b8a2e0']
+  ;[10, 42].forEach((x) => {
+    rect(g, x - 4, 38, 3, 14, s[1])
+    rect(g, x - 4, 38, 1, 14, s[2])
+    rect(g, x - 2, 38, 1, 14, s[0])
+    rect(g, x + 12, 38, 3, 14, s[1])
+    rect(g, x + 12, 38, 1, 14, s[2])
+    rect(g, x + 14, 38, 1, 14, s[0])
+    rect(g, x - 1, 37, 14, 16, WOOD1)
+    rect(g, x - 1, 37, 14, 1, WOOD3)
+    rect(g, x, 38, 12, 14, '#6fb3c6')
+    rect(g, x, 38, 12, 5, '#9fd6e0')
+    rect(g, x + 5, 38, 2, 14, WOOD1)
+    rect(g, x, 44, 12, 2, WOOD1)
+    dot(g, x + 1, 39, '#ffffff')
+    dot(g, x + 2, 40, '#ffffff')
+    rect(g, x - 2, 53, 16, 3, WOOD1)
+    rect(g, x - 2, 53, 16, 1, WOOD2)
+    rect(g, x - 2, 55, 16, 1, WOOD0)
+    ;[0, 3, 6, 9, 12].forEach((o, i) => {
+      dot(g, x - 1 + o, 52, bloom[i])
+      dot(g, x + o, 52, TONE.grass[2])
+    })
+  })
+  return outline(canvas, 0.5)
+}
+
+// Mazmorra del blog: montículo de roca con musgo, flores y un arco con antorchas.
 export function dungeonSprite() {
   const w = 80
   const h = 52
   const canvas = makeCanvas(w, h)
-  const ctx = canvas.getContext('2d')
-  const rand = seeded(77)
+  const g = canvas.getContext('2d')
+  const rock = ['#46446a', '#5c5a7a', '#7a789a', '#9896b8']
+  const [G0, , G2, G3, G4] = TONE.grass
+
   for (let x = 0; x < w; x++) {
     const d = (x - w / 2) / (w / 2)
-    const height = Math.round(44 * Math.sqrt(Math.max(0, 1 - d * d))) + 6
-    ctx.fillStyle = PAL.ink
-    ctx.fillRect(x, h - height - 1, 1, height + 1)
-    ctx.fillStyle = PAL.stone
-    ctx.fillRect(x, h - height, 1, height)
+    const top = h - (Math.round(44 * Math.sqrt(Math.max(0, 1 - d * d))) + 6)
+    for (let y = top; y < h; y++) {
+      const nx = (x - w / 2) / (w / 2)
+      const ny = (y - h) / 46
+      const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny))
+      const light = -nx * 0.55 - ny * 0.5 + nz * 0.45 + (noise(x, y, 3, 21) - 0.5) * 0.45
+      dot(g, x, y, light < 0.2 ? rock[0] : light < 0.55 ? rock[1] : light < 0.85 ? rock[2] : rock[3])
+      // Musgo en la parte alta del montículo
+      if (y - top < 5 + noise(x, 0, 4, 22) * 6) {
+        const m = noise(x, y, 2.4, 23)
+        dot(g, x, y, m < 0.3 ? G0 : m < 0.65 ? G2 : m < 0.88 ? G3 : G4)
+      }
+    }
   }
-  for (let i = 0; i < 90; i++) {
-    ctx.fillStyle = rand() > 0.5 ? PAL.stoneLight : PAL.dusk
-    ctx.fillRect(Math.floor(8 + rand() * 64), Math.floor(8 + rand() * 40), 2, 1)
+  // Grietas de la roca
+  const rand = seeded(77)
+  for (let i = 0; i < 46; i++) {
+    const x = 6 + Math.floor(rand() * 68)
+    const y = 14 + Math.floor(rand() * 34)
+    dot(g, x, y, rock[0])
+    dot(g, x + 1, y, rock[0])
+    dot(g, x, y - 1, rock[3])
   }
-  // Arco
-  ctx.fillStyle = PAL.ink
-  ctx.fillRect(30, 26, 20, 26)
-  ctx.fillRect(32, 22, 16, 4)
-  ctx.fillRect(35, 19, 10, 3)
-  ctx.fillStyle = '#0f0e22'
-  ctx.fillRect(32, 28, 16, 24)
-  ctx.fillRect(34, 24, 12, 4)
-  // Antorchas
-  ;[22, 56].forEach((x) => {
-    ctx.fillStyle = PAL.ink
-    ctx.fillRect(x, 32, 2, 10)
-    ctx.fillStyle = PAL.saffron
-    ctx.fillRect(x - 1, 28, 4, 4)
-    ctx.fillStyle = PAL.tile
-    ctx.fillRect(x, 30, 2, 2)
-    ctx.fillStyle = PAL.saffronLight
-    ctx.fillRect(x, 28, 2, 2)
+  // Flores en el musgo
+  ;[[24, 14], [54, 10], [40, 6], [62, 17]].forEach(([x, y], i) => {
+    dot(g, x, y, i % 2 ? PAL.rose : '#f6f0e0')
+    dot(g, x + 1, y, i % 2 ? '#f6f0e0' : PAL.rose)
+    dot(g, x, y - 1, PAL.saffron)
   })
-  return canvas
+  // Arco de entrada con borde de piedra clara
+  rect(g, 28, 24, 24, 28, rock[3])
+  rect(g, 30, 21, 20, 3, rock[3])
+  rect(g, 33, 19, 14, 2, rock[3])
+  rect(g, 30, 26, 20, 26, '#14122a')
+  rect(g, 32, 23, 16, 4, '#14122a')
+  rect(g, 35, 21, 10, 2, '#14122a')
+  rect(g, 34, 36, 12, 16, '#0e0c20')
+  // Antorchas a los lados
+  ;[22, 56].forEach((x) => {
+    rect(g, x, 32, 2, 10, WOOD1)
+    rect(g, x - 1, 28, 4, 4, PAL.saffron)
+    rect(g, x, 30, 2, 2, PAL.tile)
+    rect(g, x, 27, 2, 2, PAL.saffronLight)
+  })
+  return outline(canvas, 0.5)
+}
+
+// Cartel de madera de la plaza.
+export function signpostSprite() {
+  const canvas = makeCanvas(16, 22)
+  const g = canvas.getContext('2d')
+  rect(g, 7, 9, 3, 12, WOOD1)
+  rect(g, 7, 9, 1, 12, WOOD2)
+  rect(g, 2, 2, 12, 8, WOOD2)
+  rect(g, 2, 2, 12, 1, WOOD3)
+  rect(g, 2, 9, 12, 1, WOOD1)
+  // Flecha hacia el norte, donde está el Taller.
+  rect(g, 8, 4, 1, 5, WOOD0)
+  rect(g, 7, 5, 3, 1, WOOD0)
+  rect(g, 6, 6, 5, 1, WOOD0)
+  dot(g, 4, 20, PAL.rose)
+  dot(g, 12, 20, PAL.saffron)
+  return outline(canvas)
 }
 
 export function shadowSprite(w = 10, h = 4) {
   const canvas = makeCanvas(w, h)
   const ctx = canvas.getContext('2d')
-  ctx.fillStyle = 'rgba(28,27,58,0.4)'
+  ctx.fillStyle = 'rgba(24,48,36,0.38)'
   for (let y = 0; y < h; y++) {
-    const inset = Math.abs(y - (h - 1) / 2) > 0.8 ? 1 : 0
+    const inset = Math.abs(y - (h - 1) / 2) > h / 2 - 1 ? 2 : 0
     ctx.fillRect(inset, y, w - inset * 2, 1)
   }
   return canvas

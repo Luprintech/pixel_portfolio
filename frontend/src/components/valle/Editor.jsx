@@ -10,10 +10,10 @@ function Preview({ look }) {
     const canvas = ref.current
     const g = canvas.getContext('2d')
     g.clearRect(0, 0, canvas.width, canvas.height)
-    g.drawImage(princessCanvas(look, 'down', 0), 3, 2)
-    g.drawImage(catCanvas(0), 14, 6)
+    g.drawImage(princessCanvas(look, 'down', 0), 3, 1)
+    g.drawImage(catCanvas(0), 22, 18)
   }, [look])
-  return <canvas ref={ref} width={26} height={15} className="px-canvas h-[150px] w-[260px]" role="img" aria-label="Vista previa de tu viajera y Khalessi" />
+  return <canvas ref={ref} width={46} height={34} className="px-canvas h-[204px] w-[276px]" role="img" aria-label="Vista previa de tu viajera y Khalessi" />
 }
 
 export default function Editor({ look, onChange, onRandom, onDone }) {

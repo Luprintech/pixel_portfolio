@@ -11,6 +11,7 @@ export const PAL = {
   lagoonLight: '#7fd0dc',
   saffron: '#f2b134',
   saffronLight: '#f8d77a',
+  rose: '#f4b8cc',
   tile: '#d4503a',
   tileDark: '#b8402c',
   bone: '#f1e6cf',
@@ -23,6 +24,29 @@ export const PAL = {
   stoneLight: '#7a789a',
   plum: '#7a3f8f',
   teal: '#2f8f8b',
+}
+
+// Escalas de tonos, de oscuro a claro, para sombrear con cuatro o cinco pasos
+// sin salirse de las familias de la paleta base.
+export const TONE = {
+  grass: ['#34643a', '#4f7f3f', '#62933f', '#7da844', '#a3c14f'],
+  earth: ['#8a6a40', '#b98f5a', '#cba36a', '#dfbf86', '#efd9a8'],
+  water: ['#2f7a92', '#3e9bb0', '#5cb5c6', '#8fd3dd', '#d3f0f2'],
+  sand: ['#cdb67f', '#e2cf9a'],
+  wood: ['#5a3a28', '#7a4f35', '#9a6a45', '#b98458'],
+  wall: ['#c9b994', '#e8d3a8', '#f4e8c8'],
+  stone: ['#6c6a8c', '#8d8aa8', '#aaa7c4'],
+  blossom: ['#c4577f', '#e07a9c', '#f09ab6', '#f8bfd0', '#fde0e8'],
+}
+
+// Mezcla un color hexadecimal con blanco para sacar su tono claro.
+export function tint(hex, amount = 0.25) {
+  const n = parseInt(hex.slice(1), 16)
+  const mix = (c) => Math.round(c + (255 - c) * amount)
+  const r = mix((n >> 16) & 255)
+  const g = mix((n >> 8) & 255)
+  const b = mix(n & 255)
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`
 }
 
 // Mezcla un color hexadecimal con negro para sombrear sin salirse de la familia.

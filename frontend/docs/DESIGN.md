@@ -20,6 +20,8 @@ Referencia de inspiración (no copiar): alexxblaro16.github.io.
 
 Mapa de 56×30 teselas de 16 px. Definición en `frontend/src/game/world.js`. Se entra a una casa **pisando su puerta**.
 
+El valle se organiza alrededor de una plaza empedrada central con un cartel, de la que parte un camino principal de este a oeste. Escala, reglas de sprites y reparto completo en `docs/IDENTIDAD-VISUAL.md`.
+
 ## 3. Personajes
 
 - **Protagonista**: princesa original (no es Zelda). El aspecto se edita (pelo, piel, vestido, aro) o se genera al azar; se guarda en `localStorage` con la clave `valle-del-bucle:look` (`game/look.js`).
@@ -38,6 +40,9 @@ Todos los colores viven como tokens en `frontend/src/index.css`; el juego usa lo
 | Azafrán | `#f2b134` | Acento principal, anillos de foco |
 | Teja | `#d4503a` | Tejados, acento cálido |
 | Hueso | `#f1e6cf` | Fondo claro, texto sobre oscuro |
+| Rosa | `#f4b8cc` | Solo hover de los botones secundarios (`--accent-rose`); el azafrán sigue siendo el color del botón principal |
+
+Dentro del juego, cada color base se amplía con una escala de cuatro o cinco tonos (`TONE` en `game/palette.js`: hierba, tierra, agua, arena, madera, pared, piedra y cerezo) para sombrear al estilo cálido de Stardew. Los contornos son del tono oscuro de cada sprite, no negro. Detalle en `docs/IDENTIDAD-VISUAL.md`.
 
 Tokens de superficie y texto: `--bg-primary`, `--bg-surface`, `--text-primary`, `--accent-primary`, etc. Usa siempre el token, nunca un hex suelto.
 

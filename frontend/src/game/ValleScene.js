@@ -1,19 +1,20 @@
 import Phaser from 'phaser'
 import { PAL } from './palette.js'
-import { BUILDINGS, COLS, LAKE, ROWS, SPAWN, TILE, roadTiles, treePositions } from './world.js'
+import { BUILDINGS, COLS, LAKE, ROWS, SIGNPOST, SPAWN, TILE, plazaTiles, roadTiles, treePositions } from './world.js'
+import { groundCanvas } from './ground.js'
 import {
   catCanvas,
   dungeonSprite,
-  grassTile,
   houseSprite,
-  pathTile,
   princessCanvas,
   shadowSprite,
+  signpostSprite,
   treeSprite,
-  waterTile,
 } from './sprites.js'
 
 const SPEED = 90
+// Columna del dibujo donde está el centro de la puerta, según el tipo de edificio.
+const DOOR_CENTER = { house: 32, dungeon: 40 }
 const DIRS = ['down', 'up', 'left', 'right']
 
 export default class ValleScene extends Phaser.Scene {
@@ -66,33 +67,16 @@ export default class ValleScene extends Phaser.Scene {
   buildTextures() {
     DIRS.forEach((dir) => [0, 1].forEach((f) => this.addCanvas(`pr-${dir}-${f}`, princessCanvas(this.look, dir, f))))
     ;[0, 1].forEach((f) => this.addCanvas(`cat-${f}`, catCanvas(f)))
-    ;[0, 1].forEach((v) => this.addCanvas(`tree-${v}`, treeSprite(v)))
-    this.addCanvas('shadow', shadowSprite(10, 4))
-    this.addCanvas('shadow-cat', shadowSprite(12, 4))
+    ;[0, 1, 2].forEach((v) => this.addCanvas(`tree-${v}`, treeSprite(v)))
+    this.addCanvas('shadow', shadowSprite(14, 5))
+    this.addCanvas('shadow-cat', shadowSprite(16, 4))
     this.addCanvas('dungeon', dungeonSprite())
+    this.addCanvas('signpost', signpostSprite())
     BUILDINGS.filter((b) => b.kind === 'house').forEach((b) => this.addCanvas(`house-${b.id}`, houseSprite(b.style)))
   }
 
   buildGround() {
-    const canvas = document.createElement('canvas')
-    canvas.width = COLS * TILE
-    canvas.height = ROWS * TILE
-    const ctx = canvas.getContext('2d')
-    const roads = roadTiles()
-    const grass = [grassTile(0), grassTile(1), grassTile(2), grassTile(0)]
-    const paths = [pathTile(0), pathTile(1)]
-    const water = waterTile()
-    for (let y = 0; y < ROWS; y++) {
-      for (let x = 0; x < COLS; x++) {
-        const key = `${x},${y}`
-        const inLake = x >= LAKE.x && x < LAKE.x + LAKE.w && y >= LAKE.y && y < LAKE.y + LAKE.h
-        let tile
-        if (inLake) tile = water
-        else if (roads.has(key)) tile = paths[(x + y) % 2]
-        else tile = grass[(x * 7 + y * 13) % 4 === 2 ? 2 : (x + y) % 2]
-        ctx.drawImage(tile, x * TILE, y * TILE)
-      }
-    }
+    const canvas = groundCanvas({ cols: COLS, rows: ROWS, tile: TILE, roads: roadTiles(), plaza: plazaTiles(), lake: LAKE })
     this.addCanvas('ground', canvas)
     this.add.image(0, 0, 'ground').setOrigin(0, 0).setDepth(0)
   }
@@ -111,19 +95,27 @@ export default class ValleScene extends Phaser.Scene {
       this.add.image(px, py, `tree-${t.variant}`).setOrigin(0.5, 1).setDepth(py)
       this.solid(px - 5, py - 6, 10, 6)
     })
+
+    const signX = SIGNPOST.x * TILE + TILE / 2
+    const signY = SIGNPOST.y * TILE + TILE
+    this.add.image(signX, signY, 'signpost').setOrigin(0.5, 1).setDepth(signY)
+    this.solid(signX - 4, signY - 5, 8, 5)
   }
 
   buildBuildings() {
     this.doors = []
     BUILDINGS.forEach((b) => {
-      const px = b.x * TILE
       const py = b.y * TILE
       const sprite = b.kind === 'dungeon' ? 'dungeon' : `house-${b.id}`
+      // La puerta del dibujo queda en el centro del sprite: se alinea con la tesela de la puerta
+      // para que el camino llegue justo a ella.
+      const px = b.door.x * TILE + TILE / 2 - DOOR_CENTER[b.kind]
       const img = this.add.image(px, py, sprite).setOrigin(0, 0)
-      img.setDepth(py + img.height - 2)
-      // Cuerpo sólido: la parte baja del edificio, sin la puerta.
-      const bodyTop = py + (b.kind === 'dungeon' ? 14 : 22)
-      this.solid(px + 2, bodyTop, b.w * TILE - 4, py + img.height - bodyTop - 8)
+      // Cuerpo sólido: la parte baja del edificio. Deja libre la franja del escalón para llegar a la puerta.
+      const bodyTop = py + (b.kind === 'dungeon' ? 14 : 30)
+      const bodyBottom = py + img.height - 12
+      img.setDepth(bodyBottom)
+      this.solid(px + 2, bodyTop, img.width - 4, bodyBottom - bodyTop)
       this.doors.push({
         id: b.id,
         rect: new Phaser.Geom.Rectangle(b.door.x * TILE - 6, b.door.y * TILE - 6, TILE + 12, TILE + 6),
@@ -150,7 +142,7 @@ export default class ValleScene extends Phaser.Scene {
     this.catShadow = this.add.image(SPAWN.x - 14, SPAWN.y + 4, 'shadow-cat').setDepth(2)
 
     this.princess = this.physics.add.sprite(SPAWN.x, SPAWN.y, 'pr-down-0').setOrigin(0.5, 1)
-    this.princess.body.setSize(8, 4).setOffset(1, 9)
+    this.princess.body.setSize(8, 4).setOffset(5, 27)
     this.princess.setCollideWorldBounds(true)
     this.physics.add.collider(this.princess, this.solids)
 

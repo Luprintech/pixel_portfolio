@@ -258,6 +258,38 @@ No es necesario incorporar cuentas de usuario para almacenar las preferencias.
 
 ---
 
+### Creación de personaje (pendiente: se hace al terminar la pantalla de inicio)
+
+Decisión de Lupe (2026-11-09): al elegir «Nueva aventura» el juego pedirá primero el nombre de la viajera y después abrirá un creador de personaje al estilo de Stardew Valley. Hoy «Nueva aventura» entra con una viajera al azar y existe un editor básico de cuatro colores (pelo, piel, vestido y ribetes).
+
+**Orden de trabajo:** primero se termina la pantalla de inicio (animación, música y «Continuar aventura»); el creador se aborda después como un bloque propio.
+
+**Flujo propuesto:**
+
+1. Nombre de la viajera (campo de texto con límite de longitud y validación; sin datos personales).
+2. Creador de personaje con vista previa en vivo, que reutiliza el sprite del juego y la gata Khalessi.
+3. Confirmar y entrar al valle. Si ya hay una partida guardada, avisar de que «Nueva aventura» la sustituye.
+
+**Opciones a ofrecer:**
+
+- Cuerpo: dos o tres constituciones o siluetas, sin etiquetar por género: cada visitante elige la que quiera.
+- Cara: varias formas y expresiones.
+- Pelo: estilos largos, cortos, recogidos y rizados, cada uno con su color.
+- Vello facial: con barba, sin barba, bigote y patillas, para quien lo quiera.
+- Complementos: gafas, aros, pendientes, gorros, lazos, flores en el pelo.
+- Ropa: vestido, camiseta, chaqueta, mono, con varios colores y un ribete.
+- Colores: paletas por categoría, incluida la piel con una gama amplia de tonos.
+- Botón «Aleatoria» y botón «Restablecer».
+
+**Requisitos técnicos y de diseño:**
+
+- El sprite se compone por capas (cuerpo, cara, pelo, barba, ropa, complementos) con las mismas cuatro direcciones y el paso de caminar de hoy, para que cualquier combinación se vea bien. Hay que decidir si cada capa es un mapa de píxeles propio o una variante recoloreable de uno común.
+- Mismo estilo cute y cálido que el resto del valle (`docs/IDENTIDAD-VISUAL.md`), con contorno de color.
+- Accesible: manejable con teclado y lector de pantalla, con los colores nombrados además de mostrados. Ver criterios de la sección 14.
+- Móvil: el creador debe caber en pantalla vertical sin desplazar la vista previa fuera.
+- Textos en español e inglés (`valleCopy.js`).
+- Se guarda en `localStorage`, igual que el resto del progreso (ver «Guardado» en la sección 8). Ampliar `game/look.js` con el nombre y las capas nuevas, y migrar los looks antiguos de cuatro colores.
+
 ## 7. Interiores de edificios
 
 Los edificios deberían tener interiores propios.
@@ -504,6 +536,17 @@ Si cambia la arquitectura o el diseño, actualizar también sus documentos corre
 - Crear criterios para edificios, terreno y vegetación.
 
 **Resultado esperado:** identidad visual consistente.
+
+### Fase 1b — Pantalla de inicio viva y creador de personaje
+
+Se hace después de cerrar el trabajo de identidad visual de la fase 1.
+
+1. Pantalla de inicio viva: Khalessi se mueve, estrellas fugaces, nubes, humo, pétalos, luciérnagas, pájaros y la viajera que parpadea. Respeta el movimiento reducido. *(en curso)*
+2. «Continuar aventura» si hay partida guardada en `localStorage`.
+3. Música 8 bits cute con licencia libre, desactivada por defecto y con control visible.
+4. Creador de personaje al elegir «Nueva aventura»: nombre y personalización completa al estilo Stardew (detallado en la sección 6). *(después de los tres puntos anteriores)*
+
+**Resultado esperado:** una portada con vida que da ganas de empezar y una primera partida personal.
 
 ### Fase 2 — Portfolio profesional
 
