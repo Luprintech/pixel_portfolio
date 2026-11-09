@@ -221,10 +221,17 @@
   width: min(28rem, calc(100vw - 2.5rem));
   /* El reseteo de Tailwind quita el margin automático que centra los diálogos modales. */
   margin: auto;
-  padding: 0;
+  /* Hueco para la sombra dura del marco, que si no se recorta al desplazarse en pantallas muy bajas */
+  padding: 0 0 8px;
   color: inherit;
   background: transparent;
   border: 0;
+}
+/* Tablet y móvil horizontal: las opciones pasan a dos columnas */
+@media (min-width: 640px) {
+  .px-dialog {
+    width: min(42rem, calc(100vw - 2.5rem));
+  }
 }
 .px-dialog::backdrop {
   background: rgba(15, 14, 34, 0.82);
@@ -358,6 +365,15 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* En pantallas táctiles (móvil y tablet) el volumen general lo regulan las teclas físicas del
+   dispositivo: la barra sobra y solo se queda el botón de silenciar. Se decide por el tipo de
+   puntero y no por el ancho, para que una ventana estrecha de escritorio conserve la barra. */
+@media (pointer: coarse) {
+  .px-volume-bar {
+    display: none;
   }
 }
 

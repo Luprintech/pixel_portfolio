@@ -3,7 +3,7 @@
 export default function VolumeSlider({ id, label, hint, value, onChange, onCommit }) {
   const percent = Math.round(value * 100)
   return (
-    <div className="px-text mt-4">
+    <div className="px-text mt-2">
       <div className="flex items-baseline justify-between gap-3">
         <label htmlFor={id}>{label}</label>
         <span aria-hidden="true" style={{ color: '#cfc5e0' }}>{percent} %</span>
@@ -22,7 +22,7 @@ export default function VolumeSlider({ id, label, hint, value, onChange, onCommi
         aria-describedby={hint ? `${id}-hint` : undefined}
         className="px-range w-full"
       />
-      {hint && <p id={`${id}-hint`} className="text-sm" style={{ color: '#cfc5e0' }}>{hint}</p>}
+      {hint && <p id={`${id}-hint`} className="text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden" style={{ color: '#cfc5e0' }}>{hint}</p>}
     </div>
   )
 }

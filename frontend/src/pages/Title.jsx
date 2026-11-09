@@ -11,7 +11,7 @@ import { clearSave, loadSave } from '../game/save'
 import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
 import { loadGameOptions, saveGameOptions, prefersReducedMotion } from '../lib/gameOptions'
 import { playPetSound } from '../lib/petSounds'
-import { useValleCopy } from '../lib/valleCopy'
+import { LINKS, useValleCopy } from '../lib/valleCopy'
 
 // 20 fotogramas por segundo bastan para el pixel art y gastan poco.
 const FRAME_MS = 50
@@ -127,54 +127,66 @@ export default function Title() {
         >
           {copy.gameTitle}
         </h1>
+        {/* En web va bajo el título; en móvil baja a la zona inferior del mapa (más abajo) */}
         <p
-          className="px-text mx-auto mt-3 inline-block px-3 py-1 text-base sm:text-lg"
+          className="px-text mx-auto mt-3 hidden px-3 py-1 text-lg sm:inline-block"
           style={{ color: PAL.saffron, textShadow: OUTLINE }}
         >
           {copy.tagline}
         </p>
       </header>
 
-      <section
-        ref={menuRef}
-        aria-label={copy.gameTitle}
-        className="px-frame z-10 mb-6 mt-8 self-stretch p-4 sm:mb-10 sm:ml-10 sm:w-[19rem] sm:self-start sm:p-5"
-        style={{ background: PAL.ink, color: PAL.bone, ['--px-ink']: '#0f0e22', ['--px-ring']: PAL.saffron }}
-      >
-        <nav aria-label="Menú principal">
-          <ul className="flex flex-col gap-4">
-            {saved && (
-              <li>
-                <Link className="px-btn w-full" to="/valle?modo=continuar">{copy.menu.continue}</Link>
-              </li>
-            )}
-            <li>
-              {/* Con partida guardada, "Nueva aventura" deja de ser la opción principal. */}
-              <Link
-                className={saved ? 'px-btn px-btn--bone w-full' : 'px-btn w-full'}
-                style={saved ? { color: PAL.ink } : undefined}
-                to="/valle?modo=nueva"
-              >
-                {copy.menu.newGame}
-              </Link>
-            </li>
-            <li>
-              <button type="button" className="px-btn px-btn--bone w-full" style={{ color: PAL.ink }} onClick={() => setOptionsOpen(true)}>
-                {copy.menu.options}
-              </button>
-            </li>
-            <li>
-              <Link className="px-btn px-btn--bone w-full" style={{ color: PAL.ink }} to="/clasico">{copy.menu.classic}</Link>
-            </li>
-          </ul>
-        </nav>
-        <p className="px-text mt-5 flex flex-wrap gap-x-4 gap-y-1 text-sm" style={{ color: '#cfc5e0' }}>
-          <span className="sr-only">{copy.shortcuts}</span>
-          <Link className="px-link" to="/proyectos">{copy.sections.projects}</Link>
-          <Link className="px-link" to="/blog">{copy.sections.blog}</Link>
-          <Link className="px-link" to="/contacto">{copy.sections.contact}</Link>
+      {/* En móvil el subtítulo se queda abajo del mapa, encima del menú: los bocadillos de Lupe
+          tapaban el que estaba bajo el título. En sm+ el contenedor desaparece (contents). */}
+      <div className="z-10 mt-8 flex flex-col sm:mt-0 sm:contents">
+        <p
+          className="px-text mx-auto mb-5 px-3 text-center text-base sm:hidden"
+          style={{ color: PAL.saffron, textShadow: OUTLINE }}
+        >
+          {copy.taglineShort}
         </p>
-      </section>
+
+        <section
+          ref={menuRef}
+          aria-label={copy.gameTitle}
+          className="px-frame z-10 mb-6 self-stretch p-4 sm:mb-10 sm:ml-10 sm:mt-8 sm:w-[19rem] sm:self-start sm:p-5"
+          style={{ background: PAL.ink, color: PAL.bone, ['--px-ink']: '#0f0e22', ['--px-ring']: PAL.saffron }}
+        >
+          <nav aria-label="Menú principal">
+            <ul className="flex flex-col gap-4">
+              {saved && (
+                <li>
+                  <Link className="px-btn w-full" to="/valle?modo=continuar">{copy.menu.continue}</Link>
+                </li>
+              )}
+              <li>
+                {/* Con partida guardada, "Nueva aventura" deja de ser la opción principal. */}
+                <Link
+                  className={saved ? 'px-btn px-btn--bone w-full' : 'px-btn w-full'}
+                  style={saved ? { color: PAL.ink } : undefined}
+                  to="/valle?modo=nueva"
+                >
+                  {copy.menu.newGame}
+                </Link>
+              </li>
+              <li>
+                <button type="button" className="px-btn px-btn--bone w-full" style={{ color: PAL.ink }} onClick={() => setOptionsOpen(true)}>
+                  {copy.menu.options}
+                </button>
+              </li>
+              <li>
+                <Link className="px-btn px-btn--bone w-full" style={{ color: PAL.ink }} to="/clasico">{copy.menu.classic}</Link>
+              </li>
+            </ul>
+          </nav>
+          <p className="px-text mt-5 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm" style={{ color: '#cfc5e0' }}>
+            <span className="sr-only">{copy.shortcuts}</span>
+            <Link className="px-link" to="/proyectos">{copy.sections.projects}</Link>
+            <Link className="px-link" to="/contacto">{copy.sections.contact}</Link>
+            <a className="px-link" href={LINKS.cv} target="_blank" rel="noopener noreferrer">{copy.sections.cv}</a>
+          </p>
+        </section>
+      </div>
 
       <OptionsDialog
         open={optionsOpen}
@@ -184,14 +196,6 @@ export default function Title() {
         saved={!!saved}
         onErase={eraseSave}
       />
-
-      {/* Firma de estudio, como en las pantallas de título de los juegos. */}
-      <p
-        className="px-text absolute bottom-2 right-3 z-10 px-2 py-0.5 text-sm"
-        style={{ background: PAL.ink, color: PAL.bone }}
-      >
-        {copy.studio}
-      </p>
     </div>
   )
 }

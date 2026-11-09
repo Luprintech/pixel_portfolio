@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-09 (PWA instalable en Android e iPhone).
+Última actualización: 2026-11-09 (portada y opciones en móvil, sin blog en los accesos).
 
 ## Hecho
 
@@ -278,6 +278,15 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Pendiente
 
+### Quitar el blog del portfolio (decidido el 2026-11-09)
+- Guadalupe ha decidido **retirar el blog** porque no le da uso. Hoy solo se ha quitado el acceso directo "Blog" del menú de la portada, que ahora muestra Proyectos, Contacto y CV centrados.
+- **Hacerlo al rediseñar el modo clásico (`/clasico`)**, no antes, y avisarla del alcance antes de borrar nada. Dónde sigue el blog:
+  - Frontend público: `pages/Blog.jsx`, `BlogPost.jsx`, `BlogPostPreview.jsx`, rutas en `routes/AppRoutes.jsx`, enlace en `components/Navbar.jsx`, sección en `components/valle/Content.jsx` y `pages/Clasico.jsx`, mención en `pages/PoliticaPrivacidad.jsx`, hook `hooks/usePost.js`, y textos en `lib/valleCopy.js`.
+  - Juego: la mazmorra es la zona del Blog (`game/world.js`, `game/sprites.js`, `components/valle/ZonePanel.jsx`); hay que decidir qué ocupa su lugar en el mapa.
+  - Backend y datos: `backend/lib/sitemap.js` (el sitemap incluye los posts), `backend/routes/ogMeta.js`, `backend/lib/database.js`, `backend/data/systemPrompt.js` (el chat habla del blog) y los tests de contenido. Los posts viven en PostgreSQL y el CMS `/bitacora` los edita.
+  - Decidir si el CMS conserva la edición de proyectos y se retira la de posts, y qué pasa con las URLs `/blog/...` ya indexadas (redirección o 410).
+  - Revisar `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN.md` y `docs/VISION.md` cuando se quite.
+
 ### Visión de producto
 - La hoja de ruta de `docs/VISION.md` marca seis fases: identidad visual, `/clasico` como landing profesional, primer edificio completo (Taller del Código), resto del pueblo, mecánicas de aventura y pulido. El rediseño de `/clasico` (fase 2) lo hará la usuaria con las skills de diseño cuando termine el trabajo en curso. Antes de la fase 3 hay que cerrar las decisiones pendientes de su sección 13 (mapa, escala de tiles y sprites, estilo de edificios, diseño del modo clásico, interiores, NPC y mecánicas de la primera versión).
 
@@ -363,3 +372,7 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 | Comillas siempre rectas, nunca angulares | Preferencia expresa de Guadalupe. |
 | La visita principal son reclutadores y clientes freelance por igual, y el objetivo actual es conseguir empleo (2026-11-09) | Marca la prioridad del modo clásico profesional y de que ninguna mecánica esconda información. Recogido en `PRODUCT.md`. |
 | Cartel de instalación propio, sin dependencias de PWA (ni `vite-plugin-pwa`) | El service worker necesario es de 50 líneas y una dependencia más de build no aportaba nada. En iPhone no existe diálogo de instalación, así que el cartel tiene que explicar los pasos. |
+| En pantallas táctiles (móvil y tablet) se oculta la barra de volumen general y solo queda el altavoz de silenciar | El volumen general lo regulan las teclas físicas del dispositivo, y la web no puede leerlas para sincronizar una barra. Se decide por `(pointer: coarse)` (`.px-volume-bar` en `pixel.css`), no por el ancho: una ventana estrecha de escritorio conserva la barra. Música y Efectos de Opciones se mantienen. |
+| Opciones de la portada: una columna compacta en móvil y dos columnas desde 640 px de ancho; en pantallas de menos de 600 px de alto se ocultan los textos de ayuda y se aprieta el espaciado | Debe caber sin desplazarse en móvil vertical y horizontal. Medido sin desplazamiento en 320×568, 360×640, 390×844, 667×375 y 768×1024. Los avisos siguen ligados a su control (`aria-describedby`) aunque no se vean. |
+| Portada: en móvil el subtítulo baja al pie del mapa (sobre el menú) y sin apellido; la firma de la esquina pasa de "Luprintech" a "Guadalupe Cano" (2026-11-09) | Los bocadillos de Lupe tapaban el subtítulo bajo el título, y sin el apellido cabe en una fila. En web el subtítulo sigue bajo el título y con el nombre completo. |
+| Portada: sin firma en la esquina y menú de accesos con Proyectos, Contacto y CV centrados, sin Blog (2026-11-09) | Guadalupe retirará el blog del portfolio; el resto de su limpieza queda anotada en "Quitar el blog del portfolio" y se hará con el modo clásico. |

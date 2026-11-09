@@ -39,69 +39,81 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
     install.request()
   }
 
+  const muted = { color: '#cfc5e0' }
+
+  // En pantallas bajas (menos de 600 px de alto: móvil pequeño o horizontal) los textos de ayuda se ocultan a la vista para que
+  // todo quepa sin desplazarse; el del volumen de efectos sigue ligado a su barra para lectores de pantalla.
+  // Móvil: una columna compacta que cabe sin desplazarse. Desde tablet y móvil horizontal (sm), dos
+  // columnas: los ajustes sueltos a la izquierda y el sonido, que es lo más alto, a la derecha.
   return (
     <dialog ref={ref} className="px-dialog" aria-labelledby="options-title" onClose={onClose}>
       <div
-        className="px-frame p-5"
+        className="px-frame p-4 sm:p-5 [@media(max-height:600px)]:p-3"
         style={{ background: PAL.ink, color: PAL.bone, ['--px-ink']: '#0f0e22', ['--px-ring']: PAL.saffron }}
       >
-        <h2 id="options-title" className="px-title text-4xl" style={{ color: PAL.bone }}>{copy.options.title}</h2>
+        <h2 id="options-title" className="px-title text-3xl sm:text-4xl [@media(max-height:600px)]:text-3xl" style={{ color: PAL.bone }}>{copy.options.title}</h2>
 
-        <label className="px-text mt-5 flex cursor-pointer items-start gap-3">
-          <input
-            type="checkbox"
-            className="px-check mt-0.5"
-            checked={options.reduceMotion}
-            onChange={(event) => onChange({ ...options, reduceMotion: event.target.checked })}
-          />
-          <span>
-            {copy.options.motion}
-            <span className="block text-sm" style={{ color: '#cfc5e0' }}>{copy.options.motionHint}</span>
-          </span>
-        </label>
+        <div className="px-text mt-3 grid gap-x-8 gap-y-4 sm:mt-4 sm:grid-cols-2 [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
+          <label className="flex cursor-pointer items-start gap-3 sm:col-start-1">
+            <input
+              type="checkbox"
+              className="px-check mt-0.5"
+              checked={options.reduceMotion}
+              onChange={(event) => onChange({ ...options, reduceMotion: event.target.checked })}
+            />
+            <span>
+              {copy.options.motion}
+              <span className="block text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden" style={muted}>{copy.options.motionHint}</span>
+            </span>
+          </label>
 
-        <div className="px-text mt-6">
-          <h3 className="text-sm" style={{ color: '#cfc5e0' }}>{copy.options.soundTitle}</h3>
-          <VolumeSlider id="volume-master" label={copy.options.master} value={sound.master} onChange={sound.setMaster} />
-          <VolumeSlider id="volume-music" label={copy.options.music} value={sound.music} onChange={sound.setMusic} />
-          <VolumeSlider
-            id="volume-fx"
-            label={copy.options.fx}
-            hint={copy.options.fxHint}
-            value={sound.fx}
-            onChange={sound.setFx}
-            onCommit={sound.previewFx}
-          />
-        </div>
-
-        <div className="px-text mt-6">
-          <h3 className="text-sm" style={{ color: '#cfc5e0' }}>{copy.options.saveTitle}</h3>
-          {saved && !asking && (
-            <button type="button" className="px-btn px-btn--bone mt-3" onClick={() => setAsking(true)}>{copy.options.erase}</button>
-          )}
-          {saved && asking && (
-            <div role="alert" className="mt-3">
-              <p>{copy.options.eraseAsk}</p>
-              <div className="mt-3 flex flex-wrap gap-4">
-                <button type="button" className="px-btn" onClick={erase}>{copy.options.eraseYes}</button>
-                <button type="button" className="px-btn px-btn--bone" onClick={() => setAsking(false)}>{copy.options.eraseNo}</button>
-              </div>
+          <section className="sm:col-start-2 sm:row-span-2 sm:row-start-1">
+            <h3 className="text-sm" style={muted}>{copy.options.soundTitle}</h3>
+            {/* En móvil y tablet el general son las teclas físicas del dispositivo */}
+            <div className="px-volume-bar">
+              <VolumeSlider id="volume-master" label={copy.options.master} value={sound.master} onChange={sound.setMaster} />
             </div>
+            <VolumeSlider id="volume-music" label={copy.options.music} value={sound.music} onChange={sound.setMusic} />
+            <VolumeSlider
+              id="volume-fx"
+              label={copy.options.fx}
+              hint={copy.options.fxHint}
+              value={sound.fx}
+              onChange={sound.setFx}
+              onCommit={sound.previewFx}
+            />
+          </section>
+
+          <section className="sm:col-start-1">
+            <h3 className="text-sm" style={muted}>{copy.options.saveTitle}</h3>
+            {saved && !asking && (
+              <button type="button" className="px-btn px-btn--bone mt-2" onClick={() => setAsking(true)}>{copy.options.erase}</button>
+            )}
+            {saved && asking && (
+              <div role="alert" className="mt-2">
+                <p className="text-sm">{copy.options.eraseAsk}</p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  <button type="button" className="px-btn" onClick={erase}>{copy.options.eraseYes}</button>
+                  <button type="button" className="px-btn px-btn--bone" onClick={() => setAsking(false)}>{copy.options.eraseNo}</button>
+                </div>
+              </div>
+            )}
+            {!saved && <p className="mt-1 text-sm" role="status">{erased ? copy.options.erased : copy.options.noSave}</p>}
+          </section>
+
+          {install.available && (
+            <section className="sm:col-start-1">
+              <h3 className="text-sm" style={muted}>{copy.options.installTitle}</h3>
+              <p className="mt-1 text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden">{copy.options.installHint}</p>
+              <button type="button" className="px-btn px-btn--bone mt-2" onClick={installApp}>{copy.options.install}</button>
+            </section>
           )}
-          {!saved && <p className="mt-2" role="status">{erased ? copy.options.erased : copy.options.noSave}</p>}
-        </div>
 
-        {install.available && (
-          <div className="px-text mt-6">
-            <h3 className="text-sm" style={{ color: '#cfc5e0' }}>{copy.options.installTitle}</h3>
-            <p className="mt-2 text-sm">{copy.options.installHint}</p>
-            <button type="button" className="px-btn mt-3" onClick={installApp}>{copy.options.install}</button>
+          {/* Con la confirmación abierta el botón principal es "Sí, borrar"; cerrar pasa a secundario.
+              En dos columnas queda bajo el sonido, que deja hueco, para que quepa en un móvil horizontal. */}
+          <div className="sm:col-start-2 sm:row-start-3 sm:self-end">
+            <button type="button" className={asking ? 'px-btn px-btn--bone' : 'px-btn'} onClick={onClose}>{copy.options.close}</button>
           </div>
-        )}
-
-        <div className="mt-6">
-          {/* Con la confirmación abierta el botón principal es "Sí, borrar"; cerrar pasa a secundario. */}
-          <button type="button" className={asking ? 'px-btn px-btn--bone' : 'px-btn'} onClick={onClose}>{copy.options.close}</button>
         </div>
       </div>
     </dialog>

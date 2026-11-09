@@ -17,7 +17,7 @@ function SpeakerIcon({ on }) {
   )
 }
 
-// Botón que silencia todo el sonido y barra de volumen general. Se oculta solo si la pista no está disponible.
+// Botón que silencia todo el sonido y barra de volumen general (esta, solo con ratón: ver .px-volume-bar). Se oculta solo si la pista no está disponible.
 export default function MusicControl() {
   const { copy } = useValleCopy()
   const { available, muted, volume, toggle, setVolume } = useBackgroundMusic()
@@ -37,7 +37,7 @@ export default function MusicControl() {
       >
         <SpeakerIcon on={!muted && volume > 0} />
       </button>
-      <label className="flex items-center">
+      <label className="px-volume-bar flex items-center">
         <span className="sr-only">{copy.audio.volume}</span>
         <input
           type="range"

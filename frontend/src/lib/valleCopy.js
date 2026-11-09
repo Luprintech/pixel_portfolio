@@ -16,7 +16,8 @@ export const COPY = {
   es: {
     gameTitle: 'Valle del Bucle',
     tagline: 'El portfolio interactivo de Guadalupe Cano',
-    studio: 'Luprintech',
+    // Sin apellido, para que quepa en una sola fila en móvil
+    taglineShort: 'El portfolio interactivo de Guadalupe',
     audio: { play: 'Activar el sonido', mute: 'Silenciar todo el sonido', volume: 'Volumen general' },
     menu: { continue: 'Continuar aventura', newGame: 'Nueva aventura', options: 'Opciones', classic: 'Modo clásico' },
     shortcuts: 'Atajos',
@@ -52,7 +53,7 @@ export const COPY = {
       blog: 'Mazmorra del Blog',
       stack: 'Herrería del Stack',
     },
-    sections: { about: 'Sobre mí', projects: 'Proyectos', contact: 'Contacto', blog: 'Blog', stack: 'Stack' },
+    sections: { about: 'Sobre mí', projects: 'Proyectos', contact: 'Contacto', cv: 'CV', blog: 'Blog', stack: 'Stack' },
     about: {
       role: 'Desarrolladora web full stack',
       bio: [
@@ -74,9 +75,6 @@ export const COPY = {
     hud: {
       customize: 'Personalizar viajera',
       enter: 'Entrar',
-      installTitle: 'Aplicación',
-      installHint: 'Instálala para jugar a pantalla completa y abrirla desde tu dispositivo.',
-      install: 'Instalar aplicación',
       close: 'Cerrar',
       exit: 'Salir',
       classic: 'Modo clásico',
@@ -133,6 +131,9 @@ export const COPY = {
       eraseYes: 'Sí, borrar',
       eraseNo: 'Cancelar',
       erased: 'Partida borrada.',
+      installTitle: 'Aplicación',
+      installHint: 'Instálala para jugar a pantalla completa.',
+      install: 'Instalar aplicación',
       close: 'Cerrar',
     },
     nav: { home: 'Inicio', classic: 'Clásico', projects: 'Proyectos', blog: 'Blog', contact: 'Contacto' },
@@ -141,7 +142,7 @@ export const COPY = {
   en: {
     gameTitle: 'Valle del Bucle',
     tagline: "Guadalupe Cano's interactive portfolio",
-    studio: 'Luprintech',
+    taglineShort: "Guadalupe's interactive portfolio",
     audio: { play: 'Turn sound on', mute: 'Mute all sound', volume: 'Master volume' },
     menu: { continue: 'Continue adventure', newGame: 'New adventure', options: 'Options', classic: 'Classic mode' },
     shortcuts: 'Shortcuts',
@@ -177,7 +178,7 @@ export const COPY = {
       blog: 'Blog dungeon',
       stack: 'Stack forge',
     },
-    sections: { about: 'About me', projects: 'Projects', contact: 'Contact', blog: 'Blog', stack: 'Stack' },
+    sections: { about: 'About me', projects: 'Projects', contact: 'Contact', cv: 'CV', blog: 'Blog', stack: 'Stack' },
     about: {
       role: 'Full stack web developer',
       bio: [
@@ -199,9 +200,6 @@ export const COPY = {
     hud: {
       customize: 'Customize traveller',
       enter: 'Enter',
-      installTitle: 'App',
-      installHint: 'Install it to play full screen and open it from your device.',
-      install: 'Install app',
       close: 'Close',
       exit: 'Exit',
       classic: 'Classic mode',
@@ -258,6 +256,9 @@ export const COPY = {
       eraseYes: 'Yes, delete',
       eraseNo: 'Cancel',
       erased: 'Saved game deleted.',
+      installTitle: 'App',
+      installHint: 'Install it to play full screen.',
+      install: 'Install app',
       close: 'Close',
     },
     nav: { home: 'Home', classic: 'Classic', projects: 'Projects', blog: 'Blog', contact: 'Contact' },
