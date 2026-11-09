@@ -25,6 +25,14 @@ describe('ambienceLevels', () => {
     expect(storm.wind).toBeGreaterThan(rain.wind)
   })
 
+  it('con nieve callan pájaros y grillos y suenan las campanitas de escarcha', () => {
+    const snow = ambienceLevels({ dark: 1, rain: 0, storm: 0, wind: 0.35, winter: 1 })
+    expect(snow.crickets).toBe(0)
+    expect(snow.birds).toBe(0)
+    expect(snow.chimes).toBe(1)
+    expect(ambienceLevels({ dark: 0, rain: 0, wind: 0.25 }).chimes).toBe(0)
+  })
+
   it('todos los niveles quedan entre 0 y 1', () => {
     for (let dark = 0; dark <= 1; dark += 0.25) {
       for (let rain = 0; rain <= 1; rain += 0.25) {

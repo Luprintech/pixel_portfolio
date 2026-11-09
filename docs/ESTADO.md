@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-09 (página del CV con visor y botón de volver).
+Última actualización: 2026-11-09 (portada: invierno con nieve, Lupe con mangas y collar, música del valle y aviso de instalación compacto).
 
 ## Hecho
 
@@ -115,7 +115,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - **Ambiente:** viento, lluvia, grillos, pájaros y truenos con retraso tras cada rayo, generados con Web Audio (sin archivos) y que siguen al cielo.
 - **Volúmenes:** general, música y efectos (FX), en Opciones. El real de cada sonido es el suyo por el general. La barra de la pantalla (portada y creador) es la del volumen general, la misma que la de Opciones. La música a cero se apaga. Las preferencias antiguas (`volume`) se leen como volumen de música.
 - **Silencio:** el altavoz silencia todo (música, ambiente y efectos); mover cualquier barra lo reactiva.
-- **iPhone y Android** (`lib/audioEngine.js`): en iPhone (y Chrome en iPhone, que usa WebKit) el volumen de un `<audio>` no hace nada y el audio solo arranca dentro de un gesto, y por eso al probarlo ni se oían los efectos ni el silencio apagaba la música. Ahora todo el sonido pasa por un único `AudioContext` con dos buses (música y efectos) cuyo volumen sale del mezclador: la música entra por el bus con `createMediaElementSource`, el ambiente cuelga del bus de efectos y los maullidos y ladridos suenan como buffers (así también pueden sonar sin un gesto, como el de Khalessi). El contexto se crea y se reanuda en el primer gesto (`pointerdown`, `pointerup`, `touchend`, `click` o `keydown`: en iOS no basta `pointerdown`), se reanuda al volver a la pestaña y pone `navigator.audioSession.type = "playback"` para que el interruptor de silencio del iPhone no calle Web Audio. Sin Web Audio se vuelve al `<audio>` de siempre. **Comprobado:** en Chrome de escritorio (los dos buses dejan pasar sonido y el altavoz los deja a cero y los devuelve) y con pruebas con un contexto simulado; **no se ha podido probar en un iPhone ni en un Android reales**.
+- **iPhone y Android** (`lib/audioEngine.js`): en iPhone (y Chrome en iPhone, que usa WebKit) el volumen de un `<audio>` no hace nada y el audio solo arranca dentro de un gesto, y por eso al probarlo ni se oían los efectos ni el silencio apagaba la música. Ahora todo el sonido pasa por un único `AudioContext` con dos buses (música y efectos) cuyo volumen sale del mezclador: la música entra por el bus con `createMediaElementSource`, el ambiente cuelga del bus de efectos y los maullidos y ladridos suenan como buffers (así también pueden sonar sin un gesto, como el de Khalessi). El contexto se crea y se reanuda en el primer gesto (`pointerdown`, `pointerup`, `touchend`, `click` o `keydown`: en iOS no basta `pointerdown`), se reanuda al volver a la pestaña y pone `navigator.audioSession.type = "playback"` para que el interruptor de silencio del iPhone no calle Web Audio. Sin Web Audio se vuelve al `<audio>` de siempre. **Comprobado:** en Chrome de escritorio (los dos buses dejan pasar sonido y el altavoz los deja a cero y los devuelve) y con pruebas con un contexto simulado; **Lupe lo ha probado en un iPhone y en un Android reales (2026-11-09) y funciona bien.**
 
 **Menú y flujo de la portada**
 - Sin partida: "Nueva aventura", "Opciones" y "Modo clásico". Con partida: "Continuar aventura" (principal), "Nueva aventura", "Opciones" y "Modo clásico". "Personalizar viajera" salió del menú: "Nueva aventura" lleva directa a la personalización y, dentro del valle, el botón de la barra superior (`copy.hud.customize`) reabre el creador. Se quitó el modo `?modo=editar`.
@@ -124,7 +124,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 **Bocadillos más lentos y susto por los truenos (2026-11-09)**
 - Cada bocadillo de Lupe se queda unos 4,5 s (antes 3-4 s, y no daba tiempo a leerlos); duraciones en `game/titleLife.js`. Las frases largas (bienvenida, "cómo empezar", modo clásico y el consejo de personalizar) van partidas en 2 o 3 bocadillos cortos (`welcome1`, `journeyNew1`...; textos en `lib/valleCopy.js`) porque en móvil un bocadillo alto tapaba el subtítulo. El subtítulo va pegado al título.
-- Cuando se oye un trueno (llega con el retraso del rayo), Khalessi corre a esconderse tras Lupe, maúlla con `public/sounds/maullido gato asustado.mp3` (`petSounds.js`, clave `gatoAsustado`) y tiembla unos 4,5 s con orejas y rabo caídos (`khalessiScaredCanvas` en `pets/cats.js`) antes de volver a casa andando. Lupe suelta la caricia si estaba con ella. El susto vive en `game/titleCat.js` (`startScare`, `scaredCat`) y la escena lo aplica por encima del guion en `titleArt.js`; con movimiento reducido no hay susto. **Comprobado:** pruebas, lint, build y el sprite renderizado a tamaño ampliado; **no se ha visto el susto completo en la portada ni escuchado el maullido** (depende de que caiga un rayo).
+- Cuando se oye un trueno (llega con el retraso del rayo), Khalessi corre a esconderse tras Lupe, maúlla con `public/sounds/maullido gato asustado.mp3` (`petSounds.js`, clave `gatoAsustado`) y tiembla unos 4,5 s con orejas y rabo caídos (`khalessiScaredCanvas` en `pets/cats.js`) antes de volver a casa andando. Lupe suelta la caricia si estaba con ella. El susto vive en `game/titleCat.js` (`startScare`, `scaredCat`) y la escena lo aplica por encima del guion en `titleArt.js`; con movimiento reducido no hay susto. **Comprobado:** pruebas, lint, build y el sprite renderizado a tamaño ampliado; aprobado por Lupe al probar la portada completa (2026-11-09).
 
 **Bocadillos más grandes en web (2026-11-09)**
 - Desde 1024 px el texto del bocadillo pasa de 18 a 24 px, el ancho máximo de 19 a 28 rem y el relleno crece (`components/valle/LupeBubble.jsx`, `px-bubble` en `pixel.css`). Con `text-wrap: balance` las líneas se reparten sin palabra suelta. Móvil y tablet no cambian. Comprobado a 1440 px por medidas (24 px, 448 px de ancho).
@@ -145,8 +145,36 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - Tras el susto, Khalessi sale de detrás de Lupe, se acerca y Lupe la consuela en dos bocadillos (`comfort1`, `comfort2`) y la acaricia unos 9 s antes de que vuelva a casa (`startScare` y `scaredCat` en `titleCat.js`; el guion queda anulado mientras dura el susto).
 - Lenguaje inclusivo: "tu viajera o viajero" en las frases de Lupe.
 
-**Comprobado:** lint, build y las 215 pruebas sin errores; renderizado en el navegador de amanecer, día, lluvia, tormenta nocturna, arcoíris, otoño, la mezcla entre estaciones, las poses de Lupe y de Khalessi y el juego con la mariposa y la avellana; portada en móvil (375 px); sincronía de las barras de volumen y el silencio total. **No se ha escuchado** el sonido (ambiente ni maullido): solo se comprobó por script.
+**Comprobado:** lint, build y las 215 pruebas sin errores; renderizado en el navegador de amanecer, día, lluvia, tormenta nocturna, arcoíris, otoño, la mezcla entre estaciones, las poses de Lupe y de Khalessi y el juego con la mariposa y la avellana; portada en móvil (375 px); sincronía de las barras de volumen y el silencio total. El sonido (ambiente y maullidos) quedó aprobado por Lupe al probar la portada (2026-11-09).
 
+
+### Portada: invierno, Lupe mejorada, música del valle y aviso de instalación (2026-11-09)
+
+**Aprobado por Lupe:** todo el resto de la portada (diálogos, sonido, otoño, Khalessi y bioma de primavera) se da por cerrado. El sonido real en Android y iPhone funciona.
+
+**Lupe mejorada** (`game/lupePoses.js`, letra nueva `J` en `avatar/palette.js`)
+- Lleva ya lo que le faltaba de su lámina: collar dorado con rubí al cuello y mangas abullonadas que acaban en un puño dorado. El generador no tiene esas piezas, así que se estampan sobre la matriz del fotograma de frente (`GOWN`, de 4 filas por 16 columnas, simétrico) antes de aplicar cada pose. Con el brazo en alto (saludo) la manga derecha nace del hombro y no cuelga debajo. Prueba nueva: collar y mangas en las cinco poses.
+
+**Bioma de invierno con nieve** (`game/titleSky.js`, `titleWinter.js`, `titleRecolor.js`, `titleSkyPaint.js`, `titleArt.js`)
+- **Tiempo:** `snow` es un tiempo más, junto a despejado, nublado, lluvia y tormenta (15 % de las visitas; probabilidades reajustadas). El estado del cielo suma `snow` y `winter` (el bioma, con el mismo fundido de 8 s que el otoño; con nieve no hay lluvia, tormenta, arcoíris ni mariposas, y el otoño y el invierno no coinciden). Con nieve la gloom sube un poco y se encienden ventanas. Con movimiento reducido no hay nieve, igual que no hay lluvia.
+- **Dibujo:** una tercera versión del valle, construida una vez: hierba y copas pasan a nieve (conservan luces y sombras, las oscuras quedan azuladas), el cerezo queda con escarcha, las cumbres, los tejados y las copas llevan capa blanca (`snowCap`, `paintSnowyPeaks`), y en el prado salen montones de nieve, tres charcos helados, destellos y un muñeco de nieve con bufanda y gorro. Un velo azul pálido enfría toda la escena. La casita lejana lleva nieve en el tejado.
+- **FX:** copos de dos tamaños que caen despacio y se mecen (más cuanto más nieva; los grandes, más lentos, para dar profundidad). Sin pájaros, luciérnagas ni pétalos mientras nieva. La lógica de repintado por tono se sacó de `titleAutumn.js` a `titleRecolor.js` y la comparten otoño e invierno.
+- **Sonido propio:** campanitas de escarcha (dos o tres notas de cristal de una escala pentatónica, suaves y con cola larga) cada 2 a 5 s mientras nieva; callan grillos y pájaros (`ambienceLevels`, `chimes` y `winter`).
+
+**Khalessi friolera y diálogos de invierno** (`game/titleCat.js`, `game/titleLife.js`, `lib/valleCopy.js`)
+- Al empezar a nevar, Khalessi corre a pegarse a Lupe (`startHuddle`), se sienta y tirita (temblor de un píxel, rabo que vibra y vaho que sube del hocico) mientras dure la nevada. Al parar, vuelve a casa andando (`endHuddle`). Si el susto de un trueno coincide, manda el susto. Con nieve no hay visita ni juegos de la gata, y no maúlla por las caricias del guion normal.
+- **Guion de invierno** (`winterAt`, en bucle mientras nieva y tras la bienvenida): Lupe se da cuenta de la nieve ("¡Nieva! Ven, Khalessi, corre."), cuenta que Khalessi es muy friolera, la acaricia ("Ven aquí, bonita, que te caliento."), Khalessi dice "Brrr...", y Lupe cierra con un consejo ("Cuando deje de nevar, volverá a sus juegos."). Más `ambientSnow` para el comentario del tiempo. En español e inglés.
+- **Comprobado:** pruebas (cielo, guion, gata y sonido), y la portada en nieve renderizada en el navegador a mediodía y al atardecer: nieve, muñeco, Khalessi sentada junto a Lupe y ventanas encendidas. **No se ha visto aún el cambio completo de primavera a invierno en tiempo real ni escuchado las campanitas.**
+
+**Música del valle** (`lib/backgroundMusic.js`, `hooks/useBackgroundMusic.js`, `components/valle/MusicControl.jsx`, `pages/Valle.jsx`)
+- Dentro de `/valle` suena `Valle Exploration.mp3`. Hay dos pistas: `welcome` (portada y creador) y `valley` (el valle). Al pasar de una a otra, la que suena se apaga con un fundido y entra la nueva; la disponibilidad del archivo se comprueba una vez por pista. El valle lleva ahora el botón de silenciar en su barra superior (`MusicControl compact track="valley"`), que se reparte en dos filas si no cabe en móvil. Prueba nueva de las pistas.
+- **Comprobado** en el navegador: en `/valle` se pide `Valle Exploration.mp3`. **Sin escuchar el fundido entre pistas.**
+
+**Textos inclusivos**
+- "Personalizar viajera" pasa a "Personalizar aspecto" (botón del valle y consejo de Lupe), "Aleatoria" a "Al azar" y la confirmación de borrar partida habla de "tu viajera o viajero". El título de la caja del creador sigue siendo "Viajera" o "Viajero" según el cuerpo elegido.
+
+**Aviso de instalación, pasado por las skills de diseño** (`components/InstallPrompt.jsx`, `pixel.css`)
+- Más compacto para no tapar el menú de la portada en móvil: título, relleno y texto más pequeños, copy más corto (español e inglés), botones lado a lado en móvil (antes apilados), `aria-describedby`, y una entrada corta que se desactiva con movimiento reducido (`px-prompt-in`). Comprobado a 375 px. La lógica no cambió.
 
 ### Visión, fase 1b: partida versionada, creador de personaje y opciones
 - **Partida versionada:** `game/save.js` guarda `{ version, name, look }` en `valle-del-bucle:save`. Si solo existe la clave antigua `valle-del-bucle:look` (cuatro colores), `loadSave` la migra al leerla y `writeSave` la borra al escribir. Una partida dañada, de otra versión o con valores fuera de lista se ignora. El nombre se limpia con `sanitizeName` (letras, números, espacio, guion y apóstrofo; 16 como máximo) y nunca sale del navegador.
@@ -210,7 +238,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - **Arreglo:** `lib/audioEngine.js` pasa a tener un nodo general (`master`) entre los buses y la salida. El volumen general y el silencio solo cambian ese nodo; la música y los efectos llevan únicamente el suyo. Cualquier sonido futuro que cuelgue de un bus lo hereda.
 - Al ajustar un volumen se borra lo programado antes (`cancelScheduledValues`), para que un fundido cancelado no deje la ganancia pegada.
 - Si la pista ya sonaba antes del primer gesto, el primer gesto la conecta al motor. Sin Web Audio, el elemento usa también `muted`, no solo `volume`.
-- **Comprobado:** pruebas nuevas del cableado y del mezclador, y en Chrome de escritorio midiendo la señal a la salida del nodo general (general a 0,25 baja la señal y silenciar la deja en cero). **Sin probar en un Android ni en un Safari/iPhone reales.**
+- **Comprobado:** pruebas nuevas del cableado y del mezclador, y en Chrome de escritorio midiendo la señal a la salida del nodo general (general a 0,25 baja la señal y silenciar la deja en cero). Probado por Lupe en un Android y en un iPhone reales (2026-11-09): funciona bien.
 
 ### PWA: instalar la web en Android y iPhone (2026-11-09)
 - **Hecho:** `public/manifest.webmanifest`, iconos de casita pixel art en `public/icons/` (generados con `frontend/scripts/make-pwa-icons.mjs`, sin dependencias; hay versión maskable y `apple-touch-icon`), service worker propio en `public/sw.js` y las metaetiquetas de `index.html` que Safari necesita aparte.
@@ -220,7 +248,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - El manifest añade accesos directos ("Continuar aventura", "Modo clásico"), `display_override` y categorías.
 - El service worker se registra también en desarrollo (Chrome no lanza el aviso de instalación sin él) pero en localhost no cachea nada. Cachea `/assets/*` y la portada (sin conexión abre esa); no toca `/api/` ni `/posts/`. `nginx.conf` sirve `sw.js` y el manifest sin caché.
 - **Comprobado:** tests de plataforma, del store y del cartel; lint y build; y en el navegador del panel con un evento de instalación simulado (el cartel sale, "Instalar" lanza `prompt()` y el botón de Opciones funciona). **Sin probar:** el registro del service worker (el panel no admite service workers), la instalación real y el iPhone.
-- **Pendiente:** capturas de pantalla en el manifest para el diálogo de instalación ampliado de Chrome (hacen falta capturas reales del juego); pasar el cartel por las skills de diseño.
+- **Pendiente:** capturas de pantalla en el manifest para el diálogo de instalación ampliado de Chrome (hacen falta capturas reales del juego). El cartel ya pasó por las skills de diseño (ver "Portada: invierno...").
 
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
@@ -304,7 +332,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - **Girar:** un solo botón pequeño con una flecha circular dibujada píxel a píxel (`stage/TurnButton.jsx`), en la esquina superior derecha de cada caja; sustituye al botón de texto. Abajo pisaba los pies y la cola de los sprites.
 - **Silencio en móvil y tablet:** solo el botón (`MusicControl compact`), en la fila "Viajero / Mascota", que queda fija al desplazar. En pantalla ancha sigue con su barra de volumen. Por debajo de `lg` no hay barra de volumen en el creador (en táctil ya sobraba; en una ventana estrecha de escritorio se regula desde Opciones).
 - **"Volver al inicio":** en móvil va en la barra fija de abajo, en el hueco libre de una rejilla de 2×2 (no crece); en pantalla ancha, junto al título.
-- **Título neutro:** "Tu avatar" (y "Your avatar"); la caja del avatar dice "Viajera" o "Viajero" según el cuerpo elegido. Quedan textos con "viajera" fuera del creador (ayuda de la portada, "Personalizar viajera") por revisar.
+- **Título neutro:** "Tu avatar" (y "Your avatar"); la caja del avatar dice "Viajera" o "Viajero" según el cuerpo elegido. Los textos con "viajera" fuera del creador ya son inclusivos (ver "Portada: invierno...").
 - **Columna izquierda sin scroll en pantalla ancha:** ocupa el alto de la ventana y las cajas de las escenas se estiran (tope de 26 rem). Los nombres van uno junto al otro, con el botón de sonido de la mascota en la fila de su etiqueta (16 px sobre el campo, por la sombra dura), y la casilla de la marcha comparte fila con la música. Medido sin scroll a 1920×1080, 1280×720 y 1366×620.
 - **"Sin mascota" es un botón** que abre la pestaña Mascota, lleva el foco a ella y acerca el panel.
 - **Verificado:** móvil (375 y 320 px) y escritorio en el navegador; 245 pruebas del frontend, 60 del backend, lint y build sin errores. No se probaron tablet ni el clic de "Sin mascota" en escritorio.
@@ -324,8 +352,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ### Visión de producto
 - La hoja de ruta de `docs/VISION.md` marca seis fases: identidad visual, `/clasico` como landing profesional, primer edificio completo (Taller del Código), resto del pueblo, mecánicas de aventura y pulido. El rediseño de `/clasico` (fase 2) lo hará la usuaria con las skills de diseño cuando termine el trabajo en curso. Antes de la fase 3 hay que cerrar las decisiones pendientes de su sección 13 (mapa, escala de tiles y sprites, estilo de edificios, diseño del modo clásico, interiores, NPC y mecánicas de la primera versión).
 
-- Fase 1b de la visión (portada viva): la música también debe sonar dentro del valle (hoy solo suena en la portada y el creador). `Valle Exploration.mp3` ya está en `frontend/public/audio/` pero no suena en ningún sitio.
-- Portada: los sonidos ambiente (viento, lluvia, grillos, pájaros, truenos) son sintéticos y no se han escuchado; si no convencen, se sustituye cada capa por una grabación. Lupe es una aproximación de su lámina (faltan mangas abullonadas y collar), y el dibujo de la pata de Khalessi aseándose es sencillo. Un tercer bioma de invierno (nieve) quedó fuera.
+- Portada: aprobada por Lupe. Quedan por ver en tiempo real el cambio completo de estaciones hasta el invierno y por oír las campanitas de nieve. Si el ambiente sintético no convence, se sustituye cada capa por una grabación.
 - Creador de personaje, ampliaciones opcionales (la fase 1b del creador está cerrada): de la sección 6 de `docs/VISION.md` quedan fuera las constituciones dentro de cada avatar y las formas de cara; se pueden añadir prendas (bufanda, delantal); y los complementos se eligen de uno en uno (unas gafas y un sombrero a la vez no se pueden), así que separarlos en capas compatibles sería el siguiente paso. Falta probar el creador con un lector de pantalla real y con un dispositivo táctil real: solo se ha revisado con scripts y emulación.
 - El juego usa la hoja de poses del generador nuevo. Falta revisarla andando durante más rato por el valle (puertas, casas) con las prendas más anchas (falda larga, vestido) y el pelo largo; hasta ahora se ha visto en reposo y andando hacia la derecha.
 - Fase 1 de la visión, lo que falta: vallas, flores en macetas y otros detalles de cariño; diseño propio del Taller y renombrar los edificios (Taller, Biblioteca, Taberna, Correos).
@@ -335,7 +362,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se registra qué falta. El creador de la viajera y la elección de mascota ya están hechos; lo que sigue son los puntos de abajo.
 
 **Papeles** (Khalessi es la gata de Lupe, no la mascota del visitante): ya no sigue a la viajera ni sale en el creador, y en la portada acompaña a Lupe (la visita, la acaricia y juega por el prado).
-- Lupe ya tiene sprite y diálogo en la portada (ver "Portada viva"). Siguen pendientes su retrato, su papel como NPC dentro del valle y la bienvenida completa de `DIALOGOS.md`: los diálogos de la portada son una versión propia, más corta.
+- Lupe ya tiene sprite (con collar y mangas de su lámina) y diálogo en la portada, también de invierno (ver "Portada viva" y "Portada: invierno..."). Siguen pendientes su retrato, su papel como NPC dentro del valle y la bienvenida completa de `DIALOGOS.md`: los diálogos de la portada son una versión propia, más corta.
 
 **Orden de prioridad** (propuesto en el encargo, pendiente de arrancar):
 1. ~~Aprobar y consolidar la base visual del avatar.~~ Hecho el 2026-11-09 (16×28, lienzo 18×34). Siguen sin fijarse las dimensiones de las mascotas y los NPC.
@@ -412,3 +439,6 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 | Portada: sin firma en la esquina y menú de accesos con Proyectos, Contacto y CV centrados, sin Blog (2026-11-09) | Guadalupe retirará el blog del portfolio; el resto de su limpieza queda anotada en "Quitar el blog del portfolio" y se hará con el modo clásico. |
 | El CV se ve en una página propia `/cv` (visor de PDF con "Volver" y "Descargar PDF") en vez de abrir el PDF suelto (2026-11-09) | En iPhone, y sobre todo en la app instalada, un PDF abierto a pantalla completa no tiene forma de volver atrás. `/cv` es pantalla completa sin la barra del modo clásico y reutiliza `PdfPreview`. Los enlaces "CV" de la portada y de Sobre mí apuntan ahí. Sin probar en un iPhone real. |
 | La barra del visor del CV es compacta: "Pagina 1 / 1", "-", porcentaje de zoom, "+" y flechas de página, sin "Ajustar ancho", "Pagina completa" ni el botón "100%" (2026-11-09) | Menos controles y cabe en una fila en móvil. Es la opción `compact` de `PdfCanvasViewer`; el editor del CMS y los documentos del blog conservan la barra completa. |
+| Invierno como cuarto tiempo de la portada, con Khalessi pegada a Lupe mientras nieva (2026-11-09) | Khalessi es friolera por decisión de Lupe. El frío manda sobre las visitas y juegos de la gata, y el susto de un trueno manda sobre el frío. Con movimiento reducido no hay nieve, como no hay lluvia. |
+| Dos pistas de música: `welcome` en portada y creador, `valley` en el valle (2026-11-09) | Cada pantalla tiene su ambiente; la música se apaga con un fundido al cambiar y el valle lleva su botón de silenciar. |
+| "Personalizar aspecto" y "Al azar" en lugar de "Personalizar viajera" y "Aleatoria" (2026-11-09) | Textos que sirven igual para viajera y viajero, sin duplicar etiquetas. |

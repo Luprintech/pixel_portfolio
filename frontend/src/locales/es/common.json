@@ -359,7 +359,7 @@
   },
   "install": {
     "title": "Instala Valle del Bucle",
-    "recommend": "Se recomienda instalarla para una mejor experiencia: pantalla completa sin las barras del navegador, acceso directo desde tu dispositivo y carga más rápida.",
+    "recommend": "Para una mejor experiencia, instálala: pantalla completa, acceso directo y carga más rápida.",
     "action": "Instalar",
     "android": {
       "insecure": "Esta dirección no es segura (HTTP): Chrome solo instala la app, a pantalla completa, desde HTTPS. Desde aquí el menú solo crea un acceso directo que abre en Chrome.",

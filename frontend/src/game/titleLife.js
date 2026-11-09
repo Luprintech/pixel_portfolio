@@ -67,15 +67,21 @@ LOOP.forEach((scene) => {
 const VISIT_AT = LOOP.find((scene) => scene.fair).at
 
 // Con tormenta la gata no se acerca a que la acaricien: se queda en casa, y el susto de los truenos
-// (titleArt.js) ya cuenta cómo Lupe la consuela. Se decide una vez, al empezar la visita, con el cielo de
+// (titleArt.js) ya cuenta cómo Lupe la consuela. Con nieve tampoco sale de junto a Lupe, y el guion de
+// invierno (`winterAt`) lo cuenta. Se decide una vez, al empezar la visita, con el cielo de
 // ese instante, para no cortarla a la mitad si el tiempo cambia.
 const STORM_NO_VISIT = 0.3
-const visitIsOff = (visitStart, skyOf) => skyOf(visitStart).storm > STORM_NO_VISIT
+const visitIsOff = (visitStart, skyOf) => {
+  const sky = skyOf(visitStart)
+  return sky.storm > STORM_NO_VISIT || sky.winter > 0.5
+}
 
-// Qué comentario del tiempo toca: la tormenta manda sobre la lluvia, y esta sobre el arcoíris.
+// Qué comentario del tiempo toca: la tormenta manda sobre la lluvia, esta sobre la nieve y todas sobre el
+// arcoíris.
 export function ambientKey(sky) {
   if (sky.storm > 0.6) return 'ambientStorm'
   if (sky.rain > 0.3) return 'ambientRain'
+  if (sky.winter > 0.3) return 'ambientSnow'
   if (sky.rainbow > 0.4) return 'ambientRainbow'
   if (sky.dark > 0.7) return 'ambientNight'
   if (sky.dark > 0.2 && sky.phase < 0.5) return 'ambientDawn'
@@ -98,6 +104,27 @@ function locate(scenes, local, lap, base) {
   }
   const last = scenes[scenes.length - 1]
   return { scene: last, local: last.ms, start: base + from - last.ms, lap }
+}
+
+// Invierno: mientras nieva, la gata está pegada a Lupe y el guion cambia. Primero Lupe se da cuenta de la
+// nieve (la gata llega corriendo), luego cuenta lo friolera que es Khalessi, la acaricia y, tras una pausa,
+// vuelve a empezar. Es función del tiempo transcurrido desde que la gata llegó a su lado.
+const WINTER = [
+  { ms: 4500, say: 'winterStart' },
+  { ms: 4500, say: 'winterCat1' },
+  { ms: 4800, say: 'winterCat2' },
+  { ms: 4500, pose: 'pet', say: 'winterWarm' },
+  { ms: 3200, pose: 'pet', say: { key: 'shiver', who: 'khalessi' } },
+  { ms: 5200, pose: 'pet', say: 'winterPurr' },
+  { ms: 4800, say: 'winterTip' },
+  { ms: 3500 },
+]
+export const WINTER_MS = total(WINTER)
+
+export function winterAt(local) {
+  const { scene } = locate(WINTER, Math.max(0, local) % WINTER_MS, 0, 0)
+  const say = typeof scene.say === 'string' ? { key: scene.say, who: 'lupe' } : scene.say || null
+  return { pose: scene.pose || 'idle', say }
 }
 
 // Qué juego toca, decidido con el cielo del momento en que empieza la escena para que no cambie a mitad.

@@ -64,7 +64,7 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
   const styleNames = STYLE_NAMES[lang]
   const { stageRef, tabsRef, barRef, columnRef } = useScrollPadding()
 
-  // "Aleatoria" y "Restablecer" cambian muchas cosas a la vez: un aviso para quien no ve la pantalla.
+  // "Al azar" y "Restablecer" cambian muchas cosas a la vez: un aviso para quien no ve la pantalla.
   // Se borra al rato para que repetir la acción vuelva a anunciarse.
   const [status, setStatus] = useState('')
   const timer = useRef(null)

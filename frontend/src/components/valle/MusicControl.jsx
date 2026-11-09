@@ -18,10 +18,11 @@ function SpeakerIcon({ on }) {
 }
 
 // Botón que silencia todo el sonido y barra de volumen general (esta, solo con ratón: ver .px-volume-bar). Se oculta solo si la pista no está disponible.
-// Con `compact` queda solo el botón, sin barra ni fondo: cabe en la cabecera de una escena.
-export default function MusicControl({ compact = false }) {
+// Con `compact` queda solo el botón, sin barra ni fondo: cabe en la cabecera de una escena. `track`
+// es la pista que pide la pantalla ('welcome' en la portada y el creador, 'valley' en el valle).
+export default function MusicControl({ compact = false, track = 'welcome' }) {
   const { copy } = useValleCopy()
-  const { available, muted, volume, toggle, setVolume } = useBackgroundMusic()
+  const { available, muted, volume, toggle, setVolume } = useBackgroundMusic(track)
   if (!available) return null
   const label = muted ? copy.audio.play : copy.audio.mute
 

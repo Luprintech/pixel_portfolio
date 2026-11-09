@@ -357,7 +357,7 @@
   },
   "install": {
     "title": "Install Valle del Bucle",
-    "recommend": "Installing it is recommended for a better experience: full screen without the browser bars, a direct shortcut on your device and faster loading.",
+    "recommend": "For a better experience, install it: full screen, a direct shortcut and faster loading.",
     "action": "Install",
     "android": {
       "insecure": "This address is not secure (HTTP): Chrome only installs the full-screen app over HTTPS. From here the menu only creates a shortcut that opens in Chrome.",

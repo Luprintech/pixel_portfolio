@@ -1,7 +1,7 @@
 // Poses de Lupe para la portada: de pie, saludando con la mano en alto y acariciando a Khalessi.
 // Parten del fotograma de frente del generador y le retocan el brazo derecho (el de la derecha del
 // dibujo) sobre su matriz de letras; los colores siguen siendo los de su aspecto.
-import { avatarCanvas } from './avatar/index.js'
+import { avatarCanvas, composeAvatar } from './avatar/index.js'
 import { LUPE_LOOK } from './lupe.js'
 
 // Coloca `art` con su esquina en (x, y). El punto es transparente: deja lo que había debajo.
@@ -35,11 +35,34 @@ const PET = [
   ['.....', 'XXXXX', 'DDSSS', 'XXXXX'],
 ]
 
+// El vestido de su lámina, que el generador no tiene: hombros descubiertos con un collar dorado y un
+// rubí en el centro, y mangas abullonadas que acaban en un puño dorado. Va en las columnas 1 a 16 de las
+// filas 18 a 21, simétrico, y se estampa antes que cualquier pose (la mano en alto lo tapa a su paso).
+const GOWN = [
+  '.XDLDSSSSSSDDMX.',
+  'XDLDDTTJJTTDDMMX',
+  'XDDDM......MDDMX',
+  '.XTTX......XTTX.',
+]
+const withGown = (rows) => stamp(rows, 1, 18, GOWN)
+
 const EDITS = {
   idle: (rows) => rows,
   wave: (rows, step) => stamp(stamp(stamp(withoutHand(rows), 14, 19, ['DD']), 12, 13, WAVE_ARM), 12, 9, WAVE_HAND[step]),
   pet: (rows, step) => stamp(withoutHand(rows), 13, 22, PET[step]),
 }
+
+// Con el brazo en alto la manga derecha nace del hombro: se quita la parte que colgaba bajo él.
+const withoutHangingSleeve = (gowned, original) =>
+  gowned.map((row, y) => (y === 20 || y === 21 ? row.slice(0, 12) + original[y].slice(12) : row))
+
+const editFor = (pose, step) => (rows) => {
+  const gowned = withGown(rows)
+  return EDITS[pose](pose === 'wave' ? withoutHangingSleeve(gowned, rows) : gowned, step)
+}
+
+// La matriz de letras de una pose, sin pintar: es lo que se comprueba en las pruebas.
+export const lupeRows = (pose, step = 0) => editFor(pose, step)(composeAvatar(LUPE_LOOK, 'down', 0).rows)
 
 const frames = new Map()
 
@@ -48,6 +71,6 @@ const frames = new Map()
 export function lupeFrame(pose, step = 0, closed = false) {
   const shut = closed || pose === 'pet'
   const key = `${pose}${step}${shut}`
-  if (!frames.has(key)) frames.set(key, avatarCanvas(LUPE_LOOK, 'down', 0, shut, (rows) => EDITS[pose](rows, step)))
+  if (!frames.has(key)) frames.set(key, avatarCanvas(LUPE_LOOK, 'down', 0, shut, editFor(pose, step)))
   return frames.get(key)
 }

@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { COPY } from '../lib/valleCopy.js'
 import { CAT_HOME, CAT_MAX_Y, CAT_MIN_Y, CAT_NEAR } from './titleCat.js'
-import { INTRO_MS, LOOP_MS, ambientKey, eventsBetween, lifeAt, playKind } from './titleLife.js'
+import { INTRO_MS, LOOP_MS, WINTER_MS, ambientKey, eventsBetween, lifeAt, playKind, winterAt } from './titleLife.js'
 
-const CLEAR = { storm: 0, rain: 0, rainbow: 0, dark: 0, phase: 0.5, autumn: 0 }
+const CLEAR = { storm: 0, rain: 0, rainbow: 0, dark: 0, phase: 0.5, autumn: 0, winter: 0 }
+const SNOW = { ...CLEAR, winter: 1 }
 const AUTUMN = { ...CLEAR, rain: 0.65, autumn: 1 }
 const NIGHT = { ...CLEAR, dark: 1, phase: 0.05 }
 const skyOf = (sky) => () => sky
@@ -159,10 +160,43 @@ describe('titleLife', () => {
   it('el comentario del tiempo se ajusta al cielo', () => {
     expect(ambientKey({ ...CLEAR, storm: 1, rain: 1 })).toBe('ambientStorm')
     expect(ambientKey({ ...CLEAR, rain: 0.65 })).toBe('ambientRain')
+    expect(ambientKey(SNOW)).toBe('ambientSnow')
+    expect(ambientKey({ ...SNOW, rainbow: 0.9 })).toBe('ambientSnow')
     expect(ambientKey({ ...CLEAR, rainbow: 0.9 })).toBe('ambientRainbow')
     expect(ambientKey({ ...CLEAR, dark: 1, phase: 0.05 })).toBe('ambientNight')
     expect(ambientKey({ ...CLEAR, dark: 0.45, phase: 0.24 })).toBe('ambientDawn')
     expect(ambientKey(CLEAR)).toBe('ambientDay')
+  })
+
+  it('con nieve la visita de la gata se cancela: se queda pegada a Lupe y el guion de invierno lo cuenta', () => {
+    const frames = loopOf(SNOW)
+    const keys = new Set(frames.map((f) => f.say?.key))
+    ;['notice', 'meetCat', 'petting', 'meow', 'catLoves'].forEach((key) => expect(keys.has(key), key).toBe(false))
+    expect(eventsBetween(INTRO_MS, INTRO_MS + LOOP_MS * 3, skyOf(SNOW))).toEqual([])
+  })
+
+  it('no hay juego de mariposas con nieve', () => {
+    expect(playKind(SNOW)).toBe('groom')
+  })
+
+  it('el guion de invierno avisa de la nieve, cuenta que Khalessi es friolera y la acaricia', () => {
+    const keys = []
+    for (let ms = 0; ms < WINTER_MS; ms += 100) {
+      const say = winterAt(ms).say
+      if (say && keys[keys.length - 1] !== say.key) keys.push(say.key)
+    }
+    expect(keys).toEqual(['winterStart', 'winterCat1', 'winterCat2', 'winterWarm', 'shiver', 'winterPurr', 'winterTip'])
+    expect(winterAt(0).pose).toBe('idle')
+    const warm = []
+    for (let ms = 0; ms < WINTER_MS; ms += 100) if (winterAt(ms).pose === 'pet') warm.push(winterAt(ms).say?.key)
+    expect(new Set(warm)).toEqual(new Set(['winterWarm', 'shiver', 'winterPurr']))
+  })
+
+  it('el guion de invierno se repite y quien tirita habla por Khalessi', () => {
+    expect(winterAt(WINTER_MS + 500)).toEqual(winterAt(500))
+    let shiverer = null
+    for (let ms = 0; ms < WINTER_MS; ms += 100) if (winterAt(ms).say?.key === 'shiver') shiverer = winterAt(ms).say.who
+    expect(shiverer).toBe('khalessi')
   })
 
   it('los consejos rotan entre vueltas', () => {
@@ -183,7 +217,8 @@ describe('textos de la portada', () => {
     'hello', 'welcome1', 'welcome2', 'journeyNew1', 'journeyNew2', 'journeyNew3', 'journeyBack1', 'journeyBack2', 'journeyBack3',
     'classic1', 'classic2', 'notice', 'meetCat', 'petting', 'meow', 'catLoves',
     'tipRelax', 'tipOptions', 'tipCustomize', 'tipCustomize2', 'comfort1', 'comfort2',
-    'ambientDawn', 'ambientDay', 'ambientNight', 'ambientRain', 'ambientStorm', 'ambientRainbow',
+    'ambientDawn', 'ambientDay', 'ambientNight', 'ambientRain', 'ambientStorm', 'ambientRainbow', 'ambientSnow',
+    'winterStart', 'winterCat1', 'winterCat2', 'winterWarm', 'shiver', 'winterPurr', 'winterTip',
   ]
 
   it('cada frase del guion tiene su texto en español y en inglés', () => {

@@ -427,6 +427,27 @@
   }
 }
 
+/* Entrada de los avisos que suben desde abajo (el de instalar la aplicación): un solo movimiento
+   corto, con la curva de frenado de las demás entradas, y sin él si se pide menos movimiento. */
+@keyframes px-prompt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.px-prompt-in {
+  animation: px-prompt-rise 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .px-prompt-in {
+    animation: none;
+  }
+}
+
 /* En pantallas táctiles (móvil y tablet) el volumen general lo regulan las teclas físicas del
    dispositivo: la barra sobra y solo se queda el botón de silenciar. Se decide por el tipo de
    puntero y no por el ancho, para que una ventana estrecha de escritorio conserve la barra. */

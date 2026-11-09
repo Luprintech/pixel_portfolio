@@ -2,7 +2,7 @@
 // de 320×180: franjas con tramado, sol y luna, lluvia, rayos y el oscurecimiento de la hora.
 import { PAL } from './palette.js'
 import { dot, ellipse, hash2, rect } from './pixelKit.js'
-import { BAND_STARTS, HORIZON, lightningAt, mixHex, rainDrops } from './titleSky.js'
+import { BAND_STARTS, HORIZON, lightningAt, mixHex, rainDrops, snowFlakes } from './titleSky.js'
 
 const WIDTH = 320
 const HEIGHT = 180
@@ -50,6 +50,22 @@ export function paintRain(g, sky, ms) {
   g.globalAlpha = 1
 }
 
+// Copos: puntos blancos y, los más cercanos, una cruz pequeña. Con tormenta de nieve se ven todos.
+export function paintSnow(g, sky, ms) {
+  if (sky.snow <= 0) return
+  snowFlakes(ms, sky.snow).forEach(({ x, y, big }) => {
+    const px = Math.round(x)
+    const py = Math.round(y)
+    g.globalAlpha = big ? 0.95 : 0.75
+    dot(g, px, py, '#ffffff')
+    if (big) {
+      g.globalAlpha = 0.6
+      ;[[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dx, dy]) => dot(g, px + dx, py + dy, '#dbe9ff'))
+    }
+  })
+  g.globalAlpha = 1
+}
+
 // Rayo en zigzag desde la nube hasta el horizonte, con un destello que aclara toda la escena.
 export function paintLightning(g, ms, seed) {
   const strike = lightningAt(ms, seed)
@@ -72,5 +88,8 @@ export function paintTint(g, sky) {
   rect(g, 0, 0, WIDTH, HEIGHT, '#1c1b3a')
   g.globalAlpha = 0.22 * Math.max(sky.rain, sky.storm)
   rect(g, 0, 0, WIDTH, HEIGHT, '#2e2d5a')
+  // El invierno enfría los colores con un velo azul pálido.
+  g.globalAlpha = 0.16 * sky.winter
+  rect(g, 0, 0, WIDTH, HEIGHT, '#b9d4f2')
   g.globalAlpha = 1
 }

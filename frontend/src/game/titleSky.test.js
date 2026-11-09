@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DAY_MS, LIGHTS, WEATHER_MS, lightningAt, rainDrops, skyAt, strikesBetween, windowsLit } from './titleSky.js'
+import { DAY_MS, LIGHTS, WEATHER_MS, butterfliesOut, lightningAt, rainDrops, skyAt, snowFlakes, strikesBetween, windowsLit } from './titleSky.js'
 
 const SEEDS = [1, 7, 42, 1234, 99999, 2 ** 30, 314159265]
 
@@ -17,6 +17,26 @@ describe('titleSky', () => {
       }
     })
     expect(autumn.size).toBe(2)
+  })
+
+  it('el valle pasa a invierno cuando nieva y nunca coincide con el otoño', () => {
+    const winter = new Set()
+    SEEDS.forEach((seed) => {
+      for (let ms = 0; ms < WEATHER_MS * 40; ms += 1000) {
+        const sky = skyAt(ms, seed)
+        expect(sky.winter).toBeGreaterThanOrEqual(0)
+        expect(sky.winter).toBeLessThanOrEqual(1)
+        if (sky.snow === 0) expect(sky.winter).toBe(0)
+        if (sky.snow === 1) expect(sky.winter).toBe(1)
+        // Con nieve no llueve ni truena, y sin mariposas.
+        if (sky.winter > 0.5) {
+          expect(sky.storm).toBeLessThan(0.5)
+          expect(butterfliesOut(sky)).toBe(false)
+        }
+        winter.add(sky.winter > 0.5)
+      }
+    })
+    expect(winter.size).toBe(2)
   })
 
   it('el arcoíris sale de día, al secarse el tiempo tras la lluvia, y nunca con lluvia fuerte', () => {
@@ -90,11 +110,13 @@ describe('titleSky', () => {
     expect(rainy.size).toBe(2)
   })
 
-  it('con movimiento reducido no hay lluvia ni tormenta', () => {
+  it('con movimiento reducido no hay lluvia, tormenta ni nieve', () => {
     SEEDS.forEach((seed) => {
       const sky = skyAt(6000, seed, true)
       expect(sky.rain).toBe(0)
       expect(sky.storm).toBe(0)
+      expect(sky.snow).toBe(0)
+      expect(sky.winter).toBe(0)
     })
   })
 
@@ -136,6 +158,24 @@ describe('titleSky', () => {
       expect(x).toBeLessThan(320)
       expect(y).toBeGreaterThanOrEqual(-5)
       expect(y).toBeLessThanOrEqual(185)
+    })
+  })
+
+  it('caen más copos cuanto más nieva, despacio, y todos dentro de la imagen', () => {
+    expect(snowFlakes(0, 0)).toHaveLength(0)
+    expect(snowFlakes(0, 1).length).toBeGreaterThan(snowFlakes(0, 0.5).length)
+    snowFlakes(7777, 1).forEach(({ x, y }) => {
+      expect(x).toBeGreaterThanOrEqual(0)
+      expect(x).toBeLessThan(320)
+      expect(y).toBeGreaterThanOrEqual(-5)
+      expect(y).toBeLessThanOrEqual(185)
+    })
+    const before = snowFlakes(1000, 1)
+    const after = snowFlakes(1100, 1)
+    // En una décima de segundo ningún copo baja más de tres píxeles (salvo al volver arriba).
+    before.forEach((flake, i) => {
+      const drop = after[i].y - flake.y
+      if (drop > -100) expect(drop).toBeLessThan(3)
     })
   })
 })

@@ -3,54 +3,18 @@
 // Se construye una sola vez a partir del paisaje de primavera (sin sus flores).
 import { seeded } from './palette.js'
 import { dot, ellipse, rect } from './pixelKit.js'
+import { isBlossom, isGreen, repaint } from './titleRecolor.js'
 
 const MEADOW_TOP = 124
-
-function rgbToHsl(r, g, b) {
-  const rr = r / 255
-  const gg = g / 255
-  const bb = b / 255
-  const max = Math.max(rr, gg, bb)
-  const min = Math.min(rr, gg, bb)
-  const l = (max + min) / 2
-  if (max === min) return [0, 0, l]
-  const d = max - min
-  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-  let h
-  if (max === rr) h = (gg - bb) / d + (gg < bb ? 6 : 0)
-  else if (max === gg) h = (bb - rr) / d + 2
-  else h = (rr - gg) / d + 4
-  return [h * 60, s, l]
-}
-
-function hslToRgb(h, s, l) {
-  const k = (n) => (n + h / 30) % 12
-  const a = s * Math.min(l, 1 - l)
-  const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
-  return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)]
-}
-
-const isGreen = (h, s) => h >= 65 && h <= 170 && s > 0.18
-const isBlossom = (h, s) => h >= 310 && h <= 355 && s > 0.3
 
 // Cambia solo los verdes (hierba, copas, musgo) a ocres y los rosas del cerezo a naranjas más profundos (los pálidos, más amarillos):
 // los verdes más oscuros se vuelven más rojizos, y las casas, caminos y montañas quedan como estaban.
 function recolor(g, width, height) {
-  const image = g.getImageData(0, 0, width, height)
-  const { data } = image
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] === 0) continue
-    const [h, s, l] = rgbToHsl(data[i], data[i + 1], data[i + 2])
-    let next = null
-    if (isGreen(h, s)) next = [Math.max(14, 44 - (h - 70) * 0.3), Math.min(1, s * 1.1), l * 1.04]
-    else if (isBlossom(h, s)) next = [12 + l * 28, Math.min(1, s * 1.15), l * 0.8]
-    if (!next) continue
-    const [r, gr, b] = hslToRgb(...next)
-    data[i] = r
-    data[i + 1] = gr
-    data[i + 2] = b
-  }
-  g.putImageData(image, 0, 0)
+  repaint(g, width, height, (h, s, l) => {
+    if (isGreen(h, s)) return [Math.max(14, 44 - (h - 70) * 0.3), Math.min(1, s * 1.1), l * 1.04]
+    if (isBlossom(h, s)) return [12 + l * 28, Math.min(1, s * 1.15), l * 0.8]
+    return null
+  })
 }
 
 const CAPS = [

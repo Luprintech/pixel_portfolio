@@ -2,14 +2,18 @@ import { clampVolume } from './audioPrefs'
 import { getEngine, onEngineGesture, refreshLevels, startEngineIfAllowed } from './audioEngine'
 import { getSoundPrefs, musicLevel, subscribeSoundPrefs, updateSoundPrefs } from './soundMixer'
 
-// Pista de fondo única para toda la visita. Vive fuera de los componentes para que la música no se
-// corte ni empiece de nuevo al pasar de la portada al creador de viajera: cuando nadie la usa, se
-// apaga con un fundido tras una breve espera.
+// Música de fondo de la visita. Vive fuera de los componentes para que no se corte ni empiece de nuevo
+// al pasar de la portada al creador de viajera o viajero: cuando nadie la usa, se apaga con un fundido
+// tras una breve espera. Hay dos pistas: "welcome" (portada y creador) y "valley" (dentro del valle).
+// Al cambiar de pantalla entre una y otra, la que suena se apaga con un fundido y empieza la nueva.
 //
 // Suena a través del bus de música del motor de audio (`audioEngine`): en iPhone el volumen de un
 // <audio> no hace nada, así que el volumen y el silencio se aplican con una ganancia de Web Audio. Sin
 // Web Audio se vuelve al volumen del propio elemento.
-export const MUSIC_SRC = `/audio/${encodeURIComponent('Welcome Valle del Bucle.mp3')}`
+export const TRACKS = {
+  welcome: `/audio/${encodeURIComponent('Welcome Valle del Bucle.mp3')}`,
+  valley: `/audio/${encodeURIComponent('Valle Exploration.mp3')}`,
+}
 
 const GRACE_MS = 1500
 const FADE_MS = 600
@@ -22,7 +26,9 @@ let snapshot = { available: false, playing: false }
 let users = 0
 let graceTimer = null
 let fadeTimer = null
-let checked = false
+// Pista que suena o que toca sonar, y si su archivo existe (se comprueba una vez por pista).
+let track = 'welcome'
+const availability = {}
 
 function cancelFade() {
   clearInterval(fadeTimer)
@@ -52,7 +58,7 @@ function applyElementLevel() {
 function ensureAudio() {
   if (audio) return audio
   audio = new Audio()
-  audio.src = MUSIC_SRC
+  audio.src = TRACKS[track]
   audio.loop = true
   audio.preload = 'none'
   return audio
@@ -93,16 +99,32 @@ function stop() {
 }
 
 // En desarrollo un archivo que falta devuelve la página de inicio con 200: se mira el tipo de contenido.
-function checkAvailable() {
-  if (checked) return
-  checked = true
-  fetch(MUSIC_SRC, { method: 'HEAD' })
+function checkAvailable(name) {
+  if (name in availability) return
+  availability[name] = false
+  fetch(TRACKS[name], { method: 'HEAD' })
     .then((response) => {
       const isAudio = response.ok && (response.headers.get('content-type') || '').startsWith('audio')
+      availability[name] = isAudio
+      // Si mientras tanto se cambió de pista, este resultado no es el de la que toca.
+      if (name !== track) return
       publish({ available: isAudio })
       if (isAudio && getSoundPrefs().music > 0 && users > 0) start()
     })
-    .catch(() => publish({ available: false }))
+    .catch(() => name === track && publish({ available: false }))
+}
+
+// Cambia de pista: si suena otra, se apaga con un fundido y entra la nueva; si no, entra directamente.
+function switchTrack(name) {
+  track = name
+  publish({ available: !!availability[name] })
+  checkAvailable(name)
+  const begin = () => {
+    if (audio) audio.src = TRACKS[track]
+    if (users > 0 && getSoundPrefs().music > 0 && availability[track]) start()
+  }
+  if (!audio || audio.paused) begin()
+  else fadeOut(begin)
 }
 
 // Con la música bloqueada por el navegador, el primer gesto del visitante la hace sonar. En iPhone
@@ -117,14 +139,18 @@ onEngineGesture(() => {
   if (users > 0 && getSoundPrefs().music > 0 && snapshot.available && !snapshot.playing) start()
 })
 
-// Un componente que quiere música la pide al montarse y la suelta al desmontarse.
-export function acquireMusic() {
+// Un componente que quiere música la pide al montarse y la suelta al desmontarse. `name` es la pista
+// ('welcome' por defecto); si es otra que la actual, se cambia.
+export function acquireMusic(name = 'welcome') {
   users += 1
   clearTimeout(graceTimer)
   if (fadeTimer) cancelFade()
   startEngineIfAllowed()
-  checkAvailable()
-  if (snapshot.available && getSoundPrefs().music > 0 && !snapshot.playing) start()
+  if (name !== track) switchTrack(name)
+  else {
+    checkAvailable(track)
+    if (snapshot.available && getSoundPrefs().music > 0 && !snapshot.playing) start()
+  }
 
   return () => {
     users -= 1
@@ -134,19 +160,25 @@ export function acquireMusic() {
 }
 
 // Fundido de salida: con el motor, bajando la ganancia del bus (única forma que funciona en iPhone);
-// sin él, el volumen del elemento.
-function fadeOut() {
-  if (!audio || audio.paused) return stop()
+// sin él, el volumen del elemento. Al terminar se para y, si se pasa `then`, se llama después.
+function fadeOut(then) {
+  const finish = () => {
+    cancelFade()
+    stop()
+    then?.()
+  }
+  if (!audio || audio.paused) {
+    stop()
+    then?.()
+    return undefined
+  }
   const engine = routed ? getEngine() : null
   if (engine) {
     const now = engine.ctx.currentTime
     engine.music.gain.cancelScheduledValues(now)
     engine.music.gain.setValueAtTime(engine.music.gain.value, now)
     engine.music.gain.linearRampToValueAtTime(0, now + FADE_MS / 1000)
-    fadeTimer = setInterval(() => {
-      cancelFade()
-      stop()
-    }, FADE_MS)
+    fadeTimer = setInterval(finish, FADE_MS)
     return undefined
   }
   const from = audio.volume
@@ -154,10 +186,7 @@ function fadeOut() {
   fadeTimer = setInterval(() => {
     step += 1
     audio.volume = Math.max(0, from * (1 - step / FADE_STEPS))
-    if (step >= FADE_STEPS) {
-      cancelFade()
-      stop()
-    }
+    if (step >= FADE_STEPS) finish()
   }, FADE_MS / FADE_STEPS)
   return undefined
 }

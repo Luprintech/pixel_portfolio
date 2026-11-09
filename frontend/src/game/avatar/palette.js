@@ -7,7 +7,7 @@
 //   N/u/n prenda de abajo, luz y sombra      W blanco hueso (camisa, suela, cordones)
 //   R/Q calzado y suela              A/a complemento y su sombra     G gafas   P/Y pétalo y centro
 //   Z cejas y párpados (un tono muy oscuro de la piel)   F peca o lunar   C cicatriz   q lágrima
-//   r tono claro del calzado (cordones, puños)
+//   r tono claro del calzado (cordones, puños)   J gema roja (el collar de Lupe)
 //   X contorno (también el que separa el brazo del torso en el perfil)
 import { PAL, shade, tint } from '../palette.js'
 // Negro azulado del contorno; es el mismo del resto de personajes.
@@ -122,6 +122,7 @@ export function avatarColors(look, blink = false) {
     G: '#3a3050',
     P: '#f29bb4',
     Y: PAL.saffron,
+    J: '#d6384f',
   }
 }
 

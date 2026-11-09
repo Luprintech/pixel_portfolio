@@ -76,7 +76,7 @@ Una sesión breve debe permitir descubrir un proyecto y contactar. La exploraci�
 
 ### Estado actual
 
-Portada pixel art con paisaje al atardecer, montañas, edificios, la viajera y Khalessi (la gata de Lupe). Permite acceder al valle, personalizar la viajera y utilizar el modo clásico.
+Portada pixel art viva (hecha y aprobada el 2026-11-09): paisaje con ciclo de día y noche, tiempo (despejado, nublado, lluvia, tormenta y nieve), tres biomas (primavera, otoño e invierno), Lupe que habla en bocadillos y Khalessi, su gata, que juega, se asea, se asusta con los truenos y, en invierno, tirita pegada a Lupe. Permite empezar una aventura nueva (con el creador de personaje), continuar la guardada, abrir las opciones y utilizar el modo clásico. La música suena en la portada y el creador (`Welcome Valle del Bucle`) y, dentro del valle, `Valle Exploration`.
 
 ### Propuesta de mejora
 
@@ -373,6 +373,7 @@ Reglas:
 - Tiempo de juego independiente de la hora real; duración configurable, sin fijar aún minutos exactos.
 - Transiciones suaves, accesos y objetivos siempre legibles.
 - Lluvia ambiental moderada, con pausas y opción de desactivarla.
+- Hecho en la portada (2026-11-09): el tiempo incluye nieve y un bioma de invierno propio (nieve en cumbres, tejados y copas, montones de nieve, charcos helados y un muñeco), con copos, campanitas de escarcha y el guion de invierno de Lupe. Khalessi es friolera: con nieve se pega a Lupe y tirita. Pendiente para el valle: llevar los biomas y el tiempo al juego.
 - Estado compartido entre exterior y vista del telescopio. Si llueve, nubes y respuesta coherente; sin estrellas visibles a través de ellas.
 - El cielo es una escena artística, no una simulación astronómica ni la imagen exacta del telescopio real de Lupe. Nunca representar observación directa del Sol.
 - Clima, hora y animaciones nunca impiden leer contenido profesional. Reducir efectos con movimiento reducido.
@@ -505,10 +506,10 @@ Respetar `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN
 
 Se hace después de cerrar la identidad visual de la fase 1.
 
-1. Pantalla de inicio viva: Khalessi se mueve, estrellas fugaces, nubes, humo, pétalos, luciérnagas, pájaros y la viajera que parpadea. Respeta el movimiento reducido. *(en curso)*
-2. "Continuar aventura" si hay partida guardada en `localStorage`.
-3. Música 8 bits cute con licencia libre, desactivada por defecto y con control visible.
-4. Creador de personaje al elegir "Nueva aventura": nombre y personalización completa al estilo Stardew (sección 6). *(después de los tres puntos anteriores)*
+1. Pantalla de inicio viva: Khalessi se mueve, estrellas fugaces, nubes, humo, pétalos, luciérnagas, pájaros, Lupe que habla y parpadea, tiempo y tres biomas (primavera, otoño e invierno). Respeta el movimiento reducido. *(hecho y aprobado el 2026-11-09)*
+2. "Continuar aventura" si hay partida guardada en `localStorage`. *(hecho)*
+3. Música 8 bits cute con licencia libre y control visible: portada, creador y valle, con dos pistas. *(hecho; el sonido real en Android e iPhone está probado)*
+4. Creador de personaje al elegir "Nueva aventura": nombre y personalización completa al estilo Stardew (sección 6). *(hecho; ver `docs/ESTADO.md` para sus ampliaciones opcionales)*
 
 ### Selección sugerida de diálogos para la primera versión
 

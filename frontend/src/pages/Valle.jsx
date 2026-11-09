@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import Editor from '../components/valle/Editor'
 import Joystick from '../components/valle/Joystick'
+import MusicControl from '../components/valle/MusicControl'
 import ZonePanel from '../components/valle/ZonePanel'
 import { defaultLook, randomLook, selectBody } from '../game/look'
 import { DEFAULT_PET } from '../game/pet'
@@ -17,7 +18,7 @@ export default function Valle() {
   const [params] = useSearchParams()
   const mode = params.get('modo')
 
-  // "Nueva aventura" abre el creador; "Continuar" va directa al valle, donde el botón "Personalizar viajera"
+  // "Nueva aventura" abre el creador; "Continuar" va directa al valle, donde el botón "Personalizar aspecto"
   // vuelve a abrirlo.
   const [existing] = useState(loadSave)
   const [look, setLook] = useState(() => (mode === 'nueva' ? randomLook() : existing?.look || randomLook()))
@@ -141,7 +142,8 @@ export default function Valle() {
           {touch ? copy.hud.touchControls : copy.hud.controls}
         </p>
         <span className="flex-1 sm:hidden" />
-        <span className="flex gap-4">
+        <span className="flex flex-wrap items-start justify-end gap-2 sm:gap-4">
+          <MusicControl compact track="valley" />
           <button type="button" className="px-btn px-btn--bone !min-h-[40px]" style={{ color: PAL.ink }} onClick={() => setPhase('editor')}>
             {copy.hud.customize}
           </button>

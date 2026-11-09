@@ -54,6 +54,14 @@
     })();
   </script>
 
+  <!-- El enlace de saltar al contenido está en el HTML estático y se vería un instante hasta que
+       cargue la hoja de estilos; esta regla mínima lo oculta desde el primer pintado. Al recibir
+       foco con el teclado reaparece (los estilos completos están en src/index.css). -->
+  <style>
+    .skip-link { position: absolute; top: -40px; left: 0; }
+    .skip-link:focus { top: 0; }
+  </style>
+
   <title>Guadalupe Cano | Dev Web Full Stack</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 

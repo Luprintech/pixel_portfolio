@@ -194,5 +194,28 @@ export function scaredCat(scare, ms) {
   return { ...scare.route.at(local), scared: local < scare.fearEnd, comfort }
 }
 
+// Frío: cuando nieva, Khalessi (que es muy friolera) corre a pegarse a Lupe y se queda sentada
+// temblando mientras dure la nevada. Al parar, vuelve a casa andando. Como el susto, no es parte del
+// guion: la escena lo empieza al ver la nieve y lo deja acabar cuando se va.
+const COLD_SPEED = 30
+
+// `from` es donde está la gata cuando empieza a nevar. Con `leaving` hace el camino inverso.
+export function startHuddle(from, ms) {
+  return { start: ms, leaving: false, route: buildRoute([from.x, from.y], [{ to: CAT_NEAR }], -1, COLD_SPEED) }
+}
+
+export function endHuddle(ms) {
+  return { start: ms, leaving: true, route: buildRoute(CAT_NEAR, [{ to: CAT_HOME }], -1, COLD_SPEED) }
+}
+
+// La gata en el instante `ms`. Al llegar junto a Lupe se sienta (`sit`) y tirita (`shiver`); de camino
+// y al volver a casa solo anda. Al terminar el regreso devuelve null y vuelve a mandar el guion.
+export function huddleCat(huddle, ms) {
+  const local = ms - huddle.start
+  if (huddle.leaving) return local >= huddle.route.ms ? null : huddle.route.at(local)
+  const arrived = local >= huddle.route.ms
+  return { ...huddle.route.at(local), sit: arrived ? 'sit' : null, shiver: arrived }
+}
+
 // Tiempo que ocupa la escena de juego: el del juego más largo.
 export const PLAY_MS = Math.ceil(Math.max(BUTTERFLY_MS, NUTS_MS, GROOM_MS) / 100) * 100

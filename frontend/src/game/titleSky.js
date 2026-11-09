@@ -54,12 +54,13 @@ function keysAt(phase) {
 export const WEATHER_MS = 45000
 const WEATHER_FADE_MS = 8000
 const WEATHER = {
-  clear: { cloud: 0.2, rain: 0, storm: 0, wind: 0.25 },
-  cloudy: { cloud: 0.7, rain: 0, storm: 0, wind: 0.5 },
-  rain: { cloud: 0.9, rain: 0.65, storm: 0, wind: 0.6 },
-  storm: { cloud: 1, rain: 1, storm: 1, wind: 0.9 },
+  clear: { cloud: 0.2, rain: 0, storm: 0, snow: 0, wind: 0.25 },
+  cloudy: { cloud: 0.7, rain: 0, storm: 0, snow: 0, wind: 0.5 },
+  rain: { cloud: 0.9, rain: 0.65, storm: 0, snow: 0, wind: 0.6 },
+  storm: { cloud: 1, rain: 1, storm: 1, snow: 0, wind: 0.9 },
+  snow: { cloud: 0.85, rain: 0, storm: 0, snow: 1, wind: 0.35 },
 }
-const WEATHER_ODDS = [['clear', 0.4], ['cloudy', 0.6], ['rain', 0.85], ['storm', 1]]
+const WEATHER_ODDS = [['clear', 0.32], ['cloudy', 0.52], ['rain', 0.72], ['storm', 0.85], ['snow', 1]]
 
 function weatherKind(seed, k) {
   const roll = hash2(k, 5, seed % 997)
@@ -76,11 +77,12 @@ function weatherAt(ms, seed) {
 }
 
 // Arcoíris: sale cuando el tiempo pasa de lluvioso a seco y se desvanece antes del siguiente cambio.
-// Con el sol ya bajo o de noche no se ve.
+// Con el sol ya bajo o de noche no se ve, y tampoco si lo que viene es nieve.
 const RAINBOW_FADE_MS = 8000
 function rainbowAt(ms, seed) {
   const k = Math.floor(ms / WEATHER_MS)
-  if (WEATHER[weatherKind(seed, k - 1)].rain < 0.3 || WEATHER[weatherKind(seed, k)].rain >= 0.3) return 0
+  const now = WEATHER[weatherKind(seed, k)]
+  if (WEATHER[weatherKind(seed, k - 1)].rain < 0.3 || now.rain >= 0.3 || now.snow > 0) return 0
   // Aparece cuando el cielo ya se ha despejado: tras el fundido del tiempo, salvo al empezar la visita.
   const local = ms - k * WEATHER_MS - (k === 0 ? 0 : WEATHER_FADE_MS)
   return Math.min(smooth(local / RAINBOW_FADE_MS), smooth((WEATHER_MS - WEATHER_FADE_MS - local) / RAINBOW_FADE_MS))
@@ -110,26 +112,31 @@ export function skyAt(ms, seed, still = false) {
   const weather = weatherAt(ms, seed)
   const rain = still ? 0 : weather.rain
   const storm = still ? 0 : weather.storm
+  const snow = still ? 0 : weather.snow
   return {
     phase,
     dark,
     bands,
     // Bioma: con lluvia el valle pasa de la primavera de flores al otoño de setas y hojas caídas.
     autumn: clamp01(rain / 0.65),
+    // Con la nevada el valle pasa a invierno: mismo fundido que el otoño, y los dos no coinciden.
+    winter: clamp01(snow),
     rainbow: rainbowAt(ms, seed) * (1 - dark),
     sun: bodyAt(phase, SUN_SPAN),
     moon: bodyAt(phase, MOON_SPAN),
     cloud: still ? Math.min(weather.cloud, 0.7) : weather.cloud,
     rain,
     storm,
+    snow,
     wind: weather.wind,
-    // Oscuridad total: la hora más la que añaden la lluvia y la tormenta.
-    gloom: Math.min(1, dark + 0.35 * rain),
+    // Oscuridad total: la hora más la que añaden la lluvia y la tormenta; la nevada, más suave, también
+    // enciende alguna ventana.
+    gloom: Math.min(1, dark + 0.35 * rain + 0.2 * snow),
   }
 }
 
-// Hay mariposas de día y con el valle en primavera: ni de noche ni con la lluvia del otoño.
-export const butterfliesOut = (sky) => sky.dark < 0.5 && sky.autumn < 0.5
+// Hay mariposas de día y con el valle en primavera: ni de noche, ni con la lluvia del otoño, ni con nieve.
+export const butterfliesOut = (sky) => sky.dark < 0.5 && sky.autumn < 0.5 && sky.winter < 0.5
 
 // Cuántas ventanas del pueblo están encendidas: ninguna de día y todas cuando cae la noche.
 export const LIGHTS = 4
@@ -179,5 +186,19 @@ export function rainDrops(ms, rain) {
     const y = (hash2(i, 2, 3) * RAIN_HEIGHT + ms * 0.33) % (RAIN_HEIGHT + 10) - 5
     const x = (hash2(i, 1, 3) * RAIN_WIDTH + y * 0.25) % RAIN_WIDTH
     return { x, y, long: i % 3 === 0 }
+  })
+}
+
+// Copos de nieve: más cuanto más nieva. Bajan despacio, se mecen de lado a lado y los grandes caen
+// más lentos que los pequeños, para dar profundidad.
+export function snowFlakes(ms, snow) {
+  const count = Math.round(snow * 90)
+  return Array.from({ length: count }, (_, i) => {
+    const big = i % 5 === 0
+    const speed = big ? 0.014 : 0.022
+    const y = (hash2(i, 4, 3) * (RAIN_HEIGHT + 10) + ms * speed) % (RAIN_HEIGHT + 10) - 5
+    const sway = Math.sin(ms / (900 + (i % 7) * 130) + i) * (big ? 5 : 3)
+    const x = (((hash2(i, 5, 3) * RAIN_WIDTH + sway) % RAIN_WIDTH) + RAIN_WIDTH) % RAIN_WIDTH
+    return { x, y, big }
   })
 }

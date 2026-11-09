@@ -67,17 +67,18 @@ export default function InstallPrompt() {
     <div
       role="dialog"
       aria-labelledby="install-prompt-title"
-      className="fixed inset-x-0 bottom-0 z-40 p-4 sm:left-auto sm:w-[28rem]"
+      aria-describedby="install-prompt-text"
+      className="px-prompt-in fixed inset-x-0 bottom-0 z-40 p-3 sm:left-auto sm:w-[28rem] sm:p-4"
       style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
     >
-      <div className="px-frame mx-auto max-w-md p-5">
-        <h2 id="install-prompt-title" className="px-title mb-2 text-3xl">
+      <div className="px-frame mx-auto max-w-md p-4 sm:p-5">
+        <h2 id="install-prompt-title" className="px-title mb-1.5 text-2xl sm:text-3xl">
           {t('install.title')}
         </h2>
-        <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">{t('install.recommend')}</p>
+        <p id="install-prompt-text" className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">{t('install.recommend')}</p>
         {mode === 'ios' && <IosSteps browser={iosBrowser(navigator.userAgent)} t={t} />}
         {mode === 'android-manual' && <AndroidSteps t={t} />}
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <div className="mt-3 flex gap-3 sm:mt-4 sm:justify-end [&>button]:flex-1 sm:[&>button]:flex-none">
           <button type="button" onClick={dismiss} className="px-btn px-btn--bone">
             {t(mode === 'native' ? 'install.later' : 'install.close')}
           </button>

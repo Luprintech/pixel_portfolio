@@ -1,17 +1,20 @@
-// Sonido ambiente de la portada: viento, lluvia, grillos de noche, pájaros de día y truenos. Se genera
+// Sonido ambiente de la portada: viento, lluvia, grillos de noche, pájaros de día, truenos y campanitas de nieve. Se genera
 // con Web Audio (ruido filtrado y osciladores), así que no hay archivos que descargar. Lo que suena
 // sale del estado del cielo (`setAmbienceScene`) y pasa por el bus de efectos del motor de audio, que
 // le pone el volumen de efectos por el general y lo calla con el silencio.
 import { getEngine, onEngineGesture, startEngineIfAllowed } from './audioEngine'
 
 // Cuánto suena cada capa para un cielo dado. Función pura: se prueba sin audio.
-export function ambienceLevels({ dark = 0, rain = 0, storm = 0, wind = 0.25 }) {
+export function ambienceLevels({ dark = 0, rain = 0, storm = 0, wind = 0.25, winter = 0 }) {
   const dry = 1 - rain
+  // Con la nevada callan los grillos y los pájaros y se oyen campanitas de escarcha.
+  const warm = dry * (1 - winter)
   return {
     wind: 0.12 + 0.88 * wind,
     rain,
-    crickets: dark * dry,
-    birds: Math.max(0, 1 - dark * 1.4) * dry * (1 - storm),
+    crickets: dark * warm,
+    birds: Math.max(0, 1 - dark * 1.4) * warm * (1 - storm),
+    chimes: winter,
   }
 }
 
@@ -25,6 +28,7 @@ let users = 0
 let lastApply = 0
 let releaseTimer = null
 let birdTimer = null
+let chimeTimer = null
 const cricketTimers = []
 
 const randomBetween = (min, max) => min + Math.random() * (max - min)
@@ -119,6 +123,7 @@ function ensureGraph() {
   graph = { ctx, out, noise, wind: buildWind(ctx, out, noise), rain: buildRain(ctx, out, noise) }
   applyScene(true)
   scheduleBird()
+  scheduleChime()
   CRICKET_VOICES.forEach((voice, i) => scheduleCricket(i, voice))
   return graph
 }
@@ -171,6 +176,40 @@ function scheduleBird() {
     if (Math.random() < scene.birds) chirp()
     scheduleBird()
   }, randomBetween(1200, 3600))
+}
+
+// Campanitas de escarcha, el sonido propio del invierno: dos o tres notas de cristal de una escala
+// pentatónica, suaves y con una cola larga, que suenan de vez en cuando mientras nieva.
+const CHIME_NOTES = [784, 880, 1047, 1319, 1568]
+
+function chime() {
+  if (!running()) return
+  const { ctx, out } = graph
+  const notes = 2 + Math.floor(Math.random() * 2)
+  let index = Math.floor(Math.random() * CHIME_NOTES.length)
+  for (let i = 0; i < notes; i++) {
+    const start = ctx.currentTime + i * 0.22
+    const tone = ctx.createOscillator()
+    tone.type = 'sine'
+    tone.frequency.value = CHIME_NOTES[index % CHIME_NOTES.length]
+    const env = ctx.createGain()
+    env.gain.setValueAtTime(0, start)
+    env.gain.linearRampToValueAtTime(0.05, start + 0.01)
+    env.gain.setTargetAtTime(0, start + 0.02, 0.35)
+    chain(tone, env, out)
+    tone.start(start)
+    tone.stop(start + 1.6)
+    index += 1 + Math.floor(Math.random() * 2)
+  }
+}
+
+function scheduleChime() {
+  clearTimeout(chimeTimer)
+  chimeTimer = setTimeout(() => {
+    if (!graph) return
+    if (Math.random() < scene.chimes) chime()
+    scheduleChime()
+  }, randomBetween(2200, 5200))
 }
 
 // Un trino de grillo: tres pulsos cortos, cada uno un tono que sube y se corta enseguida.
@@ -256,6 +295,7 @@ onEngineGesture(() => {
 // Desmonta el ambiente: para todas sus fuentes y suelta los nodos.
 function teardown() {
   clearTimeout(birdTimer)
+  clearTimeout(chimeTimer)
   cricketTimers.forEach(clearTimeout)
   started.forEach((node) => {
     try {

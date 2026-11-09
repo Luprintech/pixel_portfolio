@@ -6,6 +6,7 @@ import { drawFlower, drawTuft, grassColor, paintRoute } from './ground.js'
 import { dot, ellipse, makeCanvas, noise, rect } from './pixelKit.js'
 import { lupeFrame } from './lupePoses.js'
 import { LEAF_COLORS, buildAutumnLand } from './titleAutumn.js'
+import { SNOW, SNOW_SHADE, buildWinterLand, paintSnowyPeaks, snowCap } from './titleWinter.js'
 import { dungeonSprite, houseSprite, shadowSprite, treeSprite } from './sprites.js'
 import { khalessiCanvas, khalessiScaredCanvas, khalessiSitCanvas } from './pets/index.js'
 import {
@@ -21,10 +22,10 @@ import {
   smokeAt,
   starAlpha,
 } from './titleMotion.js'
-import { CAT_HOME, scaredCat, standAt, startScare } from './titleCat.js'
-import { eventsBetween, lifeAt } from './titleLife.js'
+import { CAT_HOME, endHuddle, huddleCat, scaredCat, standAt, startHuddle, startScare } from './titleCat.js'
+import { INTRO_MS, eventsBetween, lifeAt, winterAt } from './titleLife.js'
 import { butterfliesOut, mixHex, skyAt, strikesBetween, windowsLit } from './titleSky.js'
-import { paintCelestial, paintLightning, paintRain, paintSky, paintTint } from './titleSkyPaint.js'
+import { paintCelestial, paintLightning, paintRain, paintSky, paintSnow, paintTint } from './titleSkyPaint.js'
 
 export const TITLE_W = 320
 export const TITLE_H = 180
@@ -87,15 +88,20 @@ function paintBird(g, { x, y, wing }) {
   }
 }
 
-function mountains(g) {
+const farTop = (x) => 96 - Math.round(20 + 16 * Math.sin(x / 41 + 1) + 7 * Math.sin(x / 13))
+const nearTop = (x) => 106 - Math.round(10 + 9 * Math.sin(x / 29 + 3) + 4 * Math.sin(x / 9))
+
+// Con `snowy` las dos cordilleras llevan las cumbres blancas (paisaje de invierno).
+function mountains(g, snowy) {
   for (let x = 0; x < TITLE_W; x++) {
-    const far = 96 - Math.round(20 + 16 * Math.sin(x / 41 + 1) + 7 * Math.sin(x / 13))
+    const far = farTop(x)
     rect(g, x, far, 1, HORIZON - far, '#5a4f94')
     dot(g, x, far, '#8573b8')
-    const near = 106 - Math.round(10 + 9 * Math.sin(x / 29 + 3) + 4 * Math.sin(x / 9))
+    const near = nearTop(x)
     rect(g, x, near, 1, HORIZON - near, '#3f3a78')
     dot(g, x, near, '#6a5aa0')
   }
+  if (snowy) paintSnowyPeaks(g, [{ top: farTop, depth: 5 }, { top: nearTop, depth: 3 }], TITLE_W)
 }
 
 // Colina del fondo, más oscura que el prado para dar distancia.
@@ -137,23 +143,25 @@ function meadow(g, withFlowers) {
 }
 
 
-// Paisaje completo del valle. Sin flores es la base del bioma de otoño.
-function buildLand(withFlowers) {
+// Paisaje completo del valle. Sin flores es la base de los biomas de otoño y de invierno; este último
+// además lleva nieve en cumbres, copas y tejados antes de repintar la hierba.
+function buildLand(withFlowers, snowy = false) {
   const land = makeCanvas(TITLE_W, TITLE_H)
   const g = land.getContext('2d')
-  mountains(g)
+  const sprite = (canvas) => (snowy ? snowCap(canvas) : canvas)
+  mountains(g, snowy)
   hill(g)
   const flowers = meadow(g, withFlowers)
 
   const tree = (variant, x, baseY) => {
     g.drawImage(shadowSprite(30, 7), x + 7, baseY - 6)
-    g.drawImage(treeSprite(variant), x, baseY - 58)
+    g.drawImage(sprite(treeSprite(variant)), x, baseY - 58)
   }
   tree(1, 40, 160)
   g.drawImage(shadowSprite(70, 8), 143, 118)
-  g.drawImage(houseSprite({ roof: '#5c5a7a', shutter: PAL.tile, glow: true }), 146, 60)
+  g.drawImage(sprite(houseSprite({ roof: '#5c5a7a', shutter: PAL.tile, glow: true })), 146, 60)
   g.drawImage(shadowSprite(70, 8), 232, 118)
-  g.drawImage(dungeonSprite(), 232, 72)
+  g.drawImage(sprite(dungeonSprite()), 232, 72)
   tree(2, 284, 156)
   return { land, flowers }
 }
@@ -178,12 +186,13 @@ function buildRainbow() {
 
 let cache = null
 
-// Todo lo que no cambia entre fotogramas se dibuja una sola vez: el valle de primavera, el de otoño
-// y el arcoíris.
+// Todo lo que no cambia entre fotogramas se dibuja una sola vez: el valle de primavera, el de otoño,
+// el de invierno y el arcoíris.
 function buildLayers() {
   const spring = buildLand(true)
   const autumn = buildAutumnLand(buildLand(false).land)
-  return { land: spring.land, autumn, flowers: spring.flowers, rainbow: buildRainbow() }
+  const winter = buildWinterLand(buildLand(false, true).land)
+  return { land: spring.land, autumn, winter, flowers: spring.flowers, rainbow: buildRainbow() }
 }
 
 // Mariposa de dos o cuatro píxeles de ala, según la tenga abierta o cerrada.
@@ -207,10 +216,11 @@ function paintButterfly(g, { x, y, open, kind }) {
 // Casita lejana de la colina: cuerpo de 6 píxeles, tejado de tres filas y una ventana.
 const farHouseBase = (x, w) => Math.max(...Array.from({ length: w }, (_, k) => hillTop(x + k))) + 1
 
-function farHouse(g, x, w, roof) {
+function farHouse(g, x, w, roof, snowy) {
   const y = farHouseBase(x, w)
   rect(g, x, y, w, 6, TONE.wall[0])
-  for (let i = 0; i < 3; i++) rect(g, x + 2 - i, y - 3 + i, w - 4 + 2 * i, 1, roof)
+  for (let i = 0; i < 3; i++) rect(g, x + 2 - i, y - 3 + i, w - 4 + 2 * i, 1, i === 0 && snowy ? SNOW : roof)
+  if (snowy) rect(g, x + 1, y - 2, w - 2, 1, SNOW_SHADE)
   rect(g, x + w - 4, y + 2, 2, 4, '#5a3a28')
   rect(g, x + 2, y + 2, 2, 2, '#6fb3c6')
 }
@@ -249,7 +259,10 @@ export function createTitleScene(canvas, seed) {
     const frame = cat.walking || jumping ? Math.floor(ms / 170) % 2 : 0
     // Sentada, el segundo fotograma es el vaivén de la cola o, aseándose, la pata que sube y baja.
     // Asustada, el rabo caído tiembla rápido incluso corriendo.
-    const tail = cat.scared ? Math.floor(ms / 140) % 2 : cat.walking || still ? 0 : Math.floor(ms / (cat.sit === 'wash' ? 380 : petted ? 220 : 550)) % 2
+    // Con frío el rabo tiembla igual de rápido que ella.
+    const tail = cat.scared || cat.shiver ? Math.floor(ms / (cat.shiver ? 90 : 140)) % 2 : cat.walking || still ? 0 : Math.floor(ms / (cat.sit === 'wash' ? 380 : petted ? 220 : 550)) % 2
+    // Tiritar es un temblor de un píxel de lado a lado; la sombra se queda quieta.
+    const shake = cat.shiver && Math.floor(ms / 60) % 2 ? 1 : 0
     const x = Math.round(cat.x)
     const y = Math.round(cat.y)
     const top = y - Math.round(cat.lift)
@@ -257,13 +270,25 @@ export function createTitleScene(canvas, seed) {
     g.drawImage(shadowSprite(16, 4), x + 3, y + 12)
     if (cat.facing < 0) {
       g.save()
-      g.translate(x + 26, 0)
+      g.translate(x + 26 + shake, 0)
       g.scale(-1, 1)
       g.drawImage(sprite, 0, top)
       g.restore()
     } else {
-      g.drawImage(sprite, x, top)
+      g.drawImage(sprite, x + shake, top)
     }
+    if (cat.shiver) paintBreath(g, x, y, ms, cat.facing)
+  }
+
+  // Vaho de la gata con frío: una voluta pequeña que sube y se deshace, junto a su hocico.
+  function paintBreath(context, x, y, ms, facing) {
+    const phase = (ms % 2200) / 2200
+    if (phase > 0.6) return
+    const t = phase / 0.6
+    const mouthX = facing < 0 ? x + 2 : x + 23
+    context.globalAlpha = 0.8 * (1 - t)
+    ellipse(context, mouthX + (facing < 0 ? -1 : 1) * t * 4, y + 6 - t * 6, 1 + t * 2, 1 + t * 1.5, '#ffffff')
+    context.globalAlpha = 1
   }
 
   // Avellana: cuerpo claro de cuatro por tres con contorno oscuro y la tapita arriba; se ve sobre la tierra.
@@ -287,7 +312,17 @@ export function createTitleScene(canvas, seed) {
     g.drawImage(lupeFrame(pose, step, closed), LUPE_X, LUPE_Y)
   }
 
+  // El guion de invierno empieza con el frío, salvo que aún dure la bienvenida (no se pisa), y no
+  // vale mientras la gata se vuelve a casa: entonces manda el guion normal.
+  function winterScript(huddle, ms) {
+    if (huddle.leaving) return {}
+    const from = Math.max(huddle.start, INTRO_MS)
+    return ms < from ? {} : winterAt(ms - from)
+  }
+
   let lastMs = 0
+  // Frío en curso: Khalessi pegada a Lupe (ver `startHuddle`).
+  let cold = null
   // Susto en curso y truenos aún por oírse (instantes absolutos): la gata se asusta al oírlo, no al verlo.
   let scare = null
   let pendingThunder = []
@@ -318,7 +353,7 @@ export function createTitleScene(canvas, seed) {
       g.globalAlpha = 1
     }
     cloudsAt(still ? 0 : ms, sky.cloud).forEach((c) => paintCloud(g, c.x, c.y, c.scale, sky))
-    if (!still && sky.dark < 0.6 && sky.rain < 0.3) birdsAt(ms).forEach((b) => paintBird(g, b))
+    if (!still && sky.dark < 0.6 && sky.rain < 0.3 && sky.winter < 0.3) birdsAt(ms).forEach((b) => paintBird(g, b))
     g.drawImage(cache.land, 0, 0)
     // El otoño se funde por encima de la primavera mientras llueve.
     if (sky.autumn > 0.02) {
@@ -327,15 +362,23 @@ export function createTitleScene(canvas, seed) {
       g.globalAlpha = 1
     }
 
-    FAR_HOUSES.forEach(([x, w, roof]) => farHouse(g, x, w, roof))
+    // El invierno se funde por encima de los otros biomas, igual que el otoño.
+    if (sky.winter > 0.02) {
+      g.globalAlpha = sky.winter
+      g.drawImage(cache.winter, 0, 0)
+      g.globalAlpha = 1
+    }
+
+    FAR_HOUSES.forEach(([x, w, roof]) => farHouse(g, x, w, roof, sky.winter > 0.5))
     smokeAt(still ? 1500 : ms).forEach((s) => {
       g.globalAlpha = s.alpha
       ellipse(g, s.x, s.y, s.r, Math.max(1, s.r - 1), '#d8c8ec')
     })
     g.globalAlpha = 1
 
-    if (sky.autumn < 0.98) {
-      g.globalAlpha = 1 - sky.autumn
+    const bare = Math.max(sky.autumn, sky.winter)
+    if (bare < 0.98) {
+      g.globalAlpha = 1 - bare
       cache.flowers.forEach((f, i) => drawFlower(g, f.x, f.y, f.kind, still ? 0 : flowerSway(i, ms)))
       g.globalAlpha = 1
     }
@@ -349,12 +392,22 @@ export function createTitleScene(canvas, seed) {
     }
     const frightened = !still && scare ? scaredCat(scare, ms) : null
     if (!frightened) scare = null
+    // Frío: al nevar, Khalessi corre a pegarse a Lupe y tirita; al parar, vuelve a casa. El susto manda
+    // sobre el frío si coinciden.
+    if (!still) {
+      if (!cold && sky.winter > 0.5) cold = startHuddle(frightened ?? scripted.cat, ms)
+      else if (cold && !cold.leaving && sky.winter < 0.25) cold = endHuddle(ms)
+    }
+    const huddled = !still && cold ? huddleCat(cold, ms) : null
+    if (cold && !huddled) cold = null
     // Durante el susto el guion deja de valer (ni "rascadita" con la gata escondida): Lupe solo habla y
     // acaricia cuando consuela a Khalessi al salir de detrás de ella.
     const comfort = frightened?.comfort
     const life = frightened
       ? { ...scripted, cat: frightened, pose: comfort ? 'pet' : 'idle', say: comfort ? { key: comfort, who: 'lupe' } : null }
-      : scripted
+      : huddled
+        ? { ...scripted, cat: huddled, ...winterScript(cold, ms) }
+        : scripted
     const pose = still ? 'idle' : life.pose
     const cat = still ? standAt(CAT_HOME) : life.cat
     // En otoño hay avellanas en el suelo, por debajo de todo lo que camina.
@@ -375,13 +428,14 @@ export function createTitleScene(canvas, seed) {
     if (!still) {
       // Del cerezo caen pétalos en primavera y hojas naranjas en otoño.
       const autumnal = sky.autumn > 0.5
-      petalsAt(ms).forEach((p) => {
+      if (sky.winter < 0.5) petalsAt(ms).forEach((p) => {
         const [light, dark] = LEAF_COLORS[p.light ? 0 : 1]
         rect(g, Math.round(p.x), Math.round(p.y), 2, 1, autumnal ? light : p.light ? '#f8bfd0' : '#f09ab6')
         dot(g, p.x + 1, p.y + 1, autumnal ? dark : '#c4577f')
       })
       if (butterfliesOut(sky)) butterfliesAt(ms).forEach((b) => paintButterfly(g, b))
       paintRain(g, sky, ms)
+      paintSnow(g, sky, ms)
     }
     paintTint(g, sky)
 
@@ -395,7 +449,7 @@ export function createTitleScene(canvas, seed) {
       })
     }
 
-    if (!still && sky.dark > 0.4 && sky.rain < 0.3) {
+    if (!still && sky.dark > 0.4 && sky.rain < 0.3 && sky.winter < 0.3) {
       firefliesAt(ms).forEach((f) => {
         if (f.glow < 0.35) return
         g.globalAlpha = 0.35 * f.glow * sky.dark
@@ -406,7 +460,8 @@ export function createTitleScene(canvas, seed) {
     }
     if (!still) paintLightning(g, ms, seed)
 
-    return { ...sky, thunder, events, life }
+    // La gata que tirita no maúlla con las caricias de la escena normal.
+    return { ...sky, thunder, events: cold && !cold.leaving ? events.filter((name) => name !== 'meow') : events, life }
   }
 
   return { draw }
