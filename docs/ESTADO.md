@@ -6,6 +6,15 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Casa de Lupe en la entrada, con escalera y cubierta (2026-11-09)
+- La casa (`id: 'about'`) pasó del oeste al hueco junto a la entrada del sur (`world.js`, x 20 a 35, puerta en el camino del sur). Se quitó el ramal de camino que llevaba a su sitio anterior y el hueco que dejó se llenó con un grupo de árboles.
+- `homeSprite` (`buildings/homes.js`) se redibujó a 256×160: escalera exterior de madera de ocho peldaños con pasamanos, cubierta con balaustrada, sombrilla, mesa, sillas, telescopio y guirnalda de bombillas, y en la casa buhardilla, esquinas de piedra, hiedra, marquesina, farol, macetas y la placa de Khalessi sobre la puerta.
+- Ventanas: `windowAt` (`buildings/shared.js`) admite `sill`, `curtains`, `glint` y `muntins`, todos desactivados por defecto, así que el resto de edificios no cambia. La del ordenador y la de la impresora 3D enseñan ahora su interior.
+- La viajera sube por la escalera y pasea por la cubierta (`game/terrace.js`, con pruebas). Las medidas de peldaños y entarimado están en ese módulo y las leen el dibujo (`homeSprite`) y la escena, así que lo que se ve es lo que se pisa. `ValleScene` distingue tres modos: suelo (chocan los edificios), escalera (la altura es una rampa continua según la columna; no se sube de lado) y cubierta (franja estrecha; el colisionador de edificios se apaga). Arriba se dibuja por encima de la casa y una pared baja ante los peldaños obliga a entrar por el primero.
+- Decisión: la altura de la escalera no sube a saltos de peldaño. Con saltos de 6 px la cámara, pegada a la viajera, temblaba; ahora los pies siguen una rampa que llega a ras del suelo y de la cubierta, y el primer enganche desde el suelo se suaviza en unos fotogramas.
+- Decisión: la mascota no sube; espera al pie de la escalera, porque no tiene alturas propias y se perdería tras la pared. Pendiente: que la cubierta tenga algo que hacer (mirar por el telescopio) y que la mascota acompañe.
+- Visión: avanza el primer edificio completo con identidad propia (casa de Lupe), sin esconder contenido profesional.
+
 ### Zoom del valle con + y - (2026-11-09)
 - Dos botones arriba a la izquierda del valle (`components/valle/ZoomControl.jsx`) acercan o alejan la vista un nivel entero. La escena (`ValleScene.stepZoom`) escucha el evento `zoom` y publica en el registro `zoom` si se puede seguir en cada sentido; la página apaga el botón que ya no puede actuar.
 - Decisión: los pasos se miden sobre el zoom que da la pantalla (`steppedZoom` en `game/viewport.js`), con hasta 3 niveles de acercamiento. El zoom sigue siendo entero para que el pixel art no tenga costuras, y no se puede alejar más de lo que cabe en el mapa para que no asome el vacío; en un móvil vertical el botón - queda apagado.

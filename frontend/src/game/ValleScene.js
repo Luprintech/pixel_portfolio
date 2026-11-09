@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { PAL } from './palette.js'
 import { BRIDGE, BUILDINGS, COLS, PROPS, ROWS, SPAWN, TILE, blockedWaterTiles, treePositions } from './world.js'
 import { steppedZoom } from './viewport.js'
+import { DECK, STAIRS, climb } from './terrace.js'
 import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, POSES } from './avatar/index.js'
 import { shadowSprite } from './sprites.js'
 import { makeCanvas, rect } from './pixelKit.js'
@@ -10,6 +11,8 @@ import { bridgeAssets, buildingAssets, groundBase, groundSeasonJob, propAssets, 
 import SkyLayer from './SkyLayer.js'
 
 const SPEED = 90
+// Lo máximo que cambia la altura de los pies por fotograma al entrar en la escalera: más que la pendiente de la rampa.
+const CLIMB_EASE = 4
 // Las ventanas encendidas y la luz de las farolas.
 const LIT_WINDOW = '#f8d77a'
 const SEASONS = ['autumn', 'winter']
@@ -27,6 +30,8 @@ export default class ValleScene extends Phaser.Scene {
     this.near = null
     this.armed = true
     this.zoomSteps = 0
+    this.terrace = null
+    this.climbMode = 'ground'
   }
 
   create() {
@@ -224,9 +229,40 @@ export default class ValleScene extends Phaser.Scene {
       const bodyBottom = py + height - 12
       this.placeScenery(key, px, py, [0, 0], bodyBottom)
       this.solid(px + 2, bodyTop, sprite.canvas.width - 4, bodyBottom - bodyTop)
+      if (b.terrace) this.buildTerrace(px, py, bodyBottom)
       this.addLitWindows(`${key}:lit`, sprite, px, py, i / (BUILDINGS.length - 1))
       if (b.zone) this.addDoor(b.zone, b.door.x, b.door.y)
     })
+  }
+
+  // Escalera y cubierta de la casa: la viajera sube por ellas (ver `climb`). Una pared baja ante los peldaños
+  // deja entrar solo por el primero, para que nadie aparezca a media altura. Mientras está arriba se dibuja por
+  // encima del edificio, que en el suelo la taparía al quedar más al fondo.
+  buildTerrace(px, py, bodyBottom) {
+    this.terrace = { px, py, depth: bodyBottom + 1 }
+    const wallX = STAIRS.x + STAIRS.run
+    this.solid(px + wallX, py + STAIRS.bottom + 1, DECK.left - wallX, 3)
+  }
+
+  // Cambia entre suelo, escalera y cubierta: en el suelo chocan los edificios; arriba no, porque la cubierta
+  // queda dentro de la silueta de la casa y se limita a su franja a mano.
+  setClimbMode(mode) {
+    this.climbMode = mode
+    this.groundCollider.active = mode === 'ground'
+    this.shadow.setDepth(mode === 'ground' ? 2 : this.terrace.depth - 1)
+  }
+
+  // Aplica la escalera y la cubierta a la posición ya movida de la viajera; devuelve si está en el suelo.
+  applyTerrace() {
+    const { px, py } = this.terrace
+    const { princess } = this
+    const next = climb(this.climbMode, princess.x - px, princess.y - py)
+    if (next.mode !== this.climbMode) this.setClimbMode(next.mode)
+    if (next.mode === 'ground') return true
+    // Al subir al primer peldaño desde el suelo la altura se alcanza en unos fotogramas, no de golpe.
+    const y = next.mode === 'stairs' ? princess.y + Math.max(-CLIMB_EASE, Math.min(CLIMB_EASE, py + next.y - princess.y)) : py + next.y
+    princess.setPosition(px + next.x, y)
+    return false
   }
 
   addLitWindows(key, { canvas, windows }, x, y, rank) {
@@ -293,7 +329,7 @@ export default class ValleScene extends Phaser.Scene {
     this.princess = this.physics.add.sprite(SPAWN.x, SPAWN.y, this.travellerKey, frameName('down', 0)).setOrigin(0.5, 1)
     this.princess.body.setSize(8, 4).setOffset(5, 30)
     this.princess.setCollideWorldBounds(true)
-    this.physics.add.collider(this.princess, this.solids)
+    this.groundCollider = this.physics.add.collider(this.princess, this.solids)
 
     this.buildPet(SPAWN.x, SPAWN.y)
     this.facing = 'down'
@@ -355,13 +391,18 @@ export default class ValleScene extends Phaser.Scene {
 
     this.princess.setFrame(frameName(this.facing, WALK_CYCLE[this.walkStep]))
 
+    // En la escalera la altura la dan los peldaños: no se sube ni se baja de lado.
+    const onGround = !this.terrace || this.applyTerrace()
+    if (this.climbMode === 'stairs') body.setVelocityY(0)
+
     const px = Math.round(this.princess.x)
     const py = Math.round(this.princess.y)
-    this.princess.setDepth(py)
+    this.princess.setDepth(onGround ? py : this.terrace.depth)
     // La sombra usa la misma posición sin redondear que el sprite: si no, se desfasa de él al caminar.
     this.shadow.setPosition(this.princess.x, this.princess.y - 1)
 
-    if (this.companion) this.followPet(moving, px, py, delta)
+    // La mascota espera al pie de la escalera: no sabe subir y se perdería tras la pared.
+    if (this.companion) this.followPet(moving && onGround, px, py, delta)
     this.checkDoors(px, py)
     this.sky.update(time)
     this.advanceGroundSeasons()

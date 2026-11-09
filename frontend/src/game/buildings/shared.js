@@ -74,7 +74,9 @@ export function wall(g, { x, y, w, h, base = WALL1, dark = WALL0, post = true })
 }
 
 // Ventana con marco, cruceta y brillo. `shutters` pinta postigos de ese color y `flowers` una jardinera.
-export function windowAt(sprite, x, y, w, h, { shutters = null, flowers = false, arched = false, screen = null } = {}) {
+// `sill` añade dintel y alféizar de piedra, `curtains` cortinas del color dado, `glint` el reflejo
+// diagonal del cristal y `muntins: false` quita la cruceta para dibujar un interior sin cortarlo.
+export function windowAt(sprite, x, y, w, h, { shutters = null, flowers = false, arched = false, screen = null, sill = false, curtains = null, glint = false, muntins = true } = {}) {
   const { g } = sprite
   if (shutters) {
     const s = [shade(shutters, 0.7), shutters, tint(shutters, 0.3)]
@@ -91,11 +93,41 @@ export function windowAt(sprite, x, y, w, h, { shutters = null, flowers = false,
     dot(g, x - 1, y - 1, 'rgba(0,0,0,0)')
     rect(g, x, y - 1, w, 1, WOOD1)
   }
-  if (w >= 8) rect(g, x + Math.floor(w / 2) - 1, y, 2, h, WOOD1)
-  if (h >= 10) rect(g, x, y + Math.floor(h / 2), w, 2, WOOD1)
+  if (curtains) curtainsAt(g, x, y, w, h, curtains)
+  if (muntins && w >= 8) rect(g, x + Math.floor(w / 2) - 1, y, 2, h, WOOD1)
+  if (muntins && h >= 10) rect(g, x, y + Math.floor(h / 2), w, 2, WOOD1)
   dot(g, x + 1, y + 1, '#ffffff')
+  if (glint) glintAt(g, x, y, w)
+  if (sill) sillAt(g, x, y, w, h)
   if (flowers) flowerBox(g, x - 2, y + h + 1, w + 4)
   sprite.windows.push({ x, y, w, h })
+}
+
+// Cortinas recogidas a los lados con su lazo: dejan ver el centro del cristal.
+function curtainsAt(g, x, y, w, h, color) {
+  const fold = shade(color, 0.78)
+  const cw = Math.max(3, Math.floor(w / 5))
+  ;[x, x + w - cw].forEach((cx) => {
+    rect(g, cx, y, cw, h, color)
+    rect(g, cx + (cx === x ? cw - 1 : 0), y, 1, h, fold)
+    rect(g, cx, y + Math.floor(h * 0.6), cw, 1, fold)
+  })
+  rect(g, x, y, w, 1, tint(color, 0.25))
+}
+
+// Reflejo del cristal: dos trazos diagonales en la esquina de arriba a la izquierda.
+function glintAt(g, x, y, w) {
+  const light = 'rgba(255,255,255,0.45)'
+  for (let i = 0; i < 6; i++) dot(g, x + 2 + i, y + 7 - i, light)
+  if (w >= 24) for (let i = 0; i < 4; i++) dot(g, x + 9 + i, y + 7 - i, light)
+}
+
+// Dintel y alféizar de piedra: dan relieve al hueco de la ventana.
+function sillAt(g, x, y, w, h) {
+  rect(g, x - 2, y - 3, w + 4, 2, STONE2)
+  rect(g, x - 2, y - 1, w + 4, 1, STONE0)
+  rect(g, x - 3, y + h + 1, w + 6, 2, STONE2)
+  rect(g, x - 3, y + h + 3, w + 6, 1, STONE0)
 }
 
 // Jardinera con flores en filas de colores.

@@ -11,7 +11,8 @@ export const SPAWN = { x: 38 * TILE, y: 44 * TILE }
 
 // Cada lugar: esquina superior izquierda y tamaño en teselas, y la tesela de la puerta, que queda justo
 // debajo del edificio (donde se pisa para entrar). `zone` es el panel que abre; sin él, la puerta aún no
-// lleva a ningún contenido (interiores y diálogos llegan en fases posteriores).
+// lleva a ningún contenido (interiores y diálogos llegan en fases posteriores). `terrace` marca el edificio
+// cuya escalera y cubierta se pisan (ver `terrace.js`).
 export const BUILDINGS = [
   // Norte: formación.
   { id: 'cervantes', kind: 'school', x: 18, y: 4, w: 12, h: 8, door: { x: 23 } },
@@ -21,16 +22,16 @@ export const BUILDINGS = [
   // Noreste: proyectos y lectura.
   { id: 'projects', kind: 'workshop', x: 60, y: 8, w: 9, h: 7, door: { x: 64 }, zone: 'projects' },
   { id: 'blog', kind: 'library', x: 69, y: 7, w: 9, h: 8, door: { x: 73 }, zone: 'blog' },
-  // Oeste: trabajo y casa.
+  // Oeste: trabajo.
   { id: 'mihrab', kind: 'bar', x: 2, y: 19, w: 14, h: 8, door: { x: 9 } },
   { id: 'copos', kind: 'shop', x: 17, y: 21, w: 11, h: 6, door: { x: 23 } },
-  { id: 'about', kind: 'home', x: 7, y: 34, w: 15, h: 10, door: { x: 15 }, zone: 'about' },
   // Este: amistades, música y familia.
   { id: 'encuentro', kind: 'friends', x: 60, y: 18, w: 8, h: 8, door: { x: 63 } },
   { id: 'musica', kind: 'music', x: 72, y: 17, w: 7, h: 6, door: { x: 75 } },
   { id: 'casaHermanos', kind: 'cottage', x: 60, y: 31, w: 7, h: 5, door: { x: 63 }, variant: 0 },
   { id: 'casaPadres', kind: 'cottage', x: 72, y: 31, w: 7, h: 5, door: { x: 75 }, variant: 1 },
-  // Sur: asistencia en carretera.
+  // Sur: la casa de Lupe, en el hueco junto a la entrada, y asistencia en carretera.
+  { id: 'about', kind: 'home', x: 20, y: 34, w: 16, h: 10, door: { x: 30 }, zone: 'about', terrace: true },
   { id: 'asistencia', kind: 'garage', x: 45, y: 38, w: 11, h: 6, door: { x: 49 } },
   // Quiosco de helados de la piscina.
   { id: 'kiosko', kind: 'kiosk', x: 12, y: 10, w: 4, h: 4, door: { x: 13 } },
@@ -86,9 +87,7 @@ const ROADS = [
   { from: [25, 19], to: [37, 19], w: 2 },
   // Oeste: Mihrab y Copos.
   { from: [9, 27], to: [28, 27], w: 2 },
-  // Casa de Lupe: ramal a la plaza y vuelta al eje por el sur.
-  { from: [28, 30], to: [24, 30], w: 2 },
-  { from: [24, 30], to: [24, 44], w: 2 },
+  // Camino del sur: pasa por la puerta de la casa de Lupe y une la entrada con el oeste y la asistencia.
   { from: [15, 44], to: [49, 44], w: 2 },
   // Norte-este: universidad, proyectos y biblioteca.
   { from: [49, 11], to: [49, 15], w: 1 },
@@ -173,7 +172,7 @@ const GROVES = [
   { x: 2, y: 2, w: 12, h: 8, count: 6, blossom: 0.5 },
   { x: 58, y: 2, w: 8, h: 5, count: 4, blossom: 0.5 },
   { x: 66, y: 36, w: 12, h: 8, count: 6, blossom: 0.4 },
-  { x: 18, y: 34, w: 6, h: 14, count: 6, blossom: 0.1 },
+  { x: 8, y: 34, w: 11, h: 9, count: 7, blossom: 0.4 },
   { x: 24, y: 46, w: 10, h: 4, count: 6, blossom: 0.2 },
   { x: 56, y: 19, w: 4, h: 12, count: 4, blossom: 0.3 },
   { x: 38, y: 35, w: 7, h: 8, count: 5, blossom: 0.2 },
