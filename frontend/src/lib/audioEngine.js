@@ -7,7 +7,7 @@
 //   - el contexto solo arranca dentro de un gesto del visitante (toque o clic), y no basta con
 //     `pointerdown`: hay que reaccionar también a `touchend` y `click`.
 // En Android y en escritorio pasa lo mismo sin más complicaciones.
-import { fxLevel, musicLevel, subscribeSoundPrefs } from './soundMixer'
+import { channelLevels, masterLevel, subscribeSoundPrefs } from './soundMixer'
 
 const GESTURES = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']
 const LEVEL_EASE = 0.05
@@ -21,23 +21,37 @@ const onGesture = new Set()
 // navegador no tiene Web Audio).
 export const getEngine = () => buses
 
-// Vuelve a poner los buses al volumen del mezclador (tras un fundido, por ejemplo).
+// Ajusta una ganancia al nivel pedido. Se borra antes lo que quedara programado (un fundido a medias,
+// por ejemplo): si no, esa rampa seguía mandando y el volumen dejaba de responder a las barras.
+function setLevel(param, value, now) {
+  param.cancelScheduledValues(now)
+  param.setValueAtTime(param.value, now)
+  param.setTargetAtTime(value, now, LEVEL_EASE)
+}
+
+// Vuelve a poner el nodo general y los dos buses al volumen del mezclador.
 export function refreshLevels() {
   if (!buses) return
   const now = ctx.currentTime
-  buses.music.gain.setTargetAtTime(musicLevel(), now, LEVEL_EASE)
-  buses.fx.gain.setTargetAtTime(fxLevel(), now, LEVEL_EASE)
+  const { music, fx } = channelLevels()
+  setLevel(buses.master.gain, masterLevel(), now)
+  setLevel(buses.music.gain, music, now)
+  setLevel(buses.fx.gain, fx, now)
 }
 
+// Música y efectos desembocan en un nodo general antes de la salida. Ahí viven el volumen general y el
+// silencio, así que no hay ningún sonido que pueda esquivarlos.
 function build() {
   const Context = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)
   if (!Context) return null
   ctx = new Context()
+  const master = ctx.createGain()
   const music = ctx.createGain()
   const fx = ctx.createGain()
-  music.connect(ctx.destination)
-  fx.connect(ctx.destination)
-  buses = { ctx, music, fx }
+  music.connect(master)
+  fx.connect(master)
+  master.connect(ctx.destination)
+  buses = { ctx, master, music, fx }
   refreshLevels()
   // En iPhone, el interruptor de silencio apaga Web Audio salvo que la sesión sea de reproducción.
   try {

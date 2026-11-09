@@ -29,7 +29,7 @@ function cancelFade() {
   fadeTimer = null
   // Un fundido a medias dejó el volumen bajo: se restaura.
   if (routed) refreshLevels()
-  else if (audio) audio.volume = musicLevel()
+  else applyElementLevel()
 }
 
 const publish = (patch) => {
@@ -39,9 +39,15 @@ const publish = (patch) => {
 
 // El volumen y el silencio pueden cambiar desde la barra de la pantalla o desde Opciones. Con el
 // elemento conectado al motor los aplica el bus; si no, el propio elemento.
-subscribeSoundPrefs(() => {
-  if (audio && !routed && !fadeTimer) audio.volume = musicLevel()
-})
+subscribeSoundPrefs(() => applyElementLevel())
+
+// Sin motor de audio el volumen y el silencio los lleva el propio elemento. `muted` además de `volume`
+// porque algunos móviles ignoran el segundo.
+function applyElementLevel() {
+  if (!audio || routed || fadeTimer) return
+  audio.volume = musicLevel()
+  audio.muted = getSoundPrefs().muted
+}
 
 function ensureAudio() {
   if (audio) return audio
@@ -58,7 +64,9 @@ function route(element) {
   if (routed || !engine) return
   try {
     engine.ctx.createMediaElementSource(element).connect(engine.music)
+    // Desde aquí el volumen y el silencio los pone el bus; el elemento queda abierto del todo.
     element.volume = 1
+    element.muted = false
     routed = true
   } catch {
     // Sin esta posibilidad el volumen sigue siendo el del elemento.
@@ -69,7 +77,7 @@ async function start() {
   const element = ensureAudio()
   route(element)
   if (fadeTimer) cancelFade()
-  if (!routed) element.volume = musicLevel()
+  applyElementLevel()
   try {
     await element.play()
     publish({ playing: true })
@@ -100,6 +108,12 @@ function checkAvailable() {
 // Con la música bloqueada por el navegador, el primer gesto del visitante la hace sonar. En iPhone
 // la reproducción tiene que arrancar dentro del propio gesto, por eso se pide al motor de audio.
 onEngineGesture(() => {
+  // Si el navegador dejó sonar la pista antes del primer gesto, el motor aún no existía y suena sin
+  // pasar por él: es el momento de conectarla, o ni el silencio ni las barras la alcanzarían.
+  if (audio && !routed) {
+    route(audio)
+    refreshLevels()
+  }
   if (users > 0 && getSoundPrefs().music > 0 && snapshot.available && !snapshot.playing) start()
 })
 

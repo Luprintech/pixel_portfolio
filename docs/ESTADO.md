@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-09 (añadido PRODUCT.md con el contexto de producto).
+Última actualización: 2026-11-09 (silencio y volumen general de todo el sonido).
 
 ## Hecho
 
@@ -180,6 +180,14 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ### Contexto de producto para las herramientas de diseño (2026-11-09)
 - Nuevo `PRODUCT.md` en la raíz: usuarios (reclutadores y clientes freelance por igual), propósito (conseguir empleo como desarrolladora), posicionamiento, restricciones, compromisos de marca, evidencia disponible y principios. No fija estética: esa sigue en `frontend/docs/DESIGN.md` y `docs/IDENTIDAD-VISUAL.md`.
 - Sin cambios de código; sirve de base al rediseño de `/clasico` y al resto del trabajo de diseño.
+
+### Sonido: el silencio y el volumen general llegan a todo (2026-11-09)
+- **Síntoma:** en el navegador el botón de silenciar no callaba todo y la barra de volumen parecía mover solo los efectos.
+- **Causa probable:** no había un control común. El general se multiplicaba por separado en cada bus, y la pista de música podía quedar fuera del motor (si el navegador la dejaba sonar antes del primer gesto) o con un fundido a medias pisando el volumen. **No se reprodujo con el sonido real** en un arranque normal: ahí ya funcionaba, así que el arreglo es estructural.
+- **Arreglo:** `lib/audioEngine.js` pasa a tener un nodo general (`master`) entre los buses y la salida. El volumen general y el silencio solo cambian ese nodo; la música y los efectos llevan únicamente el suyo. Cualquier sonido futuro que cuelgue de un bus lo hereda.
+- Al ajustar un volumen se borra lo programado antes (`cancelScheduledValues`), para que un fundido cancelado no deje la ganancia pegada.
+- Si la pista ya sonaba antes del primer gesto, el primer gesto la conecta al motor. Sin Web Audio, el elemento usa también `muted`, no solo `volume`.
+- **Comprobado:** pruebas nuevas del cableado y del mezclador, y en Chrome de escritorio midiendo la señal a la salida del nodo general (general a 0,25 baja la señal y silenciar la deja en cero). **Sin probar en un Android ni en un Safari/iPhone reales.**
 
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.

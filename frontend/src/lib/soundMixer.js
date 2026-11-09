@@ -24,6 +24,13 @@ export const subscribeSoundPrefs = (listener) => {
   return () => listeners.delete(listener)
 }
 
+// Volumen general: es el único control por el que pasa todo el sonido, así que silenciar o moverlo
+// afecta a música, ambiente, mascotas y a cualquier sonido futuro sin que cada uno tenga que enterarse.
+export const masterLevel = () => (prefs.muted ? 0 : prefs.master)
+// Volumen propio de cada canal, sin el general (el motor de audio ya lo aplica en su nodo común).
+export const channelLevels = () => ({ music: prefs.music, fx: prefs.fx })
+
+// Volumen total de un canal, para los sonidos que no pasan por el motor (<audio> sin Web Audio).
 // Silenciar lo apaga todo: música, sonido ambiente y efectos.
 export const musicLevel = () => (prefs.muted ? 0 : prefs.master * prefs.music)
 // `base` es lo fuerte que suena ese efecto con los volúmenes al máximo.

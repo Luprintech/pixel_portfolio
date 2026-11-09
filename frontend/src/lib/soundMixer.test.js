@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fxLevel, getSoundPrefs, musicLevel, subscribeSoundPrefs, updateSoundPrefs } from './soundMixer'
+import { channelLevels, fxLevel, getSoundPrefs, masterLevel, musicLevel, subscribeSoundPrefs, updateSoundPrefs } from './soundMixer'
 
 describe('soundMixer', () => {
   beforeEach(() => updateSoundPrefs({ muted: false, master: 1, music: 0.5, fx: 0.7 }))
@@ -20,6 +20,15 @@ describe('soundMixer', () => {
     expect(musicLevel()).toBeCloseTo(0.4)
     expect(fxLevel()).toBeCloseTo(0.2)
     expect(fxLevel(0.5)).toBeCloseTo(0.1)
+  })
+
+  it('el nodo general lleva el volumen general y el silencio; los canales, solo el suyo', () => {
+    updateSoundPrefs({ master: 0.5, music: 0.8, fx: 0.4 })
+    expect(masterLevel()).toBe(0.5)
+    expect(channelLevels()).toEqual({ music: 0.8, fx: 0.4 })
+    updateSoundPrefs({ muted: true })
+    expect(masterLevel()).toBe(0)
+    expect(channelLevels()).toEqual({ music: 0.8, fx: 0.4 })
   })
 
   it('los volúmenes se mantienen entre 0 y 1', () => {

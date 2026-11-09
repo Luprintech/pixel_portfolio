@@ -17,7 +17,10 @@ function installFakeAudio() {
     }
 
     createGain() {
-      return { ...node(), gain: { value: 1, setTargetAtTime(value) { this.value = value } } }
+      return {
+        ...node(),
+        gain: { value: 1, cancelScheduledValues: vi.fn(), setValueAtTime: vi.fn(), setTargetAtTime(value) { this.value = value } },
+      }
     }
 
     createBuffer() {
@@ -67,21 +70,43 @@ describe('motor de audio', () => {
     expect(made).toHaveLength(1)
   })
 
-  it('el volumen de cada bus sigue al mezclador, y silenciar los deja a cero', async () => {
-    installFakeAudio()
+  it('música y efectos pasan por un nodo general que lleva el volumen general y el silencio', async () => {
+    const made = installFakeAudio()
     const { getEngine, onEngineGesture } = await import('./audioEngine')
     const { updateSoundPrefs } = await import('./soundMixer')
     onEngineGesture(() => {})
     touch()
-    const { music, fx } = getEngine()
+    const { master, music, fx } = getEngine()
+    // Todo desemboca en el nodo general y solo él llega a la salida.
+    expect(music.connect).toHaveBeenCalledWith(master)
+    expect(fx.connect).toHaveBeenCalledWith(master)
+    expect(master.connect).toHaveBeenCalledWith(made[0].destination)
+    expect(music.connect).not.toHaveBeenCalledWith(made[0].destination)
+    expect(fx.connect).not.toHaveBeenCalledWith(made[0].destination)
+
     updateSoundPrefs({ master: 0.5, music: 0.8, fx: 0.4, muted: false })
-    expect(music.gain.value).toBeCloseTo(0.4)
-    expect(fx.gain.value).toBeCloseTo(0.2)
+    expect(master.gain.value).toBeCloseTo(0.5)
+    expect(music.gain.value).toBeCloseTo(0.8)
+    expect(fx.gain.value).toBeCloseTo(0.4)
+    // Mover el general no toca los canales: lo que cambia es el nodo común.
+    updateSoundPrefs({ master: 0.2 })
+    expect(master.gain.value).toBeCloseTo(0.2)
+    expect(music.gain.value).toBeCloseTo(0.8)
     updateSoundPrefs({ muted: true })
-    expect(music.gain.value).toBe(0)
-    expect(fx.gain.value).toBe(0)
+    expect(master.gain.value).toBe(0)
     updateSoundPrefs({ muted: false })
-    expect(music.gain.value).toBeCloseTo(0.4)
+    expect(master.gain.value).toBeCloseTo(0.2)
+  })
+
+  it('al ajustar un volumen se borra lo que hubiera programado, para que un fundido a medias no lo pise', async () => {
+    installFakeAudio()
+    const { getEngine, onEngineGesture, refreshLevels } = await import('./audioEngine')
+    onEngineGesture(() => {})
+    touch()
+    const { master, music, fx } = getEngine()
+    ;[master, music, fx].forEach((node) => node.gain.cancelScheduledValues.mockClear())
+    refreshLevels()
+    ;[master, music, fx].forEach((node) => expect(node.gain.cancelScheduledValues).toHaveBeenCalledTimes(1))
   })
 
   it('sin Web Audio no hay motor y nada falla', async () => {
