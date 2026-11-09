@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { loadGoogleAnalytics, disableGoogleAnalytics } from '../utils/analytics';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,7 @@ const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-XXXXXXXXX
 export default function CookieBanner() {
   const [showBanner, setShowBanner] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const dialogRef = useRef(null);
 
   // Opciones de configuración
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
@@ -64,18 +65,47 @@ export default function CookieBanner() {
     }
   };
 
+  // Mientras el aviso está abierto la página queda bloqueada: el foco entra en el diálogo, Tab no
+  // sale de él y las teclas no llegan al juego ni al resto de la web.
+  useEffect(() => {
+    if (showBanner) dialogRef.current?.querySelector('button')?.focus();
+  }, [showBanner, showConfig]);
+
+  const handleKeyDown = (event) => {
+    event.stopPropagation();
+    if (event.key !== 'Tab') return;
+    const focusables = dialogRef.current.querySelectorAll('button, a[href], input');
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   if (!showBanner) return null;
 
   return (
     <AnimatePresence>
+      {/* La capa cubre toda la pantalla y recoge los clics: nada de detrás responde. Se centra en
+          vertical para no tapar el menú de la portada, que vive en la parte baja. */}
+      <div
+        className="fixed inset-0 z-50 flex items-end justify-center p-4 md:items-center md:p-6"
+        style={{ background: 'color-mix(in srgb, var(--px-ink) 72%, transparent)' }}
+        onKeyDown={handleKeyDown}
+      >
       <motion.div
-        initial={{ y: 100, opacity: 0 }}
+        ref={dialogRef}
+        initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 100, opacity: 0 }}
+        exit={{ y: 40, opacity: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="fixed bottom-0 left-0 w-full z-50 p-4 md:p-6"
+        className="w-full max-w-4xl"
         role="dialog"
-        aria-live="polite"
+        aria-modal="true"
         aria-labelledby="cookie-banner-title"
       >
         <div className="px-frame mx-auto max-w-4xl p-5 sm:p-6">
@@ -170,6 +200,7 @@ export default function CookieBanner() {
           )}
         </div>
       </motion.div>
+      </div>
     </AnimatePresence>
   );
 }

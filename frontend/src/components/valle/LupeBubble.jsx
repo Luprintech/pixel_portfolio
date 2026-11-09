@@ -6,6 +6,25 @@ const MARGIN = 12
 const TAIL = 14
 const clamp = (value, min, max) => Math.min(Math.max(value, min), Math.max(min, max))
 
+// Ajusta el ancho del bocadillo a su línea más larga. Con `w-max` y un ancho máximo, el navegador
+// deja la caja en el máximo aunque `text-wrap: balance` acorte las líneas, y queda un hueco vacío a
+// la derecha. Norma para todos los bocadillos: el texto aprovecha todo el ancho de la caja.
+function fitToText(bubble) {
+  const paragraph = bubble.firstElementChild
+  if (!paragraph) return
+  bubble.style.width = ''
+  const range = document.createRange()
+  range.selectNodeContents(paragraph)
+  // La animación de entrada escala el párrafo; se deshace para medir el ancho real.
+  const scale = paragraph.getBoundingClientRect().width / paragraph.offsetWidth || 1
+  const textWidth = range.getBoundingClientRect().width / scale
+  const style = getComputedStyle(paragraph)
+  const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+  // El píxel extra evita que un redondeo parta la última palabra a otra línea.
+  const fitted = Math.ceil(textWidth + padding) + 1
+  if (fitted < bubble.offsetWidth) bubble.style.width = `${fitted}px`
+}
+
 // Bocadillo de diálogo sobre un punto de la escena de la portada. Se coloca encima del punto,
 // se queda dentro de la pantalla y la cola sigue apuntando a quien habla. Es decorativo: el texto
 // de bienvenida para lectores de pantalla va aparte.
@@ -19,6 +38,7 @@ export default function LupeBubble({ text, anchor, canvasRef, avoidRef }) {
     const bubble = bubbleRef.current
     if (!canvas || !bubble) return undefined
     const locate = () => {
+      fitToText(bubble)
       const box = canvas.getBoundingClientRect()
       const point = sceneToScreen(box, { x, y }, OBJECT_POSITION)
       const parentWidth = canvas.offsetParent?.clientWidth ?? box.width
@@ -35,6 +55,8 @@ export default function LupeBubble({ text, anchor, canvasRef, avoidRef }) {
       setPlace({ left, top: canvas.offsetTop + point.y, tail: canvas.offsetLeft + point.x - left })
     }
     locate()
+    // La fuente pixel puede llegar después del primer pintado y cambia el ancho del texto.
+    document.fonts?.ready.then(locate)
     window.addEventListener('resize', locate)
     return () => window.removeEventListener('resize', locate)
   }, [text, x, y, canvasRef, avoidRef])

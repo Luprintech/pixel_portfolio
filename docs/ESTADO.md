@@ -129,6 +129,12 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 **Bocadillos más grandes en web (2026-11-09)**
 - Desde 1024 px el texto del bocadillo pasa de 18 a 24 px, el ancho máximo de 19 a 28 rem y el relleno crece (`components/valle/LupeBubble.jsx`, `px-bubble` en `pixel.css`). Con `text-wrap: balance` las líneas se reparten sin palabra suelta. Móvil y tablet no cambian. Comprobado a 1440 px por medidas (24 px, 448 px de ancho).
 
+**Aviso de cookies bloqueante y centrado (2026-11-09)**
+- El aviso (`components/CookieBanner.jsx`) es ahora un diálogo modal: una capa a pantalla completa oscurece y bloquea la página, el foco entra en el diálogo, Tab no sale de él y las teclas no llegan al juego. En escritorio queda centrado en vertical (antes pegado abajo y pisaba el menú de la portada); en móvil sigue abajo. No hay cierre sin elegir opción.
+
+**Bocadillos sin hueco a la derecha (2026-11-09)**
+- Norma para todos los bocadillos de texto: el texto aprovecha todo el ancho de la caja, sin hueco vacío a la derecha. Con `w-max` y ancho máximo, `text-wrap: balance` acortaba las líneas pero la caja seguía en el máximo. `fitToText` en `LupeBubble.jsx` mide la línea más larga y ajusta el ancho (se repite al redimensionar y al cargar la fuente). Comprobado en móvil (350 px) y escritorio (1280 px): hueco de 0 a 2 px.
+
 **Tormenta y consuelo (2026-11-09)**
 - Con tormenta (`storm > 0,3` al empezar la visita) la gata no se acerca a Lupe: las escenas `fair` de `game/titleLife.js` (aviso, presentación, caricia, maullido, "reina del valle", despedida) quedan en una pausa y su maullido no suena. Antes Lupe decía "rascadita" con Khalessi escondida.
 - Tras el susto, Khalessi sale de detrás de Lupe, se acerca y Lupe la consuela en dos bocadillos (`comfort1`, `comfort2`) y la acaricia unos 9 s antes de que vuelva a casa (`startScare` y `scaredCat` en `titleCat.js`; el guion queda anulado mientras dura el susto).
