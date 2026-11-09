@@ -239,7 +239,7 @@ Es una función futura. Sus puntos se dividen entre lo que ya se ha pedido y lo 
 - *Diálogos:* durante una conversación se queda quieta y en reposo; no habla ni interviene.
 - *Viaje rápido:* aparece junto a la viajera en el destino, sin recorrer el trayecto.
 - *Sin bloqueos:* no tiene colisión con la viajera ni con puertas, objetos interactivos o NPC; puede atravesar lo que la viajera ocupa, y nunca impide una interacción.
-- *Accesibilidad:* la elección y el nombre se manejan con teclado y en móvil; el acompañamiento se puede desactivar. Por decidir: si con "Reducir el movimiento" activado la mascota se queda quieta junto a la viajera o no acompaña.
+- *Accesibilidad:* la elección y el nombre se manejan con teclado y en móvil; el acompañamiento se puede desactivar. Por decidir: si con `prefers-reduced-motion` activado la mascota se queda quieta junto a la viajera o no acompaña.
 - *Persistencia:* local, sin cuenta, dentro de la partida `valle-del-bucle:save`. Requiere subir `SAVE_VERSION` a 2 con un bloque `pet` (`{ species, coat, name, follows }`), una migración desde la versión 1 (sin mascota, acompañamiento activado) y tolerancia a apariencias desconocidas (se sustituyen por la de partida en vez de descartar la partida). Una partida de otra versión mayor se ignora, como hoy. **No se toca el CMS, la API ni la base de datos.**
 - *Dimensiones de los sprites:* se fijan después de aprobar la base visual del avatar (ver el orden de trabajo de 6.6).
 

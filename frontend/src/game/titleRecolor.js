@@ -1,3 +1,5 @@
+import { drain } from './sliced.js'
+
 // Repintado por tono para los biomas de la portada: el otoño y el invierno parten del mismo paisaje
 // de primavera y cambian solo los colores que les tocan (hierba, copas y flores del cerezo).
 
@@ -29,18 +31,27 @@ export function hslToRgb(h, s, l) {
 export const isGreen = (h, s) => h >= 65 && h <= 170 && s > 0.18
 export const isBlossom = (h, s) => h >= 310 && h <= 355 && s > 0.3
 
-// Recorre los píxeles opacos del lienzo y, si `map(h, s, l)` devuelve un tono nuevo, lo pinta.
-export function repaint(g, width, height, map) {
+// Recorre los píxeles opacos del lienzo y, si `map(h, s, l)` devuelve un tono nuevo, lo pinta. Va por porciones
+// de `SLICE` píxeles (ver sliced.js): repintar un suelo de más de un millón de píxeles de una vez congela un móvil.
+const SLICE = 16000
+
+export function* repaintSteps(g, width, height, map) {
   const image = g.getImageData(0, 0, width, height)
   const { data } = image
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] === 0) continue
-    const next = map(...rgbToHsl(data[i], data[i + 1], data[i + 2]))
-    if (!next) continue
-    const [r, gr, b] = hslToRgb(...next)
-    data[i] = r
-    data[i + 1] = gr
-    data[i + 2] = b
+  for (let start = 0; start < data.length; start += SLICE * 4) {
+    const end = Math.min(data.length, start + SLICE * 4)
+    for (let i = start; i < end; i += 4) {
+      if (data[i + 3] === 0) continue
+      const next = map(...rgbToHsl(data[i], data[i + 1], data[i + 2]))
+      if (!next) continue
+      const [r, gr, b] = hslToRgb(...next)
+      data[i] = r
+      data[i + 1] = gr
+      data[i + 2] = b
+    }
+    yield
   }
   g.putImageData(image, 0, 0)
 }
+
+export const repaint = (g, width, height, map) => drain(repaintSteps(g, width, height, map))

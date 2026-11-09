@@ -196,10 +196,24 @@ const caches = new Map()
 // estaciones, y cada capa del valle se suaviza al final; los sprites que se dibujan encima no.
 function buildLayers(pastel) {
   const spring = buildLand(true, false, pastel)
-  const autumn = buildAutumnLand(buildLand(false, false, pastel).land)
-  const winter = buildWinterLand(buildLand(false, true, pastel).land)
-  const layers = { land: spring.land, autumn, winter, flowers: spring.flowers, rainbow: buildRainbow() }
-  if (pastel) ['land', 'autumn', 'winter', 'rainbow'].forEach((name) => softenCanvas(layers[name]))
+  const layers = { land: spring.land, flowers: spring.flowers, rainbow: buildRainbow() }
+  if (pastel) ['land', 'rainbow'].forEach((name) => softenCanvas(layers[name]))
+  // El otoño y el invierno cuestan más de la mitad de montar la portada y no se ven hasta que llueve o nieva:
+  // se construyen la primera vez que se piden (o antes, en un hueco: ver `createTitleScene`), no al arrancar.
+  const lazy = (name, build) => {
+    let value = null
+    Object.defineProperty(layers, name, {
+      get() {
+        if (!value) {
+          value = build()
+          if (pastel) softenCanvas(value)
+        }
+        return value
+      },
+    })
+  }
+  lazy('autumn', () => buildAutumnLand(buildLand(false, false, pastel).land))
+  lazy('winter', () => buildWinterLand(buildLand(false, true, pastel).land))
   return layers
 }
 
@@ -251,6 +265,11 @@ export function createTitleScene(canvas, seed, { pastel = false } = {}) {
   const cache = caches.get(pastel)
   const g = canvas.getContext('2d')
   g.imageSmoothingEnabled = false
+  // Con la portada ya pintada, las estaciones se preparan en dos huecos separados, para que no estorben al arrancar.
+  setTimeout(() => {
+    void cache.autumn
+    setTimeout(() => void cache.winter, 400)
+  }, 2500)
 
   const cats = new Map()
   const catSprite = (frame, tail, sit, scared) => {

@@ -14,7 +14,7 @@ import {
 } from '../../game/look'
 import { PAL } from '../../game/palette'
 import { NAME_MAX } from '../../game/save'
-import { prefersReducedMotion } from '../../lib/gameOptions'
+import { prefersReducedMotion } from '../../lib/reducedMotion'
 import { playPetSound } from '../../lib/petSounds'
 import { useValleCopy } from '../../lib/valleCopy'
 import AvatarStage from './AvatarStage'
@@ -63,7 +63,7 @@ function Section({ id, title, children }) {
 // Creador de viajera. En pantalla ancha, las dos escenas, el nombre y las acciones quedan fijos a la
 // izquierda y las opciones ocupan el resto, repartidas en pestañas; en móvil las escenas se quedan
 // arriba al desplazar y las acciones abajo.
-export default function Editor({ look, pet, name, petName, replacing, onChange, onBody, onPet, onName, onPetName, onRandom, onReset, onDone }) {
+export default function Editor({ look, pet, name, petName, replacing, returning, onChange, onBody, onPet, onName, onPetName, onRandom, onReset, onDone }) {
   const { copy, lang } = useValleCopy()
   const [tab, setTab] = useState(LOOK_TABS[0])
   // La vista previa camina salvo que el sistema o el visitante pidan quietud; la casilla la para.
@@ -245,7 +245,7 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
             className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-3 p-3 lg:static lg:flex lg:flex-wrap lg:p-0 lg:pb-1"
             style={{ background: PAGE_BG, boxShadow: `0 -3px 0 ${RING}` }}
           >
-            <button type="button" className="px-btn whitespace-nowrap !px-2 lg:flex-[1.6]" onClick={onDone}>{copy.editor.go}</button>
+            <button type="button" className="px-btn whitespace-nowrap !px-2 lg:flex-[1.6]" onClick={onDone}>{returning ? copy.editor.resume : copy.editor.go}</button>
             <button type="button" className="px-btn px-btn--bone whitespace-nowrap !px-2 lg:grow" onClick={announce(onRandom, copy.editor.randomDone)}>{copy.editor.random}</button>
             <button type="button" className="px-btn px-btn--bone whitespace-nowrap !px-2 lg:grow" onClick={announce(onReset, copy.editor.resetDone)}>{copy.editor.reset}</button>
             {/* Cuarto hueco de la rejilla de 2×2 en móvil: la barra no crece y el botón queda siempre a mano. */}

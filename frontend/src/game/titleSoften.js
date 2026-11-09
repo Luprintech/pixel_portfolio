@@ -2,7 +2,8 @@
 // sobre el dibujo del valle y nunca sobre Lupe, Khalessi ni las flores que se mecen:
 //   1. `lightenPixel` aclara la hierba y la tierra (verdes oscuros y marrones) hacia salvia y barro claro.
 //   2. `softenCanvas` y `softenColor` bajan la saturación de lo ya dibujado y del cielo.
-import { isBlossom, isGreen, repaint } from './titleRecolor.js'
+import { isBlossom, isGreen, repaintSteps } from './titleRecolor.js'
+import { drain } from './sliced.js'
 
 export const SOFTEN = { saturate: 0.66, brightness: 1.04 }
 
@@ -20,18 +21,25 @@ export function softenColor(hex, params = SOFTEN) {
   return `#${out.map((c) => c.toString(16).padStart(2, '0')).join('')}`
 }
 
-// Suaviza todos los píxeles opacos de un lienzo ya dibujado.
-export function softenCanvas(canvas, params = SOFTEN) {
+// Suaviza todos los píxeles opacos de un lienzo ya dibujado, por porciones (ver sliced.js).
+const SOFTEN_SLICE = 24000
+export function* softenSteps(canvas, params = SOFTEN) {
   const g = canvas.getContext('2d')
   const image = g.getImageData(0, 0, canvas.width, canvas.height)
   const { data } = image
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] === 0) continue
-    ;[data[i], data[i + 1], data[i + 2]] = softenRgb(data[i], data[i + 1], data[i + 2], params)
+  for (let start = 0; start < data.length; start += SOFTEN_SLICE * 4) {
+    const end = Math.min(data.length, start + SOFTEN_SLICE * 4)
+    for (let i = start; i < end; i += 4) {
+      if (data[i + 3] === 0) continue
+      ;[data[i], data[i + 1], data[i + 2]] = softenRgb(data[i], data[i + 1], data[i + 2], params)
+    }
+    yield
   }
   g.putImageData(image, 0, 0)
   return canvas
 }
+
+export const softenCanvas = (canvas, params = SOFTEN) => drain(softenSteps(canvas, params))
 
 const GRASS_LIFT = 0.15
 const EARTH_LIFT = 0.17
@@ -50,7 +58,9 @@ export function lightenPixel(h, s, l) {
   return null
 }
 
-export function lightenWorld(canvas) {
-  repaint(canvas.getContext('2d'), canvas.width, canvas.height, lightenPixel)
+export function* lightenSteps(canvas) {
+  yield* repaintSteps(canvas.getContext('2d'), canvas.width, canvas.height, lightenPixel)
   return canvas
 }
+
+export const lightenWorld = (canvas) => drain(lightenSteps(canvas))

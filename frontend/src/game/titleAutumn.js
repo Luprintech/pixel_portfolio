@@ -3,19 +3,22 @@
 // Se construye una sola vez a partir del paisaje de primavera (sin sus flores).
 import { seeded } from './palette.js'
 import { dot, ellipse, rect } from './pixelKit.js'
-import { isBlossom, isGreen, repaint } from './titleRecolor.js'
+import { isBlossom, isGreen, repaintSteps } from './titleRecolor.js'
+import { drain } from './sliced.js'
 
 const MEADOW_TOP = 124
 
 // Cambia solo los verdes (hierba, copas, musgo) a ocres y los rosas del cerezo a naranjas más profundos (los pálidos, más amarillos):
 // los verdes más oscuros se vuelven más rojizos, y las casas, caminos y montañas quedan como estaban.
-function recolor(g, width, height) {
-  repaint(g, width, height, (h, s, l) => {
+export function* recolorAutumnSteps(g, width, height) {
+  yield* repaintSteps(g, width, height, (h, s, l) => {
     if (isGreen(h, s)) return [Math.max(14, 44 - (h - 70) * 0.3), Math.min(1, s * 1.1), l * 1.04]
     if (isBlossom(h, s)) return [12 + l * 28, Math.min(1, s * 1.15), l * 0.8]
     return null
   })
 }
+
+export const recolorAutumn = (g, width, height) => drain(recolorAutumnSteps(g, width, height))
 
 const CAPS = [
   { cap: '#e04a30', dots: true },
@@ -75,7 +78,7 @@ export function buildAutumnLand(land) {
   const puddles = Array.from({ length: 5 }, (_, i) => ({ ...spot(), rx: 5 + (i % 3) * 2 }))
   const leaves = Array.from({ length: 70 }, spot)
 
-  recolor(g, width, height)
+  recolorAutumn(g, width, height)
 
   puddles.forEach(({ x, y, rx }) => puddle(g, x, y, rx))
   const leafColors = ['#e0803a', '#c4572a', '#e8b04a', '#a8481f']

@@ -19,16 +19,17 @@ function SpeakerIcon({ on }) {
 }
 
 // Botón que silencia todo el sonido y barra de volumen general (esta, solo con ratón: ver .px-volume-bar). Se oculta solo si la pista no está disponible.
+// Con `flush` el conjunto mide lo que los botones vecinos (`--ctl`) y guarda su separación; solo la barra lleva fondo.
 // Con `compact` queda solo el botón, sin barra ni fondo: cabe en la cabecera de una escena. `track`
 // es la pista que pide la pantalla ('welcome' en la portada y el creador, 'valley' en el valle).
-export default function MusicControl({ compact = false, track = 'welcome' }) {
+export default function MusicControl({ compact = false, flush = false, track = 'welcome' }) {
   const { copy } = useValleCopy()
   const { available, muted, volume, toggle, setVolume } = useBackgroundMusic(track)
   if (!available) return null
   const label = muted ? copy.audio.play : copy.audio.mute
 
   return (
-    <div className={compact ? 'flex' : 'flex items-center gap-3 px-1 py-1'} style={compact ? undefined : { background: tone('lavender', PAL.ink) }}>
+    <div className={compact ? 'flex' : flush ? 'flex items-center gap-2' : 'flex items-center gap-3 px-1 py-1'} style={compact || flush ? undefined : { background: tone('lavender', PAL.ink) }}>
       <button
         type="button"
         onClick={toggle}
@@ -41,7 +42,7 @@ export default function MusicControl({ compact = false, track = 'welcome' }) {
         <SpeakerIcon on={!muted && volume > 0} />
       </button>
       {!compact && (
-        <label className="px-volume-bar flex items-center">
+        <label className={`px-volume-bar flex items-center ${flush ? 'h-[var(--ctl)] px-2' : ''}`} style={flush ? { background: tone('lavender', PAL.ink) } : undefined}>
           <span className="sr-only">{copy.audio.volume}</span>
           <input
             type="range"

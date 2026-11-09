@@ -10,7 +10,7 @@ import OptionsDialog from '../components/valle/OptionsDialog'
 import { PAL } from '../game/palette'
 import { clearSave, loadSave } from '../game/save'
 import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
-import { loadGameOptions, saveGameOptions, prefersReducedMotion } from '../lib/gameOptions'
+import { prefersReducedMotion } from '../lib/reducedMotion'
 import { playPetSound } from '../lib/petSounds'
 import { tone } from '../lib/tone'
 import { useValleCopy } from '../lib/valleCopy'
@@ -28,6 +28,8 @@ const OUTLINE = [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, -2], [-2, 2], [
 
 const LUPE_LINE = (key, who, anchor) => ({ key, who, anchor })
 
+const isTouch = () => window.matchMedia?.('(pointer: coarse)').matches
+
 export default function Title() {
   const { copy } = useValleCopy()
   // El paisaje pastel (hierba y tierra aclaradas, cielo suave) solo se dibuja en el tema "valle".
@@ -36,24 +38,33 @@ export default function Title() {
   const menuRef = useRef(null)
   const rootRef = useRef(null)
   const [saved, setSaved] = useState(loadSave)
-  const [options, setOptions] = useState(loadGameOptions)
   const [optionsOpen, setOptionsOpen] = useState(false)
   // Cada visita tiene su semilla: con ella, su hora del día de partida y su tiempo.
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 31))
-  const reduceMotion = prefersReducedMotion(options)
+  const reduceMotion = prefersReducedMotion()
   // Lo que se dice ahora y por dónde está quien lo dice.
   const [line, setLine] = useState(null)
 
-  const changeOptions = (next) => {
-    setOptions(next)
-    saveGameOptions(next)
-  }
   const eraseSave = () => {
     clearSave()
     setSaved(null)
   }
 
   useEffect(() => acquireAmbience(), [])
+
+  // Con la portada ya en marcha se adelanta el valle (el código de Phaser y sus dibujos) para que "Continuar"
+  // o "Nueva aventura" no pasen por una pantalla de carga. Las dos cargas siguen siendo dinámicas y los dibujos se
+  // hacen por turnos. No se hace en pantallas táctiles ni con ahorro de datos o poca memoria: ahí el trabajo
+  // competía con la animación y la app instalada del iPhone iba lenta al arrancar; el creador ya lo adelanta.
+  useEffect(() => {
+    const weak = navigator.connection?.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2)
+    if (isTouch() || weak) return undefined
+    const timer = setTimeout(() => {
+      import('../game/boot').catch(() => {})
+      import('../game/worldAssets').then(({ warmWorld }) => warmWorld(pastel)).catch(() => {})
+    }, 4000)
+    return () => clearTimeout(timer)
+  }, [pastel])
 
   // "journey1..3" cambian según haya partida guardada o no; el resto de frases salen tal cual.
   const lineKey = line?.key.replace(/^journey(\d)$/, saved ? 'journeyBack$1' : 'journeyNew$1')
@@ -216,8 +227,6 @@ export default function Title() {
       <OptionsDialog
         open={optionsOpen}
         onClose={() => setOptionsOpen(false)}
-        options={options}
-        onChange={changeOptions}
         saved={!!saved}
         onErase={eraseSave}
       />

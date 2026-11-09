@@ -77,6 +77,8 @@ Criterios:
 
 ## 6. Distribución del valle
 
+> **Actualización 2026-11-09:** el mapa vigente es el de la lámina `img/valle/referencia valle del bucle.png`, de **80×54 teselas** y quince edificios (detalle en `docs/ESTADO.md`, "Mundo del valle, bloque 2", y datos en `game/world.js`). La tabla y el esquema de abajo describen el primer reparto, de 56×30, y quedan como histórico. Los edificios ya no miden 4×4 teselas: entre 4×4 (quiosco) y 15×10 (Casa de Lupe y universidad), siempre en teselas enteras y con la puerta en la tesela justo debajo.
+
 Mapa de 56×30 teselas. Una plaza central de 9×6 y un camino principal de este a oeste que la cruza. Cada edificio cuelga de ese eje con un ramal corto hasta su puerta.
 
 ```

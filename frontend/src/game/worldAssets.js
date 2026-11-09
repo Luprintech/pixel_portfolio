@@ -1,0 +1,103 @@
+// Dibujos del valle ya preparados (con la paleta pastel y las versiones de otoño e invierno). Pintarlos cuesta
+// unos 3 s de procesador, que antes se pasaban con la pantalla de carga: ahora se hacen en segundo plano
+// mientras el visitante está en el creador (`warmWorld`), y al entrar la escena solo los recoge.
+//
+// Cada pieza es un `Job` (sliced.js): se puede avanzar a porciones de pocos milisegundos, para que ni el
+// creador ni la animación se paren en un móvil, o terminar al momento si la escena la pide antes de tiempo.
+// Sin Phaser.
+import { groundCanvasSteps } from './ground.js'
+import { BUILDINGS, BRIDGE, COLS, PROPS, ROWS, TILE, plazaTiles, roadTiles, waterTiles } from './world.js'
+import { buildingSprite } from './buildings/index.js'
+import { bridgeSprite, propSprite } from './props.js'
+import { Job, runSliced } from './sliced.js'
+import { treeSprite } from './sprites.js'
+import { lightenSteps, softenSteps } from './titleSoften.js'
+import { autumnSteps, copyCanvas, winterSteps } from './valleSeasons.js'
+
+const SEASONS = ['autumn', 'winter']
+const jobs = new Map()
+const job = (key, make) => {
+  if (!jobs.has(key)) jobs.set(key, new Job(make))
+  return jobs.get(key)
+}
+
+// Un dibujo con sus versiones de estación: `{ base, autumn, winter }`. Con `pastel` primero se aclara y las
+// estaciones salen del dibujo aclarado; al final se suaviza cada versión (igual que la portada).
+function* sceneryFrom(canvas, pastel, { seasons = SEASONS, cap = true } = {}) {
+  const base = pastel ? yield* lightenSteps(canvas) : canvas
+  const autumn = seasons.includes('autumn') ? yield* autumnSteps(base) : null
+  const winter = seasons.includes('winter') ? yield* winterSteps(base, { cap }) : null
+  if (pastel) {
+    yield* softenSteps(base)
+    if (autumn) yield* softenSteps(autumn)
+    if (winter) yield* softenSteps(winter)
+  }
+  return { base, autumn, winter }
+}
+
+const treeJob = (variant, pastel) => job(`tree:${variant}:${pastel}`, () => sceneryFrom(treeSprite(variant), pastel))
+export const treeAssets = (variant, pastel) => treeJob(variant, pastel).get()
+
+const bridgeJob = (pastel) => job(`bridge:${pastel}`, () => sceneryFrom(bridgeSprite(BRIDGE.w, BRIDGE.h), pastel, { seasons: ['winter'] }))
+export const bridgeAssets = (pastel) => bridgeJob(pastel).get()
+
+function* withSprite(sprite, pastel) {
+  return { sprite, set: yield* sceneryFrom(sprite.canvas, pastel, { seasons: ['winter'] }) }
+}
+
+const buildingJob = (building, pastel) => job(`building:${building.id}:${pastel}`, () => withSprite(buildingSprite(building), pastel))
+export const buildingAssets = (building, pastel) => buildingJob(building, pastel).get()
+
+const propJob = (prop, pastel) => job(`prop:${prop.kind}:${prop.variant ?? 0}:${pastel}`, () => withSprite(propSprite(prop.kind, prop.variant ?? 0), pastel))
+export const propAssets = (prop, pastel) => propJob(prop, pastel).get()
+
+// El suelo es lo más pesado (más de un millón de píxeles): pintar, aclarar y suavizar la base es lo que hace
+// falta para entrar; el otoño y el invierno se preparan después y la escena los añade cuando están listos.
+const groundRawJob = (pastel) =>
+  job(`ground:raw:${pastel}`, () => groundCanvasSteps({ cols: COLS, rows: ROWS, tile: TILE, roads: roadTiles(), plaza: plazaTiles(), water: waterTiles() }))
+
+function* litGround(pastel) {
+  const raw = yield* groundRawJob(pastel).steps()
+  return pastel ? yield* lightenSteps(raw) : raw
+}
+const groundLitJob = (pastel) => job(`ground:lit:${pastel}`, () => litGround(pastel))
+
+// La base se suaviza sobre una copia, para que las estaciones sigan saliendo del dibujo aclarado.
+const groundBaseJob = (pastel) =>
+  job(`ground:base:${pastel}`, function* base() {
+    const lit = yield* groundLitJob(pastel).steps()
+    if (!pastel) return lit
+    const copy = copyCanvas(lit)
+    yield* softenSteps(copy)
+    return copy
+  })
+
+export const groundBase = (pastel) => groundBaseJob(pastel).get()
+
+// Versión de estación del suelo (`autumn` o `winter`), como trabajo que se puede ir avanzando.
+export const groundSeasonJob = (season, pastel) =>
+  job(`ground:${season}:${pastel}`, function* seasonal() {
+    const lit = yield* groundLitJob(pastel).steps()
+    const result = yield* (season === 'autumn' ? autumnSteps(lit) : winterSteps(lit, { cap: false }))
+    if (pastel) yield* softenSteps(result)
+    return result
+  })
+
+// Prepara el valle en segundo plano, a porciones. Se puede pedir las veces que haga falta: la segunda vez
+// devuelve la misma promesa. Primero lo que hace falta para entrar y al final las estaciones del suelo.
+const warming = new Map()
+export function warmWorld(pastel) {
+  if (warming.has(pastel)) return warming.get(pastel)
+  const props = [...new Map(PROPS.map((p) => [`${p.kind}:${p.variant ?? 0}`, p])).values()]
+  const list = [
+    groundBaseJob(pastel),
+    ...[0, 1, 2].map((v) => treeJob(v, pastel)),
+    ...BUILDINGS.map((b) => buildingJob(b, pastel)),
+    ...props.map((p) => propJob(p, pastel)),
+    bridgeJob(pastel),
+    ...SEASONS.map((season) => groundSeasonJob(season, pastel)),
+  ]
+  const done = runSliced(list)
+  warming.set(pastel, done)
+  return done
+}

@@ -4,11 +4,11 @@
 
 @theme {
   --breakpoint-xs: 475px;
-  --font-sans: 'Pixelify Sans', ui-monospace, monospace;
-  --font-headline: 'Jersey 10', 'Pixelify Sans', monospace;
-  --font-body: 'Pixelify Sans', ui-monospace, monospace;
-  --font-read: 'Literata', Georgia, serif;
-  --font-label: 'Pixelify Sans', ui-monospace, monospace;
+  --font-sans: 'Pixelify Sans Variable', 'Pixelify Sans', ui-monospace, monospace;
+  --font-headline: 'Jersey 10', 'Pixelify Sans Variable', monospace;
+  --font-body: 'Pixelify Sans Variable', 'Pixelify Sans', ui-monospace, monospace;
+  --font-read: 'Literata Variable', 'Literata', Georgia, serif;
+  --font-label: 'Pixelify Sans Variable', 'Pixelify Sans', ui-monospace, monospace;
 }
 
 :root {

@@ -89,7 +89,7 @@ function rainbowAt(ms, seed) {
 }
 
 // La visita empieza a una hora al azar del día, para que a veces toque ver salir el sol.
-const startPhase = (seed) => hash2(seed % 4093, 7, 11)
+export const startPhase = (seed) => hash2(seed % 4093, 7, 11)
 
 // Recorrido de sol y luna: nacen por la izquierda, suben, y se ponen por la derecha.
 function arc(t) {
@@ -180,25 +180,25 @@ export function strikesBetween(fromMs, toMs, seed) {
 // Gotas de lluvia: más cuanto más llueve. Caen en diagonal y vuelven a empezar arriba.
 const RAIN_WIDTH = 320
 const RAIN_HEIGHT = 180
-export function rainDrops(ms, rain) {
-  const count = Math.round(rain * 130)
+export function rainDrops(ms, rain, width = RAIN_WIDTH, height = RAIN_HEIGHT) {
+  const count = Math.round(rain * 130 * ((width * height) / (RAIN_WIDTH * RAIN_HEIGHT)))
   return Array.from({ length: count }, (_, i) => {
-    const y = (hash2(i, 2, 3) * RAIN_HEIGHT + ms * 0.33) % (RAIN_HEIGHT + 10) - 5
-    const x = (hash2(i, 1, 3) * RAIN_WIDTH + y * 0.25) % RAIN_WIDTH
+    const y = (hash2(i, 2, 3) * height + ms * 0.33) % (height + 10) - 5
+    const x = (hash2(i, 1, 3) * width + y * 0.25) % width
     return { x, y, long: i % 3 === 0 }
   })
 }
 
 // Copos de nieve: más cuanto más nieva. Bajan despacio, se mecen de lado a lado y los grandes caen
 // más lentos que los pequeños, para dar profundidad.
-export function snowFlakes(ms, snow) {
-  const count = Math.round(snow * 90)
+export function snowFlakes(ms, snow, width = RAIN_WIDTH, height = RAIN_HEIGHT) {
+  const count = Math.round(snow * 90 * ((width * height) / (RAIN_WIDTH * RAIN_HEIGHT)))
   return Array.from({ length: count }, (_, i) => {
     const big = i % 5 === 0
     const speed = big ? 0.014 : 0.022
-    const y = (hash2(i, 4, 3) * (RAIN_HEIGHT + 10) + ms * speed) % (RAIN_HEIGHT + 10) - 5
+    const y = (hash2(i, 4, 3) * (height + 10) + ms * speed) % (height + 10) - 5
     const sway = Math.sin(ms / (900 + (i % 7) * 130) + i) * (big ? 5 : 3)
-    const x = (((hash2(i, 5, 3) * RAIN_WIDTH + sway) % RAIN_WIDTH) + RAIN_WIDTH) % RAIN_WIDTH
+    const x = (((hash2(i, 5, 3) * width + sway) % width) + width) % width
     return { x, y, big }
   })
 }

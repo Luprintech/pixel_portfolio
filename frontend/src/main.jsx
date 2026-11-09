@@ -1,6 +1,11 @@
 import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { SWRConfig } from 'swr'
+// Tipografías propias (empaquetadas con la app): sin pedirlas a Google, que en la app instalada del iPhone
+// bloqueaba el primer pintado si la red tardaba.
+import '@fontsource-variable/pixelify-sans'
+import '@fontsource/jersey-10'
+import '@fontsource-variable/literata'
 import './index.css'
 import './i18n'
 import App from './App.jsx'

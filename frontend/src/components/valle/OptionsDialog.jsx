@@ -6,9 +6,13 @@ import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
 import VolumeSlider from './VolumeSlider'
 
+// Todos los botones del diálogo miden lo mismo (`--ctl`, definido en el marco) y usan el mismo texto: antes cada
+// uno tenía su propio alto y la columna se veía descompensada.
+const BTN = '!min-h-[var(--ctl)] !px-3 !py-0 !text-sm'
+
 // Ventana de opciones de la portada. Usa <dialog> nativo: el navegador atrapa el foco,
 // cierra con Escape y devuelve el foco al botón que la abrió.
-export default function OptionsDialog({ open, onClose, options, onChange, saved, onErase }) {
+export default function OptionsDialog({ open, onClose, saved, onErase, actions = null }) {
   const { copy } = useValleCopy()
   const sound = useSoundPrefs()
   const install = useInstallPrompt()
@@ -23,6 +27,8 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
       setAsking(false)
       setErased(false)
       dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', '')
+      // El foco empieza en el título y no en "Cerrar": así, al abrir con un toque, el botón no sale con el aro de foco.
+      dialog.querySelector('#options-title')?.focus()
     } else if (!open && dialog.open) {
       dialog.close ? dialog.close() : dialog.removeAttribute('open')
     }
@@ -50,24 +56,17 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
     <dialog ref={ref} className="px-dialog" aria-labelledby="options-title" onClose={onClose}>
       <div
         className="px-frame p-4 sm:p-5 [@media(max-height:600px)]:p-3"
-        style={{ background: tone('lavender', PAL.ink), color: tone('ink', PAL.bone), ['--px-ink']: tone('ink', '#0f0e22'), ['--px-ring']: tone('lavender-deep', PAL.saffron) }}
+        style={{ background: tone('lavender', PAL.ink), color: tone('ink', PAL.bone), ['--ctl']: '2.75rem', ['--px-ink']: tone('ink', '#0f0e22'), ['--px-ring']: tone('lavender-deep', PAL.saffron) }}
       >
-        <h2 id="options-title" className="px-title text-3xl sm:text-4xl [@media(max-height:600px)]:text-3xl" style={{ color: tone('ink', PAL.bone) }}>{copy.options.title}</h2>
+        {/* "Cerrar" va en la esquina superior derecha, a la altura del título: siempre a la vista, sin
+            tener que bajar hasta el final del diálogo. Con la confirmación de borrado abierta pasa a
+            secundario, porque el botón principal es "Sí, borrar". */}
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="options-title" tabIndex={-1} className="px-title text-3xl outline-none sm:text-4xl [@media(max-height:600px)]:text-3xl" style={{ color: tone('ink', PAL.bone) }}>{copy.options.title}</h2>
+          <button type="button" className={`${asking ? 'px-btn px-btn--bone' : 'px-btn'} ${BTN}`} onClick={onClose}>{copy.options.close}</button>
+        </div>
 
-        <div className="px-text mt-3 grid gap-x-8 gap-y-4 sm:mt-4 sm:gap-y-6 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_1fr] [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
-          <label className="flex cursor-pointer items-start gap-3 sm:col-start-1 sm:row-start-1">
-            <input
-              type="checkbox"
-              className="px-check mt-0.5"
-              checked={options.reduceMotion}
-              onChange={(event) => onChange({ ...options, reduceMotion: event.target.checked })}
-            />
-            <span>
-              {copy.options.motion}
-              <span className="block text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden" style={muted}>{copy.options.motionHint}</span>
-            </span>
-          </label>
-
+        <div className="px-text mt-4 grid gap-x-8 gap-y-4 sm:mt-4 sm:gap-y-6 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_1fr] [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
           {/* El sonido ocupa todas las filas de su columna; la última (1fr) absorbe la altura que sobra,
               así los ajustes de la izquierda quedan pegados entre sí en vez de estirarse. */}
           <section className="sm:col-start-2 sm:row-span-4 sm:row-start-1">
@@ -87,17 +86,17 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
             />
           </section>
 
-          <section className="sm:col-start-1 sm:row-start-2">
+          <section className="sm:col-start-1 sm:row-start-1">
             <h3 className="text-sm" style={muted}>{copy.options.saveTitle}</h3>
             {saved && !asking && (
-              <button type="button" className="px-btn px-btn--bone mt-2" onClick={() => setAsking(true)}>{copy.options.erase}</button>
+              <button type="button" className={`px-btn px-btn--bone mt-2 w-full ${BTN}`} onClick={() => setAsking(true)}>{copy.options.erase}</button>
             )}
             {saved && asking && (
               <div role="alert" className="mt-2">
                 <p className="text-sm">{copy.options.eraseAsk}</p>
                 <div className="mt-2 flex flex-wrap gap-4">
-                  <button type="button" className="px-btn" onClick={erase}>{copy.options.eraseYes}</button>
-                  <button type="button" className="px-btn px-btn--bone" onClick={() => setAsking(false)}>{copy.options.eraseNo}</button>
+                  <button type="button" className={`px-btn ${BTN}`} onClick={erase}>{copy.options.eraseYes}</button>
+                  <button type="button" className={`px-btn px-btn--bone ${BTN}`} onClick={() => setAsking(false)}>{copy.options.eraseNo}</button>
                 </div>
               </div>
             )}
@@ -105,18 +104,20 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
           </section>
 
           {install.available && (
-            <section className="sm:col-start-1 sm:row-start-3">
+            <section className="sm:col-start-1 sm:row-start-2">
               <h3 className="text-sm" style={muted}>{copy.options.installTitle}</h3>
               <p className="mt-1 text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden">{copy.options.installHint}</p>
-              <button type="button" className="px-btn px-btn--bone mt-2" onClick={installApp}>{copy.options.install}</button>
+              <button type="button" className={`px-btn px-btn--bone mt-2 w-full ${BTN}`} onClick={installApp}>{copy.options.install}</button>
             </section>
           )}
 
-          {/* Con la confirmación abierta el botón principal es "Sí, borrar"; cerrar pasa a secundario.
-              En dos columnas queda bajo el sonido, que deja hueco, para que quepa en un móvil horizontal. */}
-          <div className="sm:col-start-2 sm:row-start-5 sm:self-end">
-            <button type="button" className={asking ? 'px-btn px-btn--bone' : 'px-btn'} onClick={onClose}>{copy.options.close}</button>
-          </div>
+          {/* Acciones de la pantalla que abre el diálogo (en el valle, las que no caben en la barra de un móvil). */}
+          {actions && (
+            <section className="md:hidden">
+              <h3 className="text-sm" style={muted}>{copy.options.valleTitle}</h3>
+              <div className="mt-2 grid grid-cols-2 gap-2">{actions}</div>
+            </section>
+          )}
         </div>
       </div>
     </dialog>

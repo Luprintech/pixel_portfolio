@@ -41,9 +41,9 @@ export function paintCelestial(g, sky) {
   g.globalAlpha = 1
 }
 
-export function paintRain(g, sky, ms) {
+export function paintRain(g, sky, ms, { width = WIDTH, height = HEIGHT } = {}) {
   if (sky.rain <= 0) return
-  rainDrops(ms, sky.rain).forEach(({ x, y, long }) => {
+  rainDrops(ms, sky.rain, width, height).forEach(({ x, y, long }) => {
     g.globalAlpha = 0.75
     rect(g, Math.round(x), Math.round(y), 1, long ? 3 : 2, '#bcd4ff')
   })
@@ -51,9 +51,9 @@ export function paintRain(g, sky, ms) {
 }
 
 // Copos: puntos blancos y, los más cercanos, una cruz pequeña. Con tormenta de nieve se ven todos.
-export function paintSnow(g, sky, ms) {
+export function paintSnow(g, sky, ms, { width = WIDTH, height = HEIGHT } = {}) {
   if (sky.snow <= 0) return
-  snowFlakes(ms, sky.snow).forEach(({ x, y, big }) => {
+  snowFlakes(ms, sky.snow, width, height).forEach(({ x, y, big }) => {
     const px = Math.round(x)
     const py = Math.round(y)
     g.globalAlpha = big ? 0.95 : 0.75
@@ -82,15 +82,23 @@ export function paintLightning(g, ms, seed) {
   }
 }
 
+// Capas de color con las que la noche, las nubes cargadas y el invierno apagan lo dibujado debajo.
+// La portada las pinta sobre su lienzo (`paintTint`) y el valle sobre su pantalla (valleSky.js).
+export function tintLayers(sky) {
+  return [
+    { color: '#1c1b3a', alpha: 0.5 * sky.dark },
+    { color: '#2e2d5a', alpha: 0.22 * Math.max(sky.rain, sky.storm) },
+    // El invierno enfría los colores con un velo azul pálido.
+    { color: '#b9d4f2', alpha: 0.16 * sky.winter },
+  ]
+}
+
 // La noche y las nubes cargadas apagan los colores de todo lo dibujado debajo.
 export function paintTint(g, sky) {
-  g.globalAlpha = 0.5 * sky.dark
-  rect(g, 0, 0, WIDTH, HEIGHT, '#1c1b3a')
-  g.globalAlpha = 0.22 * Math.max(sky.rain, sky.storm)
-  rect(g, 0, 0, WIDTH, HEIGHT, '#2e2d5a')
-  // El invierno enfría los colores con un velo azul pálido.
-  g.globalAlpha = 0.16 * sky.winter
-  rect(g, 0, 0, WIDTH, HEIGHT, '#b9d4f2')
+  tintLayers(sky).forEach(({ color, alpha }) => {
+    g.globalAlpha = alpha
+    rect(g, 0, 0, WIDTH, HEIGHT, color)
+  })
   g.globalAlpha = 1
 }
 

@@ -2,9 +2,12 @@
 // sin conexión. Es deliberadamente corto: solo guarda lo que no cambia sin cambiar de nombre.
 //
 // - /assets/* (JS, CSS e imágenes con hash en el nombre): caché primero, nunca caducan.
-// - Navegación: red primero y, si no hay red, la última portada guardada.
+// - Navegación: red primero, pero con un límite de 3 s: si la red tarda (el arranque en frío de una app
+//   instalada en el iPhone) o no hay red, se abre la última portada guardada, y la red actualiza la copia.
 // - /api/ y /posts/ no se tocan: el contenido del CMS debe verse siempre al día.
-const CACHE = 'valle-del-bucle-v1'
+// v2: al subir de versión el service worker nuevo borra la caché anterior (activate).
+const CACHE = 'valle-del-bucle-v2'
+const NAVIGATION_TIMEOUT_MS = 3000
 const SHELL = '/'
 const DEV_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
@@ -32,16 +35,18 @@ async function cacheFirst(request) {
 
 async function networkFirstShell(request) {
   const cache = await caches.open(CACHE)
-  try {
-    const response = await fetch(request)
-    // La SPA sirve el mismo index.html en todas las rutas: se guarda una sola copia
+  const cached = await cache.match(SHELL)
+  // La SPA sirve el mismo index.html en todas las rutas: se guarda una sola copia
+  const network = fetch(request).then((response) => {
     if (response.ok) cache.put(SHELL, response.clone())
     return response
-  } catch (error) {
-    const cached = await cache.match(SHELL)
-    if (cached) return cached
-    throw error
-  }
+  })
+  // Sin copia guardada no hay alternativa: se espera a la red.
+  if (!cached) return network
+  // Con copia, la red tiene un tiempo; si se pasa (o falla), se abre la copia y la red sigue actualizándola.
+  network.catch(() => {})
+  const timeout = new Promise((resolve) => setTimeout(() => resolve(cached), NAVIGATION_TIMEOUT_MS))
+  return Promise.race([network, timeout]).catch(() => cached)
 }
 
 self.addEventListener('fetch', (event) => {

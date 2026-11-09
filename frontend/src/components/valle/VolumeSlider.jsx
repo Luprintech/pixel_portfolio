@@ -1,3 +1,5 @@
+import { tone } from '../../lib/tone'
+
 // Barra de volumen con su nombre y su porcentaje. `onCommit` avisa al soltarla: sirve para dejar oír
 // cómo suena lo que se acaba de ajustar.
 export default function VolumeSlider({ id, label, hint, value, onChange, onCommit }) {
@@ -6,7 +8,7 @@ export default function VolumeSlider({ id, label, hint, value, onChange, onCommi
     <div className="px-text mt-2">
       <div className="flex items-baseline justify-between gap-3">
         <label htmlFor={id}>{label}</label>
-        <span aria-hidden="true" style={{ color: '#cfc5e0' }}>{percent} %</span>
+        <span aria-hidden="true" style={{ color: tone('muted', '#cfc5e0') }}>{percent} %</span>
       </div>
       <input
         id={id}
@@ -22,7 +24,7 @@ export default function VolumeSlider({ id, label, hint, value, onChange, onCommi
         aria-describedby={hint ? `${id}-hint` : undefined}
         className="px-range w-full"
       />
-      {hint && <p id={`${id}-hint`} className="text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden" style={{ color: '#cfc5e0' }}>{hint}</p>}
+      {hint && <p id={`${id}-hint`} className="text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden" style={{ color: tone('muted', '#cfc5e0') }}>{hint}</p>}
     </div>
   )
 }

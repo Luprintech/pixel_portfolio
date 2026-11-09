@@ -194,24 +194,6 @@ export function dungeonSprite() {
   return outline(canvas, 0.5)
 }
 
-// Cartel de madera de la plaza.
-export function signpostSprite() {
-  const canvas = makeCanvas(16, 22)
-  const g = canvas.getContext('2d')
-  rect(g, 7, 9, 3, 12, WOOD1)
-  rect(g, 7, 9, 1, 12, WOOD2)
-  rect(g, 2, 2, 12, 8, WOOD2)
-  rect(g, 2, 2, 12, 1, WOOD3)
-  rect(g, 2, 9, 12, 1, WOOD1)
-  // Flecha hacia el norte, donde está el Taller.
-  rect(g, 8, 4, 1, 5, WOOD0)
-  rect(g, 7, 5, 3, 1, WOOD0)
-  rect(g, 6, 6, 5, 1, WOOD0)
-  dot(g, 4, 20, PAL.rose)
-  dot(g, 12, 20, PAL.saffron)
-  return outline(canvas)
-}
-
 export function shadowSprite(w = 10, h = 4) {
   const canvas = makeCanvas(w, h)
   const ctx = canvas.getContext('2d')

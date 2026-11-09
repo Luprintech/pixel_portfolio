@@ -4,7 +4,8 @@
 // paisaje de primavera (sin sus flores) y los tres biomas se funden por transparencia.
 import { seeded } from './palette.js'
 import { dot, ellipse, hash2, makeCanvas, rect } from './pixelKit.js'
-import { isBlossom, isGreen, repaint } from './titleRecolor.js'
+import { isBlossom, isGreen, repaintSteps } from './titleRecolor.js'
+import { drain } from './sliced.js'
 
 const MEADOW_TOP = 124
 export const SNOW = '#f6faff'
@@ -45,13 +46,15 @@ export function paintSnowyPeaks(g, tops, width) {
 
 // La hierba y las copas pasan a nieve conservando sus luces y sombras (las más oscuras quedan azuladas,
 // para que se siga leyendo la forma de cada árbol); los rosas del cerezo, a flor con escarcha.
-function recolor(g, width, height) {
-  repaint(g, width, height, (h, s, l) => {
+export function* recolorWinterSteps(g, width, height) {
+  yield* repaintSteps(g, width, height, (h, s, l) => {
     if (isGreen(h, s)) return [212, 0.4, Math.min(0.97, 0.38 + l * 1.05)]
     if (isBlossom(h, s)) return [335, 0.45, Math.min(0.95, 0.74 + l * 0.2)]
     return null
   })
 }
+
+export const recolorWinter = (g, width, height) => drain(recolorWinterSteps(g, width, height))
 
 // Montón de nieve: cuerpo blanco con la base en sombra y un brillo arriba.
 function drift(g, x, y, rx) {
@@ -110,7 +113,7 @@ export function buildWinterLand(land) {
   const ice = Array.from({ length: 3 }, (_, i) => ({ ...spot(), rx: 6 + (i % 2) * 2 }))
   const twinkles = Array.from({ length: 60 }, spot)
 
-  recolor(g, width, height)
+  recolorWinter(g, width, height)
 
   ice.forEach(({ x, y, rx }) => icePatch(g, x, y, rx))
   drifts.sort((a, b) => a.y - b.y).forEach(({ x, y, rx }) => drift(g, x, y, rx))
