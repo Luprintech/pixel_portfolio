@@ -2,7 +2,7 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-09 (portada viva: Lupe con diálogos, día y noche con tiempo y biomas, sonido ambiente y volúmenes, Khalessi con personalidad).
+Última actualización: 2026-11-09 (añadido PRODUCT.md con el contexto de producto).
 
 ## Hecho
 
@@ -177,6 +177,10 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - **Pruebas:** `game/avatar/compose.test.js` comprueba tamaño, letras conocidas y contorno cerrado en decenas de miles de combinaciones por dirección y pose, que los pies siguen apoyados al caminar, la simetría de frente y espalda, que el perfil izquierdo es el derecho reflejado salvo lo asimétrico, que cada pose y opción se ve distinta, que de perfil hay una sola mano y una sola pierna en reposo y dos al caminar, y la hoja.
 - **Verificado en el navegador:** el creador (vista previa girando, tarjetas de cada opción recortadas con la nueva geometría) y el valle (en reposo y andando hacia la derecha).
 
+### Contexto de producto para las herramientas de diseño (2026-11-09)
+- Nuevo `PRODUCT.md` en la raíz: usuarios (reclutadores y clientes freelance por igual), propósito (conseguir empleo como desarrolladora), posicionamiento, restricciones, compromisos de marca, evidencia disponible y principios. No fija estética: esa sigue en `frontend/docs/DESIGN.md` y `docs/IDENTIDAD-VISUAL.md`.
+- Sin cambios de código; sirve de base al rediseño de `/clasico` y al resto del trabajo de diseño.
+
 ### Repositorio y flujo
 - Repo nuevo con historial limpio: https://github.com/Luprintech/pixel_portfolio. El repo anterior (`mi-portfolio`) sigue en GitHub como archivo; en local es el remoto `legacy` y la rama `legacy-main`.
 - Documentación de contexto: `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN.md` y este archivo.
@@ -339,3 +343,4 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 | La barra de volumen de la pantalla es el volumen general y el altavoz silencia todo | Una sola barra, igual en la pantalla y en Opciones, y un silencio que de verdad calla. |
 | "Personalizar viajera" sale del menú de la portada; se hace al empezar una nueva aventura y desde el botón dentro del juego | Una portada más limpia y un flujo más claro: quien vuelve continúa. |
 | Comillas siempre rectas, nunca angulares | Preferencia expresa de Guadalupe. |
+| La visita principal son reclutadores y clientes freelance por igual, y el objetivo actual es conseguir empleo (2026-11-09) | Marca la prioridad del modo clásico profesional y de que ninguna mecánica esconda información. Recogido en `PRODUCT.md`. |
