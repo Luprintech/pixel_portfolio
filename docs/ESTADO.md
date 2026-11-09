@@ -276,6 +276,17 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - **Todas las opciones del mismo tamaño:** las tarjetas de apartado ya tenían el mismo ancho, pero las opciones no: una palabra larga ensanchaba una columna (86, 86 y 104 px en la misma fila), los nombres de tres líneas alargaban unas filas y las especies y razas de la mascota usaban otra rejilla. Ahora las columnas son `minmax(0, 1fr)` y el nombre rompe palabra si hace falta, todas las filas de una rejilla miden lo mismo (`grid-auto-rows: 1fr`), el nombre reserva tres líneas y las mascotas usan la misma rejilla que el resto. Se acortaron dos nombres que necesitaban cuatro líneas ("Sudadera con zip", "Gafas cuadradas"). Se quitó la disposición en dos columnas de las pantallas muy anchas: con ella, las tarjetas estrechas y las anchas daban celdas de 88 y 98 px.
 - **Medido en el navegador** en las tres pestañas: todas las opciones miden igual a 390 px (92×139), a 768 px (154×201) y a 1440 px (182×229), sin desplazamiento horizontal. 178 pruebas, lint y build sin errores. El sonido se comprobó solo por script (el contexto de audio se crea y no hay errores): no se ha escuchado el resultado.
 
+### Creador y opciones: reordenación del layout (2026-11-09)
+- **Opciones de la portada:** la rejilla de dos columnas ya no estira la columna izquierda (el sonido ocupa cuatro filas y la última, `1fr`, absorbe la altura), así que desaparece el hueco entre "Reducir el movimiento" y "Partida guardada".
+- **Girar:** un solo botón pequeño con una flecha circular dibujada píxel a píxel (`stage/TurnButton.jsx`), en la esquina superior derecha de cada caja; sustituye al botón de texto. Abajo pisaba los pies y la cola de los sprites.
+- **Silencio en móvil y tablet:** solo el botón (`MusicControl compact`), en la fila "Viajero / Mascota", que queda fija al desplazar. En pantalla ancha sigue con su barra de volumen. Por debajo de `lg` no hay barra de volumen en el creador (en táctil ya sobraba; en una ventana estrecha de escritorio se regula desde Opciones).
+- **"Volver al inicio":** en móvil va en la barra fija de abajo, en el hueco libre de una rejilla de 2×2 (no crece); en pantalla ancha, junto al título.
+- **Título neutro:** "Tu avatar" (y "Your avatar"); la caja del avatar dice "Viajera" o "Viajero" según el cuerpo elegido. Quedan textos con "viajera" fuera del creador (ayuda de la portada, "Personalizar viajera") por revisar.
+- **Columna izquierda sin scroll en pantalla ancha:** ocupa el alto de la ventana y las cajas de las escenas se estiran (tope de 26 rem). Los nombres van uno junto al otro, con el botón de sonido de la mascota en la fila de su etiqueta (16 px sobre el campo, por la sombra dura), y la casilla de la marcha comparte fila con la música. Medido sin scroll a 1920×1080, 1280×720 y 1366×620.
+- **"Sin mascota" es un botón** que abre la pestaña Mascota, lleva el foco a ella y acerca el panel.
+- **Verificado:** móvil (375 y 320 px) y escritorio en el navegador; 245 pruebas del frontend, 60 del backend, lint y build sin errores. No se probaron tablet ni el clic de "Sin mascota" en escritorio.
+- **Visión:** pule la fase 1b (creador) sin tocar el modo clásico.
+
 ## Pendiente
 
 ### Quitar el blog del portfolio (decidido el 2026-11-09)

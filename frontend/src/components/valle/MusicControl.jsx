@@ -18,14 +18,15 @@ function SpeakerIcon({ on }) {
 }
 
 // Botón que silencia todo el sonido y barra de volumen general (esta, solo con ratón: ver .px-volume-bar). Se oculta solo si la pista no está disponible.
-export default function MusicControl() {
+// Con `compact` queda solo el botón, sin barra ni fondo: cabe en la cabecera de una escena.
+export default function MusicControl({ compact = false }) {
   const { copy } = useValleCopy()
   const { available, muted, volume, toggle, setVolume } = useBackgroundMusic()
   if (!available) return null
   const label = muted ? copy.audio.play : copy.audio.mute
 
   return (
-    <div className="flex items-center gap-3 px-1 py-1" style={{ background: PAL.ink }}>
+    <div className={compact ? 'flex' : 'flex items-center gap-3 px-1 py-1'} style={compact ? undefined : { background: PAL.ink }}>
       <button
         type="button"
         onClick={toggle}
@@ -37,19 +38,21 @@ export default function MusicControl() {
       >
         <SpeakerIcon on={!muted && volume > 0} />
       </button>
-      <label className="px-volume-bar flex items-center">
-        <span className="sr-only">{copy.audio.volume}</span>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          step="5"
-          value={Math.round(volume * 100)}
-          onChange={(event) => setVolume(Number(event.target.value) / 100)}
-          aria-valuetext={`${Math.round(volume * 100)} %`}
-          className="px-range w-24"
-        />
-      </label>
+      {!compact && (
+        <label className="px-volume-bar flex items-center">
+          <span className="sr-only">{copy.audio.volume}</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            value={Math.round(volume * 100)}
+            onChange={(event) => setVolume(Number(event.target.value) / 100)}
+            aria-valuetext={`${Math.round(volume * 100)} %`}
+            className="px-range w-24"
+          />
+        </label>
+      )}
     </div>
   )
 }

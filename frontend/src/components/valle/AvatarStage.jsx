@@ -32,7 +32,7 @@ export default function AvatarStage({ look, walking }) {
 
   return (
     <StageFrame
-      title={copy.editor.avatarTitle}
+      title={copy.editor.avatarTitle[look.body]}
       turnLabel={copy.editor.rotate}
       onTurn={() => setTurn((value) => (value + 1) % TURNS.length)}
       minCols={MIN_COLS}

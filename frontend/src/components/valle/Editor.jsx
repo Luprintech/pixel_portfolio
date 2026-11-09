@@ -78,6 +78,16 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
 
   const pick = (field, value) => onChange({ ...look, [field]: value })
 
+  // "Sin mascota" en la escena lleva a la pestaña de mascotas: el foco va a la pestaña (teclado y lector
+  // de pantalla) y el panel se acerca; la página tiene scroll-padding para no quedar bajo las escenas fijas.
+  const choosePet = () => {
+    setTab('pet')
+    requestAnimationFrame(() => {
+      document.getElementById('tab-pet')?.focus({ preventScroll: true })
+      document.getElementById('editor-panel')?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+    })
+  }
+
   // Una fila de colores de la viajera: las muestras de su paleta y el selector de cualquier otro color.
   const colorRow = (key, title, nested) => (
     <ColorRow
@@ -106,62 +116,100 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
       colorRow(key, labels[key], false)
     )
 
+  // La casilla de la marcha va en dos sitios según el ancho (junto a la música en pantalla ancha, junto
+  // al selector de cuerpo en móvil); solo se ve uno, así que el lector de pantalla tampoco lo repite.
+  const walkToggle = (
+    <label className="flex min-h-[44px] cursor-pointer items-center gap-3 px-text">
+      <input type="checkbox" className="px-check" checked={walking} onChange={(event) => setWalking(event.target.checked)} />
+      <span className="text-base">{copy.editor.walk}</span>
+    </label>
+  )
+
   return (
     <div className={`min-h-dvh overflow-x-clip ${STAGE_HEIGHT}`} style={{ background: PAL.ink2 }}>
-      <div className="mx-auto grid w-full max-w-[2200px] gap-x-10 gap-y-6 px-4 pb-44 pt-4 lg:grid-cols-[minmax(24rem,34vw)_minmax(0,1fr)] lg:px-8 lg:pb-8 lg:pt-8">
-        <div ref={columnRef} className="contents lg:sticky lg:top-8 lg:block lg:max-h-[calc(100dvh-4rem)] lg:self-start lg:overflow-y-auto lg:overflow-x-hidden lg:px-2 lg:pb-0 lg:pt-2">
-          <header className="flex items-start justify-between gap-4 lg:mb-5">
-            <div>
-              <h1 className="px-title text-5xl" style={{ color: PAL.bone }}>{copy.editor.title}</h1>
-              <p className="px-text mt-1" style={{ color: MUTED }}>{copy.editor.hint}</p>
+      <div className="mx-auto grid w-full max-w-[2200px] gap-x-10 gap-y-5 px-4 pb-44 pt-4 lg:grid-cols-[minmax(24rem,34vw)_minmax(0,1fr)] lg:px-8 lg:pb-4 lg:pt-4">
+        {/* En pantalla ancha la columna ocupa el alto de la ventana y no se desplaza: las escenas se estiran
+            (flex-1) para absorber lo que sobra o falta, con un tope para que en pantallas altas no queden como
+            torres de hierba, y la barra de acciones sigue al último bloque.
+            Solo la barra de la derecha, la de la página, recorre las opciones. En móvil la columna se disuelve
+            (contents) y cada bloque es hijo de la rejilla, que les da a todos el mismo espacio (gap-y). */}
+        <div ref={columnRef} className="contents lg:sticky lg:top-4 lg:flex lg:h-[calc(100dvh-2rem)] lg:flex-col lg:gap-4 lg:self-start lg:overflow-y-auto lg:overflow-x-hidden lg:px-2 lg:py-1">
+          {/* En pantalla ancha el botón de volver comparte fila con el título; solo salta debajo si no cabe.
+              El texto de ayuda baja 16 px: la sombra dura del botón (9 px) no puede tocarlo. */}
+          <header>
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+              <h1 className="px-title text-5xl lg:text-4xl xl:text-5xl" style={{ color: PAL.bone }}>{copy.editor.title}</h1>
+              {/* En móvil "Volver al inicio" vive en la barra fija de abajo, que siempre se ve. */}
+              <div className="hidden lg:block">
+                <Link className="px-btn px-btn--bone !min-h-[44px] !px-3 shrink-0" to="/">{copy.editor.back}</Link>
+              </div>
             </div>
-            <Link className="px-btn px-btn--bone !min-h-[44px] !px-3 shrink-0" to="/">{copy.editor.back}</Link>
+            <p className="px-text mt-4" style={{ color: MUTED }}>{copy.editor.hint}</p>
           </header>
 
-          {/* La música de la portada sigue sonando aquí: se puede silenciar o bajar. */}
-          <div className="w-fit lg:mb-5">
+          {/* La música de la portada sigue sonando aquí: se puede silenciar o bajar. En pantalla ancha va
+              con su barra, junto a la casilla de la marcha; en móvil y tablet es solo el botón, en la
+              cabecera de las escenas (fijas al desplazar) para tenerlo siempre a mano. */}
+          <div className="hidden items-center justify-between gap-3 lg:flex">
             <MusicControl />
+            {walkToggle}
           </div>
 
           {/* Lo primero que se lee al entrar: entrar al valle sustituye la aventura guardada. */}
           {replacing && (
-            <p className="px-text px-3 py-2 text-sm lg:mb-5" role="note" style={{ background: PAL.ink, color: PAL.saffronLight }}>
+            <p className="px-text px-3 py-2 text-sm" role="note" style={{ background: PAL.ink, color: PAL.saffronLight }}>
               {copy.editor.replace}
             </p>
           )}
 
           {/* Escenas fijas: cada cambio se ve sin tener que volver a subir. */}
-          <div ref={stageRef} className="sticky top-0 z-10 -mx-4 px-4 py-3 lg:static lg:mx-0 lg:p-0" style={{ background: PAL.ink2 }} role="group" aria-label={copy.editor.preview}>
-            <div className="grid grid-cols-2 gap-5">
+          <div ref={stageRef} className="sticky top-0 z-10 -mx-4 px-4 py-3 lg:static lg:mx-0 lg:min-h-0 lg:max-h-[26rem] lg:flex-1 lg:p-0" style={{ background: PAL.ink2 }} role="group" aria-label={copy.editor.preview}>
+            <div className="grid grid-cols-2 gap-5 lg:h-full lg:grid-rows-[minmax(0,1fr)]">
               <AvatarStage look={look} walking={walking} />
-              <PetStage pet={pet} walking={walking} />
+              <PetStage
+                pet={pet}
+                walking={walking}
+                onChoose={choosePet}
+                headerEnd={
+                  <div className="lg:hidden">
+                    <MusicControl compact />
+                  </div>
+                }
+              />
             </div>
           </div>
 
-          <div className="px-text mt-6">
-            <label htmlFor="traveller-name" className="mb-2 block text-base" style={{ color: MUTED }}>{copy.editor.name}</label>
-            <input
-              id="traveller-name"
-              className="px-input"
-              type="text"
-              maxLength={NAME_MAX}
-              autoComplete="off"
-              spellCheck="false"
-              value={name}
-              placeholder={copy.editor.namePlaceholder}
-              aria-describedby="traveller-name-hint"
-              onChange={(event) => onName(event.target.value)}
-            />
-          </div>
+          {/* Los dos nombres, uno junto al otro desde pantalla ancha; la ayuda ocupa el ancho entero. Bajo cada
+              etiqueta hay 16 px: la sombra dura del botón de sonido (9 px) no puede tocar el campo. */}
+          <div className="px-text grid items-end gap-x-4 gap-y-3 lg:grid-cols-2">
+            <div>
+              <label htmlFor="traveller-name" className="mb-4 flex min-h-9 items-center text-base" style={{ color: MUTED }}>{copy.editor.name}</label>
+              <input
+                id="traveller-name"
+                className="px-input"
+                type="text"
+                maxLength={NAME_MAX}
+                autoComplete="off"
+                spellCheck="false"
+                value={name}
+                placeholder={copy.editor.namePlaceholder}
+                aria-describedby="traveller-name-hint"
+                onChange={(event) => onName(event.target.value)}
+              />
+            </div>
 
-          {/* Con mascota elegida aparece su nombre, y un botón para oír cómo suena. */}
-          {pet.kind !== 'ninguna' && (
-            <div className="px-text mt-4">
-              <label htmlFor="pet-name" className="mb-2 block text-base" style={{ color: MUTED }}>{copy.editor.petName}</label>
-              <div className="flex items-center gap-5">
+            {/* Con mascota elegida aparece su nombre, y un botón para oír cómo suena. */}
+            {pet.kind !== 'ninguna' && (
+              <div>
+                <div className="mb-4 flex min-h-9 items-center justify-between gap-3">
+                  <label htmlFor="pet-name" className="text-base" style={{ color: MUTED }}>{copy.editor.petName}</label>
+                  <button type="button" className="px-btn px-btn--bone !min-h-9 shrink-0 !px-3 !py-1 text-sm" onClick={() => playPetSound(pet.kind, pet.breed)}>
+                    {copy.editor.petSound[pet.kind]}
+                  </button>
+                </div>
                 <input
                   id="pet-name"
-                  className="px-input min-w-0 flex-1"
+                  className="px-input"
                   type="text"
                   maxLength={NAME_MAX}
                   autoComplete="off"
@@ -171,33 +219,31 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
                   aria-describedby="traveller-name-hint"
                   onChange={(event) => onPetName(event.target.value)}
                 />
-                <button type="button" className="px-btn px-btn--bone shrink-0 !px-3" onClick={() => playPetSound(pet.kind, pet.breed)}>
-                  {copy.editor.petSound[pet.kind]}
-                </button>
               </div>
-            </div>
-          )}
-          <p id="traveller-name-hint" className="px-text mt-2 text-sm leading-4" style={{ color: MUTED }}>{copy.editor.nameHint}</p>
+            )}
+            <p id="traveller-name-hint" className="text-sm leading-4 lg:col-span-2" style={{ color: MUTED }}>{copy.editor.nameHint}</p>
+          </div>
 
-          <div className="px-text mt-6">
-            <div className="mb-3 flex min-h-[44px] items-center justify-between gap-3">
+          <div className="px-text">
+            <div className="mb-2 flex min-h-[44px] items-center justify-between gap-3 lg:min-h-0">
               <span className="text-base" style={{ color: MUTED }}>{labels.body}</span>
-              <label className="flex min-h-[44px] cursor-pointer items-center gap-3">
-                <input type="checkbox" className="px-check" checked={walking} onChange={(event) => setWalking(event.target.checked)} />
-                <span className="text-base">{copy.editor.walk}</span>
-              </label>
+              <div className="lg:hidden">{walkToggle}</div>
             </div>
             <BodyChoice look={look} label={labels.body} names={styleNames} onPick={onBody} />
           </div>
 
           <div
             ref={barRef}
-            className="fixed inset-x-0 bottom-0 z-20 flex flex-wrap gap-3 p-3 lg:sticky lg:inset-x-auto lg:mt-4 lg:px-1 lg:py-3"
+            className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-3 p-3 lg:static lg:flex lg:flex-wrap lg:p-0 lg:pb-1"
             style={{ background: PAL.ink2, boxShadow: `0 -3px 0 ${RING}` }}
           >
-            <button type="button" className="px-btn flex-[1.6] whitespace-nowrap !px-2" onClick={onDone}>{copy.editor.go}</button>
-            <button type="button" className="px-btn px-btn--bone grow whitespace-nowrap !px-2" onClick={announce(onRandom, copy.editor.randomDone)}>{copy.editor.random}</button>
-            <button type="button" className="px-btn px-btn--bone grow whitespace-nowrap !px-2" onClick={announce(onReset, copy.editor.resetDone)}>{copy.editor.reset}</button>
+            <button type="button" className="px-btn whitespace-nowrap !px-2 lg:flex-[1.6]" onClick={onDone}>{copy.editor.go}</button>
+            <button type="button" className="px-btn px-btn--bone whitespace-nowrap !px-2 lg:grow" onClick={announce(onRandom, copy.editor.randomDone)}>{copy.editor.random}</button>
+            <button type="button" className="px-btn px-btn--bone whitespace-nowrap !px-2 lg:grow" onClick={announce(onReset, copy.editor.resetDone)}>{copy.editor.reset}</button>
+            {/* Cuarto hueco de la rejilla de 2×2 en móvil: la barra no crece y el botón queda siempre a mano. */}
+            <div className="grid lg:hidden">
+              <Link className="px-btn px-btn--bone !px-2 text-center" to="/">{copy.editor.back}</Link>
+            </div>
           </div>
           <p role="status" className="sr-only">{status}</p>
         </div>

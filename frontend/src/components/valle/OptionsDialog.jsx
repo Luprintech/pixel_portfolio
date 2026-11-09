@@ -53,8 +53,8 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
       >
         <h2 id="options-title" className="px-title text-3xl sm:text-4xl [@media(max-height:600px)]:text-3xl" style={{ color: PAL.bone }}>{copy.options.title}</h2>
 
-        <div className="px-text mt-3 grid gap-x-8 gap-y-4 sm:mt-4 sm:grid-cols-2 [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
-          <label className="flex cursor-pointer items-start gap-3 sm:col-start-1">
+        <div className="px-text mt-3 grid gap-x-8 gap-y-4 sm:mt-4 sm:gap-y-6 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_1fr] [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
+          <label className="flex cursor-pointer items-start gap-3 sm:col-start-1 sm:row-start-1">
             <input
               type="checkbox"
               className="px-check mt-0.5"
@@ -67,7 +67,9 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
             </span>
           </label>
 
-          <section className="sm:col-start-2 sm:row-span-2 sm:row-start-1">
+          {/* El sonido ocupa todas las filas de su columna; la última (1fr) absorbe la altura que sobra,
+              así los ajustes de la izquierda quedan pegados entre sí en vez de estirarse. */}
+          <section className="sm:col-start-2 sm:row-span-4 sm:row-start-1">
             <h3 className="text-sm" style={muted}>{copy.options.soundTitle}</h3>
             {/* En móvil y tablet el general son las teclas físicas del dispositivo */}
             <div className="px-volume-bar">
@@ -84,7 +86,7 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
             />
           </section>
 
-          <section className="sm:col-start-1">
+          <section className="sm:col-start-1 sm:row-start-2">
             <h3 className="text-sm" style={muted}>{copy.options.saveTitle}</h3>
             {saved && !asking && (
               <button type="button" className="px-btn px-btn--bone mt-2" onClick={() => setAsking(true)}>{copy.options.erase}</button>
@@ -102,7 +104,7 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
           </section>
 
           {install.available && (
-            <section className="sm:col-start-1">
+            <section className="sm:col-start-1 sm:row-start-3">
               <h3 className="text-sm" style={muted}>{copy.options.installTitle}</h3>
               <p className="mt-1 text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden">{copy.options.installHint}</p>
               <button type="button" className="px-btn px-btn--bone mt-2" onClick={installApp}>{copy.options.install}</button>
@@ -111,7 +113,7 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
 
           {/* Con la confirmación abierta el botón principal es "Sí, borrar"; cerrar pasa a secundario.
               En dos columnas queda bajo el sonido, que deja hueco, para que quepa en un móvil horizontal. */}
-          <div className="sm:col-start-2 sm:row-start-3 sm:self-end">
+          <div className="sm:col-start-2 sm:row-start-5 sm:self-end">
             <button type="button" className={asking ? 'px-btn px-btn--bone' : 'px-btn'} onClick={onClose}>{copy.options.close}</button>
           </div>
         </div>
