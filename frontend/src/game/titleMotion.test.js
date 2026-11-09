@@ -1,38 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { CAT_CYCLE_MS, LIGHTS, STILL_MS, birdsAt, catAt, cloudsAt, firefliesAt, isBlinking, lightsLit, petalsAt, shootingStar, smokeAt } from './titleMotion.js'
+import { butterfliesAt, birdsAt, cloudsAt, firefliesAt, isBlinking, petalsAt, shootingStar, smokeAt } from './titleMotion.js'
 
 describe('titleMotion', () => {
-  it('enciende las ventanas una a una hasta el máximo', () => {
-    expect(lightsLit(0)).toBe(0)
-    expect(lightsLit(700)).toBe(1)
-    expect(lightsLit(1150)).toBe(2)
-    expect(lightsLit(60000)).toBe(LIGHTS)
-  })
-
-  it('con movimiento reducido todo queda encendido', () => {
-    expect(lightsLit(STILL_MS)).toBe(LIGHTS)
-  })
-
-  it('Khalessi descansa al principio y luego camina sin salirse de su zona', () => {
-    expect(catAt(0)).toMatchObject({ walking: false })
-    let walked = false
-    for (let ms = 0; ms < 60000; ms += 250) {
-      const cat = catAt(ms)
-      walked = walked || cat.walking
-      expect(cat.x).toBeGreaterThanOrEqual(206)
-      expect(cat.x).toBeLessThanOrEqual(258)
-      expect([1, -1]).toContain(cat.facing)
-    }
-    expect(walked).toBe(true)
-  })
-
-  it('el recorrido de la gata se repite en bucle', () => {
-    ;[500, 4000, 9100, 20000].forEach((ms) => {
-      expect(catAt(ms + CAT_CYCLE_MS).x).toBeCloseTo(catAt(ms).x)
-      expect(catAt(ms + CAT_CYCLE_MS).walking).toBe(catAt(ms).walking)
-    })
-  })
-
   it('parpadea al principio de cada ciclo y el resto del tiempo tiene los ojos abiertos', () => {
     expect(isBlinking(50)).toBe(true)
     expect(isBlinking(1000)).toBe(false)
@@ -75,6 +44,19 @@ describe('titleMotion', () => {
       firefliesAt(ms).forEach((f) => {
         expect(f.glow).toBeGreaterThanOrEqual(0)
         expect(f.glow).toBeLessThanOrEqual(1)
+      })
+    }
+  })
+
+  it('las mariposas revolotean por el prado sin salirse de la imagen', () => {
+    for (let ms = 0; ms < 60000; ms += 700) {
+      const butterflies = butterfliesAt(ms)
+      expect(butterflies).toHaveLength(5)
+      butterflies.forEach((b) => {
+        expect(b.x).toBeGreaterThan(0)
+        expect(b.x).toBeLessThan(320)
+        expect(b.y).toBeGreaterThan(130)
+        expect(b.y).toBeLessThan(180)
       })
     }
   })

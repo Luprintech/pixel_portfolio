@@ -3,46 +3,8 @@
 import { hash2 } from './pixelKit.js'
 
 export const TITLE_WIDTH = 320
-// Ventanas que se encienden una a una: las tres casitas del fondo y las de la herrería.
-export const LIGHTS = 4
-const LIGHT_START = 700
-const LIGHT_STEP = 450
-// Instante que se dibuja cuando se pide movimiento reducido: todo encendido y la gata quieta.
+// Instante que se dibuja cuando se pide movimiento reducido: la gata quieta y la hora fijada.
 export const STILL_MS = 6000
-
-export function lightsLit(ms) {
-  if (ms < LIGHT_START) return 0
-  return Math.min(LIGHTS, Math.floor((ms - LIGHT_START) / LIGHT_STEP) + 1)
-}
-
-// Khalessi pasea entre paradas: descansa un rato, camina a la siguiente y repite en bucle.
-const CAT_STOPS = [214, 246, 228, 258, 206]
-const CAT_SPEED = 16
-const CAT_IDLE_MS = 2800
-
-const CAT_ROUTE = (() => {
-  const segments = []
-  let from = 0
-  CAT_STOPS.forEach((stop, i) => {
-    const next = CAT_STOPS[(i + 1) % CAT_STOPS.length]
-    const previous = CAT_STOPS[(i + CAT_STOPS.length - 1) % CAT_STOPS.length]
-    segments.push({ from, to: from + CAT_IDLE_MS, x0: stop, x1: stop, facing: stop >= previous ? 1 : -1, walking: false })
-    from += CAT_IDLE_MS
-    const walkMs = (Math.abs(next - stop) / CAT_SPEED) * 1000
-    segments.push({ from, to: from + walkMs, x0: stop, x1: next, facing: next >= stop ? 1 : -1, walking: true })
-    from += walkMs
-  })
-  return { segments, total: from }
-})()
-
-export const CAT_CYCLE_MS = CAT_ROUTE.total
-
-export function catAt(ms) {
-  const t = ms % CAT_ROUTE.total
-  const seg = CAT_ROUTE.segments.find((s) => t >= s.from && t < s.to) || CAT_ROUTE.segments[0]
-  const progress = (t - seg.from) / (seg.to - seg.from)
-  return { x: seg.x0 + (seg.x1 - seg.x0) * progress, facing: seg.facing, walking: seg.walking }
-}
 
 // Parpadeo de la viajera: uno cada poco más de tres segundos y, de vez en cuando, otro seguido.
 export function isBlinking(ms) {
@@ -71,16 +33,22 @@ export function starAlpha(index, ms) {
   return 0.45 + 0.55 * ((Math.sin(ms / 700 + index * 2.3) + 1) / 2)
 }
 
-// Las nubes derivan despacio hacia la derecha y reaparecen por la izquierda.
+// Las nubes derivan despacio hacia la derecha y reaparecen por la izquierda. Con más cobertura
+// salen más, hasta siete.
 const CLOUDS = [
   { x: 58, y: 78, scale: 1, speed: 2.2 },
   { x: 150, y: 62, scale: 0.8, speed: 1.4 },
   { x: 290, y: 84, scale: 1, speed: 3 },
+  { x: 220, y: 40, scale: 1.1, speed: 2.6 },
+  { x: 20, y: 46, scale: 0.9, speed: 1.8 },
+  { x: 110, y: 28, scale: 1.2, speed: 1.1 },
+  { x: 260, y: 66, scale: 0.9, speed: 3.4 },
 ]
 const CLOUD_SPAN = TITLE_WIDTH + 100
 
-export function cloudsAt(ms) {
-  return CLOUDS.map((c) => ({ ...c, x: ((c.x + 50 + (ms / 1000) * c.speed) % CLOUD_SPAN) - 50 }))
+export function cloudsAt(ms, coverage = 0.4) {
+  const count = Math.min(CLOUDS.length, 2 + Math.round(coverage * 5))
+  return CLOUDS.slice(0, count).map((c) => ({ ...c, x: ((c.x + 50 + (ms / 1000) * c.speed) % CLOUD_SPAN) - 50 }))
 }
 
 // Pájaros: una bandada de tres cruza el cielo cada dieciséis segundos.
@@ -124,6 +92,19 @@ export function firefliesAt(ms) {
     x: bx + Math.sin(ms / 1700 + i) * 10,
     y: by + Math.cos(ms / 2300 + i * 2) * 6,
     glow: (Math.sin(ms / 600 + i * 1.7) + 1) / 2,
+  }))
+}
+
+// Mariposas de primavera: revolotean sobre las flores del prado, cada una por su lado.
+// La primera es la que persigue Khalessi: revolotea delante de Lupe y las demás, a los lados.
+const BUTTERFLIES = [[196, 164], [150, 152], [236, 152], [168, 166], [226, 166]]
+
+export function butterfliesAt(ms) {
+  return BUTTERFLIES.map(([bx, by], i) => ({
+    x: bx + Math.sin(ms / 1900 + i * 1.9) * 22 + Math.sin(ms / 700 + i) * 3,
+    y: by + Math.sin(ms / 1300 + i * 2.4) * 9 + Math.cos(ms / 410 + i) * 2,
+    open: Math.floor(ms / 150 + i) % 2 === 0,
+    kind: i % 3,
   }))
 }
 

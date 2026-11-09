@@ -114,12 +114,12 @@ Los nombres con los que el juego rotula cada edificio (`valleCopy.js`) siguen si
 
 Composición cerrada (`pages/Title.jsx`, `game/titleArt.js`):
 
-- Nombre «Valle del Bucle» como protagonista y debajo el subtítulo «El portfolio interactivo de Guadalupe Cano». «Luprintech» queda como firma de estudio en la esquina inferior derecha, igual que el crédito de una pantalla de título.
+- Nombre "Valle del Bucle" como protagonista y debajo el subtítulo "El portfolio interactivo de Guadalupe Cano". "Luprintech" queda como firma de estudio en la esquina inferior derecha, igual que el crédito de una pantalla de título.
 - Paisaje con tres planos dibujado a 320×180 con los mismos sprites del juego: montañas, sol y nubes al fondo; una aldea lejana y pequeña sobre la colina; y en primer plano la herrería con humo, la mazmorra, un cerezo en flor, la viajera y Khalessi.
 - La aldea del fondo deja libre la zona baja izquierda: el menú no tapa casas.
-- Menú compacto con tres opciones: «Nueva aventura», «Personalizar viajera» y «Modo clásico», más los atajos a Proyectos, Blog y Contacto. En móvil la ilustración ocupa la parte superior y el menú va debajo, así la viajera y la gata siguen a la vista.
+- Menú compacto con tres opciones: "Nueva aventura", "Personalizar viajera" y "Modo clásico", más los atajos a Proyectos, Blog y Contacto. En móvil la ilustración ocupa la parte superior y el menú va debajo, así la viajera y la gata siguen a la vista.
 - Color: el botón principal es azafrán; el rosa (`--accent-rose`) solo aparece al apuntar los botones secundarios.
-- Pendiente: «Continuar explorando» (requiere guardar progreso), «Opciones», animaciones ambientales (nubes, humo, pájaros) y música.
+- Pendiente: "Continuar explorando" (requiere guardar progreso), "Opciones", animaciones ambientales (nubes, humo, pájaros) y música.
 
 ## 8. Criterios al añadir un elemento
 

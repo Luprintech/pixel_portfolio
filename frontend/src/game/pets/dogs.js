@@ -166,7 +166,7 @@ export const DOG_BREEDS = {
       eye: readable(marks, '#5bb4e5'), nose: lum(marks) < 80 ? '#b07080' : '#2a2430',
     }),
   },
-  // Hocico y patas del color de detalles, como los «fuego» del teckel.
+  // Hocico y patas del color de detalles, como los "fuego" del teckel.
   teckel: {
     spec: SPECS.teckel,
     colors: (coat, marks) => dogColors(coat, marks, {

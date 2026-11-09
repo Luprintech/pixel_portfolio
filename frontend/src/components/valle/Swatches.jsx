@@ -22,7 +22,7 @@ function CustomColor({ value, active, label, hint, onPick }) {
       style={{ background: active ? value : PAL.bone, boxShadow: pickShadow(active) }}
     >
       <input
-        // Sin controlar: al pulsar «Restablecer» cambia `value` y la clave lo vuelve a montar.
+        // Sin controlar: al pulsar "Restablecer" cambia `value` y la clave lo vuelve a montar.
         key={value}
         ref={ref}
         type="color"

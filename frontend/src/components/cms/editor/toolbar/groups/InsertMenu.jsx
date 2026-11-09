@@ -1,4 +1,4 @@
-// Menú «+» para insertar bloques especiales.
+// Menú "+" para insertar bloques especiales.
 import { INSERT_MENU_CATEGORY_STYLES, PLUS_MENU_ITEMS } from '../../insertMenuConfig';
 import { ToolBtn } from '../ToolbarParts';
 import { createPortal } from 'react-dom';

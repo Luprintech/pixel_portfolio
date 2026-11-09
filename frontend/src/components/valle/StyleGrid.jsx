@@ -14,7 +14,7 @@ const VIEWS = {
   legs: { sx: 1, sy: 24, sw: 16, sh: 10 },
   feet: { sx: 2, sy: 26, sw: 14, sh: 8 },
 }
-// Las opciones «sin nada» se marcan con una cruz de píxeles en la esquina de la tarjeta.
+// Las opciones "sin nada" se marcan con una cruz de píxeles en la esquina de la tarjeta.
 const NONE_VALUES = ['ninguno']
 
 // Cada opción se dibuja con el aspecto actual y solo cambia lo que representa, así se ve

@@ -17,7 +17,8 @@ export default function Valle() {
   const [params] = useSearchParams()
   const mode = params.get('modo')
 
-  // «Nueva aventura» y «Personalizar» abren el creador; cualquier otra entrada va directa al valle.
+  // "Nueva aventura" abre el creador; "Continuar" va directa al valle, donde el botón "Personalizar viajera"
+  // vuelve a abrirlo.
   const [existing] = useState(loadSave)
   const [look, setLook] = useState(() => (mode === 'nueva' ? randomLook() : existing?.look || randomLook()))
   const [pet, setPet] = useState(() => (mode === 'nueva' ? DEFAULT_PET : existing?.pet || DEFAULT_PET))
@@ -25,7 +26,7 @@ export default function Valle() {
   const [petName, setPetName] = useState(() => (mode === 'nueva' ? '' : existing?.petName || ''))
   // Aspecto guardado del avatar que no está seleccionado; el seleccionado vive en `look`.
   const [otherLooks, setOtherLooks] = useState({})
-  const [phase, setPhase] = useState(mode === 'nueva' || mode === 'editar' ? 'editor' : 'play')
+  const [phase, setPhase] = useState(mode === 'nueva' ? 'editor' : 'play')
   const [status, setStatus] = useState('loading')
   const [game, setGame] = useState(null)
   const [near, setNear] = useState(null)
@@ -46,7 +47,7 @@ export default function Valle() {
     setLook(selectBody(otherLooks, body))
   }, [look, otherLooks])
 
-  // Restablecer y «al azar» afectan solo al avatar seleccionado.
+  // Restablecer y "al azar" afectan solo al avatar seleccionado.
   const reset = useCallback(() => {
     setLook(defaultLook(look.body))
     setPet(DEFAULT_PET)
@@ -142,7 +143,7 @@ export default function Valle() {
         <span className="flex-1 sm:hidden" />
         <span className="flex gap-4">
           <button type="button" className="px-btn px-btn--bone !min-h-[40px]" style={{ color: PAL.ink }} onClick={() => setPhase('editor')}>
-            {copy.menu.edit}
+            {copy.hud.customize}
           </button>
           <Link className="px-btn px-btn--bone !min-h-[40px]" style={{ color: PAL.ink }} to="/clasico">{copy.hud.classic}</Link>
           <Link className="px-btn px-btn--bone !min-h-[40px]" style={{ color: PAL.ink }} to="/">{copy.hud.exit}</Link>

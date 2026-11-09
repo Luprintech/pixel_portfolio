@@ -147,7 +147,7 @@ export default function GifPicker({ onSelect, onClose }) {
     onSelect(gifUrl, gif.title || 'GIF animado');
   }
 
-  // Con una categoría distinta de «trending» se muestran sus resultados, no los populares
+  // Con una categoría distinta de "trending" se muestran sus resultados, no los populares
   const displayGifs = (searchQuery.trim() || selectedCategory !== 'trending') ? gifs : trending;
 
   // Mostrar mensaje de error si no hay API key

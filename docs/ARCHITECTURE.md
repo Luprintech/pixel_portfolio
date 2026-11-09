@@ -59,9 +59,18 @@ Protegido por login. Subrutas: `inicio`, `posts`, `proyectos`, `imagenes`, `cv`,
   - `palette.js` resuelve cada letra a un color del aspecto; `paint.js` y `sheet.js` son lo único que usa canvas: `avatarCanvas` pinta un fotograma y `avatarSheet` una hoja de 3 poses × 4 direcciones (lienzo de cada fotograma 18×34). `ValleScene.js` registra esa hoja como una textura con un fotograma por pose y dirección y recorre `WALK_CYCLE` al andar.
   El creador es `components/valle/Editor.jsx`; `game/sprites.js` ya no dibuja a la viajera.
 - **Partida:** `game/save.js` guarda `{ version, name, look }` en `localStorage` (`valle-del-bucle:save`, versión 1) y migra la clave anterior `valle-del-bucle:look`.
-- **Khalessi:** `catCanvas` en `game/sprites.js` (lienzo de 26×16). Se usa en la portada (`titleMotion.js` y `titleArt.js`), en la vista previa del creador y en el valle, donde `ValleScene.js` la hace seguir a la viajera con un rastro de posiciones. Ese seguimiento en el valle y su aparición en el creador chocan con la decisión de que Khalessi es la gata de Lupe, no la mascota del visitante; el cambio está pendiente en `docs/ESTADO.md`.
-- **Lupe:** no existe en el código; no hay NPC ni sistema de diálogo todavía.
-- **Mascota del visitante:** no existe.
+- **Khalessi:** `khalessiCanvas` y `khalessiSitCanvas` en `game/pets/cats.js` (lienzo de 26×16, de pie, sentada y aseándose). Solo sale en la portada, donde `game/titleCat.js` calcula sus rutas y juegos. No acompaña a la viajera ni sale en el creador: es la gata de Lupe.
+- **Lupe:** solo existe en la portada. `game/lupe.js` es su aspecto (una combinación del generador de la viajera), `game/lupePoses.js` sus poses y `game/titleLife.js` el guion de lo que hace y dice. No hay todavía NPC ni sistema de diálogo dentro del valle.
+- **Mascota del visitante:** `game/pet.js` valida la elección (gato o perro, raza y colores) y `game/pets/` la dibuja; se elige en el creador y se guarda en la partida.
+
+### Portada (`/`)
+
+Todo el movimiento y el guion son funciones puras del tiempo (y de una semilla por visita), sin canvas, para poder probarlos; el dibujo y el sonido solo los consumen.
+
+- **Cielo y tiempo:** `game/titleSky.js` (hora del día, tiempo, bioma, rayos, lluvia) y `game/titleSkyPaint.js` (dibujo). `game/titleAutumn.js` genera una vez la versión de otoño del paisaje; `game/titleArt.js` compone cada fotograma a 320×180.
+- **Vida:** `game/titleMotion.js` (nubes, pájaros, mariposas...), `game/titleCat.js` (rutas y juegos de Khalessi) y `game/titleLife.js` (guion de Lupe y Khalessi). El texto de cada frase sale de `lib/valleCopy.js`.
+- **Bocadillos:** `components/valle/LupeBubble.jsx` es HTML sobre el canvas; `game/titleView.js` proyecta un punto de la escena a la pantalla.
+- **Sonido:** `lib/soundMixer.js` guarda los volúmenes y el silencio y avisa a quien los usa; `lib/backgroundMusic.js` es la pista única de la visita, `lib/ambience.js` el sonido ambiente (Web Audio) y `lib/petSounds.js` los maullidos y ladridos. Los hooks `useBackgroundMusic` y `useSoundPrefs` los exponen a la interfaz.
 
 ### Personajes: propuesta futura (no implementada)
 

@@ -169,7 +169,7 @@ export default function RichEditor({ value, onChange, token, fullscreen, onToggl
         }
     }
 
-    // Acciones del menú «/» que necesitan abrir una interfaz propia
+    // Acciones del menú "/" que necesitan abrir una interfaz propia
     function handleSlashAction(action) {
         if (action === 'image') setTimeout(() => openImageMenu(), 0);
         else if (action === 'youtube') menus.open('youtube');

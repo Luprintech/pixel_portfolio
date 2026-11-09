@@ -5,9 +5,12 @@ import { makeCanvas, rect } from '../pixelKit.js'
 import { composeAvatar } from './compose.js'
 import { avatarColors } from './palette.js'
 
-// Con `blink` los ojos se cierran (lo usa la portada).
-export function avatarCanvas(look, dir = 'down', pose = 0, blink = false) {
-  const { rows, width, height } = composeAvatar(look, dir, pose)
+// Con `blink` los ojos se cierran (lo usa la portada). `edit` recibe las filas de la matriz y devuelve
+// otras: así la portada retoca una pose sin añadir poses al generador.
+export function avatarCanvas(look, dir = 'down', pose = 0, blink = false, edit = null) {
+  const composed = composeAvatar(look, dir, pose)
+  const { width, height } = composed
+  const rows = edit ? edit(composed.rows) : composed.rows
   const colors = avatarColors(look, blink)
   const canvas = makeCanvas(width, height)
   const g = canvas.getContext('2d')

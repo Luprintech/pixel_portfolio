@@ -2,7 +2,7 @@
 
 **Proyecto:** Portfolio interactivo de Guadalupe Cano (Luprintech)  
 **Estado:** Diseño y desarrollo en curso  
-**Última integración:** 9 de noviembre de 2026 (unifica la visión inicial del 8 de noviembre con «Visión y decisiones de producto» del 9)  
+**Última integración:** 9 de noviembre de 2026 (unifica la visión inicial del 8 de noviembre con "Visión y decisiones de producto" del 9)  
 **Tipo:** Documento de visión, decisiones y propuestas de implementación
 
 ---
@@ -84,12 +84,12 @@ Transformar la portada en una pantalla de título de videojuego con paisaje anim
 
 **Composición:**
 
-- Nombre «Valle del Bucle» como elemento principal.
-- Referencia a Luprintech: «Luprintech presenta · Valle del Bucle · El portfolio de Guadalupe Cano».
+- Nombre "Valle del Bucle" como elemento principal.
+- Referencia a Luprintech: "Luprintech presenta · Valle del Bucle · El portfolio de Guadalupe Cano".
 - Paisaje pixel art con profundidad visual, la viajera y Khalessi visibles.
 - Menú reconocible, sin ocupar excesivamente el escenario.
 
-**Opciones de navegación propuestas:** Nueva aventura · Continuar explorando (si hay progreso guardado) · Personalizar personaje · Explorar portfolio clásico · Opciones. No es necesario que todas aparezcan desde la primera versión. Variante de rotulado propuesta: «Entrar al valle», «Ver portfolio clásico», «Personalizar viajera».
+**Opciones de navegación propuestas:** Nueva aventura · Continuar explorando (si hay progreso guardado) · Personalizar personaje · Explorar portfolio clásico · Opciones. No es necesario que todas aparezcan desde la primera versión. Variante de rotulado propuesta: "Entrar al valle", "Ver portfolio clásico", "Personalizar viajera".
 
 Personalizar la viajera no cambia quién es Lupe: la visitante y la anfitriona son personajes distintos (sección 6).
 
@@ -195,7 +195,7 @@ Esta sección separa cuatro niveles, para que no se mezclen: (1) lo que existe y
 
 ### 6.1 Estado actual (comprobado en el código el 2026-11-09)
 
-- **Viajera:** existe un creador de personaje por capas (cuerpo, cara, pelo, vello, complementos y ropa), con vista previa que gira entre las cuatro direcciones, botones «Aleatoria» y «Restablecer» sobre todo el aspecto, y partida versionada en `localStorage` (`valle-del-bucle:save`, versión 1, con migración de formatos anteriores). Los sprites se generan por código con un único generador por partes (`game/avatar/`), con hoja de 3 poses × 4 direcciones.
+- **Viajera:** existe un creador de personaje por capas (cuerpo, cara, pelo, vello, complementos y ropa), con vista previa que gira entre las cuatro direcciones, botones "Aleatoria" y "Restablecer" sobre todo el aspecto, y partida versionada en `localStorage` (`valle-del-bucle:save`, versión 1, con migración de formatos anteriores). Los sprites se generan por código con un único generador por partes (`game/avatar/`), con hoja de 3 poses × 4 direcciones.
 - **Khalessi:** existe como sprite (`catCanvas`). Hoy aparece en la portada (pasea y descansa), en la vista previa del creador y dentro del valle, donde **sigue a la viajera** desde la plaza (`ValleScene.js`). Esto último contradice la decisión de abajo y está registrado como pendiente en `docs/ESTADO.md`.
 - **Lupe:** no existe como personaje en pantalla (ni sprite, ni retrato, ni diálogo). Solo aparece como autora en textos y en el guion de `DIALOGOS.md`.
 - **Mascota del visitante:** no existe.
@@ -204,7 +204,7 @@ Esta sección separa cuatro niveles, para que no se mezclen: (1) lo que existe y
 
 - **La viajera o el viajero** es el personaje personalizable de quien visita el portfolio, independiente de Lupe: un avatar sin historia personal asignada. Ambas aparecen en pantalla, pero son personajes distintos.
 - **Lupe** es la anfitriona y guía del pueblo. Recibe al personaje visitante y ofrece orientación **sin imponer un recorrido**.
-- **Khalessi** es la gata de Lupe y su pareja. Acompaña a Lupe en la bienvenida y puede aparecer junto a ella en el mundo. Dice «meaw!»; puede acompañarse de un maullido original de timbre 8 bit, solo con sonido activado. Sus animaciones y apariciones son propuestas, sin traducir sus maullidos a testimonios humanos.
+- **Khalessi** es la gata de Lupe y su pareja. Acompaña a Lupe en la bienvenida y puede aparecer junto a ella en el mundo. Dice "meaw!"; puede acompañarse de un maullido original de timbre 8 bit, solo con sonido activado. Sus animaciones y apariciones son propuestas, sin traducir sus maullidos a testimonios humanos.
 - **Khalessi no es la mascota personalizable del visitante.** Las mascotas del visitante no sustituyen a Khalessi ni adquieren su nombre, historia o diálogos.
 - Sin cuentas de usuario para guardar preferencias.
 
@@ -229,7 +229,7 @@ Es una función futura. Sus puntos se dividen entre lo que ya se ha pedido y lo 
 
 **Propuestas por concretar (pendientes de aprobación)**
 
-- *Nombre:* de 1 a 16 caracteres, con los mismos caracteres admitidos que el nombre de la viajera (`sanitizeName`: letras, números, espacio, guion y apóstrofo). Valor predeterminado si queda vacío: «Perro» o «Gato» según la especie, traducido por i18n. No puede ser «Khalessi» (comparación sin mayúsculas ni acentos), para no confundirla con la gata de Lupe.
+- *Nombre:* de 1 a 16 caracteres, con los mismos caracteres admitidos que el nombre de la viajera (`sanitizeName`: letras, números, espacio, guion y apóstrofo). Valor predeterminado si queda vacío: "Perro" o "Gato" según la especie, traducido por i18n. No puede ser "Khalessi" (comparación sin mayúsculas ni acentos), para no confundirla con la gata de Lupe.
 - *Selección inicial de apariencias* (pequeña, y cada una con nombre accesible además de verse):
   - Perro: canela, negro con pecho claro, blanco con manchas marrones, gris moteado.
   - Gato: naranja atigrado, negro, blanco y negro (bicolor), gris atigrado.
@@ -239,16 +239,16 @@ Es una función futura. Sus puntos se dividen entre lo que ya se ha pedido y lo 
 - *Diálogos:* durante una conversación se queda quieta y en reposo; no habla ni interviene.
 - *Viaje rápido:* aparece junto a la viajera en el destino, sin recorrer el trayecto.
 - *Sin bloqueos:* no tiene colisión con la viajera ni con puertas, objetos interactivos o NPC; puede atravesar lo que la viajera ocupa, y nunca impide una interacción.
-- *Accesibilidad:* la elección y el nombre se manejan con teclado y en móvil; el acompañamiento se puede desactivar. Por decidir: si con «Reducir el movimiento» activado la mascota se queda quieta junto a la viajera o no acompaña.
+- *Accesibilidad:* la elección y el nombre se manejan con teclado y en móvil; el acompañamiento se puede desactivar. Por decidir: si con "Reducir el movimiento" activado la mascota se queda quieta junto a la viajera o no acompaña.
 - *Persistencia:* local, sin cuenta, dentro de la partida `valle-del-bucle:save`. Requiere subir `SAVE_VERSION` a 2 con un bloque `pet` (`{ species, coat, name, follows }`), una migración desde la versión 1 (sin mascota, acompañamiento activado) y tolerancia a apariencias desconocidas (se sustituyen por la de partida en vez de descartar la partida). Una partida de otra versión mayor se ignora, como hoy. **No se toca el CMS, la API ni la base de datos.**
 - *Dimensiones de los sprites:* se fijan después de aprobar la base visual del avatar (ver el orden de trabajo de 6.6).
 
 ### 6.5 Otras mejoras futuras del editor (no implementadas)
 
 - Guardar y recuperar la personalización.
-- Aleatorizar categorías individuales y bloquear las que se quieran conservar (hoy «Aleatoria» cambia todo).
+- Aleatorizar categorías individuales y bloquear las que se quieran conservar (hoy "Aleatoria" cambia todo).
 - Vista previa en cuatro direcciones, en reposo y caminando (hoy hay vista previa con giro, en reposo).
-- Restablecer una categoría sin borrar toda la apariencia (hoy «Restablecer» vuelve a todo lo de partida).
+- Restablecer una categoría sin borrar toda la apariencia (hoy "Restablecer" vuelve a todo lo de partida).
 - Controles accesibles por teclado y móvil.
 
 ### 6.6 Orden de trabajo
@@ -262,15 +262,15 @@ No se fijan dimensiones nuevas de sprites hasta cerrar el paso 1.
 
 ### 6.7 Creación de personaje (primera versión hecha el 2026-11-09; ver `docs/ESTADO.md` para lo que falta)
 
-Decisión de Lupe (2026-11-09): al elegir «Nueva aventura» el juego abre un creador de personaje al estilo de Stardew Valley, con el nombre de la viajera. Los apartados siguientes son la propuesta original; lo implementado y lo pendiente está en `docs/ESTADO.md`. La vista previa del creador mostraba a Khalessi junto a la viajera: con la decisión de 6.2, esa compañía se sustituirá por la mascota del visitante cuando exista (6.4).
+Decisión de Lupe (2026-11-09): al elegir "Nueva aventura" el juego abre un creador de personaje al estilo de Stardew Valley, con el nombre de la viajera. Los apartados siguientes son la propuesta original; lo implementado y lo pendiente está en `docs/ESTADO.md`. La vista previa del creador mostraba a Khalessi junto a la viajera: con la decisión de 6.2, esa compañía se sustituirá por la mascota del visitante cuando exista (6.4).
 
-**Orden de trabajo:** primero se termina la pantalla de inicio (animación, música y «Continuar aventura»); el creador se aborda después como un bloque propio.
+**Orden de trabajo:** primero se termina la pantalla de inicio (animación, música y "Continuar aventura"); el creador se aborda después como un bloque propio.
 
 **Flujo propuesto:**
 
 1. Nombre de la viajera (campo de texto con límite de longitud y validación; sin datos personales).
 2. Creador con vista previa en vivo, que reutiliza el sprite del juego (y, en el futuro, la mascota del visitante).
-3. Confirmar y entrar al valle. Si ya hay partida guardada, avisar de que «Nueva aventura» la sustituye.
+3. Confirmar y entrar al valle. Si ya hay partida guardada, avisar de que "Nueva aventura" la sustituye.
 
 **Opciones a ofrecer:**
 
@@ -281,7 +281,7 @@ Decisión de Lupe (2026-11-09): al elegir «Nueva aventura» el juego abre un cr
 - Complementos: gafas, aros, pendientes, gorros, lazos, flores en el pelo.
 - Ropa: vestido, camiseta, chaqueta, mono, con varios colores y un ribete.
 - Colores: paletas por categoría, con una gama amplia de tonos de piel.
-- Botones «Aleatoria» y «Restablecer».
+- Botones "Aleatoria" y "Restablecer".
 
 **Requisitos técnicos y de diseño:**
 
@@ -318,7 +318,7 @@ La casa es una habitación compacta y recorrible: dos escritorios (el de Atreus 
 
 ### Contrato de interacción (propuesto)
 
-- Mostrar un único objetivo contextual: «E · Hablar», «E · Entrar» o «E · Examinar». Resolver por distancia y orientación; no activar dos conversaciones a la vez.
+- Mostrar un único objetivo contextual: "E · Hablar", "E · Entrar" o "E · Examinar". Resolver por distancia y orientación; no activar dos conversaciones a la vez.
 - E revela de golpe el texto en curso; la siguiente pulsación avanza. Enter como alternativa accesible. Esc cierra o vuelve atrás.
 - Evitar que la misma pulsación abra y salte la primera página; al cerrar, exigir una nueva pulsación antes de reactivar.
 - Detener el movimiento mientras haya diálogo o panel. No capturar los controles cuando un formulario tenga el foco.
@@ -341,7 +341,7 @@ La casa es una habitación compacta y recorrible: dos escritorios (el de Atreus 
 
 ## 9. Diálogos y contenido profesional
 
-La bienvenida presenta a Lupe y a Khalessi y después permite explorar sin tutorial obligatorio. Las conversaciones son de pocas páginas, con una idea por intervención y opciones como «Cuéntame más», «Ver experiencia» o «Seguir explorando». El guion completo, con IDs, condiciones y notas de producción, está en [DIALOGOS.md](DIALOGOS.md).
+La bienvenida presenta a Lupe y a Khalessi y después permite explorar sin tutorial obligatorio. Las conversaciones son de pocas páginas, con una idea por intervención y opciones como "Cuéntame más", "Ver experiencia" o "Seguir explorando". El guion completo, con IDs, condiciones y notas de producción, está en [DIALOGOS.md](DIALOGOS.md).
 
 Reglas:
 
@@ -460,10 +460,10 @@ Los estados editoriales privados permanecen en el backend o en documentación de
 - Las personas del entorno de Lupe aparecen con **seudónimos** provisionales (guiños a Zelda, God of War y Stardew Valley, a petición de Lupe), consistentes entre lore y diálogos. Lupe y Khalessi conservan sus nombres. No existe ni debe crearse una tabla de correspondencias con nombres reales, ni IDs, nombres de archivo o comentarios que los reflejen.
 - Lupe ha indicado que los detalles íntimos aportados como contexto creativo **no se incluyen**. Se mantienen trabajo, formación, hobbies y vínculos cotidianos.
 - Los oficios y relaciones proceden del relato de Lupe, pero su presencia en un borrador no equivale al consentimiento de terceros para aparecer públicamente. Revisar instituciones, profesiones y cargos antes de publicar: la combinación oficio, institución y relación también puede identificar a alguien.
-- **Decidido (2026-11-09):** los lugares donde Lupe ha trabajado o estudiado aparecen con su nombre real, como en su currículum (por ejemplo, «bar Mihrab»). No se nombran empresas ni cargos concretos de familiares o amistades. Los compañeros del bar son personajes ficticios; el jefe puede reflejar lo que Lupe cuenta (que se alegró de que arreglara la caja) para mostrar su iniciativa, sin presentarlo como cita real.
+- **Decidido (2026-11-09):** los lugares donde Lupe ha trabajado o estudiado aparecen con su nombre real, como en su currículum (por ejemplo, "bar Mihrab"). No se nombran empresas ni cargos concretos de familiares o amistades. Los compañeros del bar son personajes ficticios; el jefe puede reflejar lo que Lupe cuenta (que se alegró de que arreglara la caja) para mostrar su iniciativa, sin presentarlo como cita real.
 - Estos documentos son material de trabajo, **no una autorización de publicación**. El repositorio es privado por ahora; si pasa a público, mover lore y diálogos fuera o repasarlos antes. No incluir material privado en el frontend público, en el CMS exportado ni en los assets. Las conversaciones y los personajes se irán modelando sobre la marcha.
 - Fotos reales de la habitación: condicionadas a selección y aprobación; revisar personas, pantallas y elementos identificativos.
-- PC retro: evocar una interfaz de principios de los 2000 con sistema ficticio propio (propuesta «Pradera»), con nombre, paisaje, iconos y audio originales. No incorporar el sonido de inicio, el wallpaper ni los assets de Windows XP. Pixelar un recurso ajeno no acredita permiso de uso.
+- PC retro: evocar una interfaz de principios de los 2000 con sistema ficticio propio (propuesta "Pradera"), con nombre, paisaje, iconos y audio originales. No incorporar el sonido de inicio, el wallpaper ni los assets de Windows XP. Pixelar un recurso ajeno no acredita permiso de uso.
 - Redes: Luprintech es el identificador aportado en YouTube, Instagram, TikTok y MakerWorld, pero faltan URLs verificadas. No fabricarlas. Si una plataforma no admite incrustación, ofrecer enlace externo explícito.
 - Consolas y grúa: recreaciones originales o con licencia; sin logotipos ni diseños de referencia sin revisar su uso. Las figuras que Lupe imprime y pinta no deben mostrar personajes de terceros como propiedad original.
 - Mantener un registro de autoría, procedencia y licencia de cada medio antes de publicarlo.
@@ -506,9 +506,9 @@ Respetar `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN
 Se hace después de cerrar la identidad visual de la fase 1.
 
 1. Pantalla de inicio viva: Khalessi se mueve, estrellas fugaces, nubes, humo, pétalos, luciérnagas, pájaros y la viajera que parpadea. Respeta el movimiento reducido. *(en curso)*
-2. «Continuar aventura» si hay partida guardada en `localStorage`.
+2. "Continuar aventura" si hay partida guardada en `localStorage`.
 3. Música 8 bits cute con licencia libre, desactivada por defecto y con control visible.
-4. Creador de personaje al elegir «Nueva aventura»: nombre y personalización completa al estilo Stardew (sección 6). *(después de los tres puntos anteriores)*
+4. Creador de personaje al elegir "Nueva aventura": nombre y personalización completa al estilo Stardew (sección 6). *(después de los tres puntos anteriores)*
 
 ### Selección sugerida de diálogos para la primera versión
 

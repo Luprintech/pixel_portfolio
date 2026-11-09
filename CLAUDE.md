@@ -97,5 +97,5 @@ Frontend: `npm run build`, `npm run lint` y `npm test` desde `frontend/`. Backen
 
 ## Pendientes conocidos
 
-- Khalessi ya no acompaña a la viajera ni sale en el creador; falta que aparezca junto a Lupe en la bienvenida (`docs/ESTADO.md`).
+- Khalessi acompaña a Lupe en la portada (la visita, juega con mariposas y avellanas); no acompaña a la viajera ni sale en el creador. Siguen pendientes el retrato y el papel de Lupe dentro del valle (`docs/ESTADO.md`).
 - Los bloques de contenido del blog (gradientes de `lib/gradients.js`, botones y avisos del editor) conservan colores propios: son opciones del autor, no el tema.

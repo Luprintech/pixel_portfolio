@@ -324,8 +324,48 @@
   height: 16px;
 }
 
+/* Bocadillo de diálogo: borde duro de tinta, cola cuadrada y una aparición en dos pasos. */
+.px-bubble {
+  position: relative;
+  padding: 0.6rem 0.8rem;
+  font-family: var(--font-body);
+  line-height: 1.3;
+  background: var(--accent-cream, #f1e6cf);
+  color: #1c1b3a;
+  box-shadow:
+    0 0 0 3px #1c1b3a,
+    0 6px 0 3px #1c1b3a;
+  animation: px-bubble-in 180ms steps(3, end);
+}
+.px-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: var(--tail, 50%);
+  width: 12px;
+  height: 12px;
+  margin: -3px 0 0 -6px;
+  background: inherit;
+  border-right: 3px solid #1c1b3a;
+  border-bottom: 3px solid #1c1b3a;
+  transform: rotate(45deg) translate(-3px, -3px);
+}
+@keyframes px-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .px-btn {
     transition: none;
+  }
+  .px-bubble {
+    animation: none;
   }
 }

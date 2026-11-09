@@ -1,7 +1,8 @@
 // Sonido de las mascotas del creador: el maullido de los gatos y el ladrido de los perros, grabaciones
 // de `public/sounds/`. Solo suenan al pulsar el botón, que es el gesto que los navegadores exigen para
 // dar audio. Cada raza afina la voz según su tamaño cambiando la velocidad de reproducción: las
-// pequeñas suenan más agudas y las grandes más graves.
+// pequeñas suenan más agudas y las grandes más graves. Su volumen es el de efectos por el general.
+import { fxLevel } from './soundMixer'
 
 const SOUNDS = {
   gato: '/sounds/Maullido gato.mp3',
@@ -39,7 +40,7 @@ export async function playPetSound(kind, breed) {
   // Sin esto el navegador corrige el tono al cambiar la velocidad y todas las razas sonarían igual.
   audio.preservesPitch = false
   audio.playbackRate = rate
-  audio.volume = 0.8
+  audio.volume = fxLevel(0.8)
   playing = audio
   try {
     await audio.play()

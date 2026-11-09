@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { PAL } from '../../game/palette'
+import { useSoundPrefs } from '../../hooks/useSoundPrefs'
 import { useValleCopy } from '../../lib/valleCopy'
+import VolumeSlider from './VolumeSlider'
 
 // Ventana de opciones de la portada. Usa <dialog> nativo: el navegador atrapa el foco,
 // cierra con Escape y devuelve el foco al botón que la abrió.
 export default function OptionsDialog({ open, onClose, options, onChange, saved, onErase }) {
   const { copy } = useValleCopy()
+  const sound = useSoundPrefs()
   const ref = useRef(null)
   const [asking, setAsking] = useState(false)
   const [erased, setErased] = useState(false)
@@ -50,6 +53,20 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
         </label>
 
         <div className="px-text mt-6">
+          <h3 className="text-sm" style={{ color: '#cfc5e0' }}>{copy.options.soundTitle}</h3>
+          <VolumeSlider id="volume-master" label={copy.options.master} value={sound.master} onChange={sound.setMaster} />
+          <VolumeSlider id="volume-music" label={copy.options.music} value={sound.music} onChange={sound.setMusic} />
+          <VolumeSlider
+            id="volume-fx"
+            label={copy.options.fx}
+            hint={copy.options.fxHint}
+            value={sound.fx}
+            onChange={sound.setFx}
+            onCommit={sound.previewFx}
+          />
+        </div>
+
+        <div className="px-text mt-6">
           <h3 className="text-sm" style={{ color: '#cfc5e0' }}>{copy.options.saveTitle}</h3>
           {saved && !asking && (
             <button type="button" className="px-btn px-btn--bone mt-3" onClick={() => setAsking(true)}>{copy.options.erase}</button>
@@ -67,7 +84,7 @@ export default function OptionsDialog({ open, onClose, options, onChange, saved,
         </div>
 
         <div className="mt-6">
-          {/* Con la confirmación abierta el botón principal es «Sí, borrar»; cerrar pasa a secundario. */}
+          {/* Con la confirmación abierta el botón principal es "Sí, borrar"; cerrar pasa a secundario. */}
           <button type="button" className={asking ? 'px-btn px-btn--bone' : 'px-btn'} onClick={onClose}>{copy.options.close}</button>
         </div>
       </div>

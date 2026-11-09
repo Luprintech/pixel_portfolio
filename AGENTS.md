@@ -9,7 +9,7 @@
 - Antes de crear una función o un archivo, busca con `rg` si ya existe algo parecido, y reutilízalo.
 - Sin código muerto ni duplicado, ni dibujos repetidos para miniaturas y mundo: el editor, la portada y el juego usan el mismo generador de personaje (`frontend/src/game/avatar/`), y las piezas de dibujo no dependen de React ni de Phaser.
 - En cambios visuales, comprueba el aspecto renderizado a tamaño real, en el editor y en el valle, en las cuatro direcciones y con la animación de marcha. Que el build pase no demuestra que el dibujo se vea bien.
-- Al cerrar, ejecuta las comprobaciones aplicables y di cuáles fallan o no se pudieron ejecutar; nunca escribas «todo probado» si solo se ha revisado el código.
+- Al cerrar, ejecuta las comprobaciones aplicables y di cuáles fallan o no se pudieron ejecutar; nunca escribas "todo probado" si solo se ha revisado el código.
 
 ## General
 

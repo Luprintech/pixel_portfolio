@@ -22,6 +22,7 @@ import BodyChoice from './BodyChoice'
 import ColorRow from './ColorRow'
 import EditorTabs from './EditorTabs'
 import FieldGroup from './FieldGroup'
+import MusicControl from './MusicControl'
 import PetPicker from './PetPicker'
 import PetStage from './PetStage'
 import StyleGrid from './StyleGrid'
@@ -63,7 +64,7 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
   const styleNames = STYLE_NAMES[lang]
   const { stageRef, tabsRef, barRef, columnRef } = useScrollPadding()
 
-  // «Aleatoria» y «Restablecer» cambian muchas cosas a la vez: un aviso para quien no ve la pantalla.
+  // "Aleatoria" y "Restablecer" cambian muchas cosas a la vez: un aviso para quien no ve la pantalla.
   // Se borra al rato para que repetir la acción vuelva a anunciarse.
   const [status, setStatus] = useState('')
   const timer = useRef(null)
@@ -116,6 +117,11 @@ export default function Editor({ look, pet, name, petName, replacing, onChange, 
             </div>
             <Link className="px-btn px-btn--bone !min-h-[44px] !px-3 shrink-0" to="/">{copy.editor.back}</Link>
           </header>
+
+          {/* La música de la portada sigue sonando aquí: se puede silenciar o bajar. */}
+          <div className="w-fit lg:mb-5">
+            <MusicControl />
+          </div>
 
           {/* Lo primero que se lee al entrar: entrar al valle sustituye la aventura guardada. */}
           {replacing && (

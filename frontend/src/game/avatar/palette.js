@@ -40,7 +40,7 @@ function luminance(hex) {
 }
 
 // Un pelo casi negro se fundiría con el contorno. Se levanta el tono base hasta una luminosidad
-// mínima, conservando el matiz (el «tinta» queda como un añil), y de ahí salen sus sombras.
+// mínima, conservando el matiz (el "tinta" queda como un añil), y de ahí salen sus sombras.
 const HAIR_MIN_LUMINANCE = 0.07
 
 function toHsl(hex) {

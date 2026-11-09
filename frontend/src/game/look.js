@@ -441,7 +441,7 @@ const ACCESSORY_EN = { '#f2b134': 'Saffron', '#d4503a': 'Tile red', '#b8527a': '
 const TOP_ES = { '#2f8f8b': 'Turquesa', '#7a3f8f': 'Morado', '#d4503a': 'Teja', '#3e6fb0': 'Azul', '#4f7f3f': 'Musgo', '#f1e6cf': 'Hueso', '#f2b134': 'Azafrán', '#b8527a': 'Rosa', '#1c1b3a': 'Negro', '#5c5a7a': 'Gris' }
 const TOP_EN = { '#2f8f8b': 'Teal', '#7a3f8f': 'Purple', '#d4503a': 'Tile red', '#3e6fb0': 'Blue', '#4f7f3f': 'Moss', '#f1e6cf': 'Bone', '#f2b134': 'Saffron', '#b8527a': 'Pink', '#1c1b3a': 'Black', '#5c5a7a': 'Grey' }
 
-// Nombre del color elegido: el de su paleta o, si lo eligió con el selector personalizado, «Personalizado».
+// Nombre del color elegido: el de su paleta o, si lo eligió con el selector personalizado, "Personalizado".
 // Un color propio se nombra con su código, para que se pueda saber cuál es sin verlo.
 export function colorName(lang, field, value) {
   return COLOR_NAMES[lang][field]?.[value] ?? `${CUSTOM_COLOR_NAME[lang]} ${value.toUpperCase()}`

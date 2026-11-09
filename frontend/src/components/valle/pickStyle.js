@@ -13,5 +13,5 @@ export const TILE_BACKGROUND = PAL.moss
 export const pickShadow = (active, ring = 5) =>
   active ? `0 0 0 3px ${PAL.ink}, 0 0 0 6px ${PAL.saffron}` : `0 0 0 3px ${PAL.ink}, 0 0 0 ${ring}px ${RING}`
 
-// Las opciones «sin nada» se marcan con una cruz de píxeles.
+// Las opciones "sin nada" se marcan con una cruz de píxeles.
 export const CROSS = [[0, 0], [4, 0], [1, 1], [3, 1], [2, 2], [1, 3], [3, 3], [0, 4], [4, 4]]

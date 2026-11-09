@@ -6,6 +6,7 @@
 import { shade, tint } from '../palette.js'
 import { contrast, lum, readable } from './colors.js'
 import { drawPet } from './engine.js'
+import { OUTLINE } from '../avatar/index.js'
 import { ellipse, rect } from '../pixelKit.js'
 
 // c pelo, s raya de la frente, p orejas, k zona central de la cara, i interior de la oreja,
@@ -172,6 +173,37 @@ const KHALESSI = {
 }
 
 export const khalessiCanvas = (frame = 0, tail = 0) => drawPet(SPECS.comun, KHALESSI, frame, tail)
+
+// Khalessi sentada. Es la misma gata con el cuerpo erguido bajo la cabeza, las patas juntas y la cola
+// tendida en el suelo. Al asearse cierra los ojos, baja la cabeza y se lleva una pata a la cara; la
+// pata sube y baja entre los dos fotogramas.
+const HEAD_EYES_SHUT = HEAD.map((row, i) => (i === 5 ? row.replace(/e/g, 'q') : i === 6 ? row.replace(/q/g, 'k') : row))
+const TAIL_FLAT = [
+  [[0, 5], [-1, 5], [-2, 5], [-3, 4]],
+  [[0, 5], [-1, 5], [-2, 5], [-3, 5]],
+]
+
+const sitSpec = (washing, step) => ({
+  w: 26, h: 16,
+  body: { cx: 16, cy: 10, rx: 5, ry: 5.2 },
+  legs: { y: 12, h: 3 },
+  tail: { frames: TAIL_FLAT },
+  head: { rows: washing ? HEAD_EYES_SHUT : HEAD, x: washing ? 1 : 2, y: washing ? 1 : 0, keys: KEYS },
+  post: (g, c, spec) => {
+    if (washing) {
+      // La pata levantada, clara y con contorno para que se vea sobre la máscara oscura: sube hasta
+      // los ojos y baja hasta la boca.
+      const top = 10 - (step % 2) * 3
+      rect(g, 17, top - 1, 4, 7, OUTLINE)
+      rect(g, 18, top, 2, 5, c.base)
+      rect(g, 18, top, 2, 1, c.belly)
+    }
+    whiskers(g, c, spec)
+  },
+})
+
+// `wash` activa el aseo; `step` (0 o 1) alterna los dos fotogramas del aseo o el vaivén de la cola.
+export const khalessiSitCanvas = (wash = false, step = 0) => drawPet(sitSpec(wash, step), KHALESSI, 0, step)
 
 export function catCanvas(breed, coat, marks, frame = 0, tail = 0) {
   const { spec, colors } = CAT_BREEDS[breed]

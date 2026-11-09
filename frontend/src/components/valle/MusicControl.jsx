@@ -2,8 +2,6 @@ import { useBackgroundMusic } from '../../hooks/useBackgroundMusic'
 import { PAL } from '../../game/palette'
 import { useValleCopy } from '../../lib/valleCopy'
 
-export const MUSIC_SRC = '/audio/flowerbed-fields.ogg'
-
 // Altavoz dibujado píxel a píxel (10×10): cuerpo y cono siempre, y ondas o aspa según el estado.
 const SPEAKER = ['M1 4h2v2H1z', 'M3 3h1v4H3z', 'M4 2h1v6H4z', 'M5 1h1v8H5z']
 const WAVES = ['M7 4h1v2H7z', 'M8 3h1v1H8z', 'M8 6h1v1H8z', 'M9 2h1v1H9z', 'M9 7h1v1H9z']
@@ -19,25 +17,25 @@ function SpeakerIcon({ on }) {
   )
 }
 
-// Botón de silencio y barra de volumen. Se oculta solo si la pista no está disponible.
+// Botón que silencia todo el sonido y barra de volumen general. Se oculta solo si la pista no está disponible.
 export default function MusicControl() {
   const { copy } = useValleCopy()
-  const { available, playing, volume, toggle, setVolume } = useBackgroundMusic(MUSIC_SRC)
+  const { available, muted, volume, toggle, setVolume } = useBackgroundMusic()
   if (!available) return null
-  const label = playing ? copy.audio.mute : copy.audio.play
+  const label = muted ? copy.audio.play : copy.audio.mute
 
   return (
     <div className="flex items-center gap-3 px-1 py-1" style={{ background: PAL.ink }}>
       <button
         type="button"
         onClick={toggle}
-        aria-pressed={playing}
+        aria-pressed={!muted}
         aria-label={label}
         title={label}
         className="px-btn px-btn--bone !min-h-10 !w-10 !p-0"
         style={{ color: PAL.ink }}
       >
-        <SpeakerIcon on={playing} />
+        <SpeakerIcon on={!muted && volume > 0} />
       </button>
       <label className="flex items-center">
         <span className="sr-only">{copy.audio.volume}</span>
