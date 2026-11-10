@@ -76,22 +76,18 @@ export const TRAITS = {
       ['K', 12, [11, 12]],
     ],
   },
-  // Bigote que baja por las comisuras y perilla en la barbilla. Solo lo lleva Atreus. Todo va dentro
-  // de la cara: en la fila 12, que es el cuello, la perilla parecía salir por detrás de la camiseta.
-  // Para hacerle sitio, de frente la boca sube a la fila 10, entre el bigote y la perilla. De perfil
-  // el bigote va bajo la nariz y baja por delante de la boca hasta la barbilla.
+  // Bigote que baja por las comisuras y perilla bajo el labio; la boca queda a la vista. Solo lo
+  // lleva Atreus. De perfil el bigote va bajo la nariz y baja por delante de la boca.
   candado: {
     front: [
       ['K', 9, [6, 7, 8, 9]],
       ['K', 10, [6, 9]],
-      ['m', 10, [7, 8]],
-      ['S', 11, [6, 9]],
-      ['K', 11, [7, 8]],
+      ['K', 12, [6, 7, 8, 9]],
     ],
     side: [
       ['K', 9, [12, 13]],
       ['K', 10, [12]],
-      ['K', 11, [12]],
+      ['K', 12, [11, 12]],
     ],
   },
   patillas: {
