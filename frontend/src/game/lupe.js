@@ -1,22 +1,25 @@
 // Lupe, la anfitriona del valle. Se dibuja con el mismo generador que la viajera, así que camina y
-// parpadea igual que ella; solo cambia su aspecto, tomado de su lámina de referencia
-// (`img/Items personalizacion/lupe.png`): melena rubia ondulada, vestido rosa y pendientes dorados.
+// parpadea igual que ella en las cuatro direcciones; solo cambia su aspecto: melena rubia larga y
+// ondulada, camiseta negra con la Trifuerza dorada, vaqueros y zapatillas blancas.
+// `emblem` y su melena no son opciones del creador: la viajera no puede llevarlos (`upgradeLook`
+// descarta lo que no está en sus listas).
 export const LUPE_LOOK = {
   body: 'mujer',
-  skin: '#e8b08c',
-  eyes: '#4a2f22',
+  skin: '#f2c9a4',
+  eyes: '#5a3a26',
   face: 'sonrisa',
-  hairStyle: 'ondulado',
-  hair: '#dfae5c',
+  hairStyle: 'melenaLupe',
+  hair: '#e2b45c',
   trait: 'ninguno',
   beardColor: '#5a3a28',
-  accessory: 'pendientes',
+  accessory: 'ninguno',
   accessoryColor: '#f2b134',
-  top: 'vestido',
-  topColor: '#e8789f',
-  bottom: 'falda',
-  bottomColor: '#e8789f',
-  shoes: 'mocasines',
-  shoesColor: '#7a4f35',
+  top: 'camiseta',
+  topColor: '#2b2833',
+  emblem: 'trifuerza',
+  bottom: 'pantalon',
+  bottomColor: '#3f5f9e',
+  shoes: 'zapatillas',
+  shoesColor: '#f1ece2',
   trim: '#f2b134',
 }

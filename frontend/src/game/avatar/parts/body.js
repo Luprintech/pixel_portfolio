@@ -8,7 +8,7 @@ export const DRESSES = ['vestido', 'vestidoTirantes', 'vestidoLargo', 'vestidoCa
 export const ONE_PIECE = [...DRESSES, 'peto']
 
 // Lo que necesita cualquier prenda: las columnas del torso y atajos de pintado por filas relativas.
-function brush(p, { view, g }) {
+function brush(p, { view, g, look }) {
   const front = view === 'down'
   const side = view === 'side'
   const { l: tl, r: tr } = g.torso
@@ -52,20 +52,40 @@ function brush(p, { view, g }) {
     })
   }
 
-  return { front, tl, tr, shl, shr, hl, hr, c0, c1, centre: g.centre, row, dot, body, shoulders, skinNeck, trimmedCollar, dressSkirt, centreZip }
+  return { front, side, emblem: look.emblem, tl, tr, shl, shr, hl, hr, c0, c1, centre: g.centre, row, dot, body, shoulders, skinNeck, trimmedCollar, dressSkirt, centreZip }
 }
 
 const sleeve = (len, cuff, color = 'D') => ({ len, cuff, color })
+
+// Trifuerza del pecho, en dorado fijo: de frente los tres triángulos con el hueco central (cinco
+// columnas, de r2 a r4) y de perfil solo el canto que asoma por delante del brazo. De espalda no hay.
+const TRIFORCE_FRONT = ['..Y..', '.Y.Y.', 'YYYYY']
+const TRIFORCE_SIDE = [[3, 0], [4, 0], [4, -1]]
+
+function triforce(b) {
+  if (b.front) TRIFORCE_FRONT.forEach((line, i) => [...line].forEach((ch, dx) => ch === 'Y' && b.dot(2 + i, b.c0 - 1 + dx, 'Y')))
+  else if (b.side) TRIFORCE_SIDE.forEach(([r, dx]) => b.dot(r, b.tr - 1 + dx, 'Y'))
+}
 
 const GARMENTS = {
   camiseta(b) {
     b.shoulders()
     b.body(1, 5)
-    // Volumen del torso: un pliegue de luz bajo el hombro y la sombra sobre el dobladillo.
-    ;[1, 2].forEach((r) => b.dot(r, b.tl + 1, 'L'))
+    // Volumen del torso: la sombra sobre el dobladillo y, en la lisa, un pliegue de luz bajo el hombro.
     b.row(5, b.tl + 1, b.tr - 1, 'M')
-    b.row(6, b.tl, b.tr, 'T')
-    b.trimmedCollar()
+    // La camiseta con emblema es lisa, de cuello redondo: el ribete y el pliegue de luz competirían
+    // con el dibujo.
+    if (b.emblem === 'trifuerza') {
+      b.row(6, b.tl, b.tr, 'M')
+      // Sobre negro el canto de luz del torso se lee como un tirante gris: se deja del color de la tela.
+      for (let r = 0; r <= 5; r++) b.dot(r, b.tl, 'D')
+      b.skinNeck()
+      triforce(b)
+    } else {
+      ;[1, 2].forEach((r) => b.dot(r, b.tl + 1, 'L'))
+      b.row(6, b.tl, b.tr, 'T')
+      b.trimmedCollar()
+    }
     return sleeve(3, 'M')
   },
 

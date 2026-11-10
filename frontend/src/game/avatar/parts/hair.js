@@ -253,6 +253,9 @@ const SHAPED = {
   },
 }
 
+// Borde exterior de la melena de Lupe vista de frente, de la fila 9 a la 17.
+const LUPE_FRONT_EDGE = [1, 0, 0, 1, 1, 0, 0, 1, 1]
+
 const STYLES = {
   // Pixie: muy corto, con mechones sueltos en la frente; orejas y cuello a la vista.
   pixie(kind, B, F) {
@@ -299,6 +302,43 @@ const STYLES = {
       rect(F, 14 - a, y, 15 - a, y)
     }
     rect(B, 4, 6, 11, 12)
+  },
+
+  // Melena de Lupe: larga, abundante y ondulada, con raya al medio y la frente despejada. Solo la
+  // lleva ella (no está en las listas del creador). De frente enmarca la cara y cae sobre los hombros
+  // hasta la cintura sin tapar las manos; de espalda cubre la espalda hasta la cintura.
+  melenaLupe(kind, B, F, _left, M) {
+    if (kind === 'side') return sideLong(B, M, F, { wave: true })
+    rect(F, 5, 0, 10, 0)
+    rect(F, 3, 1, 12, 1)
+    rect(F, 2, 2, 13, 3)
+    if (kind === 'up') {
+      // Ancha alrededor de la cabeza y sobre los hombros; más abajo se recoge para dejar ver los brazos.
+      rect(F, 1, 4, 14, 11)
+      rect(F, 2, 12, 13, 14)
+      for (let y = 15; y <= 19; y++) {
+        const a = WAVE[(y - 15) % 4] >> 1
+        rect(F, 3 + a, y, 12 - a, y)
+      }
+      rect(F, 4, 20, 11, 20)
+      rect(F, 5, 21, 6, 21)
+      rect(F, 9, 21, 10, 21)
+      return
+    }
+    // Cortina a cada lado de la raya: se abre sobre la frente y baja por fuera de las mejillas, sin
+    // estrechar la cara. Sobre los hombros cae un mechón que deja a la vista la manga y la mano.
+    mir(F, 2, 4, 5, 4)
+    mir(F, 1, 4, 3, 5)
+    mir(F, 1, 6, 2, 8)
+    ;[1, 2, 3].forEach((y) => put(F, 8, y, 'd'))
+    // Desde la mejilla el borde ondula una columna hacia fuera y hacia dentro, y acaba en punta.
+    LUPE_FRONT_EDGE.forEach((edge, i) => {
+      const y = 9 + i
+      mir(F, edge, y, y === 12 || y === 13 ? 4 : 2, y)
+    })
+    put(F, 1, 18)
+    put(F, 14, 18)
+    rect(B, 2, 5, 13, 17)
   },
 
   // Corto rizado: casquete de bultos, rizos sobre la frente y junto a las orejas.
@@ -725,6 +765,7 @@ const STYLES = {
 // Textura de cada peinado: cómo se reparten reflejos y sombras dentro de la masa de pelo.
 const TEXTURE = {
   ondulado: 'waves',
+  melenaLupe: 'locks',
   rizadoCorto: 'curls',
   voluminoso: 'curls',
   afro: 'curls',
@@ -744,6 +785,8 @@ function finish(m, all, texture) {
     let out = 'H'
     if (texture === 'strands' && y >= 5 && x % 3 === 0) out = 'd'
     else if (texture === 'waves' && y >= 2 && (x + (y >> 1)) % 3 === 0) out = 'd'
+    // Mechones largos que serpentean: una línea de sombra cada cuatro columnas que sigue la onda.
+    else if (texture === 'locks' && y >= 4 && (x + WAVE[y % 4]) % 4 === 0) out = 'd'
     else if (texture === 'curls') {
       // Rizos en racimos de cuatro columnas: brillo arriba de cada uno y sombra bajo él.
       const u = (x + (Math.floor(y / 3) % 2) * 2) % 4

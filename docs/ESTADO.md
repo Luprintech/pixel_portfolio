@@ -2,9 +2,17 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
+Última actualización: 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
 
 ## Hecho
+
+### Lupe rediseñada y coherencia entre vistas (2026-11-10)
+- Lupe (`game/lupe.js`) pasa del vestido rosa a su aspecto real, según la lámina que dio la usuaria: melena rubia larga y ondulada con raya al medio, camiseta negra con la Trifuerza dorada, vaqueros y zapatillas blancas. Sigue saliendo del generador, así que tiene las cuatro direcciones y la marcha con el mismo lienzo de 18×34.
+- Dos piezas son solo suyas y no aparecen en el creador: el peinado `melenaLupe` (`parts/hair.js`) y el campo `emblem: 'trifuerza'` de la camiseta (`parts/body.js`). La Trifuerza se ve entera de frente, un canto de perfil y nada de espalda. `upgradeLook` descarta ambos en una viajera guardada.
+- Las poses de la portada (`game/lupePoses.js`) ya no estampan el vestido con collar: el saludo y la caricia retiran el brazo que cuelga y dejan la melena que hay detrás.
+- Coherencia entre vistas de la viajera: las coletas de perfil son una coleta lateral con su goma (antes, una cola tras la cabeza); la cola alta se ve de espalda; las trenzas, que caen por delante, ya no aparecen sobre la espalda; los recogidos bajan hasta la nuca (`napeUp`), y el lazo y las horquillas cambian de columna de espalda para seguir en el mismo lado de la cabeza.
+- Comprobado pintando las cuatro direcciones y las tres poses ampliadas, las cinco poses de la portada, pruebas, lint y build.
+- Pendiente: la coleta baja cae sobre un hombro de frente y por el centro en las otras vistas; el flequillo largo y el piercing se ven igual en los dos perfiles; las mascotas solo tienen vista de perfil.
 
 ### Avatar de perfil: anatomía, cara, brazo, cabeza y calzado (2026-11-10)
 - Base revisada: avatar de hombre, camiseta, pantalón y botines. Láminas y animación en `docs/revision-perfil/` (antes, tres poses con y sin contorno ampliadas y a tamaño real, y `marcha.html`).
