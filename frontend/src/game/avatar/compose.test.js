@@ -232,8 +232,9 @@ describe('catálogo de las láminas de referencia', () => {
     expect(men.slice(0, 3)).toEqual(['rasurado', 'cortoClasico', 'dePunta'])
   })
 
-  it('las rejillas de expresiones, rasgos, complementos, calzados, prendas de arriba y peinados tienen 16 opciones', () => {
-    ;['face', 'trait', 'accessory', 'shoes', 'top'].forEach((field) => expect(LOOK_STYLES[field], field).toHaveLength(16))
+  it('las rejillas de expresiones, rasgos, calzados y prendas de arriba tienen 16 opciones y la de complementos 20', () => {
+    ;['face', 'trait', 'shoes', 'top'].forEach((field) => expect(LOOK_STYLES[field], field).toHaveLength(16))
+    expect(LOOK_STYLES.accessory).toHaveLength(20)
     expect(LOOK_STYLES.bottom).toHaveLength(8)
   })
 
@@ -272,5 +273,22 @@ describe('hoja de poses', () => {
       }),
     )
     expect(seen.size).toBe(DIRS.length * POSES)
+  })
+})
+
+describe('frente', () => {
+  // Una fila de sombra de piel bajo el flequillo se leía como una franja gris pintada sobre los ojos.
+  // Las filas 3 a 5 de la figura (8 a 10 del lienzo) son la frente y las cejas. Solo cuenta lo que
+  // toca la cabeza: avatar, peinado, complemento, expresión y rasgo.
+  it('no lleva una franja de sombra en ninguna combinación, vista ni pose', () => {
+    const heads = []
+    LOOK_STYLES.body.forEach((body) => {
+      styleChoices('hairStyle', { body }).forEach((hairStyle) => LOOK_STYLES.accessory.forEach((accessory) => heads.push({ ...DEFAULT_LOOK, body, hairStyle, accessory })))
+      LOOK_STYLES.face.forEach((face) => LOOK_STYLES.trait.forEach((trait) => heads.push({ ...DEFAULT_LOOK, body, hairStyle: 'calvo', face, trait })))
+    })
+    const banded = heads.filter((look) =>
+      ['down', 'left', 'right'].some((dir) => POSE_LIST.some((pose) => rowsOf(look, dir, pose).slice(8, 11).some((row) => row.includes('ss')))),
+    )
+    expect(banded).toEqual([])
   })
 })

@@ -7,7 +7,8 @@
 // y las negativas sobresalen por arriba (hasta -4). El perfil izquierdo es el derecho reflejado,
 // salvo en lo que no es simétrico (el rapado lateral solo se ve de un lado): `left` lo indica.
 //
-// Letras: H pelo, h reflejo, d sombra, T goma o lazo, z rapado (mezcla de pelo y piel).
+// Letras: H pelo, h reflejo, d sombra, T goma o lazo, z rapado (mezcla de pelo y piel), I raíz de
+// otro color e i su transición hacia el tono del pelo (solo la melena de Lupe).
 // El bob es el peinado de la base aprobada y va dibujado a mano, con su brillo y sus sombras;
 // el resto reparte reflejos y sombras solos (`finish`).
 
@@ -64,6 +65,14 @@ function braid(F, x, y0, y1) {
 }
 
 const WAVE = [0, 1, 2, 1]
+
+// Nuca de un recogido vista de espalda. El pelo baja hasta su nacimiento y se estrecha en dos
+// escalones: si se corta recto en la fila 8, media cabeza queda en piel y parece rapada.
+function napeUp(F) {
+  rect(F, 3, 4, 12, 8)
+  rect(F, 4, 9, 11, 9)
+  rect(F, 5, 10, 10, 10)
+}
 
 
 // Bob de la base aprobada: masa redonda hasta la barbilla, brillo arriba a la izquierda y sombra a
@@ -245,6 +254,67 @@ const SHAPED = {
   },
 }
 
+// Raíz castaña de la melena de Lupe, que se aclara poco a poco hasta el rubio a media melena (la
+// melena acaba en la fila 21). Cada tramo alterna celdas con el siguiente, en tablero, para que el
+// degradado no se lea como franjas rectas: raíz hasta la fila 3, mezcla de raíz y tono intermedio en
+// la 4 y la 5, intermedio de la 6 a la 8, mezcla de intermedio y rubio de la 9 a la 11 y, más rala,
+// en la 12. Se aplica a todas las capas y vistas.
+function rootLetter(x, y) {
+  const odd = (x + y) % 2 === 0
+  if (y <= 3) return 'I'
+  if (y <= 5) return odd ? 'I' : 'i'
+  if (y <= 8) return 'i'
+  if (y <= 11) return odd ? 'i' : null
+  if (y === 12) return (x + y) % 4 === 0 ? 'i' : null
+  return null
+}
+
+function darkRoots(layers) {
+  layers.forEach((layer) =>
+    layer.forEach((_, k) => {
+      const [x, y] = k.split(',').map(Number)
+      const letter = rootLetter(x, y)
+      if (letter) layer.set(k, letter)
+    }),
+  )
+}
+
+// Borde exterior de la melena de Lupe vista de frente, de la fila 9 a la 17.
+const LUPE_FRONT_EDGE = [1, 0, 0, 1, 1, 0, 0, 1, 1]
+
+// Forma de la melena de Lupe, sin la raíz.
+function lupeMane(kind, B, F, M) {
+  if (kind === 'side') return sideLong(B, M, F, { wave: true })
+  rect(F, 5, 0, 10, 0)
+  rect(F, 3, 1, 12, 1)
+  rect(F, 2, 2, 13, 3)
+  if (kind === 'up') {
+    // Ancha alrededor de la cabeza y sobre los hombros; más abajo se recoge para dejar ver los brazos.
+    rect(F, 1, 4, 14, 11)
+    rect(F, 2, 12, 13, 14)
+    for (let y = 15; y <= 19; y++) {
+      const a = WAVE[(y - 15) % 4] >> 1
+      rect(F, 3 + a, y, 12 - a, y)
+    }
+    rect(F, 4, 20, 11, 20)
+    rect(F, 5, 21, 6, 21)
+    rect(F, 9, 21, 10, 21)
+    return
+  }
+  // Cortina a cada lado de la raya: se abre sobre la frente y baja por fuera de las mejillas, sin
+  // estrechar la cara. Sobre los hombros cae un mechón que deja a la vista la manga y la mano.
+  mir(F, 2, 4, 5, 4)
+  mir(F, 1, 4, 3, 5)
+  mir(F, 1, 6, 2, 8)
+  LUPE_FRONT_EDGE.forEach((edge, i) => {
+    const y = 9 + i
+    mir(F, edge, y, y === 12 || y === 13 ? 4 : 2, y)
+  })
+  put(F, 1, 18)
+  put(F, 14, 18)
+  rect(B, 2, 5, 13, 17)
+}
+
 const STYLES = {
   // Pixie: muy corto, con mechones sueltos en la frente; orejas y cuello a la vista.
   pixie(kind, B, F) {
@@ -291,6 +361,56 @@ const STYLES = {
       rect(F, 14 - a, y, 15 - a, y)
     }
     rect(B, 4, 6, 11, 12)
+  },
+
+  // Melena de Lupe: larga, abundante y ondulada, con raya al medio y la frente despejada. Solo la
+  // lleva ella (no está en las listas del creador). De frente enmarca la cara y cae sobre los hombros
+  // hasta la cintura sin tapar las manos; de espalda cubre la espalda hasta la cintura.
+  melenaLupe(kind, B, F, _left, M) {
+    lupeMane(kind, B, F, M)
+    darkRoots([B, M, F])
+    // La raya al medio se marca después de la raíz, que la taparía: sobre el castaño va en el
+    // tono intermedio, más claro, como el cuero cabelludo que asoma. De espalda solo llega a la coronilla.
+    if (kind === 'down') [1, 2, 3].forEach((y) => put(F, 8, y, 'i'))
+    else if (kind === 'up') [0, 1, 2].forEach((y) => put(F, 8, y, 'i'))
+  },
+
+  // Pelo de Atreus: abundante y peinado hacia atrás, con la frente despejada, volumen arriba y en la
+  // nuca, y la oreja a la vista. Solo lo lleva él (no está en las listas del creador). Las líneas de
+  // reflejo siguen la dirección del peinado: verticales de frente y de espalda, hacia atrás de perfil.
+  haciaAtras(kind, B, F) {
+    if (kind === 'side') {
+      rect(F, 4, -1, 11, -1)
+      rect(F, 3, 0, 12, 0)
+      rect(F, 2, 1, 13, 1)
+      rect(F, 1, 2, 13, 2)
+      rect(F, 1, 3, 12, 3)
+      rect(F, 1, 4, 9, 4)
+      // El pelo rodea la oreja por detrás y se recoge en la nuca: no baja por la mejilla.
+      rect(F, 1, 5, 7, 5)
+      rect(F, 1, 6, 6, 6)
+      rect(F, 2, 7, 6, 7)
+      rect(F, 2, 8, 5, 8)
+      rect(F, 3, 9, 5, 9)
+      ;[[10, 0], [9, 1], [8, 2], [7, 3], [6, 4], [5, 5], [12, 2], [11, 3], [6, 1], [5, 2], [4, 3], [3, 4]].forEach(([x, y]) => put(F, x, y, 'h'))
+      return
+    }
+    rect(F, 5, -1, 10, -1)
+    rect(F, 4, 0, 11, 0)
+    rect(F, 3, 1, 12, 1)
+    rect(F, 2, 2, 13, 2)
+    if (kind === 'up') {
+      rect(F, 2, 3, 13, 8)
+      rect(F, 3, 9, 12, 9)
+      ;[5, 8, 11].forEach((x) => {
+        for (let y = 0; y <= 8; y++) if (y % 3 !== 0) put(F, x, y, 'h')
+      })
+      return
+    }
+    // Entradas a los lados de la frente; el pelo acaba sobre la oreja, sin patilla.
+    mir(F, 2, 3, 3, 3)
+    mir(F, 2, 4, 2, 4)
+    ;[[6, 0], [6, 1], [9, 0], [9, 1], [4, 2], [11, 2]].forEach(([x, y]) => put(F, x, y, 'h'))
   },
 
   // Corto rizado: casquete de bultos, rizos sobre la frente y junto a las orejas.
@@ -372,11 +492,15 @@ const STYLES = {
     }
     capDown(F, { tight: true })
     if (kind === 'up') {
-      rect(F, 3, 4, 12, 8)
-      rect(F, 7, 1, 8, 1, 'T')
-      rect(F, 7, 2, 8, 2)
-      rect(F, 6, 3, 9, 9)
-      rect(F, 7, 10, 8, 12)
+      // La cola sale de la coronilla, sube y cae por detrás hasta la fila 6, igual que de perfil. Va
+      // del mismo color que el casquete, así que la recortan una sombra a cada lado y la goma.
+      napeUp(F)
+      rect(F, 7, -4, 8, -4)
+      rect(F, 6, -3, 9, 6)
+      rect(F, 7, 7, 8, 7)
+      rect(F, 6, 0, 9, 0, 'T')
+      for (let y = 1; y <= 6; y++) [5, 10].forEach((x) => put(F, x, y, 'd'))
+      ;[6, 9].forEach((x) => put(F, x, 7, 'd'))
       return
     }
     rect(F, 7, -1, 8, -1, 'T')
@@ -423,13 +547,17 @@ const STYLES = {
   // Dos coletas: dos mechones sueltos a los lados de la cabeza, separados por una goma.
   coletas(kind, B, F) {
     if (kind === 'side') {
+      // De perfil se ve la coleta del lado que mira a cámara, a la misma altura que de frente (filas
+      // 1 a 8). Nace tras la oreja, con la goma delante, y sobresale por la nuca para que se lea en
+      // la silueta; detrás de la cabeza, como estaba, parecía una sola cola de caballo.
       capSide(F, { tight: true })
       rect(F, 3, 5, 6, 7)
-      put(F, 3, 2, 'T')
-      rect(F, 0, 1, 2, 1)
-      rect(F, 0, 2, 2, 5)
-      rect(F, 0, 6, 1, 8)
-      put(F, 1, 9)
+      rect(F, 2, 1, 4, 1)
+      rect(F, 1, 2, 5, 4)
+      rect(F, 1, 5, 4, 6)
+      rect(F, 2, 7, 3, 8)
+      rect(F, 6, 2, 6, 3, 'T')
+      ;[[5, 4], [4, 5], [4, 6], [3, 7], [3, 8]].forEach(([x, y]) => put(F, x, y, 'd'))
       return
     }
     capDown(F, { tight: true })
@@ -440,7 +568,7 @@ const STYLES = {
     mir(F, 0, 3, 2, 4)
     mir(F, 1, 5, 2, 6)
     mir(F, 1, 7, 1, 8)
-    if (kind === 'up') rect(F, 3, 4, 12, 8)
+    if (kind === 'up') napeUp(F)
     else rect(B, 4, 5, 11, 8)
   },
 
@@ -454,9 +582,13 @@ const STYLES = {
     }
     capDown(F)
     if (kind === 'up') {
-      rect(F, 3, 5, 12, 10)
-      braid(F, 5, 11, 22)
-      braid(F, 9, 11, 22)
+      // Las trenzas caen por delante de los hombros: por detrás solo asoma su arranque junto
+      // al cuello, en la capa trasera para que los hombros lo tapen. La raya queda en sombra.
+      rect(F, 3, 5, 12, 9)
+      rect(F, 4, 10, 11, 10)
+      for (let y = 1; y <= 9; y++) put(F, 8, y, 'd')
+      braid(B, 2, 9, 11)
+      braid(B, 12, 9, 11)
       return
     }
     mir(F, 3, 5, 4, 8)
@@ -479,7 +611,7 @@ const STYLES = {
     rect(F, 6, -4, 9, -4)
     rect(F, 5, -3, 10, -2)
     rect(F, 6, -1, 9, -1, 'T')
-    if (kind === 'up') rect(F, 3, 4, 12, 8)
+    if (kind === 'up') napeUp(F)
     else rect(B, 4, 5, 11, 8)
   },
 
@@ -705,6 +837,7 @@ const STYLES = {
 // Textura de cada peinado: cómo se reparten reflejos y sombras dentro de la masa de pelo.
 const TEXTURE = {
   ondulado: 'waves',
+  melenaLupe: 'locks',
   rizadoCorto: 'curls',
   voluminoso: 'curls',
   afro: 'curls',
@@ -724,6 +857,8 @@ function finish(m, all, texture) {
     let out = 'H'
     if (texture === 'strands' && y >= 5 && x % 3 === 0) out = 'd'
     else if (texture === 'waves' && y >= 2 && (x + (y >> 1)) % 3 === 0) out = 'd'
+    // Mechones largos que serpentean: una línea de sombra cada cuatro columnas que sigue la onda.
+    else if (texture === 'locks' && y >= 4 && (x + WAVE[y % 4]) % 4 === 0) out = 'd'
     else if (texture === 'curls') {
       // Rizos en racimos de cuatro columnas: brillo arriba de cada uno y sombra bajo él.
       const u = (x + (Math.floor(y / 3) % 2) * 2) % 4

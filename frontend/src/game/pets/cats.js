@@ -36,6 +36,8 @@ const HEAD_FLAT = [
   '.............ckkmkkc..',
   '..............ccccc...',
 ]
+// Orejas pequeñas y dobladas hacia delante, pegadas a la cabeza.
+const HEAD_FOLD = ['', '', '.............pp....pp.', ...HEAD.slice(3)]
 // Mechones en la punta de las orejas.
 const HEAD_TUFTED = ['............p........p', ...HEAD]
 // Orejas más altas y puntiagudas.
@@ -126,6 +128,36 @@ const SPECS = {
     head: { rows: HEAD, x: 6, y: 1, keys: KEYS },
     post: whiskers,
   },
+  // Rechoncho, de cabeza redonda y orejas dobladas.
+  fold: {
+    w: 26, h: 16,
+    body: { cx: 10, cy: 10, rx: 7.4, ry: 4 },
+    legs: { y: 12, h: 3 },
+    tail: { frames: TAIL_FLUFFY },
+    head: { rows: HEAD_FOLD, x: 2, y: 1, keys: KEYS },
+    details: chestPatch(2.2, 2.2, 6),
+    post: whiskers,
+  },
+  // Fino y elegante, de un solo color, con las orejas grandes y la cola larga.
+  azulRuso: {
+    w: 26, h: 17,
+    body: { cx: 10, cy: 11, rx: 7.6, ry: 3.1 },
+    legs: { y: 13, h: 3 },
+    tail: { frames: TAIL_WHIP },
+    head: { rows: HEAD_BIG_EARS, x: 2, y: 1, keys: KEYS },
+    post: whiskers,
+  },
+  // Tricolor: manto claro con parches del color de detalles y otros oscuros.
+  calico: {
+    w: 26, h: 16,
+    body: { cx: 10, cy: 10, rx: 7.4, ry: 3.6 },
+    legs: { y: 12, h: 3 },
+    tail: { frames: TAIL_UP, rings: true },
+    spots: [[4, 8, 3, 2], [12, 7, 3, 2]],
+    details: (g, c) => [[8, 7, 3, 2], [6, 10, 2, 2]].forEach(([x, y, w, h]) => rect(g, x, y, w, h, c.patch)),
+    head: { rows: HEAD, x: 2, y: 1, keys: KEYS },
+    post: whiskers,
+  },
 }
 
 // Reparto de colores común: todo sale del pelaje, y los detalles dan patas, pecho y manchas.
@@ -154,6 +186,8 @@ function catColors(coat, marks, extra = {}) {
   }
 }
 
+const CALICO_DARK = '#46414f'
+
 export const CAT_BREEDS = {
   comun: { spec: SPECS.comun, colors: (coat, marks) => catColors(coat, marks, { iris: '#7cc05a' }) },
   persa: { spec: SPECS.persa, colors: (coat, marks) => catColors(coat, marks, { iris: '#e8a830', over: { legs: coat, point: coat, tail: coat } }) },
@@ -163,6 +197,14 @@ export const CAT_BREEDS = {
     colors: (coat, marks) => catColors(coat, marks, { iris: '#5bb4e5', over: { legs: coat, bib: null, stripe: contrast(coat, 0.1), point: contrast(coat, 0.2), tail: contrast(coat, 0.2), inner: shade(coat, 0.8) } }),
   },
   bengala: { spec: SPECS.bengala, colors: (coat, marks) => catColors(coat, marks, { iris: '#e8c040', over: { legs: coat, bib: null } }) },
+  fold: { spec: SPECS.fold, colors: (coat, marks) => catColors(coat, marks, { iris: '#e8a830' }) },
+  // De un solo color: los detalles solo tiñen las puntas de las patas.
+  azulRuso: { spec: SPECS.azulRuso, colors: (coat, marks) => catColors(coat, marks, { iris: '#7cc05a', over: { legs: coat, sock: marks, bib: null } }) },
+  // Una oreja y la cola del color de detalles; los parches oscuros son fijos para que haya tres colores.
+  calico: {
+    spec: SPECS.calico,
+    colors: (coat, marks) => catColors(coat, marks, { iris: '#7cc05a', over: { legs: coat, bib: null, point: marks, tail: marks, brow: CALICO_DARK, patch: CALICO_DARK } }),
+  },
 }
 
 // Khalessi: la gata siamesa de Lupe. No es una opción de la viajera; se usa en la portada.

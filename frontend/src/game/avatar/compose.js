@@ -25,7 +25,7 @@ export const FRAME_H = MARGIN + FIGURE_ROWS + 2
 // Familias de color del dibujo: el contorno de cada celda hereda la de la forma que bordea, para
 // que la figura no lleve una línea negra pegada sino el borde oscuro de su propio color.
 const FAMILY = {
-  H: 'y', h: 'y', d: 'y', z: 'y',
+  H: 'y', h: 'y', d: 'y', z: 'y', I: 'y', i: 'y',
   D: 'j', L: 'j', M: 'j', T: 'j', W: 'j',
   N: 'k', u: 'k', n: 'k',
   R: 'l', Q: 'l', r: 'l',

@@ -76,6 +76,20 @@ export const TRAITS = {
       ['K', 12, [11, 12]],
     ],
   },
+  // Bigote que baja por las comisuras y perilla bajo el labio; la boca queda a la vista. Solo lo
+  // lleva Atreus. De perfil el bigote va bajo la nariz y baja por delante de la boca.
+  candado: {
+    front: [
+      ['K', 9, [6, 7, 8, 9]],
+      ['K', 10, [6, 9]],
+      ['K', 12, [6, 7, 8, 9]],
+    ],
+    side: [
+      ['K', 9, [12, 13]],
+      ['K', 10, [12]],
+      ['K', 12, [11, 12]],
+    ],
+  },
   patillas: {
     front: [7, 8, 9, 10].map((y) => ['K', y, [3, 12]]),
     side: [7, 8, 9].map((y) => ['K', y, [10]]),

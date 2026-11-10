@@ -5,8 +5,8 @@
 export const PET_KINDS = ['ninguna', 'perro', 'gato']
 
 export const PET_BREEDS = {
-  perro: ['collie', 'pastor', 'beagle', 'husky', 'teckel'],
-  gato: ['comun', 'persa', 'maine', 'sphynx', 'bengala'],
+  perro: ['collie', 'pastor', 'beagle', 'husky', 'teckel', 'labrador', 'dalmata', 'corgi'],
+  gato: ['comun', 'persa', 'maine', 'sphynx', 'bengala', 'fold', 'azulRuso', 'calico'],
 }
 
 // Paletas de pelaje: el color principal y el de los detalles (manchas, hocico, patas, pecho).
@@ -23,11 +23,17 @@ const BREED_COLORS = {
   beagle: { coat: '#c8944c', marks: '#f4efe3' },
   husky: { coat: '#8c93a6', marks: '#f4efe3' },
   teckel: { coat: '#8a5a3a', marks: '#c8944c' },
+  labrador: { coat: '#c8944c', marks: '#eadbc0' },
+  dalmata: { coat: '#f4efe3', marks: '#2c2833' },
+  corgi: { coat: '#e49a52', marks: '#f4efe3' },
   comun: { coat: '#e49a52', marks: '#f4efe3' },
   persa: { coat: '#c9cbd6', marks: '#f4efe3' },
   maine: { coat: '#8a5a3a', marks: '#f4efe3' },
   sphynx: { coat: '#e8b8a8', marks: '#c8944c' },
   bengala: { coat: '#c8944c', marks: '#8a5a3a' },
+  fold: { coat: '#8c93a6', marks: '#f4efe3' },
+  azulRuso: { coat: '#8c93a6', marks: '#8c93a6' },
+  calico: { coat: '#f4efe3', marks: '#c8944c' },
 }
 
 export const DEFAULT_PET = { kind: 'ninguna', breed: null, coat: null, marks: null }
@@ -35,8 +41,8 @@ export const DEFAULT_PET = { kind: 'ninguna', breed: null, coat: null, marks: nu
 export const PET_NAMES = {
   es: {
     kinds: { ninguna: 'Sin mascota', perro: 'Perro', gato: 'Gato' },
-    perro: { collie: 'Border collie', pastor: 'Pastor alemán', beagle: 'Beagle', husky: 'Husky', teckel: 'Teckel' },
-    gato: { comun: 'Europeo común', persa: 'Persa', maine: 'Maine Coon', sphynx: 'Sphynx', bengala: 'Bengalí' },
+    perro: { collie: 'Border collie', pastor: 'Pastor alemán', beagle: 'Beagle', husky: 'Husky', teckel: 'Teckel', labrador: 'Labrador', dalmata: 'Dálmata', corgi: 'Corgi' },
+    gato: { comun: 'Europeo común', persa: 'Persa', maine: 'Maine Coon', sphynx: 'Sphynx', bengala: 'Bengalí', fold: 'Scottish Fold', azulRuso: 'Azul ruso', calico: 'Calicó' },
     coat: {
       '#46414f': 'Negro', '#6e4428': 'Chocolate', '#8a5a3a': 'Marrón', '#c8944c': 'Canela', '#e49a52': 'Naranja',
       '#8c93a6': 'Gris', '#c9cbd6': 'Plata', '#f4efe3': 'Blanco', '#e8b8a8': 'Rosado',
@@ -45,8 +51,8 @@ export const PET_NAMES = {
   },
   en: {
     kinds: { ninguna: 'No pet', perro: 'Dog', gato: 'Cat' },
-    perro: { collie: 'Border collie', pastor: 'German Shepherd', beagle: 'Beagle', husky: 'Husky', teckel: 'Dachshund' },
-    gato: { comun: 'Domestic shorthair', persa: 'Persian', maine: 'Maine Coon', sphynx: 'Sphynx', bengala: 'Bengal' },
+    perro: { collie: 'Border collie', pastor: 'German Shepherd', beagle: 'Beagle', husky: 'Husky', teckel: 'Dachshund', labrador: 'Labrador', dalmata: 'Dalmatian', corgi: 'Corgi' },
+    gato: { comun: 'Domestic shorthair', persa: 'Persian', maine: 'Maine Coon', sphynx: 'Sphynx', bengala: 'Bengal', fold: 'Scottish Fold', azulRuso: 'Russian Blue', calico: 'Calico' },
     coat: {
       '#46414f': 'Black', '#6e4428': 'Chocolate', '#8a5a3a': 'Brown', '#c8944c': 'Tan', '#e49a52': 'Orange',
       '#8c93a6': 'Grey', '#c9cbd6': 'Silver', '#f4efe3': 'White', '#e8b8a8': 'Pink',

@@ -17,49 +17,35 @@ function stamp(rows, x, y, art) {
   return next
 }
 
-// La mano que cuelga junto a la falda se tapa con el pelo y la falda, que es lo que hay debajo.
-const withoutHand = (rows) => stamp(rows, 13, 22, ['HH', 'HH'])
+// Sin el brazo derecho colgando queda lo que hay detrás: la melena, con una columna de sombra junto
+// al torso, y su borde inferior. El antebrazo ocupa las filas 22 a 24 y la manga las 19 a 21.
+const withoutForearm = (rows) => stamp(rows, 12, 22, ['dH', 'dHH', 'jyyy'])
+const withoutArm = (rows) => stamp(withoutForearm(rows), 12, 19, ['dH', 'dH', 'dH'])
 
 // Brazo en alto junto a la cabeza, con la mano abierta; en el segundo paso la mano se inclina.
 // La mano mide cuatro filas y el brazo, que sale del hombro, otras seis; se pintan por separado
-// para poder mover solo la mano.
+// para poder mover solo la mano. El contorno es el del resto de la figura: el borde oscuro de la
+// piel (x) y el de la camiseta (j), no una línea negra.
 const WAVE_HAND = [
-  ['.XXXX.', 'XSSSSX', 'XSsSsX', '.XSSX.'],
-  ['..XXXX', '.XSSSX', '.XSsSX', '.XSSX.'],
+  ['.xxxx.', 'xSSSSx', 'xSsSsx', '.xSSx.'],
+  ['..xxxx', '.xSSSx', '.xSsSx', '.xSSx.'],
 ]
-const WAVE_ARM = ['.XSSX.', '.XSSX.', '.XSSX.', '.XDDX.', '.XDDX.', '.XDMX.']
+const WAVE_ARM = ['.xSSx.', '.xSSx.', '.xSSx.', '.jDDj.', '.jDDj.', '.jDMj.']
 
 // Brazo extendido hacia el suelo, donde espera la gata: la mano sube y baja una fila al acariciar.
+// La manga corta se queda en el hombro, así que lo que se estira es antebrazo y mano.
 const PET = [
-  ['XXXXX', 'DDSSS', 'XXXXX'],
-  ['.....', 'XXXXX', 'DDSSS', 'XXXXX'],
+  ['xxxxx', 'sSSSS', 'xxxxx'],
+  ['.....', 'xxxxx', 'sSSSS', 'xxxxx'],
 ]
-
-// El vestido de su lámina, que el generador no tiene: hombros descubiertos con un collar dorado y un
-// rubí en el centro, y mangas abullonadas que acaban en un puño dorado. Va en las columnas 1 a 16 de las
-// filas 18 a 21, simétrico, y se estampa antes que cualquier pose (la mano en alto lo tapa a su paso).
-const GOWN = [
-  '.XDLDSSSSSSDDMX.',
-  'XDLDDTTJJTTDDMMX',
-  'XDDDM......MDDMX',
-  '.XTTX......XTTX.',
-]
-const withGown = (rows) => stamp(rows, 1, 18, GOWN)
 
 const EDITS = {
   idle: (rows) => rows,
-  wave: (rows, step) => stamp(stamp(stamp(withoutHand(rows), 14, 19, ['DD']), 12, 13, WAVE_ARM), 12, 9, WAVE_HAND[step]),
-  pet: (rows, step) => stamp(withoutHand(rows), 13, 22, PET[step]),
+  wave: (rows, step) => stamp(stamp(stamp(withoutArm(rows), 14, 19, ['DD']), 12, 13, WAVE_ARM), 12, 9, WAVE_HAND[step]),
+  pet: (rows, step) => stamp(withoutForearm(rows), 13, 22, PET[step]),
 }
 
-// Con el brazo en alto la manga derecha nace del hombro: se quita la parte que colgaba bajo él.
-const withoutHangingSleeve = (gowned, original) =>
-  gowned.map((row, y) => (y === 20 || y === 21 ? row.slice(0, 12) + original[y].slice(12) : row))
-
-const editFor = (pose, step) => (rows) => {
-  const gowned = withGown(rows)
-  return EDITS[pose](pose === 'wave' ? withoutHangingSleeve(gowned, rows) : gowned, step)
-}
+const editFor = (pose, step) => (rows) => EDITS[pose](rows, step)
 
 // La matriz de letras de una pose, sin pintar: es lo que se comprueba en las pruebas.
 export const lupeRows = (pose, step = 0) => editFor(pose, step)(composeAvatar(LUPE_LOOK, 'down', 0).rows)

@@ -2,9 +2,33 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
+Última actualización: 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
 
 ## Hecho
+
+### Atreus, la pareja de Lupe (2026-11-10)
+- Personaje nuevo con aspecto fijo (`game/atreus.js`), dibujado con el generador del avatar: mismo lienzo de 18×34, tres poses y cuatro direcciones. En el código va con su seudónimo del lore, no con el nombre real.
+- Piezas solo suyas, que no aparecen en el creador: el peinado `haciaAtras` (`parts/hair.js`), el vello `candado` (bigote y perilla, `parts/traits.js`) y la expresión `sonrisaRasgada` (`parts/face.js`).
+- Revisión de la usuaria (2026-11-10): sin patillas (el pelo acaba sobre la oreja), sin pendiente, pelo negro intenso con reflejos gris oscuro (`deepHair` en `palette.js` salta el aclarado del pelo oscuro, solo para él) y nariz de perfil de una fila (`nose: 'corta'` en `parts/head.js`); no lleva rubor en las mejillas (`cheeks: false` en su expresión) y de perfil el bigote va bajo la nariz y baja por delante de la boca. La perilla se probó dentro de la barbilla y la usuaria prefirió dejarla donde estaba, bajo el labio.
+- `game/characters.js` reúne los personajes de aspecto fijo (Lupe y Atreus) y da su hoja de sprites con `characterSheet(id)`, lista para registrarla en el juego igual que la de la viajera.
+- Pendiente: Atreus no aparece todavía en ninguna pantalla. Su sitio según el guion es el interior de la casa de Lupe (`casa.atreus_*` en `docs/DIALOGOS.md`), que aún no existe, y el juego no tiene sistema de NPC.
+
+### Raíz oscura de Lupe, complementos y razas nuevas (2026-11-10)
+- Ajuste posterior, a petición de la usuaria: la raíz pasa a castaño (el marrón oscuro parecía un casco), baja degradándose hasta media melena (fila 12 de 21) y la camiseta pasa a blanca. La Trifuerza se dibuja como sus pendientes: triángulos dorados con el centro y los bordes entre ellos en negro (`TRIFORCE_FRONT` en `parts/body.js`, 6×4 píxeles; no cabe un contorno completo por triángulo).
+- Lupe lleva la raíz castaña oscura y el pelo se aclara hasta el rubio (`hairRoot` en `game/lupe.js`; letras `I` e `i` en `avatar/palette.js`; `darkRoots` en `parts/hair.js`). El degradado alterna celdas entre tramos para no leerse como franjas. Sin `hairRoot` esas letras son el color del pelo, así que la viajera no cambia.
+- Cuatro complementos nuevos en el creador (`parts/accessories.js`, nombres en `look.js`): bufanda, corona de princesa, boina y orejas de gato. La rejilla de complementos pasa de 16 a 20. La bufanda cuelga por el lado izquierdo del personaje: de espalda no se ve el cabo y de perfil solo desde ese lado.
+- Tres razas de perro (labrador, dálmata, corgi) y tres de gato (Scottish Fold, azul ruso, calicó) en `game/pets/` y `game/pet.js`: ocho de cada. No hay siamés a propósito, para que ninguna mascota se confunda con Khalessi.
+- Comprobado pintando cada pieza ampliada en las cuatro vistas, pruebas, lint y build. Pendiente: verlo dentro del creador y del valle en el navegador.
+
+### Lupe rediseñada y coherencia entre vistas (2026-11-10)
+- Lupe (`game/lupe.js`) pasa del vestido rosa a su aspecto real, según la lámina que dio la usuaria: melena rubia larga y ondulada con raya al medio, camiseta negra con la Trifuerza dorada, vaqueros y zapatillas blancas. Sigue saliendo del generador, así que tiene las cuatro direcciones y la marcha con el mismo lienzo de 18×34.
+- Dos piezas son solo suyas y no aparecen en el creador: el peinado `melenaLupe` (`parts/hair.js`) y el campo `emblem: 'trifuerza'` de la camiseta (`parts/body.js`). La Trifuerza se ve entera de frente, un canto de perfil y nada de espalda. `upgradeLook` descarta ambos en una viajera guardada.
+- Las poses de la portada (`game/lupePoses.js`) ya no estampan el vestido con collar: el saludo y la caricia retiran el brazo que cuelga y dejan la melena que hay detrás.
+- Coherencia entre vistas de la viajera: las coletas de perfil son una coleta lateral con su goma (antes, una cola tras la cabeza); la cola alta se ve de espalda; las trenzas, que caen por delante, ya no aparecen sobre la espalda; los recogidos bajan hasta la nuca (`napeUp`), y el lazo y las horquillas cambian de columna de espalda para seguir en el mismo lado de la cabeza.
+- Frente sin franja: `paintFront` (`parts/face.js`) pintaba una fila de sombra de piel bajo el flequillo que se leía como una línea gris sobre los ojos en todos los peinados; se quitó, junto con el píxel de sombra de la frente de perfil. Cejas y ojos no cambian.
+- El brazo de Lupe al saludar y al acariciar usa el contorno de la figura (borde de piel y de camiseta) en lugar del negro neutro.
+- Comprobado pintando las cuatro direcciones y las tres poses ampliadas, las cinco poses de la portada, pruebas, lint y build.
+- Pendiente: la coleta baja cae sobre un hombro de frente y por el centro en las otras vistas; el flequillo largo y el piercing se ven igual en los dos perfiles; las mascotas solo tienen vista de perfil.
 
 ### Avatar de perfil: anatomía, cara, brazo, cabeza y calzado (2026-11-10)
 - Base revisada: avatar de hombre, camiseta, pantalón y botines. Láminas y animación en `docs/revision-perfil/` (antes, tres poses con y sin contorno ampliadas y a tamaño real, y `marcha.html`).

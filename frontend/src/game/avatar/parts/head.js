@@ -2,6 +2,8 @@
 // aparte, así que cambiar de peinado o de expresión no toca esta forma. De frente y de espalda es el
 // mismo óvalo de 10 columnas; de perfil mira a la derecha.
 // Las filas empiezan en la 3 de la figura (las tres de arriba son pelo).
+import { EMPTY } from '../grid.js'
+
 const FRONT = [
   '....SSSSSSSS....',
   ...Array(7).fill('...SSSSSSSSSS...'),
@@ -35,8 +37,17 @@ const SIDE = [
 
 const HEAD_TOP = 3
 
-export function paintHead(p, { view, male }) {
-  if (view === 'side') return p.rows(HEAD_TOP, SIDE)
+// Con `nose: 'corta'` la punta de la nariz de perfil ocupa una sola fila en vez de dos: se quita la
+// de abajo, que quedaba pegada al bigote.
+const NOSE_COL = 14
+const NOSE_LOWER_ROW = 9
+
+export function paintHead(p, { view, male, look }) {
+  if (view === 'side') {
+    p.rows(HEAD_TOP, SIDE)
+    if (look.nose === 'corta') p.put(NOSE_COL, NOSE_LOWER_ROW, EMPTY)
+    return
+  }
   p.rows(HEAD_TOP, FRONT)
   // La mandíbula del avatar de hombre es más ancha: la barbilla no se estrecha.
   if (male) p.span(12, 4, 11, 'S')

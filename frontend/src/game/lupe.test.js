@@ -6,19 +6,31 @@ import { lupeRows } from './lupePoses.js'
 import { LETTERS } from './avatar/palette.js'
 
 describe('Lupe', () => {
-  it('su aspecto es una combinación válida del generador', () => {
-    expect(isValidLook(LUPE_LOOK)).toBe(true)
+  it('su emblema y su melena no son opciones del creador', () => {
+    expect(isValidLook(LUPE_LOOK)).toBe(false)
+    expect(isValidLook({ ...LUPE_LOOK, hairStyle: 'ondulado' })).toBe(true)
   })
 
   it('se dibuja en las cuatro direcciones', () => {
     ;['down', 'left', 'right', 'up'].forEach((dir) => expect(composeAvatar(LUPE_LOOK, dir, 1).rows.length).toBeGreaterThan(0))
   })
 
-  it('lleva el collar con el rubí y las mangas abullonadas en todas sus poses', () => {
+  // La Trifuerza va en dorado fijo (letra Y): entera de frente, un canto de perfil y nada de espalda.
+  const gold = (dir, pose) => composeAvatar(LUPE_LOOK, dir, pose).rows.join('').split('Y').length - 1
+
+  it('enseña la Trifuerza solo desde donde se ve', () => {
+    ;[0, 1, 2].forEach((pose) => {
+      expect(gold('down', pose)).toBe(10)
+      expect(gold('left', pose)).toBe(3)
+      expect(gold('right', pose)).toBe(3)
+      expect(gold('up', pose)).toBe(0)
+    })
+  })
+
+  it('conserva la Trifuerza y solo usa letras conocidas en todas sus poses', () => {
     ;[['idle', 0], ['wave', 0], ['wave', 1], ['pet', 0], ['pet', 1]].forEach(([pose, step]) => {
       const rows = lupeRows(pose, step)
-      expect(rows.join('')).toContain('J')
-      expect(rows[19].slice(6, 12)).toBe('TTJJTT')
+      expect(rows.slice(19, 23).map((row) => row.slice(6, 12))).toEqual(['DDYYDM', 'DXYYXM', 'XYXXYX', 'YYXXYY'])
       rows.forEach((row) => [...row].forEach((letter) => expect(letter === '.' || LETTERS.includes(letter)).toBe(true)))
     })
   })

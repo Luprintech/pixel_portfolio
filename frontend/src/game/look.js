@@ -38,6 +38,7 @@ export const LOOK_STYLES = {
   accessory: [
     'ninguno', 'gafas', 'gafasRect', 'gafasSol', 'pendientes', 'aros', 'piercing', 'auriculares',
     'diadema', 'lazo', 'horquillas', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja',
+    'bufanda', 'corona', 'boina', 'orejasGato',
   ],
   top: [
     'camiseta', 'oversize', 'tirantes', 'camisa', 'sudadera', 'cremallera', 'jersey', 'vaquera',
@@ -63,7 +64,7 @@ const ONE_PIECE = [...DRESSES, 'peto']
 // Los rasgos que se tiñen con el color del vello; pecas, lunares y cicatrices llevan su propio tono.
 const HAIRY_TRAITS = ['incipiente', 'barbaCorta', 'barba', 'bigoteFino', 'bigote', 'perilla', 'patillas', 'cejas', 'cejaPartida', 'cicatrizCeja']
 // Las gafas, el piercing y los auriculares son de un solo color; el resto se tiñe.
-const TINTED_ACCESSORIES = ['pendientes', 'aros', 'diadema', 'lazo', 'horquillas', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja']
+const TINTED_ACCESSORIES = ['pendientes', 'aros', 'diadema', 'lazo', 'horquillas', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja', 'bufanda', 'corona', 'boina', 'orejasGato']
 const hasBeard = (look) => HAIRY_TRAITS.includes(look.trait)
 const hasHair = (look) => look.hairStyle !== 'calvo'
 const hasAccessoryColor = (look) => TINTED_ACCESSORIES.includes(look.accessory)
@@ -304,6 +305,10 @@ export const STYLE_NAMES = {
     gorro: 'Gorro de lana',
     sombreroPaja: 'Sombrero de paja',
     sombreroBruja: 'Sombrero de bruja',
+    bufanda: 'Bufanda',
+    corona: 'Corona de princesa',
+    boina: 'Boina',
+    orejasGato: 'Orejas de gato',
     ...CLOTHES_ES,
     zapatillas: 'Zapatillas básicas',
     deportivas: 'Zapatillas deportivas',
@@ -394,6 +399,10 @@ export const STYLE_NAMES = {
     gorro: 'Wool beanie',
     sombreroPaja: 'Straw hat',
     sombreroBruja: 'Witch hat',
+    bufanda: 'Scarf',
+    corona: 'Princess crown',
+    boina: 'Beret',
+    orejasGato: 'Cat ears',
     ...CLOTHES_EN,
     zapatillas: 'Basic sneakers',
     deportivas: 'Running shoes',

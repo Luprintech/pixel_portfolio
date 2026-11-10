@@ -90,19 +90,22 @@ function headband({ add, rect }) {
   ;[3, 12].forEach((x) => add(x, 3, 'A'))
 }
 
-function bow({ add, side, left }) {
+// Lo que va en un solo lado de la cabeza cambia de columna al ver la figura de espalda: el lado
+// izquierdo del personaje queda a la derecha de quien mira de frente y a la izquierda por detrás.
+const MID = 15
+const sameSide = (x, view) => (view === 'up' ? MID - x : x)
+
+function bow({ add, side, left, view }) {
   if (side && !left) return
   const x = side ? 4 : 10
-  ;[[0, 1, 'A'], [1, 1, 'a'], [2, 1, 'A'], [0, 2, 'A'], [1, 2, 'a'], [2, 2, 'A']].forEach(([dx, y, ch]) => add(x + dx, y, ch))
+  ;[[0, 1, 'A'], [1, 1, 'a'], [2, 1, 'A'], [0, 2, 'A'], [1, 2, 'a'], [2, 2, 'A']].forEach(([dx, y, ch]) => add(sameSide(x + dx, view), y, ch))
 }
 
 // Horquillas: dos pasadores cortos y paralelos sobre la sien.
-function hairClips({ add, rect, side, left }) {
+function hairClips({ add, side, left, view }) {
   if (side && !left) return
   const x = side ? 5 : 10
-  rect(x, 2, x + 1, 2, 'A')
-  rect(x + 1, 3, x + 2, 3, 'A')
-  add(x + 2, 2, 'a')
+  ;[[0, 2, 'A'], [1, 2, 'A'], [1, 3, 'A'], [2, 3, 'A'], [2, 2, 'a']].forEach(([dx, y, ch]) => add(sameSide(x + dx, view), y, ch))
 }
 
 // Gorro de lana: casquete, vuelta del borde y pompón.
@@ -164,6 +167,68 @@ function witchHat({ rect, add, dropHairAbove, side }) {
   brim({ rect, side })
 }
 
+// Bufanda: dos vueltas al cuello y un cabo con flecos que cuelga por el lado izquierdo del personaje,
+// así que de espalda no se ve y de perfil solo desde ese lado. De perfil las columnas van una más
+// a la derecha porque la cabeza, con todo lo que lleva, se pinta una columna atrás.
+function scarf({ rect, add, view, side, left }) {
+  if (side) {
+    rect(6, 12, 11, 12, 'A')
+    rect(5, 13, 12, 13, 'A')
+    ;[[11, 12], [12, 13], [8, 13]].forEach(([x, y]) => add(x, y, 'a'))
+    if (!left) return
+    rect(11, 14, 12, 16, 'A')
+    rect(12, 14, 12, 16, 'a')
+    rect(11, 17, 12, 17, 'T')
+    return
+  }
+  rect(5, 12, 10, 12, 'A')
+  rect(4, 13, 11, 13, 'A')
+  ;[[10, 12], [11, 13], [6, 13]].forEach(([x, y]) => add(x, y, 'a'))
+  if (view === 'up') return
+  rect(8, 14, 9, 16, 'A')
+  rect(9, 14, 9, 16, 'a')
+  rect(8, 17, 9, 17, 'T')
+}
+
+// Corona de princesa: aro en sombra, tres puntas y una gema roja en la del centro.
+function crown({ rect, add, side }) {
+  const x = side ? 6 : 5
+  rect(x, 0, x + 5, 0, 'a')
+  rect(x, -1, x + 5, -1, 'A')
+  ;[0, 2, 3, 5].forEach((dx) => add(x + dx, -2, 'A'))
+  ;[2, 3].forEach((dx) => add(x + dx, -1, 'J'))
+}
+
+// Boina: casquete blando que cae hacia el lado izquierdo del personaje, con su rabito arriba.
+function beret({ rect, add, dome, dropHairAbove, side, left, view }) {
+  dropHairAbove()
+  dome('A')
+  add(side ? 8 : 7, -1, 'a')
+  if (side) {
+    if (left) rect(2, 2, 2, 3, 'a')
+    return
+  }
+  const x = sameSide(13, view)
+  rect(x, 1, x, 3, 'a')
+}
+
+// Orejas de gato: una diadema con dos orejas triangulares de interior rosa.
+function catEars({ rect, add, side, view }) {
+  if (side) {
+    add(7, -2, 'A')
+    rect(6, -1, 8, -1, 'A')
+    rect(6, 0, 8, 0, 'a')
+    return
+  }
+  headband({ add, rect })
+  ;[4, 11].forEach((x) => add(x, -2, 'A'))
+  rect(4, -1, 5, -1, 'A')
+  rect(10, -1, 11, -1, 'A')
+  rect(4, 0, 5, 0, 'a')
+  rect(10, 0, 11, 0, 'a')
+  if (view === 'down') [5, 10].forEach((x) => add(x, -1, 'P'))
+}
+
 const ACCESSORIES = {
   gafas: (api) => glasses({ ...api, round: true }),
   gafasRect: (api) => glasses({ ...api, round: false }),
@@ -180,6 +245,10 @@ const ACCESSORIES = {
   gorro: beanie,
   sombreroPaja: strawHat,
   sombreroBruja: witchHat,
+  bufanda: scarf,
+  corona: crown,
+  boina: beret,
+  orejasGato: catEars,
 }
 
 // Devuelve el pelo con el complemento aplicado: `{ back, front }` de celdas `{ x, y, ch }`.
