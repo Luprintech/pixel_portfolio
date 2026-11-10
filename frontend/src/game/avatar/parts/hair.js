@@ -375,6 +375,42 @@ const STYLES = {
     else if (kind === 'up') [0, 1, 2].forEach((y) => put(F, 8, y, 'i'))
   },
 
+  // Pelo de Atreus: abundante y peinado hacia atrás, con la frente despejada, volumen arriba y en la
+  // nuca, y la oreja a la vista. Solo lo lleva él (no está en las listas del creador). Las líneas de
+  // sombra siguen la dirección del peinado: verticales de frente y de espalda, hacia atrás de perfil.
+  haciaAtras(kind, B, F) {
+    if (kind === 'side') {
+      rect(F, 4, -1, 11, -1)
+      rect(F, 3, 0, 12, 0)
+      rect(F, 2, 1, 13, 1)
+      rect(F, 1, 2, 13, 2)
+      rect(F, 1, 3, 12, 3)
+      rect(F, 1, 4, 9, 4)
+      rect(F, 1, 5, 7, 6)
+      rect(F, 2, 7, 7, 7)
+      rect(F, 2, 8, 6, 8)
+      rect(F, 3, 9, 6, 9)
+      ;[[10, 0], [9, 1], [8, 2], [7, 3], [6, 4], [5, 5], [12, 2], [11, 3], [6, 1], [5, 2], [4, 3], [3, 4]].forEach(([x, y]) => put(F, x, y, 'd'))
+      return
+    }
+    rect(F, 5, -1, 10, -1)
+    rect(F, 4, 0, 11, 0)
+    rect(F, 3, 1, 12, 1)
+    rect(F, 2, 2, 13, 2)
+    if (kind === 'up') {
+      rect(F, 2, 3, 13, 8)
+      rect(F, 3, 9, 12, 9)
+      ;[5, 8, 11].forEach((x) => {
+        for (let y = 0; y <= 8; y++) if (y % 3 !== 0) put(F, x, y, 'd')
+      })
+      return
+    }
+    // Entradas a los lados de la frente y patilla corta ante la oreja.
+    mir(F, 2, 3, 3, 4)
+    mir(F, 2, 5, 2, 7)
+    ;[[6, 0], [6, 1], [9, 0], [9, 1], [4, 2], [11, 2]].forEach(([x, y]) => put(F, x, y, 'd'))
+  },
+
   // Corto rizado: casquete de bultos, rizos sobre la frente y junto a las orejas.
   rizadoCorto(kind, B, F) {
     if (kind === 'side') {

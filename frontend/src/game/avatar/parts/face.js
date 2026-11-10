@@ -25,6 +25,8 @@ export const EXPRESSIONS = {
   miedo: { eyes: 'open', brows: 'sad', mouth: 'gasp' },
   aburrimiento: { eyes: 'lid', mouth: 'flat' },
   ternura: { eyes: 'arc', mouth: 'smile', blush: true },
+  // Ojos rasgados y sonrisa: la expresión de Atreus. No está en las listas del creador.
+  sonrisaRasgada: { eyes: 'lid', mouth: 'smile' },
 }
 
 // Posición de cada ojo de frente: columna, y qué letra va en cada una (blanco o pupila).

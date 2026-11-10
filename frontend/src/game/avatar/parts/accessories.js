@@ -167,6 +167,13 @@ function witchHat({ rect, add, dropHairAbove, side }) {
   brim({ rect, side })
 }
 
+// Un solo pendiente pequeño en la oreja izquierda del personaje: de frente queda a la derecha y de
+// perfil solo se ve desde ese lado. Lo lleva Atreus; no está en las listas del creador.
+function singleStud({ add, view, side, left }) {
+  if (view === 'down') add(12, 9, 'A')
+  else if (side && left) add(8, 9, 'A')
+}
+
 // Bufanda: dos vueltas al cuello y un cabo con flecos que cuelga por el lado izquierdo del personaje,
 // así que de espalda no se ve y de perfil solo desde ese lado. De perfil las columnas van una más
 // a la derecha porque la cabeza, con todo lo que lleva, se pinta una columna atrás.
@@ -245,6 +252,7 @@ const ACCESSORIES = {
   gorro: beanie,
   sombreroPaja: strawHat,
   sombreroBruja: witchHat,
+  pendiente: singleStud,
   bufanda: scarf,
   corona: crown,
   boina: beret,

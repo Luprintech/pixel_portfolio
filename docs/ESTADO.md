@@ -6,6 +6,12 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Atreus, la pareja de Lupe (2026-11-10)
+- Personaje nuevo con aspecto fijo (`game/atreus.js`), dibujado con el generador del avatar: mismo lienzo de 18×34, tres poses y cuatro direcciones. En el código va con su seudónimo del lore, no con el nombre real.
+- Cuatro piezas son solo suyas y no aparecen en el creador: el peinado `haciaAtras` (`parts/hair.js`), el vello `candado` (bigote y perilla, `parts/traits.js`), la expresión `sonrisaRasgada` (`parts/face.js`) y el `pendiente` único (`parts/accessories.js`).
+- `game/characters.js` reúne los personajes de aspecto fijo (Lupe y Atreus) y da su hoja de sprites con `characterSheet(id)`, lista para registrarla en el juego igual que la de la viajera.
+- Pendiente: Atreus no aparece todavía en ninguna pantalla. Su sitio según el guion es el interior de la casa de Lupe (`casa.atreus_*` en `docs/DIALOGOS.md`), que aún no existe, y el juego no tiene sistema de NPC.
+
 ### Raíz oscura de Lupe, complementos y razas nuevas (2026-11-10)
 - Ajuste posterior, a petición de la usuaria: la raíz pasa a castaño (el marrón oscuro parecía un casco), baja degradándose hasta media melena (fila 12 de 21) y la camiseta pasa a blanca. La Trifuerza se dibuja como sus pendientes: triángulos dorados con el centro y los bordes entre ellos en negro (`TRIFORCE_FRONT` en `parts/body.js`, 6×4 píxeles; no cabe un contorno completo por triángulo).
 - Lupe lleva la raíz castaña oscura y el pelo se aclara hasta el rubio (`hairRoot` en `game/lupe.js`; letras `I` e `i` en `avatar/palette.js`; `darkRoots` en `parts/hair.js`). El degradado alterna celdas entre tramos para no leerse como franjas. Sin `hairRoot` esas letras son el color del pelo, así que la viajera no cambia.
