@@ -254,7 +254,7 @@ const SHAPED = {
   },
 }
 
-// Raíz oscura de la melena de Lupe, que se aclara poco a poco hasta el rubio a media melena (la
+// Raíz castaña de la melena de Lupe, que se aclara poco a poco hasta el rubio a media melena (la
 // melena acaba en la fila 21). Cada tramo alterna celdas con el siguiente, en tablero, para que el
 // degradado no se lea como franjas rectas: raíz hasta la fila 3, mezcla de raíz y tono intermedio en
 // la 4 y la 5, intermedio de la 6 a la 8, mezcla de intermedio y rubio de la 9 a la 11 y, más rala,
@@ -369,7 +369,7 @@ const STYLES = {
   melenaLupe(kind, B, F, _left, M) {
     lupeMane(kind, B, F, M)
     darkRoots([B, M, F])
-    // La raya al medio se marca después de la raíz, que la taparía: sobre el castaño oscuro va en el
+    // La raya al medio se marca después de la raíz, que la taparía: sobre el castaño va en el
     // tono intermedio, más claro, como el cuero cabelludo que asoma. De espalda solo llega a la coronilla.
     if (kind === 'down') [1, 2, 3].forEach((y) => put(F, 8, y, 'i'))
     else if (kind === 'up') [0, 1, 2].forEach((y) => put(F, 8, y, 'i'))
