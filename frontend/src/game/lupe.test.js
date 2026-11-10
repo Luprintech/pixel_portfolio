@@ -30,7 +30,7 @@ describe('Lupe', () => {
   it('conserva la Trifuerza y solo usa letras conocidas en todas sus poses', () => {
     ;[['idle', 0], ['wave', 0], ['wave', 1], ['pet', 0], ['pet', 1]].forEach(([pose, step]) => {
       const rows = lupeRows(pose, step)
-      expect(rows.slice(19, 23).map((row) => row.slice(6, 12))).toEqual(['DDYYDD', 'DXYYXD', 'XYXXYX', 'YYXXYY'])
+      expect(rows.slice(19, 23).map((row) => row.slice(6, 12))).toEqual(['DDYYDM', 'DXYYXM', 'XYXXYX', 'YYXXYY'])
       rows.forEach((row) => [...row].forEach((letter) => expect(letter === '.' || LETTERS.includes(letter)).toBe(true)))
     })
   })
