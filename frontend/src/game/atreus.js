@@ -1,18 +1,21 @@
 // Atreus, la pareja de Lupe (seudónimo del lore, `docs/LORE_Y_MUNDO.md`). Se dibuja con el mismo
 // generador que la viajera y que Lupe, así que comparte lienzo, poses y hoja de sprites: pelo negro
-// abundante peinado hacia atrás, ojos marrones rasgados, sonrisa, bigote con perilla, un pendiente
-// pequeño, camiseta beige, pantalón largo oscuro y zapatillas blancas.
-// El peinado, la expresión, el vello y el pendiente son piezas suyas que no están en las listas del creador.
+// abundante peinado hacia atrás, ojos marrones rasgados, sonrisa, bigote con perilla,
+// camiseta beige, pantalón largo oscuro y zapatillas blancas.
+// El peinado, la expresión y el vello son piezas suyas que no están en las listas del creador, igual
+// que el negro intenso del pelo (`deepHair`) y la nariz corta de perfil (`nose`).
 export const ATREUS_LOOK = {
   body: 'hombre',
   skin: '#e8b48a',
   eyes: '#4a2f22',
   face: 'sonrisaRasgada',
   hairStyle: 'haciaAtras',
-  hair: '#262220',
+  hair: '#1b1a20',
+  deepHair: true,
+  nose: 'corta',
   trait: 'candado',
   beardColor: '#3a332f',
-  accessory: 'pendiente',
+  accessory: 'ninguno',
   accessoryColor: '#c9cbd6',
   top: 'camiseta',
   topColor: '#e6d8be',

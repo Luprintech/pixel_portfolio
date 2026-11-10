@@ -8,7 +8,8 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ### Atreus, la pareja de Lupe (2026-11-10)
 - Personaje nuevo con aspecto fijo (`game/atreus.js`), dibujado con el generador del avatar: mismo lienzo de 18×34, tres poses y cuatro direcciones. En el código va con su seudónimo del lore, no con el nombre real.
-- Cuatro piezas son solo suyas y no aparecen en el creador: el peinado `haciaAtras` (`parts/hair.js`), el vello `candado` (bigote y perilla, `parts/traits.js`), la expresión `sonrisaRasgada` (`parts/face.js`) y el `pendiente` único (`parts/accessories.js`).
+- Piezas solo suyas, que no aparecen en el creador: el peinado `haciaAtras` (`parts/hair.js`), el vello `candado` (bigote y perilla, `parts/traits.js`) y la expresión `sonrisaRasgada` (`parts/face.js`).
+- Revisión de la usuaria (2026-11-10): sin patillas (el pelo acaba sobre la oreja), sin pendiente, pelo negro intenso con reflejos gris oscuro (`deepHair` en `palette.js` salta el aclarado del pelo oscuro, solo para él) y nariz de perfil de una fila (`nose: 'corta'` en `parts/head.js`); de perfil el bigote baja a la fila 10 para no pegarse a la nariz.
 - `game/characters.js` reúne los personajes de aspecto fijo (Lupe y Atreus) y da su hoja de sprites con `characterSheet(id)`, lista para registrarla en el juego igual que la de la viajera.
 - Pendiente: Atreus no aparece todavía en ninguna pantalla. Su sitio según el guion es el interior de la casa de Lupe (`casa.atreus_*` en `docs/DIALOGOS.md`), que aún no existe, y el juego no tiene sistema de NPC.
 

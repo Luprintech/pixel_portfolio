@@ -33,11 +33,17 @@ describe('personajes con aspecto fijo', () => {
     expect(count(rowsOf(ATREUS_LOOK, 'up', 0), 'K')).toBe(0)
   })
 
-  it('el pendiente de Atreus solo se ve de frente y desde su lado izquierdo', () => {
-    expect(count(rowsOf(ATREUS_LOOK, 'down', 0), 'A')).toBe(1)
-    expect(count(rowsOf(ATREUS_LOOK, 'left', 0), 'A')).toBe(1)
-    expect(count(rowsOf(ATREUS_LOOK, 'right', 0), 'A')).toBe(0)
-    expect(count(rowsOf(ATREUS_LOOK, 'up', 0), 'A')).toBe(0)
+  it('Atreus no lleva pendiente ni patillas, y su nariz de perfil mide una fila', () => {
+    DIRS.forEach((dir) => expect(count(rowsOf(ATREUS_LOOK, dir, 0), 'A')).toBe(0))
+    // De frente, las filas 5 a 7 de la figura (10 a 12 del lienzo) no tienen pelo junto a las mejillas.
+    // Solo se miran los bordes de la cara: las cejas, en el centro, llevan la sombra del pelo.
+    rowsOf(ATREUS_LOOK, 'down', 0)
+      .slice(10, 13)
+      .forEach((row) => expect(/[Hhd]/.test(row.slice(0, 5) + row.slice(13))).toBe(false))
+    // La nariz es la columna 14 de la figura, una atrás por el desplazamiento de la cabeza y una
+    // adelante por el contorno: columna 14 del lienzo.
+    const nose = rowsOf(ATREUS_LOOK, 'right', 0).filter((row) => row[14] === 'S')
+    expect(nose).toHaveLength(1)
   })
 
   it('los pies de Atreus no se mueven de fila al caminar', () => {

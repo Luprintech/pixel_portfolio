@@ -89,7 +89,9 @@ export function liftHair(hex) {
 const edge = (hex, amount = 0.52) => mix(shade(hex, amount), OUTLINE, 0.28)
 
 export function avatarColors(look, blink = false) {
-  const hair = liftHair(look.hair)
+  // `deepHair` deja el negro tal cual, sin aclararlo, y baja el reflejo a un gris oscuro: es el pelo
+  // negro intenso de Atreus. La viajera no lo tiene y su pelo oscuro sigue levantándose.
+  const hair = look.deepHair ? look.hair : liftHair(look.hair)
   const lash = shade(look.skin, 0.62)
   const pupil = shade(look.eyes, 0.7)
   return {
@@ -115,7 +117,7 @@ export function avatarColors(look, blink = false) {
     v: blink ? lash : EYE_WHITE,
     f: blink ? lash : pupil,
     H: hair,
-    h: tint(hair, 0.34),
+    h: tint(hair, look.deepHair ? 0.16 : 0.34),
     d: shade(hair, 0.78),
     // Sin `hairRoot` la raíz es del color del pelo: solo Lupe la lleva distinta.
     I: look.hairRoot ?? hair,

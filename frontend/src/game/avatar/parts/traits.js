@@ -83,10 +83,9 @@ export const TRAITS = {
       ['K', 10, [6, 9]],
       ['K', 12, [6, 7, 8, 9]],
     ],
+    // De perfil el bigote va en la fila 10, bajo la nariz: en la 9 se pegaba a ella y la alargaba.
     side: [
-      ['K', 9, [12, 13]],
-      ['K', 10, [13]],
-      ['K', 11, [12]],
+      ['K', 10, [12, 13]],
       ['K', 12, [11, 12]],
     ],
   },
