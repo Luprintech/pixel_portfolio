@@ -1,6 +1,7 @@
 // Peinados. Cada uno es una forma propia (no una variante del mismo pelo) y se dibuja por separado
 // para frente (`down`), espalda (`up`) y perfil derecho (`side`), en dos capas:
 //   back   detrás del cuerpo y de la cabeza (melena que cae por la espalda, base de una coleta)
+//   mid    sobre el torso pero bajo los brazos (solo la melena larga de perfil)
 //   front  por encima de la cabeza (flequillo, mechas junto a la cara, coletas, trenzas, moños)
 // Las celdas son `{ x, y, ch }` en la rejilla de 16 columnas; la fila 0 es la primera de la cabeza
 // y las negativas sobresalen por arriba (hasta -4). El perfil izquierdo es el derecho reflejado,
@@ -105,7 +106,133 @@ function stampRows(m, y, rows) {
   rows.forEach((row, i) => [...row].forEach((ch, x) => ch !== '.' && put(m, x, y + i, ch)))
 }
 
+// Rellena filas `desde..` con tramos [x0, x1]; `ink` decide la letra de cada celda.
+function bands(m, from, spans, ink) {
+  spans.forEach(([x0, x1], i) => {
+    for (let x = x0; x <= x1; x++) put(m, x, from + i, ink(x, from + i, x0, x1))
+  })
+}
+
+// Largo liso. La melena es una masa que cae por detrás del cuerpo y se estrecha hasta una punta; de
+// frente solo dos mechones cruzan los hombros, y el rostro queda a la vista (raya al lado, frente
+// despejada y mejillas libres). Los brazos van por encima de la masa de atrás.
+const LONG_FRONT_CAP = [
+  '.....hhHHHH.....',
+  '....hhHHHHHd....',
+  '...hHHHHHHHHd...',
+  '...HHHd.HHHHH...',
+  '...HHd....dHH...',
+]
+const LONG_FRONT_BACK = [...Array(7).fill([2, 13]), ...Array(5).fill([1, 14]), [2, 13], [2, 13], [3, 12], [3, 12], [4, 11]]
+const LONG_SIDE_BACK = [[2, 4], [2, 5], [1, 5], [1, 5], [1, 5], [1, 5], [1, 5], [1, 5], [2, 5], [2, 4], [3, 4]]
+const LONG_BACK = [...Array(12).fill([3, 12]), [4, 11], [4, 11], [4, 11], [5, 10], [5, 10], [6, 9]]
+
+function longHair(kind, B, F, _left, M) {
+  if (kind === 'side') return sideLong(B, M, F)
+  if (kind === 'up') {
+    capDown(F)
+    bands(F, 5, LONG_BACK, (x, y, x0, x1) => {
+      if (x === x1 || y === 5 + LONG_BACK.length - 1) return 'd'
+      if (x === x0 && y >= 8 && y <= 14) return 'h'
+      if ([5, 8, 10].includes(x) && y >= 6 && (x + y) % 5 !== 0) return 'd'
+      return 'H'
+    })
+    ;[[6, 0], [7, 0], [5, 1], [6, 1], [7, 1], [4, 2], [5, 2], [4, 3], [5, 3]].forEach(([x, y]) => put(F, x, y, 'h'))
+    return
+  }
+  stampRows(F, 0, LONG_FRONT_CAP)
+  mir(F, 3, 5, 3, 10)
+  for (let y = 5; y <= 10; y++) put(F, 12, y, 'd')
+  put(F, 3, 5, 'h')
+  mir(F, 3, 11, 4, 11)
+  put(F, 12, 11, 'd')
+  // Mechones sobre los hombros: se estrechan hasta una punta.
+  ;[[2, 4], [2, 4], [3, 4], [3, 4], [3, 4], [4, 4]].forEach(([x0, x1], i) => {
+    for (let x = x0; x <= x1; x++) {
+      put(F, x, 12 + i, x === x0 && i < 3 ? 'h' : 'H')
+      put(F, MID - x, 12 + i, x === x0 ? 'd' : 'H')
+    }
+  })
+  bands(B, 5, LONG_FRONT_BACK, (x, y, x0, x1) => {
+    if (x === x1 || y === 5 + LONG_FRONT_BACK.length - 1) return 'd'
+    if (x === x0 && y >= 12 && y <= 15) return 'h'
+    return x === x0 + 1 && y >= 15 && y % 2 ? 'd' : 'H'
+  })
+}
+
+// Perfil de pelo largo (mira a la derecha), en tres capas para que cada mecha esté en su sitio:
+//   B  detrás del cuello y de la espalda (la parte que asoma por fuera del torso)
+//   M  la melena que cae por la espalda, por encima del torso y por debajo del brazo
+//   F  casquete, nuca, flequillo y un mechón junto al cuello, por encima de la cabeza
+// `wave` ondula el borde de la melena (largo ondulado).
+const SIDE_LENGTH = [[2, 6], [2, 6], [1, 6], [1, 6], [1, 6], [1, 6], [1, 6], [2, 6], [2, 6], [2, 5], [3, 5], [3, 4]]
+const BACK_OF_TORSO = 4
+
+function sideLong(B, M, F, { wave = false } = {}) {
+  capSide(F)
+  rect(F, 3, 5, 8, 11)
+  rect(F, 3, 12, 6, 12)
+  // Flequillo barrido que apenas pasa de la sien, y un mechón suelto junto al cuello.
+  ;[[9, 5], [10, 5]].forEach(([x, y]) => put(F, x, y))
+  put(F, 9, 6, 'd')
+  ;[[8, 12], [8, 13]].forEach(([x, y]) => put(F, x, y, 'd'))
+  ;[[6, 0], [7, 0], [5, 1], [6, 1], [4, 2], [5, 2], [4, 3]].forEach(([x, y]) => put(F, x, y, 'h'))
+  for (let y = 5; y <= 12; y++) put(F, 3, y, 'd')
+  for (let y = 6; y <= 11; y++) if (y !== 8) put(F, 6, y, 'd')
+  SIDE_LENGTH.forEach(([a, b], i) => {
+    const y = 11 + i
+    const shift = wave ? WAVE[i % 4] - 1 : 0
+    for (let x = Math.max(1, a + shift); x <= b + shift; x++) {
+      let ch = 'H'
+      if (x === b + shift || y === 22) ch = 'd'
+      else if (x === a + shift && y >= 13 && y <= 17) ch = 'h'
+      else if (x === 5 && y >= 14 && y % 3 !== 0) ch = 'd'
+      put(x < BACK_OF_TORSO ? B : M, x, y, ch === 'H' && x < BACK_OF_TORSO && y >= 14 ? 'd' : ch)
+    }
+  })
+}
+
+// Corto clásico, dibujado a mano: raya a un lado, flequillo en mechones sueltos que caen sobre la
+// frente (de frente y de perfil), nuca recortada y sombras bajo cada mechón. Orejas y cuello a la vista.
+const CLASSIC_DOWN = [
+  '.....hhHHHH.....',
+  '...hhHHHHHHHd...',
+  '..hHHHHHHdHHHHd.',
+  '..HHHHHdHHHHHHd.',
+  '...HHHHdHHHHd...',
+  '...H.Hd......d..',
+  '...d........d...',
+]
+const CLASSIC_SIDE = [
+  '.....hhHHHH.....',
+  '...hhHHHHHHHd...',
+  '..hHHHHHHHHHHd..',
+  '..HHHHHdHHHHHd..',
+  '...HHHHHdHHHHd..',
+  '...HHHd...Hd....',
+  '...HHHd.........',
+  '...HHd..........',
+  '...Hd...........',
+]
+
+function classicHair(kind, B, F) {
+  if (kind === 'down') return stampRows(F, 0, CLASSIC_DOWN)
+  if (kind === 'side') return stampRows(F, 0, CLASSIC_SIDE)
+  stampRows(F, 0, [
+    '.....hhHHHH.....',
+    '...hhHHHHHHHd...',
+    '..hHHHHHHHHHHd..',
+    '..HHhHHdHHHHHd..',
+  ])
+  rect(F, 3, 4, 12, 7)
+  ;[[7, 3], [7, 4], [8, 5], [8, 6], [11, 5], [11, 6], [12, 7]].forEach(([x, y]) => put(F, x, y, 'd'))
+  rect(F, 4, 8, 11, 8)
+  ;[[6, 8], [9, 8], [5, 9], [8, 9], [10, 9]].forEach(([x, y]) => put(F, x, y, y === 9 ? 'H' : 'd'))
+}
+
 const SHAPED = {
+  largo: longHair,
+  cortoClasico: classicHair,
   bob(kind, B, F) {
     if (kind === 'side') return stampRows(F, 0, BOB_SIDE)
     if (kind === 'up') {
@@ -119,27 +246,6 @@ const SHAPED = {
 }
 
 const STYLES = {
-  // Largo liso: cae recto a los lados de la cara, tapa las orejas y llega a la cintura.
-  largo(kind, B, F) {
-    if (kind === 'side') {
-      capSide(F)
-      rect(F, 3, 5, 9, 12)
-      rect(B, 2, 13, 6, 21)
-      return
-    }
-    capDown(F)
-    if (kind === 'up') {
-      rect(F, 3, 5, 12, 12)
-      rect(F, 4, 13, 11, 20)
-      rect(F, 5, 21, 10, 21)
-      return
-    }
-    mir(F, 3, 5, 4, 11)
-    mir(F, 2, 12, 4, 12)
-    mir(F, 1, 13, 2, 21)
-    rect(B, 4, 6, 11, 12)
-  },
-
   // Pixie: muy corto, con mechones sueltos en la frente; orejas y cuello a la vista.
   pixie(kind, B, F) {
     rect(F, 5, 0, 10, 0)
@@ -165,19 +271,8 @@ const STYLES = {
   },
 
   // Largo ondulado: más ancho que el liso y con la melena en zigzag.
-  ondulado(kind, B, F) {
-    if (kind === 'side') {
-      rect(F, 5, 0, 10, 0)
-      rect(F, 3, 1, 12, 1)
-      rect(F, 2, 2, 13, 3)
-      rect(F, 2, 4, 12, 4)
-      rect(F, 2, 5, 9, 12)
-      for (let y = 13; y <= 21; y++) {
-        const a = WAVE[(y - 13) % 4]
-        rect(B, 1 + a, y, 5 + a, y)
-      }
-      return
-    }
+  ondulado(kind, B, F, _left, M) {
+    if (kind === 'side') return sideLong(B, M, F, { wave: true })
     rect(F, 5, 0, 10, 0)
     rect(F, 3, 1, 12, 1)
     rect(F, 2, 2, 13, 4)
@@ -438,30 +533,6 @@ const STYLES = {
     ;[3, 12].forEach((x) => put(F, x, 4))
   },
 
-  // Corto clásico: raya a un lado, flequillo corto peinado y patillas; orejas a la vista.
-  cortoClasico(kind, B, F) {
-    rect(F, 5, 0, 10, 0)
-    rect(F, 3, 1, 12, 1)
-    rect(F, 2, 2, 13, 3)
-    if (kind === 'side') {
-      rect(F, 3, 4, 12, 4)
-      put(F, 13, 4)
-      rect(F, 3, 5, 6, 8)
-      rect(F, 10, 5, 10, 5)
-      return
-    }
-    if (kind === 'up') {
-      rect(F, 3, 4, 12, 7)
-      rect(F, 4, 8, 11, 8)
-      ;[1, 2].forEach((y) => put(F, 10, y, 'd'))
-      return
-    }
-    rect(F, 3, 4, 7, 4)
-    put(F, 12, 4)
-    ;[3, 12].forEach((x) => rect(F, x, 5, x, 6))
-    ;[1, 2].forEach((y) => put(F, 9, y, 'd'))
-  },
-
   // De punta: pelo corto con mechones que se levantan en picos de distinta altura.
   dePunta(kind, B, F) {
     // Una base ancha y, encima, picos sueltos de dos alturas.
@@ -633,7 +704,6 @@ const STYLES = {
 
 // Textura de cada peinado: cómo se reparten reflejos y sombras dentro de la masa de pelo.
 const TEXTURE = {
-  largo: 'strands',
   ondulado: 'waves',
   rizadoCorto: 'curls',
   voluminoso: 'curls',
@@ -655,8 +725,11 @@ function finish(m, all, texture) {
     if (texture === 'strands' && y >= 5 && x % 3 === 0) out = 'd'
     else if (texture === 'waves' && y >= 2 && (x + (y >> 1)) % 3 === 0) out = 'd'
     else if (texture === 'curls') {
-      if ((x + y) % 3 === 0) out = 'h'
-      else if ((x * 2 + y) % 5 === 0) out = 'd'
+      // Rizos en racimos de cuatro columnas: brillo arriba de cada uno y sombra bajo él.
+      const u = (x + (Math.floor(y / 3) % 2) * 2) % 4
+      const v = y % 3
+      if (v === 0 && u === 1) out = 'h'
+      else if (v === 2 && u === 3) out = 'd'
     }
     if (out === 'H' && !up && left && x < 8 && (x + y) % 2 === 0) out = 'h'
     else if (out === 'H' && !right && left && x > 8) out = 'd'
@@ -674,16 +747,17 @@ const toCells = (m) =>
 // delanteras. `left` marca el perfil izquierdo, para lo que no se puede reflejar.
 export function hairCells(style, view, { left = false } = {}) {
   const B = new Map()
+  const M = new Map()
   const F = new Map()
+  const layers = () => ({ back: toCells(B), mid: toCells(M), front: toCells(F) })
   if (SHAPED[style]) {
-    SHAPED[style](view, B, F)
-    return { back: toCells(B), front: toCells(F) }
+    SHAPED[style](view, B, F, left, M)
+    return layers()
   }
   const build = STYLES[style]
-  if (!build) return { back: [], front: [] }
-  build(view, B, F, left)
-  const all = new Map([...B, ...F])
-  finish(B, all, TEXTURE[style])
-  finish(F, all, TEXTURE[style])
-  return { back: toCells(B), front: toCells(F) }
+  if (!build) return { back: [], mid: [], front: [] }
+  build(view, B, F, left, M)
+  const all = new Map([...B, ...M, ...F])
+  ;[B, M, F].forEach((layer) => finish(layer, all, TEXTURE[style]))
+  return layers()
 }

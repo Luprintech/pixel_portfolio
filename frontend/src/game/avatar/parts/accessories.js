@@ -127,29 +127,33 @@ function bandana({ rect, add, dome, dropHairAbove, side, left, view }) {
   ;[[5, 1], [8, 2], [10, 1], [6, 3], [11, 3]].forEach(([x, y]) => add(x, y, 'W'))
   rect(3, 4, side ? 13 : 12, 4, 'a')
   if (side && !left) return
-  const x = side ? 2 : view === 'up' ? 1 : 13
+  // De perfil el nudo empieza en la 3: con la cabeza una columna atrás, desde la 2 perdía dos celdas.
+  const x = side ? 3 : view === 'up' ? 1 : 13
   const dir = side || view === 'up' ? -1 : 1
   ;[[0, 3], [dir, 4], [2 * dir, 4], [dir, 5], [2 * dir, 6]].forEach(([dx, y]) => add(x + dx, y, y === 3 ? 'A' : 'a'))
   add(x + dir, 3, 'A')
 }
 
-// Sombreros: copa y ala. El ala es más ancha que la cabeza y la sombra debajo tapa la frente.
-function brim({ rect }) {
-  rect(0, 2, 15, 2, 'A')
-  rect(1, 3, 14, 3, 'a')
+// Sombreros: copa y ala. El ala es más ancha que la cabeza y la sombra debajo tapa la frente. De
+// perfil la cabeza va una columna más atrás (`headDx`) y la columna 0 queda fuera del lienzo, así que
+// el ala empieza en la 1: el ala de abajo, una columna más corta por cada lado, en la 2.
+function brim({ rect, side }) {
+  const back = side ? 1 : 0
+  rect(back, 2, 15, 2, 'A')
+  rect(back + 1, 3, 14, 3, 'a')
 }
 
-function strawHat({ rect, add, dropHairAbove }) {
+function strawHat({ rect, add, dropHairAbove, side }) {
   dropHairAbove()
   rect(5, -1, 10, -1, 'A')
   rect(4, 0, 11, 0, 'A')
   rect(4, 1, 11, 1, 'a')
-  brim({ rect })
+  brim({ rect, side })
   add(5, -1, 'a')
 }
 
 // Sombrero de bruja: cono de punta caída, con una hebilla en la cinta.
-function witchHat({ rect, add, dropHairAbove }) {
+function witchHat({ rect, add, dropHairAbove, side }) {
   dropHairAbove()
   ;[[1, 4, 11], [0, 5, 10], [-1, 6, 10], [-2, 6, 9], [-3, 7, 10], [-4, 10, 12]].forEach(([y, a, b]) => {
     rect(a, y, b - 1, y, 'A')
@@ -157,7 +161,7 @@ function witchHat({ rect, add, dropHairAbove }) {
   })
   rect(4, 1, 11, 1, 'a')
   rect(7, 1, 8, 1, 'T')
-  brim({ rect })
+  brim({ rect, side })
 }
 
 const ACCESSORIES = {
@@ -200,5 +204,5 @@ export function dressHair(look, { view, left }, hair) {
     back = back.filter((c) => c.y > 3)
   }
   paint({ add, rect, dome, dropHairAbove, view, side, left })
-  return { back, front }
+  return { back, mid: hair.mid, front }
 }

@@ -32,9 +32,10 @@ export const SHOES = {
   clasicos: { top: INSTEP, rows: [[INSTEP, 'front', 'R'], [SOLE, 'front', 'Q']] },
   mocasines: { top: INSTEP, rows: [[INSTEP, 'front', only(1, 'r', 'R')], [SOLE, 'front', 'Q']] },
   merceditas: { top: INSTEP, rows: [[ANKLE, 'shaft', only(1, 'R')], [INSTEP, 'front', 'R'], [SOLE, 'front', 'Q']] },
-  bailarinas: { top: INSTEP, rows: [[INSTEP, 'front', (t, n) => (t < n / 2 ? 'R' : 'S')], [SOLE, 'front', (t, n) => (t < n / 2 ? 'R' : null)]] },
-  sandalias: { top: INSTEP, rows: [[INSTEP, 'foot', (t) => (t === 1 || t === 3 ? 'R' : 'S')], [SOLE, 'front', 'R']] },
-  chanclas: { top: INSTEP, rows: [[INSTEP, 'foot', only(2, 'R', 'S')], [SOLE, 'front', 'r']] },
+  // Calzado abierto: la suela va oscura para que se separe de la piel de la pierna.
+  bailarinas: { top: INSTEP, rows: [[INSTEP, 'front', (t, n) => (t < n / 2 ? 'R' : 'S')], [SOLE, 'front', 'Q']] },
+  sandalias: { top: INSTEP, rows: [[INSTEP, 'foot', (t) => (t === 1 || t === 3 ? 'R' : 'S')], [SOLE, 'front', 'Q']] },
+  chanclas: { top: INSTEP, rows: [[INSTEP, 'foot', only(2, 'R', 'S')], [SOLE, 'front', 'Q']] },
   tacon: { top: INSTEP, rows: [[INSTEP, 'front', 'R'], [SOLE, 'foot', (t, n) => (t <= 1 || t === n - 1 ? 'Q' : null)]] },
   aventura: { top: CALF, rows: [[CALF, 'shaft', 'r'], [ANKLE, 'shaft', only(1, 'r', 'R')], [INSTEP, 'foot', 'R'], [SOLE, 'foot', 'Q']] },
 }
@@ -46,9 +47,20 @@ function frontColumns({ cols: [a, b], out }) {
     : { shaft: [a, b, b + 1], foot: [a, b, b + 1, b + 2] }
 }
 
+// Las botas de perfil son una columna más cortas de puntera que el resto del calzado.
+const BOOTS = ['altas', 'botines', 'montana', 'botasAltas', 'lluvia', 'aventura']
+
+// Primera columna de la espinilla de una pierna de perfil en su fila `i` (0 es el muslo, 3 el
+// tobillo). La comparten pierna y calzado, así la bota siempre sigue a su pierna.
+const SIDE_SHIN = 7
+const ANKLE_STEP = 3
+export const sideShin = ({ lean }, i) => SIDE_SHIN + lean[Math.min(i, ANKLE_STEP)]
+
 // De perfil el calzado es más largo: talón detrás de la pierna y puntera delante.
-function sideColumns({ dx }) {
-  return { shaft: range(6 + dx, 9 + dx), foot: range(6 + dx, 12 + dx), front: range(7 + dx, 12 + dx) }
+function sideColumns(leg, boot) {
+  const shin = sideShin(leg, ANKLE_STEP)
+  const toe = shin + (boot ? 4 : 5)
+  return { shaft: range(shin - 1, shin + 2), foot: range(shin - 1, toe), front: range(shin, toe) }
 }
 
 // Primera fila de pierna tapada por el calzado: las piernas se pintan hasta la anterior.
@@ -60,14 +72,20 @@ const DIMMED = { R: 'Q', W: 'Q', r: 'Q', Y: 'Q', S: 's' }
 export function paintFoot(p, { look, view }, leg) {
   const lift = leg.lift || 0
   const side = view === 'side'
-  const columns = side ? sideColumns(leg) : { ...frontColumns(leg), front: frontColumns(leg).foot }
+  const boot = side && BOOTS.includes(look.shoes)
+  const columns = side ? sideColumns(leg, boot) : { ...frontColumns(leg), front: frontColumns(leg).foot }
   const flip = side || leg.out > 0
 
   SHOES[look.shoes].rows.forEach(([row, part, pick]) => {
     const cols = columns[part]
     cols.forEach((x, i) => {
       const t = flip ? cols.length - 1 - i : i
-      const ch = typeof pick === 'string' ? pick : pick(t, cols.length)
+      let ch = typeof pick === 'string' ? pick : pick(t, cols.length)
+      if (boot && part === 'foot') {
+        // Bota de perfil: el contrafuerte del talón en oscuro y la suela partida por el arco del pie.
+        if (row === INSTEP && i === 0) ch = 'Q'
+        if (row === SOLE && i === 2) ch = null
+      }
       if (!ch) return
       p.put(x, BODY_TOP + row - lift, leg.far ? (DIMMED[ch] ?? ch) : ch)
     })

@@ -11,11 +11,13 @@ export const EMPTY = '.'
 export const createGrid = () => Array.from({ length: ROWS }, () => Array(COLS).fill(EMPTY))
 
 // `dy` baja todo lo que se pinta con este pincel: así el cuerpo entero se hunde un píxel al dar un
-// paso mientras las piernas se quedan en el suelo.
-export function painter(grid, dy = 0) {
+// paso mientras las piernas se quedan en el suelo. `dx` desplaza todo en horizontal: de perfil retrasa
+// la cabeza entera, con su pelo, su cara y sus complementos, para que quede sobre el cuerpo.
+export function painter(grid, dy = 0, dx = 0) {
   const put = (x, y, ch) => {
     const row = y + dy + MARGIN
-    if (row >= 0 && row < ROWS && x >= 0 && x < COLS) grid[row][x] = ch
+    const col = x + dx
+    if (row >= 0 && row < ROWS && col >= 0 && col < COLS) grid[row][col] = ch
   }
 
   // Una fila entre dos columnas; `left` y `right` sustituyen a la letra en los extremos.

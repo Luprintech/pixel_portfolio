@@ -8,7 +8,9 @@
 //   R/Q calzado y suela              A/a complemento y su sombra     G gafas   P/Y pétalo y centro
 //   Z cejas y párpados (un tono muy oscuro de la piel)   F peca o lunar   C cicatriz   q lágrima
 //   r tono claro del calzado (cordones, puños)   J gema roja (el collar de Lupe)
-//   X contorno (también el que separa el brazo del torso en el perfil)
+//   x y j k l o   contorno: el borde oscuro de la piel, el pelo, la prenda de arriba, la de abajo,
+//                 el calzado y los complementos (cada celda de borde hereda el color de lo que bordea)
+//   X contorno neutro (negro azulado; ya no lo dibuja el generador)
 import { PAL, shade, tint } from '../palette.js'
 // Negro azulado del contorno; es el mismo del resto de personajes.
 export const OUTLINE = '#14102a'
@@ -82,12 +84,22 @@ export function liftHair(hex) {
 }
 
 // Con `blink` los ojos se cierran: las dos filas altas pasan a piel y la baja queda como pestaña.
+// Borde oscuro de un color: se oscurece y se tira hacia el negro azulado del mundo, así la figura
+// queda recortada sobre el suelo sin una línea negra que la aplaste.
+const edge = (hex, amount = 0.52) => mix(shade(hex, amount), OUTLINE, 0.28)
+
 export function avatarColors(look, blink = false) {
   const hair = liftHair(look.hair)
   const lash = shade(look.skin, 0.62)
   const pupil = shade(look.eyes, 0.7)
   return {
     X: OUTLINE,
+    x: mix(edge(look.skin, 0.5), '#5a2a3c', 0.3),
+    y: edge(hair, 0.5),
+    j: edge(look.topColor),
+    k: edge(look.bottomColor),
+    l: edge(look.shoesColor, 0.45),
+    o: edge(look.accessoryColor),
     S: look.skin,
     s: shade(look.skin, 0.84),
     B: mix(look.skin, '#e8607a', 0.4),

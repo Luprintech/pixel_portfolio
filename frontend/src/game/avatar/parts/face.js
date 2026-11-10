@@ -123,73 +123,80 @@ function paintFront(p, expression, male) {
   }
 }
 
-// De perfil el ojo está en las columnas 11 y 12. Solo el guiño distingue el perfil izquierdo.
+// De perfil el ojo es una sola pupila oscura de dos filas en la columna 11, sin blanco al lado: el
+// blanco y la pupila en fila se leían como una raya clara. Deja dos columnas de piel por delante, la
+// frente y la mejilla; en la 12 el ojo quedaba pegado al contorno y la cara parecía salirse de la
+// cabeza. La fila baja (`f`) hace de pestaña al parpadear. Solo el guiño distingue el perfil izquierdo.
+const SIDE_EYE = 11
+
 function sideEye(p, kind, left) {
-  if (kind === 'wink' && left) {
-    p.rect(11, 5, 12, 6, 'S')
-    return p.span(7, 11, 12, 'O')
-  }
+  if (kind === 'wink' && left) return p.span(7, SIDE_EYE - 1, SIDE_EYE, 'Z')
   if (kind === 'arc') {
-    p.put(11, 6, 'Z')
-    return p.put(12, 5, 'Z')
+    p.put(SIDE_EYE - 1, 6, 'Z')
+    return p.put(SIDE_EYE, 5, 'Z')
   }
-  if (kind === 'sleepy') return p.span(6, 11, 12, 'Z')
-  if (kind === 'lid') p.span(5, 11, 12, 'Z')
-  else p.span(5, 11, 12, null, 'w', 'e')
-  p.span(6, 11, 12, null, 'w', 'e')
-  p.put(11, 7, 'v')
-  p.put(12, 7, 'f')
+  if (kind === 'sleepy') return p.span(6, SIDE_EYE - 1, SIDE_EYE, 'Z')
+  if (kind === 'lid') p.put(SIDE_EYE, 5, 'Z')
+  p.put(SIDE_EYE, 6, 'e')
+  p.put(SIDE_EYE, 7, 'f')
 }
 
 const SIDE_BROWS = {
-  angry: [[11, 4], [12, 5]],
-  sad: [[11, 5], [12, 4]],
-  doubt: [[11, 4], [12, 4]],
+  angry: [[10, 4], [11, 5]],
+  sad: [[10, 5], [11, 4]],
+  doubt: [[10, 4], [11, 4]],
 }
 
+// Bocas de perfil en la fila 11, dos filas por debajo de la nariz. La fila 11 acaba en la columna 12
+// (el mentón se recoge, ver `head.js`), así que la boca ocupa las columnas 10 y 11 y deja siempre una
+// de piel hasta el contorno, para que no se alargue hasta él.
+const MOUTH = 11
 const SIDE_MOUTHS = {
-  flat: (p) => p.put(12, 10, 'm'),
+  flat: (p) => p.span(MOUTH, 10, 11, 'm'),
   smile: (p) => {
-    p.put(12, 10, 'm')
-    p.put(13, 10, 's')
+    p.put(11, MOUTH, 'm')
+    p.put(10, MOUTH - 1, 'm')
   },
   laugh: (p) => {
-    p.span(10, 12, 13, 'O')
-    p.put(12, 11, 'm')
+    p.span(MOUTH, 10, 11, 'O')
+    p.put(10, MOUTH - 1, 'm')
   },
-  gasp: (p) => p.rect(13, 10, 13, 11, 'O'),
+  gasp: (p) => p.put(11, MOUTH, 'O'),
   frown: (p) => {
-    p.put(12, 10, 'm')
-    p.put(13, 11, 'm')
+    p.put(11, MOUTH, 'm')
+    p.put(10, MOUTH + 1, 'm')
   },
   wail: (p) => {
-    p.span(10, 12, 13, 'O')
-    p.put(12, 11, 'O')
+    p.span(MOUTH, 10, 11, 'O')
+    p.put(10, MOUTH + 1, 'O')
   },
-  dot: (p) => p.put(12, 11, 'm'),
+  dot: (p) => p.put(11, MOUTH, 'm'),
   slant: (p) => {
-    p.put(12, 11, 'm')
-    p.put(13, 10, 'm')
+    p.put(10, MOUTH, 'm')
+    p.put(11, MOUTH - 1, 'm')
   },
-  yawn: (p) => p.span(10, 12, 13, 'O'),
+  yawn: (p) => p.rect(10, MOUTH, 11, MOUTH + 1, 'O'),
   smirk: (p) => {
-    p.put(12, 11, 'm')
-    p.put(13, 10, 'm')
+    p.put(10, MOUTH, 'm')
+    p.put(11, MOUTH - 1, 'm')
   },
 }
 
 function paintSide(p, expression, left) {
   const { eyes, brows, mouth, tears, blush } = expression
-  p.put(13, 4, 's')
+  // Sombra de la frente y oreja: dan relieve al perfil sin añadir líneas.
+  p.put(12, 5, 's')
+  p.put(8, 7, 's')
+  p.put(8, 8, 's')
   sideEye(p, eyes, left)
   if (brows) SIDE_BROWS[brows].forEach(([x, y]) => p.put(x, y, 'Z'))
-  p.put(11, 8, 'B')
+  p.put(10, 8, 'B')
   if (blush) {
-    p.put(12, 8, 'B')
-    p.put(12, 9, 'B')
+    p.put(11, 8, 'B')
+    p.put(11, 9, 'B')
   }
   SIDE_MOUTHS[mouth](p)
-  if (tears) p.rect(11, 8, 11, 10, 'q')
+  if (tears) p.rect(10, 8, 10, 10, 'q')
 }
 
 export function paintFace(p, { look, view, left, male }) {

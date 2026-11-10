@@ -41,7 +41,7 @@ describe('composeAvatar', () => {
           })
           // Nada dibujado toca el borde: la primera y la última fila y columna son solo contorno o vacío.
           const edges = [rows[0], rows[FRAME_H - 1], rows.map((row) => row[0]).join(''), rows.map((row) => row[FRAME_W - 1]).join('')]
-          if (edges.some((edge) => /[^.X]/.test(edge))) problems.push(`borde: ${where}`)
+          if (edges.some((edge) => /[^.Xxyjklo]/.test(edge))) problems.push(`borde: ${where}`)
         }),
       ),
     )
@@ -57,7 +57,7 @@ describe('composeAvatar', () => {
         // Con los pies en el suelo hay calzado en la penúltima fila (la última es el contorno).
         const sole = rows[FRAME_H - 2]
         expect(sole).toMatch(/[QRW]/)
-        const cols = [...sole].map((ch, i) => (ch === '.' || ch === 'X' ? -1 : i)).filter((i) => i >= 0)
+        const cols = [...sole].map((ch, i) => (ch === '.' || /[Xxyjklo]/.test(ch) ? -1 : i)).filter((i) => i >= 0)
         const middle = (cols[0] + cols[cols.length - 1] + 1) / 2
         // En un paso un pie se levanta y la fila de la suela solo tiene el otro: se descentra.
         const tolerance = pose === 0 && (dir === 'down' || dir === 'up') ? 1 : 4
@@ -115,24 +115,42 @@ describe('composeAvatar', () => {
     })
   })
 
-  it('de perfil se ve una sola mano y una sola pierna en reposo, y las dos piernas al caminar', () => {
-    const rest = stance({ view: 'side', male: false, pose: 0 })
-    expect(rest.arms).toHaveLength(1)
-    expect(rest.legs).toHaveLength(1)
-    ;[1, 2].forEach((pose) => {
-      const step = stance({ view: 'side', male: false, pose })
-      expect(step.arms).toHaveLength(1)
-      expect(step.legs).toHaveLength(2)
-      expect(step.legs.filter((leg) => leg.far)).toHaveLength(1)
+  it('de perfil hay una mano y dos piernas: la lejana se pinta primero y al caminar se abren', () => {
+    POSE_LIST.forEach((pose) => {
+      const { arms, legs } = stance({ view: 'side', male: false, pose })
+      expect(arms).toHaveLength(1)
+      expect(legs.map((leg) => leg.far)).toEqual([true, false])
+      // Las dos piernas tienen las mismas filas en todas las poses: no cambian de largo.
+      legs.forEach((leg) => expect(leg.lean).toHaveLength(4))
     })
+    // En reposo casi se tapan; en un paso los tobillos quedan lejos, uno delante y otro detrás.
+    const ankles = (pose) => stance({ view: 'side', male: false, pose }).legs.map((leg) => leg.lean[3])
+    expect(Math.abs(ankles(0)[0] - ankles(0)[1])).toBe(1)
+    expect(ankles(1)[1]).toBeGreaterThan(ankles(1)[0])
+    expect(ankles(2)[1]).toBeLessThan(ankles(2)[0])
     expect(stance({ view: 'down', male: false, pose: 0 }).arms).toHaveLength(2)
   })
 
-  it('el brazo de perfil cuelga delante del torso, con su propio contorno y una mano de piel', () => {
+  it('de perfil, al caminar, cada pie apoya por separado: las suelas no forman una sola pieza', () => {
+    // Algunas botas parten la suela por el arco del pie: se compara con el reposo, donde los dos pies
+    // coinciden, en lugar de contar piezas a secas.
+    const pieces = (shoes, pose) => rowsOf({ ...BASE, shoes }, 'right', pose)[FRAME_H - 2].split(/[^QRWY]+/).filter(Boolean).length
+    ;['botines', 'zapatillas', 'botasAltas'].forEach((shoes) =>
+      [1, 2].forEach((pose) => expect(pieces(shoes, pose), `${shoes} ${pose}`).toBeGreaterThan(pieces(shoes, 0))),
+    )
+  })
+
+  it('de perfil la altura del cuerpo no cambia al caminar', () => {
+    const top = (pose) => rowsOf(BASE, 'right', pose).findIndex((row) => /[^.]/.test(row))
+    expect(top(1)).toBe(top(0))
+    expect(top(2)).toBe(top(0))
+  })
+
+  it('el brazo de perfil cuelga delante del torso, con su propia sombra y una mano de piel', () => {
     const rows = rowsOf({ ...BASE, hairStyle: 'pixie' }, 'right', 0)
-    // Las filas de la mano: piel entre dos líneas de contorno dentro del torso.
-    const hands = rows.filter((row) => /X[sS]{2}X/.test(row))
-    expect(hands.length).toBeGreaterThanOrEqual(3)
+    // Las filas de la mano: dos píxeles de piel rodeados de tela del torso, sin acercarse al dobladillo.
+    const hands = rows.filter((row) => /[DLM][sS]{2}[DLM]/.test(row))
+    expect(hands.length).toBeGreaterThanOrEqual(2)
   })
 
   it('el pelo corto deja el cuello a la vista y calvo quita todo el pelo', () => {
@@ -223,8 +241,8 @@ describe('catálogo de las láminas de referencia', () => {
     ;['sombreroBruja', 'sombreroPaja'].forEach((accessory) =>
       DIRS.forEach((dir) => {
         const rows = rowsOf({ ...BASE, accessory }, dir)
-        expect(rows[0]).toMatch(/^[.X]+$/)
-        expect(rows.map((row) => row[0] + row[FRAME_W - 1]).join('')).toMatch(/^[.X]+$/)
+        expect(rows[0]).toMatch(/^[.Xxyjklo]+$/)
+        expect(rows.map((row) => row[0] + row[FRAME_W - 1]).join('')).toMatch(/^[.Xxyjklo]+$/)
         // La punta o la copa llega por encima de la cabeza.
         expect(rows.slice(0, 5).join('')).toMatch(/[A-Za-z]/)
       }),

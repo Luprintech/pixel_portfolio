@@ -33,20 +33,22 @@ function brush(p, { view, g }) {
     if (front) row(1, 7, 8, 'T')
   }
   // Falda de un vestido: el vuelo crece en tres tramos y acaba en el dobladillo.
+  // Al caminar de perfil las dos últimas filas se adelantan `g.sway` columnas: el vuelo sigue a la pierna.
   const dressSkirt = (from, to) => {
+    const push = (r) => (r >= to - 1 ? g.sway : 0)
     for (let r = from; r <= to; r++) {
       const wide = r >= from + 2
-      row(r, wide ? 4 : 5, wide ? 11 : 10, 'D', 'L', 'M')
+      row(r, wide ? 4 : 5, (wide ? 11 : 10) + push(r), 'D', 'L', 'M')
     }
-    row(to, 4, 11, 'M')
+    row(to, 4, 11 + g.sway, 'M')
   }
-  // Cierre central de la sudadera con cremallera y de la chaqueta: tira blanca entre dos líneas.
+  // Cierre central de la sudadera con cremallera y de la chaqueta: tira blanca entre dos franjas de sombra.
   const centreZip = () => {
     ;[c0, c1].forEach((x) => {
       for (let r = 0; r <= 6; r++) dot(r, x, 'W')
     })
     ;[c0 - 1, c1 + 1].forEach((x) => {
-      for (let r = 1; r <= 6; r++) dot(r, x, 'X')
+      for (let r = 1; r <= 6; r++) dot(r, x, 'M')
     })
   }
 
@@ -59,6 +61,9 @@ const GARMENTS = {
   camiseta(b) {
     b.shoulders()
     b.body(1, 5)
+    // Volumen del torso: un pliegue de luz bajo el hombro y la sombra sobre el dobladillo.
+    ;[1, 2].forEach((r) => b.dot(r, b.tl + 1, 'L'))
+    b.row(5, b.tl + 1, b.tr - 1, 'M')
     b.row(6, b.tl, b.tr, 'T')
     b.trimmedCollar()
     return sleeve(3, 'M')
@@ -162,6 +167,8 @@ const GARMENTS = {
       b.dot(1, b.tl + 1, 'L')
       b.dot(1, b.tr - 1, 'L')
       b.centreZip()
+      // Pespuntes de contraste a los lados del cierre.
+      ;[b.c0 - 1, b.c1 + 1].forEach((x) => [2, 4, 6].forEach((r) => b.dot(r, x, 'T')))
       ;[b.tl + 1, b.tr - 1].forEach((x) => {
         b.dot(3, x, 'M')
         b.dot(4, x, 'M')
