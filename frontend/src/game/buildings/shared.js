@@ -76,7 +76,8 @@ export function wall(g, { x, y, w, h, base = WALL1, dark = WALL0, post = true })
 // Ventana con marco, cruceta y brillo. `shutters` pinta postigos de ese color y `flowers` una jardinera.
 // `sill` añade dintel y alféizar de piedra, `curtains` cortinas del color dado, `glint` el reflejo
 // diagonal del cristal y `muntins: false` quita la cruceta para dibujar un interior sin cortarlo.
-export function windowAt(sprite, x, y, w, h, { shutters = null, flowers = false, arched = false, screen = null, sill = false, curtains = null, glint = false, muntins = true } = {}) {
+// `lit: false` no registra el cristal para encenderlo de noche.
+export function windowAt(sprite, x, y, w, h, { shutters = null, flowers = false, arched = false, screen = null, sill = false, curtains = null, glint = false, muntins = true, lit = true } = {}) {
   const { g } = sprite
   if (shutters) {
     const s = [shade(shutters, 0.7), shutters, tint(shutters, 0.3)]
@@ -100,7 +101,8 @@ export function windowAt(sprite, x, y, w, h, { shutters = null, flowers = false,
   if (glint) glintAt(g, x, y, w)
   if (sill) sillAt(g, x, y, w, h)
   if (flowers) flowerBox(g, x - 2, y + h + 1, w + 4)
-  sprite.windows.push({ x, y, w, h })
+  // `lit: false` deja el cristal sin luz plana de noche: quien llama registra el suyo (con siluetas y profundidad).
+  if (lit) sprite.windows.push({ x, y, w, h })
 }
 
 // Cortinas recogidas a los lados con su lazo: dejan ver el centro del cristal.

@@ -29,8 +29,8 @@ export function houseGlow() {
   const canvas = makeCanvas(256, GLOW_H)
   const g = canvas.getContext('2d')
   // Ventanas del ordenador y de la impresora, y la de la sala baja.
-  windowLight(g, { x: 120, y: 98, w: 36, h: 30 })
-  windowLight(g, { x: 202, y: 98, w: 36, h: 30 })
+  windowLight(g, { x: 120, y: 102, w: 36, h: 30 })
+  windowLight(g, { x: 202, y: 102, w: 36, h: 30 })
   windowLight(g, { x: 58, y: 128, w: 32, h: 20 })
   // Puerta y farol.
   pool(g, 179, 165, 22, 8, { rings: 3, alpha: 0.08 })

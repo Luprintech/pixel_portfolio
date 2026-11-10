@@ -2,9 +2,17 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-10 (entrada con E y salas interiores vacías). Antes, 2026-11-10 (`/clasico` vuelve a servir la web original, aislada). Antes, 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
+Última actualización: 2026-11-10 (fachada de la casa de Lupe). Antes, 2026-11-10 (entrada con E y salas interiores vacías). Antes, 2026-11-10 (`/clasico` vuelve a servir la web original, aislada). Antes, 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
 
 ## Hecho
+
+### Fachada de la casa de Lupe: ventanas, puerta y detalles (2026-11-10)
+
+- Las ventanas pequeñas de arriba se centran sobre las grandes y dejan cinco filas de pared libre hasta ellas, sin acercarse al tejado. Las franjas de píxeles alternos (jardinera y dintel) pasan a un alféizar continuo de piedra con luz arriba y sombra abajo (`sillLedge` en `buildings/homeFacade.js`). La ventana de la sala baja, que forma parte de la terraza, no se toca.
+- El ordenador y la impresora 3D se conservan enteros: se quita el reflejo diagonal que cruzaba el monitor y las cortinas siguen recogidas a los lados.
+- De noche el cristal ya no es un rectángulo liso (`buildings/litPane.js`, con test): la sombra del marco arriba, más luz abajo y los objetos del interior (monitor, mesa, impresora, cortinas) sin luz, como silueta. `LitWindows` admite un color por rectángulo.
+- Sobre la puerta se quita la placa de Khalessi. Hay una placa de madera «LUPE» junto a la entrada (se añade la P a `pixelFont.js`), una puerta con jambas, pomo oscuro (el dorado no se veía sobre el ámbar) y un escalón de piedra más ancho, un tejadillo más alto con el móvil de luna y estrella (guiño al telescopio), una maceta de flores y otra de hojas altas, y una enredadera discreta en la esquina derecha.
+- Comprobado el dibujo renderizado a 5x, de día y de noche. No comprobado dentro del valle en marcha.
 
 ### Guardado del valle: hora, tiempo y posición (2026-11-10)
 

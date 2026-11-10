@@ -3,7 +3,9 @@
 import { PAL, TONE, shade, tint } from '../palette.js'
 import { dot, ellipse, makeCanvas, rect } from '../pixelKit.js'
 import { STAIRS } from '../terrace.js'
+import { flowerPot, houseDoor, lupePlaque, sillLedge, starMobile, tallPlant, vine } from './homeFacade.js'
 import { houseGlow } from './homeLight.js'
+import { litPane } from './litPane.js'
 import { FRONT_RAIL, STRAND, backRail, deckFloor, frontRail, parasol, strandPoints, telescope, terraceStairs } from './terraceProps.js'
 import { frontRailSnow, terraceSnow } from './terraceWinter.js'
 import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, chimney, doorAt, finish, hipRoof, iconAt, leanRoof, newSprite, signBoard, wall, windowAt } from './shared.js'
@@ -12,18 +14,6 @@ const SLATE = '#6b5b95'
 
 function heart(g, x, y, color) {
   ;[[0, 0], [1, 0], [3, 0], [4, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [1, 2], [2, 2], [3, 2], [2, 3]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, color))
-}
-
-// Maceta de barro con arbusto y flores.
-function pot(g, x, y, bloom) {
-  ellipse(g, x + 5, y + 2, 6, 4, TONE.grass[1])
-  ellipse(g, x + 4, y + 1, 3, 2, TONE.grass[2])
-  dot(g, x + 2, y, bloom)
-  dot(g, x + 7, y + 2, bloom)
-  dot(g, x + 5, y - 1, bloom)
-  rect(g, x, y + 5, 10, 2, '#d9703a')
-  rect(g, x + 1, y + 7, 8, 4, '#c4572a')
-  rect(g, x + 1, y + 7, 2, 4, '#e08a52')
 }
 
 // Guirnalda de bombillas entre el mástil de la cubierta y la pared. Las bombillas se encienden de noche.
@@ -41,21 +31,45 @@ function stringLights(s) {
   })
 }
 
-// Cortinas y reflejo de las ventanas grandes: se pintan después del interior para quedar por encima.
-function windowDressing(g, x, y, w, h, curtain) {
+// Cortinas de las ventanas grandes: se pintan después del interior para quedar por encima. Van recogidas a los
+// lados y no cruzan el cristal, así que el monitor y la impresora se ven enteros.
+function windowCurtains(g, x, y, w, h, curtain) {
   const fold = shade(curtain, 0.78)
   rect(g, x, y, 4, h - 6, curtain)
   rect(g, x + 3, y, 1, h - 6, fold)
   rect(g, x + w - 4, y, 4, h - 6, curtain)
   rect(g, x + w - 4, y, 1, h - 6, fold)
   rect(g, x, y, w, 2, tint(curtain, 0.2))
-  for (let i = 0; i < 6; i++) dot(g, x + 6 + i, y + 8 - i, 'rgba(255,255,255,0.4)')
 }
 
-// Ventana del ordenador: monitor con un corazón sobre la mesa, cortinas rosas y un reflejo en el cristal.
+// Zonas de la ventana grande que no se encienden de noche: las cortinas y el valance, para que el cristal quede
+// entre dos bandas con fondo, y los objetos del interior, que se leen como silueta contra la luz.
+const CURTAIN_HOLES = (w, h) => [{ x: 0, y: 0, w: 4, h: h - 6 }, { x: w - 4, y: 0, w: 4, h: h - 6 }, { x: 0, y: 0, w, h: 2 }]
+const COMPUTER_HOLES = [
+  { x: 8, y: 5, w: 20, h: 15 },
+  { x: 17, y: 20, w: 2, h: 4 },
+  { x: 10, y: 23, w: 16, h: 2 },
+  { x: 0, y: 24, w: 36, h: 6 },
+  { x: 30, y: 19, w: 3, h: 5 },
+  { x: 31, y: 17, w: 2, h: 2 },
+]
+const PRINTER_HOLES = [
+  { x: 7, y: 5, w: 2, h: 19 },
+  { x: 27, y: 5, w: 2, h: 19 },
+  { x: 7, y: 5, w: 22, h: 4 },
+  { x: 15, y: 9, w: 5, h: 4 },
+  { x: 17, y: 13, w: 1, h: 3 },
+  { x: 13, y: 20, w: 12, h: 4 },
+  { x: 15, y: 16, w: 8, h: 4 },
+  { x: 17, y: 14, w: 4, h: 2 },
+  { x: 6, y: 24, w: 24, h: 3 },
+  { x: 2, y: 17, w: 5, h: 5 },
+]
+
+// Ventana del ordenador: monitor con un corazón sobre la mesa y cortinas rosas.
 function computerWindow(s, x, y) {
   const { g } = s
-  windowAt(s, x, y, 36, 30, { screen: '#2a2250', shutters: '#b8a2e0', muntins: false, sill: true })
+  windowAt(s, x, y, 36, 30, { screen: '#2a2250', shutters: '#b8a2e0', muntins: false, lit: false })
   rect(g, x, y + 24, 36, 6, WOOD2)
   rect(g, x, y + 24, 36, 1, WOOD3)
   rect(g, x + 8, y + 5, 20, 15, '#1c1b3a')
@@ -68,13 +82,15 @@ function computerWindow(s, x, y) {
   dot(g, x + 31, y + 17, TONE.grass[2])
   dot(g, x + 32, y + 18, TONE.grass[2])
   rect(g, x + 5, y + 21, 3, 3, PAL.saffron)
-  windowDressing(g, x, y, 36, 30, '#e8a8c8')
+  windowCurtains(g, x, y, 36, 30, '#e8a8c8')
+  sillLedge(g, x - 3, y + 31, 42)
+  s.windows.push(...litPane(x, y, 36, 30, [...CURTAIN_HOLES(36, 30), ...COMPUTER_HOLES]))
 }
 
 // Ventana de la impresora 3D: bastidor, cabezal sobre el pórtico y la pieza morada a medio imprimir.
 function printerWindow(s, x, y) {
   const { g } = s
-  windowAt(s, x, y, 36, 30, { screen: '#2a2250', shutters: '#b8a2e0', muntins: false, flowers: true })
+  windowAt(s, x, y, 36, 30, { screen: '#2a2250', shutters: '#b8a2e0', muntins: false, lit: false })
   rect(g, x + 6, y + 24, 24, 3, STONE1)
   rect(g, x + 6, y + 24, 24, 1, STONE2)
   rect(g, x + 7, y + 5, 2, 19, STONE1)
@@ -89,7 +105,16 @@ function printerWindow(s, x, y) {
   rect(g, x + 2, y + 17, 5, 5, '#f4b8cc')
   rect(g, x + 3, y + 18, 3, 3, '#2a2250')
   dot(g, x + 29, y + 3, '#7ae0a0')
-  windowDressing(g, x, y, 36, 30, '#b8e0c8')
+  windowCurtains(g, x, y, 36, 30, '#b8e0c8')
+  sillLedge(g, x - 3, y + 31, 42)
+  s.windows.push(...litPane(x, y, 36, 30, [...CURTAIN_HOLES(36, 30), ...PRINTER_HOLES]))
+}
+
+// Ventana pequeña de la planta alta: cristal con cruceta y un alféizar continuo.
+function smallWindow(s, x, y) {
+  windowAt(s, x, y, 12, 8, { glint: true, lit: false })
+  sillLedge(s.g, x - 2, y + 9, 16)
+  s.windows.push(...litPane(x, y, 12, 8))
 }
 
 // Piedras de esquina alternas, para que las esquinas del muro no sean un poste liso.
@@ -103,35 +128,12 @@ function quoins(g, x, y, h, side) {
   }
 }
 
-// Hiedra que trepa por una esquina, en manchas de dos tonos.
-function ivy(g, x, y, h) {
-  for (let i = 0; i < h; i += 5) {
-    const dx = (i * 7) % 6
-    rect(g, x + dx, y + i, 3, 3, TONE.grass[1])
-    dot(g, x + dx, y + i, TONE.grass[2])
-    if (i % 15 === 0) dot(g, x + dx + 2, y + i + 1, '#f4b8cc')
-  }
-}
-
 // Buhardilla sobre el tejado con su ventana de punto.
 function dormer(s, cx, top) {
   const { g } = s
   wall(g, { x: cx - 12, y: top + 9, w: 24, h: 12, post: false })
   hipRoof(g, { x: cx - 16, y: top, w: 32, rows: 3, color: '#8a7ab8', inset: 3, rowH: 3 })
   windowAt(s, cx - 5, top + 12, 10, 8, { shutters: '#b8a2e0', arched: true })
-}
-
-// Placa con la cara de Khalessi sobre la puerta.
-function khalessiPlaque(g, x, y) {
-  rect(g, x, y, 14, 12, '#d9a557')
-  rect(g, x, y, 14, 1, '#f1c878')
-  rect(g, x, y + 11, 14, 1, '#a87a35')
-  rect(g, x, y, 3, 3, WOOD2)
-  rect(g, x + 11, y, 3, 3, WOOD2)
-  dot(g, x + 3, y + 5, WOOD0)
-  dot(g, x + 10, y + 5, WOOD0)
-  rect(g, x + 6, y + 7, 2, 1, '#e07a9c')
-  rect(g, x + 4, y + 8, 6, 1, WOOD1)
 }
 
 // Casa de Lupe, de izquierda a derecha: la escalera de madera, la sala baja con la cubierta (balaustrada,
@@ -146,7 +148,7 @@ export function homeSprite() {
   dormer(s, 179, 50)
   quoins(g, 109, 80, 72, 'left')
   quoins(g, 249, 80, 72, 'right')
-  ivy(g, 240, 82, 70)
+  vine(g, 246, 108, 44)
   // Sala baja y cubierta. De atrás adelante: suelo, guirnalda, balaustrada trasera, telescopio, mesa con sombrilla
   // y escalera. La barandilla delantera va aparte (`overlay`): se dibuja por encima de la viajera.
   wall(g, { x: 38, y: 118, w: 70, h: 42, post: false })
@@ -157,24 +159,24 @@ export function homeSprite() {
   parasol(g)
   terraceStairs(g, STAIRS)
   windowAt(s, 58, 128, 32, 20, { flowers: true, sill: true, curtains: '#e8a8c8', glint: true })
-  // Casa de dos plantas.
-  computerWindow(s, 120, 98)
-  printerWindow(s, 202, 98)
-  windowAt(s, 128, 82, 12, 10, { sill: true, glint: true })
-  windowAt(s, 216, 82, 12, 10, { sill: true, glint: true })
-  khalessiPlaque(g, 172, 102)
-  // Puerta con marquesina, farol y macetas.
-  leanRoof(g, { x: 166, y: 120, w: 26, rows: 2, color: SLATE })
-  rect(g, 168, 128, 2, 3, WOOD1)
-  rect(g, 188, 128, 2, 3, WOOD1)
-  doorAt(s, 172, 157, { w: 14, h: 26, glow: true })
+  // Casa de dos plantas. Entre las ventanas pequeñas y las grandes queda una franja libre de pared (cinco filas).
+  computerWindow(s, 120, 102)
+  printerWindow(s, 202, 102)
+  smallWindow(s, 132, 83)
+  smallWindow(s, 214, 83)
+  // Entrada: tejadillo alto con el móvil de luna y estrella, puerta con marco y escalón, farol, macetas y placa.
+  leanRoof(g, { x: 166, y: 114, w: 26, rows: 2, color: SLATE })
+  rect(g, 168, 122, 2, 9, WOOD1)
+  rect(g, 188, 122, 2, 9, WOOD1)
+  starMobile(g, 179, 122)
+  houseDoor(s, 172, 157, { w: 14, h: 26 })
   rect(g, 160, 131, 4, 1, WOOD0)
   rect(g, 161, 132, 3, 6, WOOD0)
   rect(g, 162, 133, 1, 4, PAL.saffronLight)
   s.windows.push({ x: 162, y: 133, w: 1, h: 4 })
-  rect(g, 171, 157, 16, 1, '#c46aa0')
-  pot(g, 158, 148, '#e07a9c')
-  pot(g, 192, 148, '#f6f0e0')
+  tallPlant(g, 158, 147)
+  flowerPot(g, 192, 148)
+  lupePlaque(g, 190, 138)
   return { ...finish(s), overlay: frontRailLayer(), glow: houseGlow(), snow: snowLayer(256, 160, terraceSnow) }
 }
 

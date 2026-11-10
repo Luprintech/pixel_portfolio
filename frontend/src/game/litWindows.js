@@ -19,7 +19,8 @@ export default class LitWindows {
 
   paint() {
     this.g.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.windows.forEach((w) => rect(this.g, w.x, w.y, w.w, w.h, this.color))
+    // Un cristal puede traer su propio color (ver `buildings/litPane.js`); sin él, el amarillo de siempre.
+    this.windows.forEach((w) => rect(this.g, w.x, w.y, w.w, w.h, w.color ?? this.color))
   }
 
   // Recorta la silueta del sprite en su posición actual, o restaura los cristales si ya no se solapan.
