@@ -90,19 +90,22 @@ function headband({ add, rect }) {
   ;[3, 12].forEach((x) => add(x, 3, 'A'))
 }
 
-function bow({ add, side, left }) {
+// Lo que va en un solo lado de la cabeza cambia de columna al ver la figura de espalda: el lado
+// izquierdo del personaje queda a la derecha de quien mira de frente y a la izquierda por detrás.
+const MID = 15
+const sameSide = (x, view) => (view === 'up' ? MID - x : x)
+
+function bow({ add, side, left, view }) {
   if (side && !left) return
   const x = side ? 4 : 10
-  ;[[0, 1, 'A'], [1, 1, 'a'], [2, 1, 'A'], [0, 2, 'A'], [1, 2, 'a'], [2, 2, 'A']].forEach(([dx, y, ch]) => add(x + dx, y, ch))
+  ;[[0, 1, 'A'], [1, 1, 'a'], [2, 1, 'A'], [0, 2, 'A'], [1, 2, 'a'], [2, 2, 'A']].forEach(([dx, y, ch]) => add(sameSide(x + dx, view), y, ch))
 }
 
 // Horquillas: dos pasadores cortos y paralelos sobre la sien.
-function hairClips({ add, rect, side, left }) {
+function hairClips({ add, side, left, view }) {
   if (side && !left) return
   const x = side ? 5 : 10
-  rect(x, 2, x + 1, 2, 'A')
-  rect(x + 1, 3, x + 2, 3, 'A')
-  add(x + 2, 2, 'a')
+  ;[[0, 2, 'A'], [1, 2, 'A'], [1, 3, 'A'], [2, 3, 'A'], [2, 2, 'a']].forEach(([dx, y, ch]) => add(sameSide(x + dx, view), y, ch))
 }
 
 // Gorro de lana: casquete, vuelta del borde y pompón.

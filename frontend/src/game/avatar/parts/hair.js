@@ -65,6 +65,14 @@ function braid(F, x, y0, y1) {
 
 const WAVE = [0, 1, 2, 1]
 
+// Nuca de un recogido vista de espalda. El pelo baja hasta su nacimiento y se estrecha en dos
+// escalones: si se corta recto en la fila 8, media cabeza queda en piel y parece rapada.
+function napeUp(F) {
+  rect(F, 3, 4, 12, 8)
+  rect(F, 4, 9, 11, 9)
+  rect(F, 5, 10, 10, 10)
+}
+
 
 // Bob de la base aprobada: masa redonda hasta la barbilla, brillo arriba a la izquierda y sombra a
 // la derecha y bajo el flequillo. De perfil lleva flequillo en cuña, patilla en la sien y la nuca
@@ -372,11 +380,15 @@ const STYLES = {
     }
     capDown(F, { tight: true })
     if (kind === 'up') {
-      rect(F, 3, 4, 12, 8)
-      rect(F, 7, 1, 8, 1, 'T')
-      rect(F, 7, 2, 8, 2)
-      rect(F, 6, 3, 9, 9)
-      rect(F, 7, 10, 8, 12)
+      // La cola sale de la coronilla, sube y cae por detrás hasta la fila 6, igual que de perfil. Va
+      // del mismo color que el casquete, así que la recortan una sombra a cada lado y la goma.
+      napeUp(F)
+      rect(F, 7, -4, 8, -4)
+      rect(F, 6, -3, 9, 6)
+      rect(F, 7, 7, 8, 7)
+      rect(F, 6, 0, 9, 0, 'T')
+      for (let y = 1; y <= 6; y++) [5, 10].forEach((x) => put(F, x, y, 'd'))
+      ;[6, 9].forEach((x) => put(F, x, 7, 'd'))
       return
     }
     rect(F, 7, -1, 8, -1, 'T')
@@ -423,13 +435,17 @@ const STYLES = {
   // Dos coletas: dos mechones sueltos a los lados de la cabeza, separados por una goma.
   coletas(kind, B, F) {
     if (kind === 'side') {
+      // De perfil se ve la coleta del lado que mira a cámara, a la misma altura que de frente (filas
+      // 1 a 8). Nace tras la oreja, con la goma delante, y sobresale por la nuca para que se lea en
+      // la silueta; detrás de la cabeza, como estaba, parecía una sola cola de caballo.
       capSide(F, { tight: true })
       rect(F, 3, 5, 6, 7)
-      put(F, 3, 2, 'T')
-      rect(F, 0, 1, 2, 1)
-      rect(F, 0, 2, 2, 5)
-      rect(F, 0, 6, 1, 8)
-      put(F, 1, 9)
+      rect(F, 2, 1, 4, 1)
+      rect(F, 1, 2, 5, 4)
+      rect(F, 1, 5, 4, 6)
+      rect(F, 2, 7, 3, 8)
+      rect(F, 6, 2, 6, 3, 'T')
+      ;[[5, 4], [4, 5], [4, 6], [3, 7], [3, 8]].forEach(([x, y]) => put(F, x, y, 'd'))
       return
     }
     capDown(F, { tight: true })
@@ -440,7 +456,7 @@ const STYLES = {
     mir(F, 0, 3, 2, 4)
     mir(F, 1, 5, 2, 6)
     mir(F, 1, 7, 1, 8)
-    if (kind === 'up') rect(F, 3, 4, 12, 8)
+    if (kind === 'up') napeUp(F)
     else rect(B, 4, 5, 11, 8)
   },
 
@@ -454,9 +470,13 @@ const STYLES = {
     }
     capDown(F)
     if (kind === 'up') {
-      rect(F, 3, 5, 12, 10)
-      braid(F, 5, 11, 22)
-      braid(F, 9, 11, 22)
+      // Las trenzas caen por delante de los hombros: por detrás solo asoma su arranque junto
+      // al cuello, en la capa trasera para que los hombros lo tapen. La raya queda en sombra.
+      rect(F, 3, 5, 12, 9)
+      rect(F, 4, 10, 11, 10)
+      for (let y = 1; y <= 9; y++) put(F, 8, y, 'd')
+      braid(B, 2, 9, 11)
+      braid(B, 12, 9, 11)
       return
     }
     mir(F, 3, 5, 4, 8)
@@ -479,7 +499,7 @@ const STYLES = {
     rect(F, 6, -4, 9, -4)
     rect(F, 5, -3, 10, -2)
     rect(F, 6, -1, 9, -1, 'T')
-    if (kind === 'up') rect(F, 3, 4, 12, 8)
+    if (kind === 'up') napeUp(F)
     else rect(B, 4, 5, 11, 8)
   },
 
