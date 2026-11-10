@@ -24,18 +24,19 @@ const withoutArm = (rows) => stamp(withoutForearm(rows), 12, 19, ['dH', 'dH', 'd
 
 // Brazo en alto junto a la cabeza, con la mano abierta; en el segundo paso la mano se inclina.
 // La mano mide cuatro filas y el brazo, que sale del hombro, otras seis; se pintan por separado
-// para poder mover solo la mano.
+// para poder mover solo la mano. El contorno es el del resto de la figura: el borde oscuro de la
+// piel (x) y el de la camiseta (j), no una línea negra.
 const WAVE_HAND = [
-  ['.XXXX.', 'XSSSSX', 'XSsSsX', '.XSSX.'],
-  ['..XXXX', '.XSSSX', '.XSsSX', '.XSSX.'],
+  ['.xxxx.', 'xSSSSx', 'xSsSsx', '.xSSx.'],
+  ['..xxxx', '.xSSSx', '.xSsSx', '.xSSx.'],
 ]
-const WAVE_ARM = ['.XSSX.', '.XSSX.', '.XSSX.', '.XDDX.', '.XDDX.', '.XDMX.']
+const WAVE_ARM = ['.xSSx.', '.xSSx.', '.xSSx.', '.jDDj.', '.jDDj.', '.jDMj.']
 
 // Brazo extendido hacia el suelo, donde espera la gata: la mano sube y baja una fila al acariciar.
 // La manga corta se queda en el hombro, así que lo que se estira es antebrazo y mano.
 const PET = [
-  ['XXXXX', 'sSSSS', 'XXXXX'],
-  ['.....', 'XXXXX', 'sSSSS', 'XXXXX'],
+  ['xxxxx', 'sSSSS', 'xxxxx'],
+  ['.....', 'xxxxx', 'sSSSS', 'xxxxx'],
 ]
 
 const EDITS = {

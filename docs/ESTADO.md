@@ -11,6 +11,8 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - Dos piezas son solo suyas y no aparecen en el creador: el peinado `melenaLupe` (`parts/hair.js`) y el campo `emblem: 'trifuerza'` de la camiseta (`parts/body.js`). La Trifuerza se ve entera de frente, un canto de perfil y nada de espalda. `upgradeLook` descarta ambos en una viajera guardada.
 - Las poses de la portada (`game/lupePoses.js`) ya no estampan el vestido con collar: el saludo y la caricia retiran el brazo que cuelga y dejan la melena que hay detrás.
 - Coherencia entre vistas de la viajera: las coletas de perfil son una coleta lateral con su goma (antes, una cola tras la cabeza); la cola alta se ve de espalda; las trenzas, que caen por delante, ya no aparecen sobre la espalda; los recogidos bajan hasta la nuca (`napeUp`), y el lazo y las horquillas cambian de columna de espalda para seguir en el mismo lado de la cabeza.
+- Frente sin franja: `paintFront` (`parts/face.js`) pintaba una fila de sombra de piel bajo el flequillo que se leía como una línea gris sobre los ojos en todos los peinados; se quitó, junto con el píxel de sombra de la frente de perfil. Cejas y ojos no cambian.
+- El brazo de Lupe al saludar y al acariciar usa el contorno de la figura (borde de piel y de camiseta) en lugar del negro neutro.
 - Comprobado pintando las cuatro direcciones y las tres poses ampliadas, las cinco poses de la portada, pruebas, lint y build.
 - Pendiente: la coleta baja cae sobre un hombro de frente y por el centro en las otras vistas; el flequillo largo y el piercing se ven igual en los dos perfiles; las mascotas solo tienen vista de perfil.
 

@@ -1,4 +1,4 @@
-// Rostro: sombra del flequillo, ojos, cejas, mejillas y boca. Cada expresión es una ficha
+// Rostro: ojos, cejas, mejillas y boca. Cada expresión es una ficha
 // (`EXPRESSIONS`) que combina un tipo de ojos, de cejas y de boca sobre la cara base; las funciones
 // de abajo dibujan cada pieza por separado, para frente y para perfil. De perfil se ve un solo ojo;
 // el guiño solo cierra el ojo izquierdo del personaje, que es el que enseña el perfil izquierdo (el
@@ -105,8 +105,8 @@ const FRONT_MOUTHS = {
 
 function paintFront(p, expression, male) {
   const { eyes, brows, mouth, tears, blush } = expression
-  p.span(5, 4, 11, 's')
-  // El hombre lleva las cejas marcadas, en el color de su pelo; las cejas de la expresión van encima.
+  // La frente va en el color de la piel: una fila de sombra bajo el flequillo se leía como una
+  // franja gris pintada sobre la cara. El hombre lleva las cejas marcadas, en el color de su pelo; las cejas de la expresión van encima.
   if (male) [4, 5, 10, 11].forEach((x) => p.put(x, 5, 'd'))
   frontEyes(p, eyes)
   if (brows) FRONT_BROWS[brows].forEach(([x, y]) => p.put(x, y, 'Z'))
@@ -184,8 +184,7 @@ const SIDE_MOUTHS = {
 
 function paintSide(p, expression, left) {
   const { eyes, brows, mouth, tears, blush } = expression
-  // Sombra de la frente y oreja: dan relieve al perfil sin añadir líneas.
-  p.put(12, 5, 's')
+  // Oreja en sombra: da relieve al perfil sin añadir líneas.
   p.put(8, 7, 's')
   p.put(8, 8, 's')
   sideEye(p, eyes, left)
