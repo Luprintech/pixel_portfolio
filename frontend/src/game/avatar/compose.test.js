@@ -274,3 +274,19 @@ describe('hoja de poses', () => {
     expect(seen.size).toBe(DIRS.length * POSES)
   })
 })
+
+describe('frente', () => {
+  // Una fila de sombra de piel bajo el flequillo se leía como una franja gris pintada sobre los ojos.
+  // Las filas 3 a 5 de la figura (8 a 10 del lienzo) son la frente y las cejas.
+  it('no lleva una franja de sombra en ninguna combinación, vista ni pose', () => {
+    looks().forEach((look) =>
+      ['down', 'left', 'right'].forEach((dir) =>
+        POSE_LIST.forEach((pose) => {
+          rowsOf(look, dir, pose)
+            .slice(8, 11)
+            .forEach((row) => expect(/ss/.test(row), `${JSON.stringify(look)} ${dir} ${pose}`).toBe(false))
+        }),
+      ),
+    )
+  })
+})
