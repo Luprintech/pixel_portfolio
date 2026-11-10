@@ -1,7 +1,7 @@
 // Capas del cielo sobre el mapa: oscurecimiento de la hora y el tiempo, luz de ventanas y farolas, lluvia,
 // nieve y rayos, y el fundido entre estaciones. Es la parte de Phaser de valleSky.js: ValleScene le
 // registra las imágenes que cambian y llama a `update` en cada fotograma.
-import { clockOffset, lampGlow, paintWeather, skyAt, strikesBetween, tintLayers, windowGlow } from './valleSky.js'
+import { clockOffset, lampGlow, paintWeather, tintLayers, valleSkyAt, valleStrikesBetween, windowGlow } from './valleSky.js'
 
 const DEPTH = { tint: 9000, glow: 9100, weather: 9200 }
 // El estado del cielo se publica a este ritmo: de sobra para el sonido ambiente, sin trabajo de más.
@@ -9,11 +9,12 @@ const PUBLISH_MS = 100
 const FX_KEY = 'valle-weather'
 
 export default class SkyLayer {
-  constructor(scene, { seed }) {
+  // `clock` (ms de mundo) reanuda una partida guardada; sin él, el día empieza en su primera fase.
+  constructor(scene, { seed, clock }) {
     this.scene = scene
     this.seed = seed
     this.origin = null
-    this.offset = clockOffset(seed)
+    this.offset = clock ?? clockOffset(seed)
     this.lastMs = this.offset
     this.lastPublish = -PUBLISH_MS
     this.seasons = { autumn: [], winter: [] }
@@ -67,10 +68,16 @@ export default class SkyLayer {
     image.setAlpha(rounded)
   }
 
+  // Hora del mundo ahora mismo, en ms. El reloj de Phaser y `performance.now` comparten base, y así sigue
+  // corriendo aunque `update` no se llame (la viajera dentro de un edificio).
+  clock() {
+    return this.origin === null ? this.offset : performance.now() - this.origin + this.offset
+  }
+
   update(time) {
     if (this.origin === null) this.origin = time
     const ms = time - this.origin + this.offset
-    const sky = skyAt(ms, this.seed)
+    const sky = valleSkyAt(ms, this.seed)
     const { game } = this.scene
 
     tintLayers(sky).forEach(({ alpha }, i) => this.setIfChanged(this.tints[i], alpha))
@@ -84,7 +91,7 @@ export default class SkyLayer {
 
     // Con la pestaña oculta el reloj da un salto: no se recuperan los rayos que hubo mientras tanto.
     const live = ms - this.lastMs <= 500
-    if (live) strikesBetween(this.lastMs, ms, this.seed).forEach((strike) => game.events.emit('thunder', strike.delay))
+    if (live) valleStrikesBetween(this.lastMs, ms, this.seed).forEach((strike) => game.events.emit('thunder', strike.delay))
     this.lastMs = ms
     if (ms - this.lastPublish >= PUBLISH_MS) {
       this.lastPublish = ms

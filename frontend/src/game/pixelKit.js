@@ -15,6 +15,16 @@ export const rect = (g, x, y, w, h, color) => {
 
 export const dot = (g, x, y, color) => rect(g, Math.round(x), Math.round(y), 1, 1, color)
 
+// Línea de píxeles de `width` de grosor (en vertical) entre dos puntos, sin suavizar: una pendiente limpia
+// para pasamanos, tubos y varillas.
+export function line(g, x0, y0, x1, y1, color, width = 1) {
+  const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0))
+  for (let i = 0; i <= steps; i++) {
+    const t = steps === 0 ? 0 : i / steps
+    rect(g, Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t), 1, width, color)
+  }
+}
+
 // Hash entero determinista: el mismo (x, y, semilla) da siempre el mismo valor en [0, 1).
 export function hash2(x, y, seed = 0) {
   let h = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ Math.imul(seed | 0, 1103515245)

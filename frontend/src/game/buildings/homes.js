@@ -1,46 +1,17 @@
 // Casas y rincones de ocio: la casa de Lupe con cubierta, escalera y telescopio, la casa de los amigos, el rincón de
 // la música, las casitas de la familia y el quiosco de helados de la piscina.
 import { PAL, TONE, shade, tint } from '../palette.js'
-import { dot, ellipse, rect } from '../pixelKit.js'
-import { DECK, STAIRS } from '../terrace.js'
+import { dot, ellipse, makeCanvas, rect } from '../pixelKit.js'
+import { STAIRS } from '../terrace.js'
+import { houseGlow } from './homeLight.js'
+import { FRONT_RAIL, STRAND, backRail, deckFloor, frontRail, parasol, strandPoints, telescope, terraceStairs } from './terraceProps.js'
+import { frontRailSnow, terraceSnow } from './terraceWinter.js'
 import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, chimney, doorAt, finish, hipRoof, iconAt, leanRoof, newSprite, signBoard, wall, windowAt } from './shared.js'
 
 const SLATE = '#6b5b95'
 
 function heart(g, x, y, color) {
   ;[[0, 0], [1, 0], [3, 0], [4, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [1, 2], [2, 2], [3, 2], [2, 3]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, color))
-}
-
-// Telescopio sobre un trípode: tubo en diagonal con las dos tapas de latón.
-function telescope(g, x, y) {
-  rect(g, x + 7, y + 14, 1, 14, WOOD0)
-  for (let i = 0; i < 9; i++) {
-    dot(g, x + 7 - Math.floor(i / 2), y + 14 + i * 1.6, WOOD1)
-    dot(g, x + 8 + Math.floor(i / 2), y + 14 + i * 1.6, WOOD1)
-  }
-  for (let i = 0; i < 20; i++) {
-    const px = x + 1 + i
-    const py = y + 14 - Math.floor(i * 0.6)
-    rect(g, px, py, 1, 3, i < 3 || i > 16 ? PAL.saffron : '#5c7aa8')
-    dot(g, px, py, '#9fb8d8')
-  }
-}
-
-// Sombrilla con mesa y dos sillas, para la azotea.
-function parasol(g, x, y) {
-  rect(g, x + 11, y + 8, 2, 22, WOOD1)
-  ellipse(g, x + 12, y + 7, 14, 6, '#e07a9c')
-  for (let i = -12; i <= 12; i += 6) rect(g, x + 12 + i, y + 3, 3, 8, '#f6f0e0')
-  rect(g, x + 2, y + 28, 20, 3, WOOD2)
-  rect(g, x + 2, y + 28, 20, 1, WOOD3)
-  rect(g, x + 4, y + 31, 2, 6, WOOD0)
-  rect(g, x + 18, y + 31, 2, 6, WOOD0)
-  ;[x - 6, x + 25].forEach((cx) => {
-    rect(g, cx, y + 26, 5, 2, '#e07a9c')
-    rect(g, cx + (cx < x ? 0 : 4), y + 20, 1, 8, WOOD1)
-    rect(g, cx + 1, y + 28, 1, 9, WOOD0)
-    rect(g, cx + 3, y + 28, 1, 9, WOOD0)
-  })
 }
 
 // Maceta de barro con arbusto y flores.
@@ -55,58 +26,19 @@ function pot(g, x, y, bloom) {
   rect(g, x + 1, y + 7, 2, 4, '#e08a52')
 }
 
-// Escalera exterior de madera, vista de perfil: cada peldaño es un bloque con su huella clara y el hueco
-// de debajo en sombra. Sube hacia la derecha hasta la cubierta; el pasamanos arranca en el segundo peldaño.
-function terraceStairs(g, { x, bottom, steps, run, rise }) {
-  for (let i = 0; i < steps; i++) {
-    const left = x + i * run
-    const top = bottom - rise * (i + 1)
-    rect(g, left, top, run, bottom - top, WOOD0)
-    for (let sx = left; sx < left + run; sx += 3) rect(g, sx, top + rise, 1, bottom - top - rise, WOOD1)
-    rect(g, left, top, run, 2, WOOD3)
-    rect(g, left, top + 2, run, rise - 2, WOOD2)
-    rect(g, left + run - 1, top + 2, 1, rise - 2, WOOD1)
-  }
-  // Zanca diagonal bajo los peldaños y poste de apoyo.
-  for (let px = 0; px < steps * run; px++) rect(g, x + px, bottom - Math.round((px * rise) / run) - rise - 1, 1, 2, WOOD1)
-  rect(g, x + 2, bottom - 8, 3, 8, WOOD0)
-  rect(g, x + steps * run - 5, bottom - rise * steps, 3, rise * steps, WOOD0)
-  // Pasamanos: postes cada tres peldaños y barandal en diagonal con un travesaño.
-  ;[1, 4, 7].forEach((i) => rect(g, x + i * run + 1, bottom - rise * (i + 1) - 14, 2, 14, WOOD1))
-  for (let px = run; px < steps * run; px++) {
-    const y = bottom - rise * 2 - Math.round(((px - run) * rise) / run) - 13
-    rect(g, x + px, y, 1, 2, WOOD3)
-    rect(g, x + px, y + 6, 1, 1, WOOD2)
-  }
-}
-
-// Balaustrada de la cubierta: balaustres, postes con remate, barandal y travesaño bajo.
-function balustrade(g, x, y, w) {
-  rect(g, x, y + 11, w, 2, WOOD1)
-  for (let bx = x + 3; bx < x + w - 2; bx += 4) rect(g, bx, y + 2, 2, 10, WOOD2)
-  for (let bx = x; bx <= x + w - 3; bx += 14) {
-    rect(g, bx, y - 2, 3, 15, WOOD1)
-    rect(g, bx, y - 2, 1, 15, WOOD3)
-    rect(g, bx - 1, y - 3, 5, 2, WOOD3)
-  }
-  rect(g, x, y, w, 3, WOOD2)
-  rect(g, x, y, w, 1, WOOD3)
-}
-
 // Guirnalda de bombillas entre el mástil de la cubierta y la pared. Las bombillas se encienden de noche.
-function stringLights(s, from, to) {
+function stringLights(s) {
   const { g } = s
-  rect(g, from.x - 1, from.y - 2, 2, 28, WOOD1)
+  const { from } = STRAND
+  rect(g, from.x - 1, from.y - 2, 2, 60, WOOD1)
   dot(g, from.x - 1, from.y - 3, PAL.saffron)
-  for (let px = from.x; px <= to.x; px++) {
-    const u = (px - from.x) / (to.x - from.x)
-    const y = Math.round(from.y + (to.y - from.y) * u + 7 * Math.sin(Math.PI * u))
-    dot(g, px, y, WOOD0)
-    if ((px - from.x) % 7 === 3) {
-      rect(g, px, y + 1, 2, 2, PAL.saffronLight)
-      s.windows.push({ x: px, y: y + 1, w: 2, h: 2 })
+  strandPoints().forEach(({ x, y, bulb }) => {
+    dot(g, x, y, WOOD0)
+    if (bulb) {
+      rect(g, x, y + 1, 2, 2, PAL.saffronLight)
+      s.windows.push({ x, y: y + 1, w: 2, h: 2 })
     }
-  }
+  })
 }
 
 // Cortinas y reflejo de las ventanas grandes: se pintan después del interior para quedar por encima.
@@ -215,17 +147,14 @@ export function homeSprite() {
   quoins(g, 109, 80, 72, 'left')
   quoins(g, 249, 80, 72, 'right')
   ivy(g, 240, 82, 70)
-  // Sala baja y cubierta.
+  // Sala baja y cubierta. De atrás adelante: suelo, guirnalda, balaustrada trasera, telescopio, mesa con sombrilla
+  // y escalera. La barandilla delantera va aparte (`overlay`): se dibuja por encima de la viajera.
   wall(g, { x: 38, y: 118, w: 70, h: 42, post: false })
-  rect(g, 36, 112, 74, 6, WOOD2)
-  rect(g, 36, 112, 74, 1, WOOD3)
-  for (let x = 38; x < 108; x += 7) rect(g, x, 113, 1, 4, WOOD1)
-  rect(g, 36, 117, 74, 1, WOOD0)
-  stringLights(s, { x: 40, y: 68 }, { x: 106, y: 82 })
-  telescope(g, 50, 82)
-  parasol(g, 76, 72)
-  pot(g, 98, 101, '#f4b8cc')
-  balustrade(g, DECK.left + 4, 97, DECK.right - DECK.left - 4)
+  deckFloor(g)
+  stringLights(s)
+  backRail(g)
+  telescope(g)
+  parasol(g)
   terraceStairs(g, STAIRS)
   windowAt(s, 58, 128, 32, 20, { flowers: true, sill: true, curtains: '#e8a8c8', glint: true })
   // Casa de dos plantas.
@@ -246,7 +175,29 @@ export function homeSprite() {
   rect(g, 171, 157, 16, 1, '#c46aa0')
   pot(g, 158, 148, '#e07a9c')
   pot(g, 192, 148, '#f6f0e0')
-  return finish(s)
+  return { ...finish(s), overlay: frontRailLayer(), glow: houseGlow(), snow: snowLayer(256, 160, terraceSnow) }
+}
+
+// Capa de nieve de un dibujo: se pinta aparte y la escena la funde sobre la versión de invierno (ver worldAssets).
+function snowLayer(w, h, paint, origin = { x: 0, y: 0 }) {
+  const canvas = makeCanvas(w, h)
+  const g = canvas.getContext('2d')
+  g.translate(-origin.x, -origin.y)
+  paint(g)
+  return canvas
+}
+
+// Barandilla delantera de la cubierta como lienzo propio, con un margen de dos píxeles para su contorno. Lleva la
+// esquina (`x`, `y`) donde se coloca sobre el dibujo de la casa, y su propia capa de nieve.
+function frontRailLayer() {
+  const ox = FRONT_RAIL.x - 2
+  const oy = FRONT_RAIL.top - 2
+  const w = FRONT_RAIL.right - FRONT_RAIL.x + 4
+  const h = FRONT_RAIL.bottom - FRONT_RAIL.top + 3
+  const layer = newSprite(w, h)
+  layer.g.translate(-ox, -oy)
+  frontRail(layer.g)
+  return { canvas: finish(layer).canvas, snow: snowLayer(w, h, frontRailSnow, { x: ox, y: oy }), x: ox, y: oy }
 }
 
 // Casa de los amigos: dos plantas, guirnaldas de luces bajo el alero y puerta verde.

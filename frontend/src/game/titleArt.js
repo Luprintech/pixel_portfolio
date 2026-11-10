@@ -21,12 +21,23 @@ import {
   petalsAt,
   shootingStar,
   smokeAt,
-  starAlpha,
 } from './titleMotion.js'
 import { CAT_HOME, endHuddle, huddleCat, scaredCat, standAt, startHuddle, startScare } from './titleCat.js'
 import { INTRO_MS, eventsBetween, lifeAt, winterAt } from './titleLife.js'
-import { butterfliesOut, mixHex, skyAt, strikesBetween, windowsLit } from './titleSky.js'
-import { paintCelestial, paintLightning, paintRain, paintSky, paintSnow, paintTint, skyTopColor } from './titleSkyPaint.js'
+import { butterfliesOut, skyAt, strikesBetween, windowsLit } from './titleSky.js'
+import {
+  paintBird,
+  paintCelestial,
+  paintCloud,
+  paintLightning,
+  paintRain,
+  paintShootingStar,
+  paintSky,
+  paintSnow,
+  paintStars,
+  paintTint,
+  skyTopColor,
+} from './titleSkyPaint.js'
 
 export const TITLE_W = 320
 export const TITLE_H = 180
@@ -39,55 +50,6 @@ const MEADOW_TOP = 120
 const [G0, G1, , G3] = TONE.grass
 
 const hillTop = (x) => 100 + Math.round(5 * Math.sin(x / 28 + 0.5) + 2 * Math.sin(x / 9))
-
-// Posiciones de las estrellas fijas: se dibujan en cada fotograma para que titilen.
-const STARS = (() => {
-  const rand = seeded(8)
-  return Array.from({ length: 16 }, () => ({ x: Math.floor(rand() * TITLE_W), y: 2 + Math.floor(rand() * 46) }))
-})()
-
-function paintStars(g, ms, still, visibility) {
-  STARS.forEach(({ x, y }, i) => {
-    g.globalAlpha = (still ? 0.8 : starAlpha(i, ms)) * visibility
-    dot(g, x, y, '#f1e6cf')
-    if (i % 4 === 0) {
-      ;[[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, '#b8a2e0'))
-    }
-  })
-  g.globalAlpha = 1
-}
-
-// Nubes redondas con la parte baja más oscura. Toman el color del cielo que tienen detrás y, cuando
-// el cielo se cubre, se vuelven grises.
-function paintCloud(g, x, y, scale, sky) {
-  const overcast = Math.min(1, Math.max(0, (sky.cloud - 0.6) / 0.4))
-  const body = mixHex(mixHex(sky.bands[3], '#ffffff', 0.55), '#8d8aa8', overcast * 0.7)
-  const shade = mixHex(mixHex(sky.bands[3], '#5c5a7a', 0.35), '#5c5a7a', overcast * 0.6)
-  const puff = (dx, dy, rx, ry, color) => ellipse(g, x + dx * scale, y + dy * scale, rx * scale, ry * scale, color)
-  ;[[shade, 1.2], [body, 0]].forEach(([color, drop]) => {
-    puff(0, drop, 16, 5, color)
-    puff(-9, -3 + drop, 8, 6, color)
-    puff(5, -5 + drop, 10, 7, color)
-  })
-}
-
-function paintShootingStar(g, star) {
-  for (let i = 0; i < 10; i++) {
-    g.globalAlpha = Math.max(0, star.alpha * (1 - i / 10))
-    dot(g, star.x + star.dx * i * 2.2, star.y + star.dy * i * 2.2, i === 0 ? '#ffffff' : '#fff1c4')
-    if (i < 3) dot(g, star.x + star.dx * i * 2.2, star.y + star.dy * i * 2.2 + 1, '#f8d77a')
-  }
-  g.globalAlpha = 1
-}
-
-function paintBird(g, { x, y, wing }) {
-  const color = '#2e2d5a'
-  if (wing) {
-    ;[[-2, 1], [-1, 0], [0, 1], [1, 0], [2, 1]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, color))
-  } else {
-    ;[[-2, 0], [-1, 1], [0, 0], [1, 1], [2, 0]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, color))
-  }
-}
 
 const farTop = (x) => 96 - Math.round(20 + 16 * Math.sin(x / 41 + 1) + 7 * Math.sin(x / 13))
 const nearTop = (x) => 106 - Math.round(10 + 9 * Math.sin(x / 29 + 3) + 4 * Math.sin(x / 9))

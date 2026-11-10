@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { PAL } from './palette.js'
 import { BRIDGE, BUILDINGS, COLS, PROPS, ROWS, SPAWN, TILE, blockedWaterTiles, treePositions } from './world.js'
 import { steppedZoom } from './viewport.js'
-import { DECK, FOOT, STAIRS, climb } from './terrace.js'
+import { DECK, FOOT, STAIRS, STAIR_PACE, climb, nearTelescope } from './terrace.js'
 import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, POSES } from './avatar/index.js'
 import { shadowSprite } from './sprites.js'
 import { makeCanvas, wallRows } from './pixelKit.js'
@@ -10,6 +10,8 @@ import { petCanvas } from './pets/index.js'
 import { bridgeAssets, buildingAssets, groundBase, groundSeasonJob, propAssets, treeAssets } from './worldAssets.js'
 import SkyLayer from './SkyLayer.js'
 import LitWindows from './litWindows.js'
+import { advanceWalk, facingFor, inputVector } from './walk.js'
+import { resumePoint } from './worldSave.js'
 
 const SPEED = 90
 // Lo máximo que cambia la altura de los pies por fotograma al entrar en la escalera: más que la pendiente de la rampa.
@@ -29,9 +31,13 @@ export default class ValleScene extends Phaser.Scene {
     this.look = data.look
     this.pet = data.pet
     this.pastel = !!data.pastel
-    this.seed = data.seed ?? Math.floor(Math.random() * 1e9)
+    // Una partida guardada (`world`) reanuda su hora, su tiempo y su posición; sin ella, todo empieza de cero.
+    this.seed = data.world?.seed ?? data.seed ?? Math.floor(Math.random() * 1e9)
+    this.clock = data.world?.ms
+    this.start = data.world ? resumePoint(data.world) : SPAWN
     this.near = null
-    this.armed = true
+    // Edificio en cuyo interior está la viajera: con él puesto el valle duerme y no atiende a nada.
+    this.inside = null
     this.zoomSteps = 0
     this.terrace = null
     this.climbMode = 'ground'
@@ -39,7 +45,7 @@ export default class ValleScene extends Phaser.Scene {
 
   create() {
     this.physics.world.setBounds(0, 0, COLS * TILE, ROWS * TILE)
-    this.sky = new SkyLayer(this, { seed: this.seed })
+    this.sky = new SkyLayer(this, { seed: this.seed, clock: this.clock })
     this.buildTextures()
     this.buildGround()
     this.solids = []
@@ -73,9 +79,13 @@ export default class ValleScene extends Phaser.Scene {
     this.game.events.on('action', this.tryEnter, this)
     this.game.events.on('appearance', this.setAppearance, this)
     this.game.events.on('zoom', this.stepZoom, this)
+    this.events.on('wake', this.onWake, this)
+    this.input.on('wheel', this.onWheel, this)
     // Entrar al valle: un fundido corto desde el color de la página en lugar de un corte.
     cam.fadeIn(350, 220, 203, 240)
     this.events.once('shutdown', () => {
+      this.events.off('wake', this.onWake, this)
+      this.input.off('wheel', this.onWheel, this)
       this.scale.off('resize', this.fitCamera, this)
       this.game.registry.events.off('changedata-locked', onLock)
       this.game.events.off('action', this.tryEnter, this)
@@ -84,10 +94,16 @@ export default class ValleScene extends Phaser.Scene {
     })
   }
 
+  // Lo que se guarda del valle: la hora del mundo y dónde está la viajera (ver worldSave.js).
+  snapshot() {
+    return { seed: this.seed, ms: Math.round(this.sky.clock()), x: Math.round(this.princess.x), y: Math.round(this.princess.y) }
+  }
+
   fitCamera() {
     const { width, height } = this.scale
-    // Con la página oculta el lienzo mide 0: no hay nada que ajustar.
-    if (!width || !height) return
+    // Con la página oculta el lienzo mide 0: no hay nada que ajustar. Dentro de un edificio la cámara y el zoom
+    // que publica el registro son los de la sala; al volver, `onWake` ajusta de nuevo.
+    if (!width || !height || this.inside) return
     // Los pasos de zoom del visitante se miden sobre el zoom de la pantalla: al girar el móvil se recortan a lo posible.
     const { zoom, steps, canIn, canOut } = steppedZoom(this.zoomSteps, width, height, COLS * TILE, ROWS * TILE)
     this.zoomSteps = steps
@@ -101,6 +117,16 @@ export default class ValleScene extends Phaser.Scene {
   stepZoom(delta) {
     this.zoomSteps += delta
     this.fitCamera()
+  }
+
+  // Rueda del ratón: un nivel por gesto. Un trackpad o una rueda libre sueltan decenas de eventos por segundo, y
+  // con un nivel por evento el zoom saltaría de un extremo a otro: se deja pasar uno cada 150 ms.
+  onWheel(_pointer, _objects, _dx, dy) {
+    if (this.inside || !dy || this.game.registry.get('locked')) return
+    const now = performance.now()
+    if (now - (this.lastWheel ?? 0) < 150) return
+    this.lastWheel = now
+    this.stepZoom(dy < 0 ? 1 : -1)
   }
 
   // Texturas
@@ -142,6 +168,8 @@ export default class ValleScene extends Phaser.Scene {
     })
     const previous = this.travellerKey
     this.travellerKey = key
+    // Los interiores dibujan a la viajera con la misma hoja: se les avisa antes de que se borre la anterior.
+    this.game.registry.set('travellerKey', key)
     return previous
   }
 
@@ -222,7 +250,7 @@ export default class ValleScene extends Phaser.Scene {
   // se encienden de noche con una copia de los cristales que se pinta por encima del oscurecimiento.
   buildBuildings() {
     BUILDINGS.forEach((b, i) => {
-      const { sprite, set } = buildingAssets(b, this.pastel)
+      const { sprite, set, overlay } = buildingAssets(b, this.pastel)
       const key = `building-${b.id}`
       this.addPrepared(key, set)
       const px = b.door.x * TILE + TILE / 2 - sprite.doorCol
@@ -235,10 +263,13 @@ export default class ValleScene extends Phaser.Scene {
       const bodyTop = py + top
       const bodyBottom = py + bottom - FEET_BODY
       this.placeScenery(key, px, py, [0, 0], bodyBottom)
-      if (b.terrace) this.buildTerrace(px, py, bodyTop, bodyBottom, sprite.canvas.width)
-      else this.solid(px + 2, bodyTop, sprite.canvas.width - 4, bodyBottom - bodyTop)
+      if (b.terrace) {
+        this.buildTerrace(px, py, bodyTop, bodyBottom, sprite.canvas.width)
+        if (overlay) this.addFrontRail(key, overlay, px, py)
+      } else this.solid(px + 2, bodyTop, sprite.canvas.width - 4, bodyBottom - bodyTop)
       this.addLitWindows(`${key}:lit`, sprite, px, py, i / (BUILDINGS.length - 1))
-      if (b.zone) this.addDoor(b.zone, b.door.x, b.door.y)
+      if (sprite.glow) this.addGlow(`${key}:glow`, sprite.glow, px, py, i / (BUILDINGS.length - 1))
+      this.addDoor(b.id, b.door.x, b.door.y)
     })
   }
 
@@ -252,6 +283,14 @@ export default class ValleScene extends Phaser.Scene {
     this.solid(px + wallX, py + STAIRS.bottom + 1, DECK.left - wallX, 3)
     this.solid(px + 2, bodyTop, DECK.left - 2, py + FOOT.top - FEET_BODY - bodyTop)
     this.solid(px + DECK.left, bodyTop, width - DECK.left - 2, bodyBottom - bodyTop)
+  }
+
+  // Barandilla delantera de la cubierta: una imagen aparte, un nivel por encima de la viajera cuando está arriba,
+  // para que pase por detrás con las piernas medio tapadas. Quien anda por el suelo queda siempre más abajo.
+  addFrontRail(key, overlay, px, py) {
+    const railKey = `${key}:front`
+    this.addPrepared(railKey, overlay.set)
+    this.placeScenery(railKey, px + overlay.x, py + overlay.y, [0, 0], this.terrace.depth + 1)
   }
 
   // Cambia entre suelo, escalera y cubierta: en el suelo chocan los edificios; arriba no, porque la cubierta
@@ -288,13 +327,16 @@ export default class ValleScene extends Phaser.Scene {
     this.sky.addWindows(this.add.image(x, y, key).setOrigin(0, 0), rank)
   }
 
-  // Puerta de un panel: pisar el felpudo entra directamente, sin pulsar nada.
-  addDoor(zone, tx, ty) {
-    this.doors.push({
-      id: zone,
-      rect: new Phaser.Geom.Rectangle(tx * TILE - 6, ty * TILE - 6, TILE + 12, TILE + 6),
-      mat: new Phaser.Geom.Rectangle(tx * TILE + 1, ty * TILE - 4, TILE - 2, 12),
-    })
+  // Luz cálida que las ventanas y las bombillas de un edificio echan a su alrededor. Se enciende con las mismas curvas
+  // que las ventanas y se pinta por encima del oscurecimiento, así que de noche caldea la fachada, el suelo y a quien pase.
+  addGlow(key, canvas, x, y, rank) {
+    this.addCanvas(key, canvas)
+    this.sky.addWindows(this.add.image(x, y, key).setOrigin(0, 0), rank)
+  }
+
+  // Puerta de un edificio o de un panel: acercarse la ofrece (`near`) y se entra con E, Espacio o el botón.
+  addDoor(id, tx, ty) {
+    this.doors.push({ id, rect: new Phaser.Geom.Rectangle(tx * TILE - 6, ty * TILE - 6, TILE + 12, TILE + 6) })
   }
 
   // Objetos sueltos: cada tipo se dibuja una vez y se coloca por su punto de apoyo.
@@ -351,17 +393,20 @@ export default class ValleScene extends Phaser.Scene {
 
   // Personajes
   buildCharacters() {
-    this.shadow = this.add.image(SPAWN.x, SPAWN.y, 'shadow').setDepth(2)
+    const { x, y } = this.start
+    this.shadow = this.add.image(x, y, 'shadow').setDepth(2)
 
-    this.princess = this.physics.add.sprite(SPAWN.x, SPAWN.y, this.travellerKey, frameName('down', 0)).setOrigin(0.5, 1)
+    this.princess = this.physics.add.sprite(x, y, this.travellerKey, frameName('down', 0)).setOrigin(0.5, 1)
     this.princess.body.setSize(8, FEET_BODY).setOffset(5, 30)
     this.princess.setCollideWorldBounds(true)
     this.groundCollider = this.physics.add.collider(this.princess, this.solids)
+    // Se registra después de la física, así que `settle` corre tras el `postupdate` que sincroniza el sprite.
+    this.events.on('postupdate', this.settle, this)
+    this.events.once('shutdown', () => this.events.off('postupdate', this.settle, this))
 
-    this.buildPet(SPAWN.x, SPAWN.y)
+    this.buildPet(x, y)
     this.facing = 'down'
-    this.stepTimer = 0
-    this.walkStep = 0
+    this.walk = { timer: 0, step: 0 }
   }
 
   buildInput() {
@@ -373,51 +418,78 @@ export default class ValleScene extends Phaser.Scene {
     this.keys.SPACE.on('down', act)
   }
 
+  // Un edificio lleva a su interior; el telescopio y el buzón avisan a la página para abrir su panel.
   tryEnter() {
-    if (this.game.registry.get('locked')) return
-    if (this.near) {
-      this.armed = false
-      this.game.events.emit('enter', this.near)
-    }
+    if (this.inside || this.game.registry.get('locked') || !this.near) return
+    if (BUILDINGS.some((b) => b.id === this.near)) this.enterBuilding(this.near)
+    else this.game.events.emit('enter', this.near)
+  }
+
+  // Fundido a color de página, y el valle se duerme mientras la sala interior hace de escena.
+  enterBuilding(id) {
+    this.inside = id
+    this.near = null
+    this.game.events.emit('near', null)
+    this.princess.body.setVelocity(0, 0)
+    const cam = this.cameras.main
+    cam.once('camerafadeoutcomplete', () => {
+      this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel })
+      this.scene.sleep()
+    })
+    cam.fadeOut(220, 220, 203, 240)
+  }
+
+  // Al volver la viajera sigue ante la puerta, mirando al camino. Las teclas soltadas durante el sueño no llegaron
+  // a registrarse: se reinician, o seguirían "pulsadas" y echaría a andar sola.
+  onWake() {
+    this.inside = null
+    this.facing = 'down'
+    this.princess.setFrame(frameName('down', 0))
+    this.input.keyboard.resetKeys()
+    this.fitCamera()
+    this.cameras.main.fadeIn(250, 220, 203, 240)
   }
 
   // Bucle
   update(time, delta) {
+    if (this.inside) return
     const locked = this.game.registry.get('locked')
     const body = this.princess.body
     let vx = 0
     let vy = 0
 
     if (!locked) {
-      const joy = this.game.registry.get('joy') || { x: 0, y: 0 }
-      if (this.cursors.left.isDown || this.keys.A.isDown) vx -= 1
-      if (this.cursors.right.isDown || this.keys.D.isDown) vx += 1
-      if (this.cursors.up.isDown || this.keys.W.isDown) vy -= 1
-      if (this.cursors.down.isDown || this.keys.S.isDown) vy += 1
-      if (vx === 0 && vy === 0) {
-        vx = joy.x
-        vy = joy.y
-      }
+      const move = inputVector(this.cursors, this.keys, this.game.registry.get('joy') || undefined)
+      vx = move.x
+      vy = move.y
     }
 
     const len = Math.hypot(vx, vy)
     const moving = len > 0.15
     if (moving) {
       const scale = Math.min(1, len) / len
-      body.setVelocity(vx * scale * SPEED, vy * scale * SPEED)
-      this.facing = Math.abs(vx) > Math.abs(vy) ? (vx < 0 ? 'left' : 'right') : vy < 0 ? 'up' : 'down'
-      this.stepTimer += delta
-      if (this.stepTimer > 140) {
-        this.stepTimer = 0
-        this.walkStep = (this.walkStep + 1) % WALK_CYCLE.length
-      }
+      const speed = this.climbMode === 'stairs' ? SPEED * STAIR_PACE : SPEED
+      body.setVelocity(vx * scale * speed, vy * scale * speed)
+      this.facing = facingFor(vx, vy)
     } else {
       body.setVelocity(0, 0)
-      this.walkStep = 0
     }
 
-    this.princess.setFrame(frameName(this.facing, WALK_CYCLE[this.walkStep]))
+    advanceWalk(this.walk, moving, delta)
+    this.princess.setFrame(frameName(this.facing, WALK_CYCLE[this.walk.step]))
+    this.frame = { moving, delta }
 
+    this.sky.update(time)
+    this.advanceGroundSeasons()
+  }
+
+  // Lo que depende de dónde ha quedado la viajera se hace en `postupdate`, cuando Phaser ya ha pasado el avance de
+  // la física al sprite. En `update` el sprite aún tiene la posición del fotograma anterior: corregirla ahí
+  // (escalera, cubierta) borraba el paso que acababa de dar la física y la viajera se quedaba clavada.
+  settle() {
+    if (!this.frame || this.inside) return
+    const { moving, delta } = this.frame
+    const body = this.princess.body
     // En la escalera la altura la dan los peldaños: no se sube ni se baja de lado.
     const onGround = !this.terrace || this.applyTerrace()
     if (this.climbMode === 'stairs') body.setVelocityY(0)
@@ -432,8 +504,6 @@ export default class ValleScene extends Phaser.Scene {
     // La mascota espera al pie de la escalera: no sabe subir y se perdería tras la pared.
     if (this.companion) this.followPet(moving && onGround, px, py, delta)
     this.checkDoors(px, py)
-    this.sky.update(time)
-    this.advanceGroundSeasons()
   }
 
   followPet(moving, px, py, delta) {
@@ -453,7 +523,7 @@ export default class ValleScene extends Phaser.Scene {
       pet.x += Math.cos(angle) * step
       pet.y += Math.sin(angle) * step
       if (Math.abs(dx) > 0.4) pet.setFlipX(dx < 0)
-      pet.setTexture(`pet-${this.walkStep % 2}`)
+      pet.setTexture(`pet-${this.walk.step % 2}`)
     } else {
       pet.setTexture('pet-0')
     }
@@ -464,15 +534,12 @@ export default class ValleScene extends Phaser.Scene {
 
   checkDoors(px, py) {
     const hit = this.doors.find((d) => d.rect.contains(px, py))
-    const id = hit ? hit.id : null
+    // El telescopio se usa con E, no al pisarlo: solo cuenta como "cerca" para ofrecerlo.
+    const atScope = !hit && this.terrace && nearTelescope(this.climbMode, this.princess.x - this.terrace.px, this.princess.y - this.terrace.py)
+    const id = hit ? hit.id : atScope ? 'telescope' : null
     if (id !== this.near) {
       this.near = id
       this.game.events.emit('near', id)
-    }
-    if (!id) {
-      this.armed = true
-    } else if (this.armed && !this.game.registry.get('locked') && hit.mat.contains(px, py)) {
-      this.tryEnter()
     }
   }
 }

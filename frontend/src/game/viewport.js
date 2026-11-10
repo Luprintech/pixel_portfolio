@@ -4,6 +4,12 @@
 // 3 o 4 pantallas de ancho en móvil y unas 25 teselas de alto en escritorio.
 const TARGET_SHORT_SIDE = 220
 
+// Zoom entero que muestra una sala entera en pantalla (a diferencia del valle, que llena la pantalla con el mapa):
+// la mayor escala que deja ver todo el recinto, con un mínimo de 1.
+export function roomZoom(width, height, roomWidth, roomHeight) {
+  return Math.max(1, Math.floor(Math.min(width / roomWidth, height / roomHeight)))
+}
+
 // Cuánto se puede acercar la vista, a partir del zoom que da la pantalla, con el botón +.
 const MAX_STEPS_IN = 3
 

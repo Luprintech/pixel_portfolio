@@ -67,7 +67,11 @@ function weatherKind(seed, k) {
   return WEATHER_ODDS.find(([, limit]) => roll < limit)[0]
 }
 
-function weatherAt(ms, seed) {
+// `pace` alarga el reloj del mundo (día, tiempo y estaciones): con 4, todo dura cuatro veces más. La portada
+// usa 1; el valle, más pausado, uno mayor. Solo estira lo que cambia despacio: las gotas y los destellos
+// de los rayos siguen al reloj real.
+function weatherAt(realMs, seed, pace = 1) {
+  const ms = realMs / pace
   const k = Math.floor(ms / WEATHER_MS)
   const now = WEATHER[weatherKind(seed, k)]
   if (k === 0) return now
@@ -79,7 +83,8 @@ function weatherAt(ms, seed) {
 // Arcoíris: sale cuando el tiempo pasa de lluvioso a seco y se desvanece antes del siguiente cambio.
 // Con el sol ya bajo o de noche no se ve, y tampoco si lo que viene es nieve.
 const RAINBOW_FADE_MS = 8000
-function rainbowAt(ms, seed) {
+function rainbowAt(realMs, seed, pace = 1) {
+  const ms = realMs / pace
   const k = Math.floor(ms / WEATHER_MS)
   const now = WEATHER[weatherKind(seed, k)]
   if (WEATHER[weatherKind(seed, k - 1)].rain < 0.3 || now.rain >= 0.3 || now.snow > 0) return 0
@@ -106,10 +111,10 @@ function bodyAt(phase, [from, to]) {
 }
 
 // Estado completo de la portada en un instante. Con `still` (movimiento reducido) no hay lluvia ni rayos.
-export function skyAt(ms, seed, still = false) {
-  const phase = (startPhase(seed) + ms / DAY_MS) % 1
+export function skyAt(ms, seed, still = false, pace = 1) {
+  const phase = (startPhase(seed) + ms / (DAY_MS * pace)) % 1
   const { dark, bands } = keysAt(phase)
-  const weather = weatherAt(ms, seed)
+  const weather = weatherAt(ms, seed, pace)
   const rain = still ? 0 : weather.rain
   const storm = still ? 0 : weather.storm
   const snow = still ? 0 : weather.snow
@@ -121,7 +126,7 @@ export function skyAt(ms, seed, still = false) {
     autumn: clamp01(rain / 0.65),
     // Con la nevada el valle pasa a invierno: mismo fundido que el otoño, y los dos no coinciden.
     winter: clamp01(snow),
-    rainbow: rainbowAt(ms, seed) * (1 - dark),
+    rainbow: rainbowAt(ms, seed, pace) * (1 - dark),
     sun: bodyAt(phase, SUN_SPAN),
     moon: bodyAt(phase, MOON_SPAN),
     cloud: still ? Math.min(weather.cloud, 0.7) : weather.cloud,
@@ -150,16 +155,16 @@ const STRIKE_SLOT_MS = 9000
 const FLASH_MS = 110
 const SECOND_FLASH_AT = 190
 
-function strikeAt(k, seed) {
+function strikeAt(k, seed, pace = 1) {
   if (k < 0 || hash2(k, 1, seed % 991) > 0.8) return null
   const time = k * STRIKE_SLOT_MS + 1000 + hash2(k, 2, seed % 991) * 6000
-  if (weatherAt(time, seed).storm < 0.6) return null
+  if (weatherAt(time, seed, pace).storm < 0.6) return null
   return { time, x: 40 + hash2(k, 3, seed % 991) * 240, delay: 0.3 + hash2(k, 4, seed % 991) * 2.2 }
 }
 
 // Intensidad del destello (0 a 1) y por dónde cae el rayo en este instante.
-export function lightningAt(ms, seed) {
-  const strike = strikeAt(Math.floor(ms / STRIKE_SLOT_MS), seed)
+export function lightningAt(ms, seed, pace = 1) {
+  const strike = strikeAt(Math.floor(ms / STRIKE_SLOT_MS), seed, pace)
   if (!strike) return null
   const first = 1 - (ms - strike.time) / FLASH_MS
   const second = 0.7 * (1 - (ms - strike.time - SECOND_FLASH_AT) / FLASH_MS)
@@ -168,10 +173,10 @@ export function lightningAt(ms, seed) {
 }
 
 // Rayos que cayeron entre dos instantes, con los segundos que tarda en oírse cada trueno.
-export function strikesBetween(fromMs, toMs, seed) {
+export function strikesBetween(fromMs, toMs, seed, pace = 1) {
   const found = []
   for (let k = Math.floor(fromMs / STRIKE_SLOT_MS); k <= Math.floor(toMs / STRIKE_SLOT_MS); k++) {
-    const strike = strikeAt(k, seed)
+    const strike = strikeAt(k, seed, pace)
     if (strike && strike.time > fromMs && strike.time <= toMs) found.push(strike)
   }
   return found

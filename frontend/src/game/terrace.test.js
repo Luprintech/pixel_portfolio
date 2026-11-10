@@ -1,7 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { DECK, FOOT, STAIRS, climb, stairLift } from './terrace.js'
+import { DECK, FOOT, STAIRS, STAIR_PACE, TELESCOPE, climb, nearTelescope, stairLift } from './terrace.js'
 
 describe('escalera y cubierta de la casa de Lupe', () => {
+  it('el telescopio está dentro de la cubierta y se alcanza desde cualquier lado', () => {
+    expect(TELESCOPE.x).toBeGreaterThan(DECK.left)
+    expect(TELESCOPE.x).toBeLessThan(DECK.right)
+    expect(TELESCOPE.base).toBeGreaterThanOrEqual(DECK.top)
+    expect(TELESCOPE.base).toBeLessThanOrEqual(DECK.feet)
+    ;[[-12, 0], [12, 0], [0, 6], [0, -1], [-10, 5]].forEach(([dx, dy]) => {
+      expect(nearTelescope('deck', TELESCOPE.x + dx, TELESCOPE.base + dy), `dx ${dx}, dy ${dy}`).toBe(true)
+    })
+  })
+
+  it('solo se ofrece el telescopio en la cubierta y a su alcance', () => {
+    expect(nearTelescope('ground', TELESCOPE.x, TELESCOPE.base)).toBe(false)
+    expect(nearTelescope('stairs', TELESCOPE.x, TELESCOPE.base)).toBe(false)
+    expect(nearTelescope('deck', DECK.left + 1, DECK.feet)).toBe(false)
+    expect(nearTelescope('deck', DECK.right, DECK.feet)).toBe(false)
+  })
+
+  it('la escalera se sube más despacio que el suelo, pero se sube', () => {
+    expect(STAIR_PACE).toBeGreaterThan(0)
+    expect(STAIR_PACE).toBeLessThan(1)
+  })
+
   it('la rampa llega a ras de la cubierta y del suelo, sin saltos', () => {
     expect(stairLift(STAIRS.x)).toBe(0)
     expect(STAIRS.bottom - stairLift(DECK.left)).toBe(DECK.feet)

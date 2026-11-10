@@ -88,4 +88,11 @@ describe('mapa del valle', () => {
       expect(water.has(`${x},${y}`)).toBe(false)
     })
   })
+
+  it('el acceso a la escalera de la casa de Lupe queda sin árboles', () => {
+    const home = BUILDINGS.find((b) => b.terrace)
+    const foot = { x: home.x - 4, y: home.y + home.h - 4 }
+    const inApproach = treePositions().filter((t) => t.x >= foot.x && t.x < foot.x + 7 && t.y >= foot.y && t.y < foot.y + 6)
+    expect(inApproach).toEqual([])
+  })
 })

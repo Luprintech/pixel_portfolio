@@ -4,12 +4,21 @@
 import { DAY_MS, lightningAt, skyAt, startPhase, strikesBetween } from './titleSky.js'
 import { paintRain, paintSnow, tintLayers } from './titleSkyPaint.js'
 
-export { skyAt, strikesBetween, tintLayers }
+export { tintLayers }
 
 // Quien entra al valle lo ve a la luz del día: la visita empieza en la mañana (fase 0,36, con sol pleno) en
 // lugar de a una hora al azar como en la portada, donde quedarse a oscuras es parte del juego.
 const FIRST_PHASE = 0.36
-export const clockOffset = (seed) => ((((FIRST_PHASE - startPhase(seed)) % 1) + 1) % 1) * DAY_MS
+
+// En el valle se pasea sin prisa: un día dura 8 minutos y el tiempo (con él, el otoño y el invierno) cambia
+// cada 3. En la portada, que es un vistazo, el mismo ciclo va cuatro veces más rápido.
+export const VALLE_PACE = 4
+
+export const clockOffset = (seed) => ((((FIRST_PHASE - startPhase(seed)) % 1) + 1) % 1) * DAY_MS * VALLE_PACE
+
+// Estado del cielo del valle a un instante de su reloj (en milisegundos reales, ya con el desplazamiento).
+export const valleSkyAt = (ms, seed) => skyAt(ms, seed, false, VALLE_PACE)
+export const valleStrikesBetween = (fromMs, toMs, seed) => strikesBetween(fromMs, toMs, seed, VALLE_PACE)
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 
@@ -28,7 +37,7 @@ export function paintWeather(g, sky, ms, seed, size) {
   g.clearRect(0, 0, size.width, size.height)
   paintRain(g, sky, ms, size)
   paintSnow(g, sky, ms, size)
-  const strike = lightningAt(ms, seed)
+  const strike = lightningAt(ms, seed, VALLE_PACE)
   if (strike) {
     g.globalAlpha = 0.45 * strike.flash
     g.fillStyle = '#ffffff'

@@ -234,5 +234,14 @@ export function treePositions() {
     const y = 3 + Math.floor(rand() * (ROWS - 5))
     if (!blocked(x, y)) add(x, y, rand() < 0.2)
   }
-  return trees
+  // Se quitan al final y no en `blocked`: así el resto de árboles no se reparte distinto con la misma semilla.
+  return trees.filter((t) => !inStairsApproach(t.x, t.y))
 }
+
+// Acceso a la escalera de la casa: cuatro teselas a su izquierda y las últimas filas de la fachada. Un árbol aquí
+// tapa los peldaños o deja a la viajera encajonada al pie de la escalera.
+const STAIRS_APPROACH = (() => {
+  const home = BUILDINGS.find((b) => b.terrace)
+  return home && { x: home.x - 4, y: home.y + home.h - 4, w: 7, h: 6 }
+})()
+const inStairsApproach = (x, y) => Boolean(STAIRS_APPROACH) && inside(STAIRS_APPROACH, x, y)

@@ -7,15 +7,19 @@ import MusicControl from '../components/valle/MusicControl'
 import CustomizeButton from '../components/valle/CustomizeButton'
 import OptionsButton from '../components/valle/OptionsButton'
 import OptionsDialog from '../components/valle/OptionsDialog'
+import SaveToast from '../components/valle/SaveToast'
+import SkyView from '../components/valle/SkyView'
 import ZonePanel from '../components/valle/ZonePanel'
 import ZoomControl from '../components/valle/ZoomControl'
 import { defaultLook, randomLook, selectBody } from '../game/look'
 import { DEFAULT_PET } from '../game/pet'
 import { PAL } from '../game/palette'
-import { clearSave, loadSave, sanitizeName, writeSave } from '../game/save'
+import { loadSave } from '../game/save'
+import { clockOffset, valleSkyAt } from '../game/valleSky'
 import { useThemeContext } from '../context/ThemeContext'
 import { warmWorld } from '../game/worldAssets'
 import { useUiSounds } from '../hooks/useUiSounds'
+import { useValleSave } from '../hooks/useValleSave'
 import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
 import { tone } from '../lib/tone'
 import { useValleCopy } from '../lib/valleCopy'
@@ -25,7 +29,14 @@ import { useValleCopy } from '../lib/valleCopy'
 const HUD_SIZE = '2.25rem'
 const HUD_BUTTON = 'px-btn px-btn--bone !min-h-[var(--ctl)] !px-3 !py-0 !text-sm'
 
-const isTouch = () => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
+// Texto del botón de acción según lo que tiene cerca la viajera: el telescopio, la salida de un interior o una puerta.
+function nearLabel(near, copy) {
+  if (near === 'telescope') return copy.hud.lookSky
+  if (near === 'exit') return copy.hud.leave
+  return `${copy.hud.enter}: ${copy.zones[near]}`
+}
+
+const isTouch =() => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
 
 export default function Valle() {
   const { copy } = useValleCopy()
@@ -55,15 +66,21 @@ export default function Valle() {
   // Límites del zoom que publica la escena; hasta que existe, ambos botones valen.
   const [zoomState, setZoomState] = useState({ canIn: true, canOut: true })
   const hostRef = useRef(null)
+  const skyRef = useRef(null)
   const touch = isTouch()
+  // El valle guardado (hora y posición) solo se reanuda al continuar: una aventura nueva empieza de cero.
+  const [initialWorld] = useState(() => (mode === 'nueva' ? null : existing?.world ?? null))
+
+  // Se declara antes que el efecto del juego: al salir, su limpieza guarda mientras la escena aún existe.
+  const { saved, toast, saveNow, eraseSave } = useValleSave({ game, active: phase === 'play', name, look, pet, petName, autosavedText: copy.hud.autosaved })
 
   // La partida se escribe al entrar al valle, no mientras se edita: abandonar el creador
   // deja intacta la aventura anterior.
   const enterValley = useCallback(() => {
-    writeSave({ name: sanitizeName(name), look, pet, petName })
+    saveNow()
     setStarted(true)
     setPhase('play')
-  }, [name, look, pet, petName])
+  }, [saveNow])
 
   const selectAvatar = useCallback((body) => {
     if (body === look.body) return
@@ -95,6 +112,7 @@ export default function Valle() {
 
   // Phaser se carga solo aquí: el resto del sitio no paga su peso.
   const applied = useRef({ look, pet })
+  const paused = useRef([])
   useEffect(() => {
     if (!started) return undefined
     let instance = null
@@ -104,11 +122,15 @@ export default function Valle() {
       .then(({ startGame }) => {
         if (cancelled || !hostRef.current) return
         applied.current = { look, pet }
-        instance = startGame(hostRef.current, look, pet, pastel)
+        instance = startGame(hostRef.current, look, pet, pastel, initialWorld)
         instance.events.on('near', setNear)
         instance.events.on('enter', setZone)
         // El sonido ambiente sigue al cielo del valle, igual que en la portada.
-        instance.events.on('sky', setAmbienceScene)
+        // También se guarda el último estado: la vista del telescopio lo lee para pintar el mismo cielo.
+        instance.events.on('sky', (sky) => {
+          skyRef.current = sky
+          setAmbienceScene(sky)
+        })
         instance.events.on('thunder', thunder)
         // La escena puede haber publicado ya el zoom antes de que escuchemos: se lee el valor actual y se siguen los cambios.
         const syncZoom = (_parent, value) => value && setZoomState(value)
@@ -140,12 +162,15 @@ export default function Valle() {
   useEffect(() => {
     if (!game) return
     if (phase === 'editor') {
-      game.scene.pause('valle')
+      // Se pausa la escena que esté en marcha: el valle o, si la viajera está dentro de un edificio, su interior.
+      paused.current = game.scene.getScenes(true).map((scene) => scene.scene.key)
+      paused.current.forEach((key) => game.scene.pause(key))
       game.loop.sleep()
       return
     }
     game.loop.wake(true)
-    game.scene.resume('valle')
+    paused.current.forEach((key) => game.scene.resume(key))
+    paused.current = []
     game.scale.refresh()
     if (applied.current.look !== look || applied.current.pet !== pet) {
       applied.current = { look, pet }
@@ -166,15 +191,9 @@ export default function Valle() {
   }, [game, zone, optionsOpen])
 
   const closeZone = useCallback(() => setZone(null), [])
+  // Si aún no ha llegado ningún estado (se abre nada más entrar), se parte del cielo con que empieza la visita.
+  const getSky = useCallback(() => skyRef.current || valleSkyAt(clockOffset(1), 1), [])
   const zoomView = useCallback((delta) => game?.events.emit('zoom', delta), [game])
-
-  // Las opciones son las mismas que en la portada: el sonido se guarda en el navegador y "Borrar partida" borra la
-  // guardada (la de esta visita se vuelve a escribir al cambiar el aspecto o el nombre).
-  const [saved, setSaved] = useState(() => !!loadSave())
-  const eraseSave = useCallback(() => {
-    clearSave()
-    setSaved(false)
-  }, [])
 
   const hudStyle = {
     background: tone('lavender', PAL.ink),
@@ -270,22 +289,26 @@ export default function Valle() {
           </nav>
         )}
 
+        {!editing && <SaveToast message={toast} style={hudStyle} />}
+
         {near && !zone && !editing && (
           <div className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2" role="status">
             <button type="button" className="px-btn" onClick={() => game?.events.emit('action')}>
-              {copy.hud.enter}: {copy.zones[near]}
+              {`${touch ? '' : 'E · '}${nearLabel(near, copy)}`}
             </button>
           </div>
         )}
 
         {touch && status === 'ready' && !zone && !optionsOpen && !editing && <Joystick game={game} />}
-        {zone && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
+        {zone === 'telescope' && !editing && <SkyView getSky={getSky} pastel={pastel} onClose={closeZone} />}
+        {zone && zone !== 'telescope' && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
 
         <OptionsDialog
           open={optionsOpen && !editing}
           onClose={() => setOptionsOpen(false)}
           saved={saved}
           onErase={eraseSave}
+          onSave={saveNow}
           actions={hudActions}
         />
       </div>

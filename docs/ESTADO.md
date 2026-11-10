@@ -2,9 +2,64 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-10 (`/clasico` vuelve a servir la web original, aislada). Antes, 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
+Última actualización: 2026-11-10 (entrada con E y salas interiores vacías). Antes, 2026-11-10 (`/clasico` vuelve a servir la web original, aislada). Antes, 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
 
 ## Hecho
+
+### Guardado del valle: hora, tiempo y posición (2026-11-10)
+
+- Antes, recargar la página reiniciaba el valle (hora, tiempo y posición); solo se guardaba el aspecto. Ahora la partida (versión 4, las anteriores se leen igual) lleva `world`: `seed`, hora del mundo en ms y posición (`worldSave.js`, puro, con test y validación de rango). El tiempo es una función de `seed` y hora, así que guardar esos dos números repone también las nubes, la lluvia, los rayos y la estación.
+- Si la posición guardada cae dentro de un edificio (la cubierta de Lupe, o un cambio del mapa), la viajera reaparece en su puerta; si cae en el agua, en la entrada. Estar dentro de una casa guarda la puerta, no la sala.
+- `useValleSave` (hook nuevo) guarda cada minuto con el aviso «Guardado automático» (`SaveToast.jsx`, corazón de píxeles; usa `.px-prompt-in`, que respeta «reducir movimiento»), y en silencio al recargar, cerrar o salir del valle. Con el creador abierto no se guarda, porque el aspecto es un borrador.
+- Opciones del valle: botón «Guardar partida» con confirmación y una nota sobre el guardado automático. Tras «Borrar partida» no se vuelve a guardar solo hasta que se guarde a mano o se confirme el creador, para que la partida borrada no reaparezca.
+- «Nueva aventura» sigue empezando de cero (hora y posición incluidas). Mientras no se guarde, la partida anterior queda intacta.
+- Pendiente: la mascota se coloca junto a la viajera al reanudar, no donde estuviera; el zoom elegido no se guarda.
+
+### Entrada a los edificios con E y salas interiores vacías (2026-11-10)
+
+- Todas las puertas (los 15 edificios y el buzón) se usan igual: al acercarse sale el botón («E · Entrar: …») y se entra con E, Espacio o el botón. Ya no se entra pisando el felpudo (`checkDoors` solo calcula qué hay cerca; se quitó `armed` y `mat`).
+- Cada edificio lleva a una sala vacía (`InteriorScene.js`, nueva escena de Phaser): pared del fondo, paredes laterales, suelo de tablones y un felpudo. Se sale con E, Espacio o el botón al pisar el felpudo («E · Salir de la casa»). El plano de cada sala (`interiors.js`, puro, con test) sigue al tamaño del edificio con límites de 8 a 14 teselas de ancho y de 7 a 10 de alto; el dibujo está en `interiorPaint.js`.
+- El valle se duerme al entrar y despierta al salir, con la viajera ante la puerta; la mascota se queda esperando fuera. La hoja de la viajera se comparte por el registro (`travellerKey`), así que cambiar de aspecto desde dentro también funciona.
+- Lo que comparten valle e interior (lectura de teclas y joystick, dirección, ciclo de marcha) salió a `walk.js`, con test. `viewport.js` suma `roomZoom`: en una sala se ve el recinto entero, sin zoom del visitante.
+- Los paneles de Casa de Lupe, Taller, Biblioteca y Laboratorio DAW ya no se abren desde la puerta: su contenido seguirá en `/clasico` hasta que cada interior lo recupere. El buzón sigue abriendo su panel de contacto.
+- Zoom con la rueda del ratón en el valle (`onWheel` en `ValleScene.js`): arriba acerca y abajo aleja un nivel, con los mismos límites que + y -. Se deja pasar un gesto cada 150 ms para que un trackpad no salte de extremo a extremo. No actúa dentro de los edificios (la sala se ve entera) ni con un panel abierto.
+- Visión: abre la fase 3 (interiores) con la plantilla de sala; faltan objetos interactivos, colisiones propias y decoración de cada casa.
+
+### Cubierta de Lupe rehecha y telescopio con vista del cielo (2026-11-10)
+
+- Dibujo (`buildings/terraceProps.js`, nuevo; `homes.js` solo lo compone): pasamanos de la escalera con postes verticales, balaustres finos y una banda recta que sigue la pendiente, con remate arriba y abajo; entarimado con fondo real (13 px) y canto delantero; balaustrada trasera en maderas más oscuras; sombrilla con gajos, varillas, festones, mástil visible hasta su pie y sombra plana sobre el suelo; mesa con mantel claro; telescopio con trípode oscuro (se distingue de la madera), cabeza giratoria, tubo azul con anillos de latón, campana con lente, ocular y buscador. La sombrilla queda a la derecha y más alta que el tubo, así que no lo tapa.
+- Barandilla delantera: es una capa aparte (`overlay` de `homeSprite`, preparada en `worldAssets` con su versión de invierno) colocada un nivel por encima de la viajera cuando está arriba (`addFrontRail`). Pasa por detrás y las piernas quedan medio tapadas entre los balaustres. Empieza en x=52 y deja libre la entrada desde la escalera. Cualquier NPC que se ponga en la cubierta con la profundidad de la viajera heredará el mismo efecto.
+- `DECK.top` baja de 106 a 104 (el suelo ahora es más profundo).
+- Telescopio: `TELESCOPE` y `nearTelescope` en `terrace.js` (puro, con test). Al acercarse sale «E · Mirar el cielo» (en táctil, solo «Mirar el cielo»); con E o Espacio se abre `SkyView.jsx`, que bloquea el juego con el mismo `locked` de los paneles y se cierra con Esc o con el botón.
+- Vista del cielo (`game/skyView.js`, puro): reutiliza los pintores de la portada (se movieron de `titleArt.js` a `titleSkyPaint.js`) y el estado `skyAt` del valle, con marco de ocular redondo. Día despejado: sol y pájaros. Nublado: dos capas de nubes que se desplazan despacio. Noche: campo de 140 estrellas que las nubes apagan, y una fugaz cada nueve segundos. Con movimiento reducido no hay pájaros, fugaces ni deriva de nubes. Lluvia y nieve se ven igual que en el valle.
+- Decisión: el cielo ocupa todo el ocular y el horizonte queda en su borde inferior (la portada pone paisaje debajo del horizonte y por el telescopio no cuadra).
+- Pendiente: no hay NPC todavía, así que lo de pasar por detrás de la barandilla solo se ha comprobado con la viajera.
+
+### Terraza de Lupe, segunda pasada (2026-11-10)
+
+- Escalera: las huellas son franjas claras de cuatro píxeles centradas en el filo de cada peldaño, con luz en el canto izquierdo, sombra en el derecho y la sombra que echan sobre el costado. El costado acaba en un tablón diagonal y debajo queda abierto, sostenido por dos postes: ya no parece una pared inclinada. `stairLift` alcanza el repunte de 3 px en el primer medio peldaño (antes solo a media escalera), así que los pies apoyan en el centro de la huella en los ocho peldaños; lo comprueba `terraceProps.test.js`.
+- Telescopio: queda en un hueco de la balaustrada trasera (poste en la esquina y un tramo a la derecha), con patas de metal oscuro de dos píxeles, ocular más largo y claro, sombra en el suelo y la guirnalda subida por encima del tubo. El test fija que ninguna bombilla pase por debajo de su campana.
+- Menos recarga: la barandilla delantera pierde los balaustres (postes, pasamanos y un travesaño), se quita la maceta de la cubierta y la balaustrada trasera se acorta. La mesa lleva mantel claro.
+- Sombrilla: cada gajo tiene cinco tonos (luz en su borde izquierdo, sombra en el derecho, más oscura hacia la derecha y el borde), borde oscuro continuo y festones con filo; sin varillas dibujadas.
+- Luz cálida (`homeLight.js`): una capa de charcos de óvalos concéntricos de poca opacidad sobre la fachada alrededor de cada ventana, el suelo del porche, la puerta y el farol, la cubierta bajo la guirnalda y la sombrilla. Se enciende con las mismas curvas que las ventanas (`sky.addWindows`) y por encima del oscurecimiento, así que también caldea a quien pasa.
+- Nieve (`terraceWinter.js`): capa propia que se funde sobre la versión de invierno (`worldAssets.addSnow`): huellas, pasamanos, canto y rincones de la cubierta, balaustrada trasera, casquete de la sombrilla y barandilla delantera. Lo que queda bajo la sombrilla no recibe nieve.
+- Pendiente: comprobar la luz cálida con lluvia y con nieve a la vez, y la terraza con un NPC cuando exista.
+
+### Escalera de la casa de Lupe: ya no se queda clavada (2026-11-10)
+
+- Síntoma: al entrar en la escalera desde su pie, la viajera no avanzaba por mucho que se pulsara la flecha (se quedaba en x=1).
+- Causa: Phaser mueve el cuerpo físico antes de `update`, pero no pasa ese avance al sprite hasta `postupdate`. `applyTerrace` partía de la posición del sprite, la reescribía y `updateFromGameObject` borraba el avance del fotograma. Apareció con el arreglo de la vibración (#39).
+- Arreglo: lo que depende de dónde queda la viajera (escalera, profundidad, sombra, mascota, puertas) pasa a `settle`, enganchado a `postupdate` después de la física; `update` solo lee las teclas. Descartado: sumar a mano `body.deltaX`, porque `postupdate` usa `prevFrame` y el avance se contaba dos veces (la viajera iba cuatro veces más rápida).
+- La escalera se anda a la mitad de velocidad (`STAIR_PACE` en `terrace.js`): subir los peldaños dura unos 0,9 s.
+- Se quitan los árboles del acceso a la escalera (`STAIRS_APPROACH` en `world.js`), filtrándolos al final para que el resto del arbolado no cambie con la misma semilla.
+- Comprobado en el navegador: sube, llega a la cubierta, se detiene en su borde y baja, y la velocidad medida es 90 px/s en suelo y cubierta y 45 px/s en la escalera.
+- Queda como está por diseño: pegada a la fachada, por encima de la franja `FOOT` (y < 152) la pared bloquea el paso a los peldaños; hay que bajar un poco para entrar.
+
+### Ritmo pausado del tiempo en el valle (2026-11-10)
+
+- En el valle el día dura 8 minutos y el tiempo, con él el otoño y el invierno, cambia cada 3 (antes 2 min y 45 s, igual que la portada). La portada no cambia.
+- Decisión: `titleSky.js` recibe un `pace` opcional (1 por defecto) que estira solo el reloj del mundo; las gotas y los destellos de los rayos siguen al reloj real para que no se vean a cámara lenta. El valle usa `VALLE_PACE = 4` (`valleSky.js`) y es el único número que hay que tocar para ajustarlo.
+- Avanza la fase 1 de `docs/VISION.md` (el valle como lugar para pasear).
 
 ### `/clasico` sirve la web original, aislada (2026-11-10)
 - La usuaria decidió el 2026-11-10 que `/clasico` muestre su web original (portada fucsia y cian "Neon Luminary") en lugar de la página clásica con estética de píxel. Es la única excepción a "no restaurar el diseño anterior"; `/` y `/valle` no cambian.

@@ -41,8 +41,22 @@ export const treeAssets = (variant, pastel) => treeJob(variant, pastel).get()
 const bridgeJob = (pastel) => job(`bridge:${pastel}`, () => sceneryFrom(bridgeSprite(BRIDGE.w, BRIDGE.h), pastel, { seasons: ['winter'] }))
 export const bridgeAssets = (pastel) => bridgeJob(pastel).get()
 
+// Si el edificio trae una capa que va por encima de quien pasa (la barandilla delantera de la casa de Lupe), se
+// prepara igual que el dibujo principal para que cambie con la paleta y la nieve a la vez.
+// Si además trae una capa de nieve propia (`snow`: la que `snowCap` no alcanza, como pasamanos o bordes), se pinta
+// encima de su versión de invierno.
+const addSnow = (set, snow) => {
+  if (snow && set.winter) set.winter.getContext('2d').drawImage(snow, 0, 0)
+}
+
 function* withSprite(sprite, pastel) {
-  return { sprite, set: yield* sceneryFrom(sprite.canvas, pastel, { seasons: ['winter'] }) }
+  const set = yield* sceneryFrom(sprite.canvas, pastel, { seasons: ['winter'] })
+  addSnow(set, sprite.snow)
+  if (!sprite.overlay) return { sprite, set }
+  const { x, y, canvas, snow } = sprite.overlay
+  const overlaySet = yield* sceneryFrom(canvas, pastel, { seasons: ['winter'], cap: false })
+  addSnow(overlaySet, snow)
+  return { sprite, set, overlay: { x, y, set: overlaySet } }
 }
 
 const buildingJob = (building, pastel) => job(`building:${building.id}:${pastel}`, () => withSprite(buildingSprite(building), pastel))

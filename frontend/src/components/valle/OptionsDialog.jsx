@@ -11,14 +11,16 @@ import VolumeSlider from './VolumeSlider'
 const BTN = '!min-h-[var(--ctl)] !px-3 !py-0 !text-sm'
 
 // Ventana de opciones de la portada. Usa <dialog> nativo: el navegador atrapa el foco,
-// cierra con Escape y devuelve el foco al botón que la abrió.
-export default function OptionsDialog({ open, onClose, saved, onErase, actions = null }) {
+// cierra con Escape y devuelve el foco al botón que la abrió. `onSave` (solo en el valle) guarda la partida y
+// devuelve si pudo; sin él no hay botón de guardar.
+export default function OptionsDialog({ open, onClose, saved, onErase, onSave = null, actions = null }) {
   const { copy } = useValleCopy()
   const sound = useSoundPrefs()
   const install = useInstallPrompt()
   const ref = useRef(null)
   const [asking, setAsking] = useState(false)
   const [erased, setErased] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
   useEffect(() => {
     const dialog = ref.current
@@ -26,6 +28,7 @@ export default function OptionsDialog({ open, onClose, saved, onErase, actions =
     if (open && !dialog.open) {
       setAsking(false)
       setErased(false)
+      setJustSaved(false)
       dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', '')
       // El foco empieza en el título y no en "Cerrar": así, al abrir con un toque, el botón no sale con el aro de foco.
       dialog.querySelector('#options-title')?.focus()
@@ -38,6 +41,12 @@ export default function OptionsDialog({ open, onClose, saved, onErase, actions =
     onErase()
     setAsking(false)
     setErased(true)
+    setJustSaved(false)
+  }
+
+  const save = () => {
+    setJustSaved(onSave())
+    setErased(false)
   }
 
   // El cartel con pasos (iPhone) queda por debajo del diálogo modal: se cierra Opciones primero
@@ -88,6 +97,13 @@ export default function OptionsDialog({ open, onClose, saved, onErase, actions =
 
           <section className="sm:col-start-1 sm:row-start-1">
             <h3 className="text-sm" style={muted}>{copy.options.saveTitle}</h3>
+            {onSave && !asking && (
+              <>
+                <button type="button" className={`px-btn mt-2 w-full ${BTN}`} onClick={save}>{copy.options.save}</button>
+                {justSaved && <p className="mt-1 text-sm" role="status">{copy.options.savedNow}</p>}
+                <p className="mt-1 text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden">{copy.options.autosaveHint}</p>
+              </>
+            )}
             {saved && !asking && (
               <button type="button" className={`px-btn px-btn--bone mt-2 w-full ${BTN}`} onClick={() => setAsking(true)}>{copy.options.erase}</button>
             )}
@@ -100,7 +116,7 @@ export default function OptionsDialog({ open, onClose, saved, onErase, actions =
                 </div>
               </div>
             )}
-            {!saved && <p className="mt-1 text-sm" role="status">{erased ? copy.options.erased : copy.options.noSave}</p>}
+            {!saved && !justSaved && <p className="mt-1 text-sm" role="status">{erased ? copy.options.erased : copy.options.noSave}</p>}
           </section>
 
           {install.available && (

@@ -1,21 +1,27 @@
 import { describe, expect, it } from 'vitest'
 import { DAY_MS } from './titleSky.js'
-import { clockOffset, lampGlow, skyAt, windowGlow } from './valleSky.js'
+import { VALLE_PACE, clockOffset, lampGlow, valleSkyAt, windowGlow } from './valleSky.js'
 
 describe('cielo del valle', () => {
   it('la visita empieza de día, sea cual sea la semilla', () => {
     for (let seed = 1; seed < 200; seed += 7) {
-      const sky = skyAt(clockOffset(seed), seed)
+      const sky = valleSkyAt(clockOffset(seed), seed)
       expect(sky.dark, `semilla ${seed}`).toBe(0)
     }
   })
 
-  it('el desplazamiento nunca es negativo ni supera un día', () => {
+  it('el desplazamiento nunca es negativo ni supera un día del valle', () => {
     for (let seed = 1; seed < 200; seed += 7) {
       const offset = clockOffset(seed)
       expect(offset).toBeGreaterThanOrEqual(0)
-      expect(offset).toBeLessThan(DAY_MS)
+      expect(offset).toBeLessThan(DAY_MS * VALLE_PACE)
     }
+  })
+
+  it('el día del valle dura VALLE_PACE veces lo que el de la portada', () => {
+    const seed = 5
+    expect(valleSkyAt(DAY_MS * VALLE_PACE, seed).phase).toBeCloseTo(valleSkyAt(0, seed).phase, 5)
+    expect(valleSkyAt(DAY_MS, seed).phase).not.toBeCloseTo(valleSkyAt(0, seed).phase, 2)
   })
 
   it('las ventanas se encienden escalonadas y todas con la noche cerrada', () => {

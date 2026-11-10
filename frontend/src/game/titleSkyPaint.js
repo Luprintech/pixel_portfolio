@@ -1,11 +1,64 @@
 // Dibujo del cielo y del tiempo de la portada. Recibe el estado de titleSky.js y pinta en el canvas
 // de 320×180: franjas con tramado, sol y luna, lluvia, rayos y el oscurecimiento de la hora.
-import { PAL } from './palette.js'
+import { PAL, seeded } from './palette.js'
 import { dot, ellipse, hash2, rect } from './pixelKit.js'
+import { starAlpha } from './titleMotion.js'
 import { BAND_STARTS, HORIZON, lightningAt, mixHex, rainDrops, snowFlakes } from './titleSky.js'
 
 const WIDTH = 320
 const HEIGHT = 180
+
+// Posiciones de estrellas fijas, repartidas por la franja de arriba (`top` a `top + depth`). Se dibujan en cada
+// fotograma para que titilen. La portada usa las 16 de siempre; la vista del telescopio, un campo más denso.
+export function starField(count, seed, { top = 2, depth = 46 } = {}) {
+  const rand = seeded(seed)
+  return Array.from({ length: count }, () => ({ x: Math.floor(rand() * WIDTH), y: top + Math.floor(rand() * depth) }))
+}
+
+const STARS = starField(16, 8)
+
+export function paintStars(g, ms, still, visibility, stars = STARS) {
+  stars.forEach(({ x, y }, i) => {
+    g.globalAlpha = (still ? 0.8 : starAlpha(i, ms)) * visibility
+    dot(g, x, y, '#f1e6cf')
+    if (i % 4 === 0) {
+      ;[[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, '#b8a2e0'))
+    }
+  })
+  g.globalAlpha = 1
+}
+
+// Nubes redondas con la parte baja más oscura. Toman el color del cielo que tienen detrás y, cuando
+// el cielo se cubre, se vuelven grises.
+export function paintCloud(g, x, y, scale, sky) {
+  const overcast = Math.min(1, Math.max(0, (sky.cloud - 0.6) / 0.4))
+  const body = mixHex(mixHex(sky.bands[3], '#ffffff', 0.55), '#8d8aa8', overcast * 0.7)
+  const shade = mixHex(mixHex(sky.bands[3], '#5c5a7a', 0.35), '#5c5a7a', overcast * 0.6)
+  const puff = (dx, dy, rx, ry, color) => ellipse(g, x + dx * scale, y + dy * scale, rx * scale, ry * scale, color)
+  ;[[shade, 1.2], [body, 0]].forEach(([color, drop]) => {
+    puff(0, drop, 16, 5, color)
+    puff(-9, -3 + drop, 8, 6, color)
+    puff(5, -5 + drop, 10, 7, color)
+  })
+}
+
+export function paintShootingStar(g, star) {
+  for (let i = 0; i < 10; i++) {
+    g.globalAlpha = Math.max(0, star.alpha * (1 - i / 10))
+    dot(g, star.x + star.dx * i * 2.2, star.y + star.dy * i * 2.2, i === 0 ? '#ffffff' : '#fff1c4')
+    if (i < 3) dot(g, star.x + star.dx * i * 2.2, star.y + star.dy * i * 2.2 + 1, '#f8d77a')
+  }
+  g.globalAlpha = 1
+}
+
+export function paintBird(g, { x, y, wing }) {
+  const color = '#2e2d5a'
+  if (wing) {
+    ;[[-2, 1], [-1, 0], [0, 1], [1, 0], [2, 1]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, color))
+  } else {
+    ;[[-2, 0], [-1, 1], [0, 0], [1, 1], [2, 0]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, color))
+  }
+}
 
 // Franjas separadas por un tramado de ajedrez de dos filas, a la manera clásica.
 export function paintSky(g, sky) {
