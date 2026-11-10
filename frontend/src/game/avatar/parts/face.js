@@ -25,8 +25,9 @@ export const EXPRESSIONS = {
   miedo: { eyes: 'open', brows: 'sad', mouth: 'gasp' },
   aburrimiento: { eyes: 'lid', mouth: 'flat' },
   ternura: { eyes: 'arc', mouth: 'smile', blush: true },
-  // Ojos rasgados y sonrisa: la expresión de Atreus. No está en las listas del creador.
-  sonrisaRasgada: { eyes: 'lid', mouth: 'smile' },
+  // Ojos rasgados y sonrisa, sin el rubor de las mejillas que llevan las demás caras: la expresión
+  // de Atreus. No está en las listas del creador.
+  sonrisaRasgada: { eyes: 'lid', mouth: 'smile', cheeks: false },
 }
 
 // Posición de cada ojo de frente: columna, y qué letra va en cada una (blanco o pupila).
@@ -106,14 +107,16 @@ const FRONT_MOUTHS = {
 }
 
 function paintFront(p, expression, male) {
-  const { eyes, brows, mouth, tears, blush } = expression
+  const { eyes, brows, mouth, tears, blush, cheeks = true } = expression
   // La frente va en el color de la piel: una fila de sombra bajo el flequillo se leía como una
   // franja gris pintada sobre la cara. El hombre lleva las cejas marcadas, en el color de su pelo; las cejas de la expresión van encima.
   if (male) [4, 5, 10, 11].forEach((x) => p.put(x, 5, 'd'))
   frontEyes(p, eyes)
   if (brows) FRONT_BROWS[brows].forEach(([x, y]) => p.put(x, y, 'Z'))
-  p.put(4, 9, 'B')
-  p.put(11, 9, 'B')
+  if (cheeks) {
+    p.put(4, 9, 'B')
+    p.put(11, 9, 'B')
+  }
   if (blush) {
     p.rect(4, 9, 5, 10, 'B')
     p.rect(10, 9, 11, 10, 'B')
@@ -185,13 +188,13 @@ const SIDE_MOUTHS = {
 }
 
 function paintSide(p, expression, left) {
-  const { eyes, brows, mouth, tears, blush } = expression
+  const { eyes, brows, mouth, tears, blush, cheeks = true } = expression
   // Oreja en sombra: da relieve al perfil sin añadir líneas.
   p.put(8, 7, 's')
   p.put(8, 8, 's')
   sideEye(p, eyes, left)
   if (brows) SIDE_BROWS[brows].forEach(([x, y]) => p.put(x, y, 'Z'))
-  p.put(10, 8, 'B')
+  if (cheeks) p.put(10, 8, 'B')
   if (blush) {
     p.put(11, 8, 'B')
     p.put(11, 9, 'B')
