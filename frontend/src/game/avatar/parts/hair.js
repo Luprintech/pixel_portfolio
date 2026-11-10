@@ -306,8 +306,6 @@ function lupeMane(kind, B, F, M) {
   mir(F, 2, 4, 5, 4)
   mir(F, 1, 4, 3, 5)
   mir(F, 1, 6, 2, 8)
-  ;[1, 2, 3].forEach((y) => put(F, 8, y, 'd'))
-  // Desde la mejilla el borde ondula una columna hacia fuera y hacia dentro, y acaba en punta.
   LUPE_FRONT_EDGE.forEach((edge, i) => {
     const y = 9 + i
     mir(F, edge, y, y === 12 || y === 13 ? 4 : 2, y)
@@ -371,6 +369,10 @@ const STYLES = {
   melenaLupe(kind, B, F, _left, M) {
     lupeMane(kind, B, F, M)
     darkRoots([B, M, F])
+    // La raya al medio se marca después de la raíz, que la taparía: sobre el castaño oscuro va en el
+    // tono intermedio, más claro, como el cuero cabelludo que asoma. De espalda solo llega a la coronilla.
+    if (kind === 'down') [1, 2, 3].forEach((y) => put(F, 8, y, 'i'))
+    else if (kind === 'up') [0, 1, 2].forEach((y) => put(F, 8, y, 'i'))
   },
 
   // Corto rizado: casquete de bultos, rizos sobre la frente y junto a las orejas.
