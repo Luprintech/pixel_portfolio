@@ -6,6 +6,12 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Raíz oscura de Lupe, complementos y razas nuevas (2026-11-10)
+- Lupe lleva la raíz castaña oscura y el pelo se aclara hasta el rubio (`hairRoot` en `game/lupe.js`; letras `I` e `i` en `avatar/palette.js`; `darkRoots` en `parts/hair.js`). El degradado alterna celdas entre tramos para no leerse como franjas. Sin `hairRoot` esas letras son el color del pelo, así que la viajera no cambia.
+- Cuatro complementos nuevos en el creador (`parts/accessories.js`, nombres en `look.js`): bufanda, corona de princesa, boina y orejas de gato. La rejilla de complementos pasa de 16 a 20. La bufanda cuelga por el lado izquierdo del personaje: de espalda no se ve el cabo y de perfil solo desde ese lado.
+- Tres razas de perro (labrador, dálmata, corgi) y tres de gato (Scottish Fold, azul ruso, calicó) en `game/pets/` y `game/pet.js`: ocho de cada. No hay siamés a propósito, para que ninguna mascota se confunda con Khalessi.
+- Comprobado pintando cada pieza ampliada en las cuatro vistas, pruebas, lint y build. Pendiente: verlo dentro del creador y del valle en el navegador.
+
 ### Lupe rediseñada y coherencia entre vistas (2026-11-10)
 - Lupe (`game/lupe.js`) pasa del vestido rosa a su aspecto real, según la lámina que dio la usuaria: melena rubia larga y ondulada con raya al medio, camiseta negra con la Trifuerza dorada, vaqueros y zapatillas blancas. Sigue saliendo del generador, así que tiene las cuatro direcciones y la marcha con el mismo lienzo de 18×34.
 - Dos piezas son solo suyas y no aparecen en el creador: el peinado `melenaLupe` (`parts/hair.js`) y el campo `emblem: 'trifuerza'` de la camiseta (`parts/body.js`). La Trifuerza se ve entera de frente, un canto de perfil y nada de espalda. `upgradeLook` descarta ambos en una viajera guardada.

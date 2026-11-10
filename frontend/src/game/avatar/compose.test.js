@@ -232,8 +232,9 @@ describe('catálogo de las láminas de referencia', () => {
     expect(men.slice(0, 3)).toEqual(['rasurado', 'cortoClasico', 'dePunta'])
   })
 
-  it('las rejillas de expresiones, rasgos, complementos, calzados, prendas de arriba y peinados tienen 16 opciones', () => {
-    ;['face', 'trait', 'accessory', 'shoes', 'top'].forEach((field) => expect(LOOK_STYLES[field], field).toHaveLength(16))
+  it('las rejillas de expresiones, rasgos, calzados y prendas de arriba tienen 16 opciones y la de complementos 20', () => {
+    ;['face', 'trait', 'shoes', 'top'].forEach((field) => expect(LOOK_STYLES[field], field).toHaveLength(16))
+    expect(LOOK_STYLES.accessory).toHaveLength(20)
     expect(LOOK_STYLES.bottom).toHaveLength(8)
   })
 

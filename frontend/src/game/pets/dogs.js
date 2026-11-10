@@ -112,6 +112,33 @@ const SPECS = {
     tail: { frames: TAILS.low },
     head: { rows: HEADS.floppy, x: 4, y: 2, keys: KEYS },
   },
+  // Robusto y de un solo color, con las orejas caídas.
+  labrador: {
+    w: 30, h: 18,
+    body: { cx: 12, cy: 11.3, rx: 9, ry: 4.3 },
+    legs: { y: 14, h: 4 },
+    tail: { frames: TAILS.down },
+    head: { rows: HEADS.floppy, x: 6, y: 3, keys: KEYS },
+    details: chestPatch(2.5, 3, 7),
+  },
+  // Esbelto, con el manto salpicado de motas.
+  dalmata: {
+    w: 30, h: 18,
+    body: { cx: 12, cy: 11.3, rx: 9, ry: 3.7 },
+    legs: { y: 14, h: 4 },
+    tail: { frames: TAILS.up },
+    spots: [[4, 9, 2, 2], [8, 8, 2, 1], [8, 12, 1, 1], [11, 10, 2, 2], [14, 8, 2, 2], [16, 12, 2, 1], [6, 11, 1, 1]],
+    head: { rows: HEADS.floppy, x: 6, y: 3, keys: KEYS },
+  },
+  // Paticorto y alargado, de orejas grandes y erguidas.
+  corgi: {
+    w: 28, h: 17,
+    body: { cx: 11, cy: 10.6, rx: 8.6, ry: 3.2 },
+    legs: { y: 13, h: 3 },
+    tail: { frames: TAILS.low },
+    head: { rows: HEADS.pointy, x: 4, y: 1, keys: KEYS },
+    details: chestPatch(2.5, 2.5, 7),
+  },
 }
 
 // Reparto de colores común; cada raza lo ajusta (qué parte lleva los detalles).
@@ -171,6 +198,27 @@ export const DOG_BREEDS = {
     spec: SPECS.teckel,
     colors: (coat, marks) => dogColors(coat, marks, {
       muzzle: marks, sock: marks, eye: readable(coat, '#1e1420'), nose: noseOn(marks),
+    }),
+  },
+  // Un solo color; los detalles tiñen el pecho y las puntas de las patas.
+  labrador: {
+    spec: SPECS.labrador,
+    colors: (coat, marks) => dogColors(coat, marks, {
+      ear: contrast(coat, 0.2), muzzle: tint(coat, 0.2), bib: marks, sock: marks, nose: noseOn(coat), eye: readable(coat, '#2a1a1a'),
+    }),
+  },
+  // Motas y orejas del color de detalles sobre el manto.
+  dalmata: {
+    spec: SPECS.dalmata,
+    colors: (coat, marks) => dogColors(coat, marks, {
+      spot: marks, ear: marks, muzzle: coat, nose: noseOn(coat), eye: readable(coat, '#2a1a1a'),
+    }),
+  },
+  // Hocico, mejillas, pecho, barriga y patas del color de detalles.
+  corgi: {
+    spec: SPECS.corgi,
+    colors: (coat, marks) => dogColors(coat, marks, {
+      belly: marks, muzzle: marks, cheek: marks, bib: marks, sock: marks, ear: coat, nose: noseOn(marks), eye: readable(marks, '#2a1a1a'),
     }),
   },
 }

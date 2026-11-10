@@ -2,7 +2,7 @@
 // pelo, ropa de arriba...) y esta tabla lo resuelve según el aspecto elegido.
 //   S/s piel y sombra    B mejilla   m boca   O interior de la boca   K vello facial
 //   w/e ojo: blanco y pupila (v/f son la fila baja, que al parpadear queda como pestaña)
-//   H/h/d pelo, reflejo y sombra     z pelo rapado
+//   H/h/d pelo, reflejo y sombra     z pelo rapado     I/i raíz de otro color y su transición
 //   D/L/M prenda de arriba, luz y sombra     T ribete
 //   N/u/n prenda de abajo, luz y sombra      W blanco hueso (camisa, suela, cordones)
 //   R/Q calzado y suela              A/a complemento y su sombra     G gafas   P/Y pétalo y centro
@@ -117,6 +117,9 @@ export function avatarColors(look, blink = false) {
     H: hair,
     h: tint(hair, 0.34),
     d: shade(hair, 0.78),
+    // Sin `hairRoot` la raíz es del color del pelo: solo Lupe la lleva distinta.
+    I: look.hairRoot ?? hair,
+    i: look.hairRoot ? mix(look.hairRoot, hair, 0.5) : hair,
     z: shade(mix(look.skin, hair, 0.45), 0.95),
     A: look.accessoryColor,
     a: shade(look.accessoryColor, 0.7),

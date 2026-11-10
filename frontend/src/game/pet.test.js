@@ -6,9 +6,9 @@ import { DOG_BREEDS } from './pets/dogs'
 const everyPet = () => Object.entries(PET_BREEDS).flatMap(([kind, breeds]) => breeds.map((breed) => petOfBreed(kind, breed)))
 
 describe('mascota', () => {
-  it('hay cinco razas de perro y cinco de gato', () => {
-    expect(PET_BREEDS.perro).toHaveLength(5)
-    expect(PET_BREEDS.gato).toHaveLength(5)
+  it('hay ocho razas de perro y ocho de gato', () => {
+    expect(PET_BREEDS.perro).toHaveLength(8)
+    expect(PET_BREEDS.gato).toHaveLength(8)
   })
 
   it('cada raza tiene su dibujo y su nombre en los dos idiomas', () => {

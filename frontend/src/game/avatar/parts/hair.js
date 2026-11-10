@@ -7,7 +7,8 @@
 // y las negativas sobresalen por arriba (hasta -4). El perfil izquierdo es el derecho reflejado,
 // salvo en lo que no es simétrico (el rapado lateral solo se ve de un lado): `left` lo indica.
 //
-// Letras: H pelo, h reflejo, d sombra, T goma o lazo, z rapado (mezcla de pelo y piel).
+// Letras: H pelo, h reflejo, d sombra, T goma o lazo, z rapado (mezcla de pelo y piel), I raíz de
+// otro color e i su transición hacia el tono del pelo (solo la melena de Lupe).
 // El bob es el peinado de la base aprobada y va dibujado a mano, con su brillo y sus sombras;
 // el resto reparte reflejos y sombras solos (`finish`).
 
@@ -253,8 +254,67 @@ const SHAPED = {
   },
 }
 
+// Raíz oscura de la melena de Lupe, que se aclara hacia abajo hasta el rubio. Cada tramo alterna
+// celdas con el siguiente (un tablero) para que el degradado no se lea como franjas rectas: raíz en
+// las filas 0 y 1, mezcla de raíz y tono intermedio en la 2, intermedio en la 3 y la 4, y mezcla de
+// intermedio y rubio en la 5 y, más rala, en la 6. Se aplica a todas las capas y vistas.
+function rootLetter(x, y) {
+  const odd = (x + y) % 2 === 0
+  if (y <= 1) return 'I'
+  if (y === 2) return odd ? 'I' : 'i'
+  if (y <= 4) return 'i'
+  if (y === 5) return odd ? 'i' : null
+  if (y === 6) return (x + y) % 4 === 0 ? 'i' : null
+  return null
+}
+
+function darkRoots(layers) {
+  layers.forEach((layer) =>
+    layer.forEach((_, k) => {
+      const [x, y] = k.split(',').map(Number)
+      const letter = rootLetter(x, y)
+      if (letter) layer.set(k, letter)
+    }),
+  )
+}
+
 // Borde exterior de la melena de Lupe vista de frente, de la fila 9 a la 17.
 const LUPE_FRONT_EDGE = [1, 0, 0, 1, 1, 0, 0, 1, 1]
+
+// Forma de la melena de Lupe, sin la raíz.
+function lupeMane(kind, B, F, M) {
+  if (kind === 'side') return sideLong(B, M, F, { wave: true })
+  rect(F, 5, 0, 10, 0)
+  rect(F, 3, 1, 12, 1)
+  rect(F, 2, 2, 13, 3)
+  if (kind === 'up') {
+    // Ancha alrededor de la cabeza y sobre los hombros; más abajo se recoge para dejar ver los brazos.
+    rect(F, 1, 4, 14, 11)
+    rect(F, 2, 12, 13, 14)
+    for (let y = 15; y <= 19; y++) {
+      const a = WAVE[(y - 15) % 4] >> 1
+      rect(F, 3 + a, y, 12 - a, y)
+    }
+    rect(F, 4, 20, 11, 20)
+    rect(F, 5, 21, 6, 21)
+    rect(F, 9, 21, 10, 21)
+    return
+  }
+  // Cortina a cada lado de la raya: se abre sobre la frente y baja por fuera de las mejillas, sin
+  // estrechar la cara. Sobre los hombros cae un mechón que deja a la vista la manga y la mano.
+  mir(F, 2, 4, 5, 4)
+  mir(F, 1, 4, 3, 5)
+  mir(F, 1, 6, 2, 8)
+  ;[1, 2, 3].forEach((y) => put(F, 8, y, 'd'))
+  // Desde la mejilla el borde ondula una columna hacia fuera y hacia dentro, y acaba en punta.
+  LUPE_FRONT_EDGE.forEach((edge, i) => {
+    const y = 9 + i
+    mir(F, edge, y, y === 12 || y === 13 ? 4 : 2, y)
+  })
+  put(F, 1, 18)
+  put(F, 14, 18)
+  rect(B, 2, 5, 13, 17)
+}
 
 const STYLES = {
   // Pixie: muy corto, con mechones sueltos en la frente; orejas y cuello a la vista.
@@ -308,37 +368,8 @@ const STYLES = {
   // lleva ella (no está en las listas del creador). De frente enmarca la cara y cae sobre los hombros
   // hasta la cintura sin tapar las manos; de espalda cubre la espalda hasta la cintura.
   melenaLupe(kind, B, F, _left, M) {
-    if (kind === 'side') return sideLong(B, M, F, { wave: true })
-    rect(F, 5, 0, 10, 0)
-    rect(F, 3, 1, 12, 1)
-    rect(F, 2, 2, 13, 3)
-    if (kind === 'up') {
-      // Ancha alrededor de la cabeza y sobre los hombros; más abajo se recoge para dejar ver los brazos.
-      rect(F, 1, 4, 14, 11)
-      rect(F, 2, 12, 13, 14)
-      for (let y = 15; y <= 19; y++) {
-        const a = WAVE[(y - 15) % 4] >> 1
-        rect(F, 3 + a, y, 12 - a, y)
-      }
-      rect(F, 4, 20, 11, 20)
-      rect(F, 5, 21, 6, 21)
-      rect(F, 9, 21, 10, 21)
-      return
-    }
-    // Cortina a cada lado de la raya: se abre sobre la frente y baja por fuera de las mejillas, sin
-    // estrechar la cara. Sobre los hombros cae un mechón que deja a la vista la manga y la mano.
-    mir(F, 2, 4, 5, 4)
-    mir(F, 1, 4, 3, 5)
-    mir(F, 1, 6, 2, 8)
-    ;[1, 2, 3].forEach((y) => put(F, 8, y, 'd'))
-    // Desde la mejilla el borde ondula una columna hacia fuera y hacia dentro, y acaba en punta.
-    LUPE_FRONT_EDGE.forEach((edge, i) => {
-      const y = 9 + i
-      mir(F, edge, y, y === 12 || y === 13 ? 4 : 2, y)
-    })
-    put(F, 1, 18)
-    put(F, 14, 18)
-    rect(B, 2, 5, 13, 17)
+    lupeMane(kind, B, F, M)
+    darkRoots([B, M, F])
   },
 
   // Corto rizado: casquete de bultos, rizos sobre la frente y junto a las orejas.
