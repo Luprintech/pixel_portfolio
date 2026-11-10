@@ -29,18 +29,33 @@ if defined hayBackend if defined hayFrontend (
 if defined hayBackend echo El backend ya esta en marcha: solo se lanza el frontend.
 if defined hayFrontend echo El frontend ya esta en marcha: solo se lanza el backend.
 
-rem El backend espera PostgreSQL en 127.0.0.1:5432 y, si no lo encuentra, se
+rem Los datos de la base salen de backend\.env, el mismo archivo que lee el
+rem backend. El puerto (PGPORT) puede cambiar de un ordenador a otro: se define
+rem alli y este script lo sigue. Sin PGPORT se usa 5432.
+set "PGPORT="
+for /f "usebackq tokens=1,* delims==" %%a in (`findstr /B /C:"PGUSER=" /C:"PGPASSWORD=" /C:"PGDATABASE=" /C:"PGPORT=" "backend\.env"`) do set "%%a=%%b"
+if not defined PGPORT set "PGPORT=5432"
+
+rem El backend espera PostgreSQL en 127.0.0.1:%PGPORT% y, si no lo encuentra, se
 rem cierra tras ~30 s sin servir nada. Se usa un contenedor propio de desarrollo
 rem (con los datos de backend\.env) porque el docker-compose del repo no publica
-rem el puerto 5432 en el equipo.
+rem el puerto de la base en el equipo.
 if defined hayBackend goto bdlista
-netstat -ano | findstr /R /C:":5432 .*LISTENING" >nul && goto bdlista
+netstat -ano | findstr /R /C:":%PGPORT% .*LISTENING" >nul && goto bdlista
 docker info >nul 2>&1 || goto sindocker
 :arrancabd
-for /f "usebackq tokens=1,* delims==" %%a in (`findstr /B /C:"PGUSER=" /C:"PGPASSWORD=" /C:"PGDATABASE=" "backend\.env"`) do set "%%a=%%b"
-echo Arrancando PostgreSQL de desarrollo (contenedor luprin-dev-db)...
-docker start luprin-dev-db >nul 2>&1 && goto esperabd
-docker run -d --name luprin-dev-db -p 127.0.0.1:5432:5432 -e POSTGRES_USER=%PGUSER% -e POSTGRES_PASSWORD=%PGPASSWORD% -e POSTGRES_DB=%PGDATABASE% -v luprin_dev_pgdata:/var/lib/postgresql/data postgres:16-alpine >nul
+echo Arrancando PostgreSQL de desarrollo (contenedor luprin-dev-db) en el puerto %PGPORT%...
+docker inspect luprin-dev-db >nul 2>&1 || goto creabd
+rem Un contenedor ya creado conserva el puerto con el que nacio: si ha cambiado
+rem PGPORT se recrea. Los datos no se pierden porque viven en el volumen.
+docker port luprin-dev-db 5432/tcp 2>nul | findstr /R /C:":%PGPORT%$" >nul && goto iniciabd
+echo El contenedor usaba otro puerto: se recrea en el %PGPORT% (los datos se conservan).
+docker rm -f luprin-dev-db >nul 2>&1
+:creabd
+docker run -d --name luprin-dev-db -p 127.0.0.1:%PGPORT%:5432 -e POSTGRES_USER=%PGUSER% -e POSTGRES_PASSWORD=%PGPASSWORD% -e POSTGRES_DB=%PGDATABASE% -v luprin_dev_pgdata:/var/lib/postgresql/data postgres:16-alpine >nul
+goto esperabd
+:iniciabd
+docker start luprin-dev-db >nul 2>&1
 :esperabd
 docker ps -q -f name=luprin-dev-db | findstr . >nul || (
   echo No se pudo arrancar el contenedor luprin-dev-db. Revisa Docker Desktop.
@@ -69,7 +84,7 @@ timeout /t 3 /nobreak >nul
 goto esperadocker
 
 :nodocker
-echo No hay PostgreSQL en el puerto 5432 y no se ha podido abrir Docker Desktop.
+echo No hay PostgreSQL en el puerto %PGPORT% y no se ha podido abrir Docker Desktop.
 echo Abrelo a mano, espera a que arranque y vuelve a ejecutar este script.
 pause
 exit /b 1

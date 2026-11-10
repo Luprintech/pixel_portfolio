@@ -158,7 +158,6 @@ export const COPY = {
     },
     cvPage: { title: 'Currículum', back: 'Volver', download: 'Descargar PDF', home: 'Ir al inicio' },
     nav: { home: 'Inicio', classic: 'Clásico', projects: 'Proyectos', blog: 'Blog', contact: 'Contacto' },
-    back: 'Volver al valle',
   },
   en: {
     gameTitle: 'Valle del Bucle',
@@ -302,7 +301,6 @@ export const COPY = {
     },
     cvPage: { title: 'Résumé', back: 'Back', download: 'Download PDF', home: 'Go to the start' },
     nav: { home: 'Home', classic: 'Classic', projects: 'Projects', blog: 'Blog', contact: 'Contact' },
-    back: 'Back to the valley',
   },
 }
 

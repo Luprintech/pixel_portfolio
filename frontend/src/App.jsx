@@ -17,6 +17,8 @@ function AppContent() {
   const location = useLocation();
   const isCms = location.pathname.startsWith('/bitacora');
   const isFullScreen = location.pathname === '/' || location.pathname === '/valle' || location.pathname === '/cv';
+  // /clasico trae su propia barra y su propio pie, pero conserva el chatbot (y el banner de cookies, que va siempre)
+  const hidesSiteChrome = isFullScreen || location.pathname === '/clasico';
   const [shouldLoadChatBot, setShouldLoadChatBot] = useState(false);
 
   useEffect(() => {
@@ -59,13 +61,13 @@ function AppContent() {
   return (
     <>
       <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
-        {!isFullScreen && <Navbar />}
-        <main id="main-content" className={`flex-1 ${isFullScreen ? 'min-h-0' : ''}`} role="main" aria-label="Contenido principal">
+        {!hidesSiteChrome && <Navbar />}
+        <main id="main-content" className={`flex-1 ${hidesSiteChrome ? 'min-h-0' : ''}`} role="main" aria-label="Contenido principal">
           <ErrorBoundary>
             <AppRoutes />
           </ErrorBoundary>
         </main>
-        {!isFullScreen && <Footer />}
+        {!hidesSiteChrome && <Footer />}
       </div>
       {shouldLoadChatBot && !isFullScreen && (
         <Suspense fallback={null}>

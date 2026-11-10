@@ -17,6 +17,7 @@ Modelo MVC general, no estricto: el frontend es la vista, el backend lleva la l�
 | --- | --- |
 | `routes/AppRoutes.jsx` | Todas las rutas |
 | `pages/` | Páginas públicas; `pages/cms/` para `/bitacora` |
+| `clasico/` | La web original servida en `/clasico`, aislada: `ClasicoHome.jsx`, `components/`, `data/`, `hooks/` y `clasico.css` (todo bajo `.clasico-root`) |
 | `game/` | El juego: `world.js` (mapa, sin Phaser), `ValleScene.js`, `boot.js`, `sprites.js`, `palette.js`, `look.js`, `titleArt.js` |
 | `components/valle/` | UI del juego: `Content`, `Editor`, `Joystick`, `ZonePanel` |
 | `lib/` | API (`publicApi.js`, `cmsApi.js`), textos (`valleCopy.js`), utilidades de posts y media |
@@ -26,9 +27,11 @@ Modelo MVC general, no estricto: el frontend es la vista, el backend lleva la l�
 
 ### Rutas públicas
 
-`/` título · `/valle` juego · `/clasico` modo clásico · `/proyectos` · `/portfolio` · `/blog` · `/blog/:slug` · `/contacto` · `/politica-cookies` · `/politica-privacidad`
+`/` título · `/valle` juego · `/clasico` web original (portada aislada) · `/proyectos` · `/portfolio` · `/blog` · `/blog/:slug` · `/contacto` · `/politica-cookies` · `/politica-privacidad`
 
-`/sobre-mi` y `/portfolio/desarrollo-web` redirigen a `/clasico#sobre-mi` y `/proyectos`.
+`/sobre-mi` y `/portfolio/desarrollo-web` redirigen a `/clasico#about` y `/proyectos`.
+
+`/clasico` es la excepción a la capa visual del valle: carga de forma diferida su propio CSS y fuentes (`@fontsource`), y `App.jsx` oculta ahí la barra y el pie del sitio (la página trae los suyos) pero conserva el chatbot y el banner de cookies. Los proyectos salen igualmente de `useProjects`.
 
 ### Editor de posts
 
@@ -85,7 +88,7 @@ Resumen de lo que implicaría la mascota del visitante; las reglas de producto e
 
 1. El CMS escribe en PostgreSQL y en `CONTENT_PATH`.
 2. La web consume `GET /api/projects` y `GET /api/posts`.
-3. `components/valle/Content.jsx` pinta ese contenido una sola vez para el juego y el modo clásico.
+3. `components/valle/Content.jsx` pinta ese contenido en el panel de zona del juego; la portada de `/clasico` lo pide con el mismo hook `useProjects`.
 
 `frontend/public/projects.json` y `posts/index.json` son solo el seed inicial, importado si la BD está vacía.
 

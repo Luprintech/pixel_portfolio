@@ -1,0 +1,310 @@
+/* Estilos de /clasico: la web original (tema oscuro "Neon Luminary") servida aparte del Valle del Bucle.
+
+   Regla de aislamiento: este archivo solo se importa desde ClasicoHome.jsx, que es una ruta diferida,
+   y todo cuelga de `.clasico-root`. No hay reglas sobre html, body, `*` ni :root: así ni se contagia
+   al resto del sitio ni el tema "valle" de index.css pisa estos colores. Los keyframes llevan el
+   prefijo `clasico-` por la misma razón. Solo se portan las clases que usa la portada original. */
+
+.clasico-root {
+  color-scheme: dark;
+  position: relative;
+  min-height: 100vh;
+  --nav-height: 5rem;
+  --section-gutter-x: clamp(1.25rem, 2vw, 2.5rem);
+  --section-gutter-y: clamp(1rem, 2.2vh, 1.75rem);
+
+  /* Tipografías: index.css define fuentes de píxel en @theme, así que se redefinen aquí
+     para que `font-sans` y `.typo-*` resuelvan a las originales. */
+  --font-sans: 'Manrope', sans-serif;
+  --font-headline: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+  --font-label: 'Space Grotesk', sans-serif;
+  --type-title-family: var(--font-headline);
+  --type-body-family: var(--font-body);
+  --type-label-family: var(--font-label);
+
+  /* Fondos */
+  --bg-primary: #0b1120;
+  --bg-secondary: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-elevated: #111827;
+  --bg-overlay: rgba(11, 18, 32, 0.85);
+  --bg-code: #1e293b;
+  --bg-code-header: #0f172a;
+
+  /* Textos */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #0b1120;
+  --hero-typewriter-color: #f8fafc;
+
+  /* Bordes */
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.06);
+
+  /* Acentos */
+  --accent-primary: #e879f9;
+  --accent-primary-dim: rgba(232, 121, 249, 0.14);
+  --accent-secondary: #22d3ee;
+  --accent-secondary-dim: rgba(34, 211, 238, 0.14);
+  --accent-violet: #a855f7;
+  --accent-green: #10b981;
+  --accent-green-dim: rgba(16, 185, 129, 0.12);
+  --accent-orange: #f97316;
+  --accent-orange-dim: rgba(249, 115, 22, 0.12);
+  --accent-purple: #8b5cf6;
+  --accent-purple-dim: rgba(139, 92, 246, 0.12);
+  --gradient-logo: linear-gradient(to right, #e879f9, #22d3ee);
+
+  /* Barra de navegación */
+  --nav-bg-scrolled: rgba(11, 18, 32, 0.82);
+  --nav-bg-mobile: rgba(17, 24, 39, 0.97);
+  --nav-border: rgba(255, 255, 255, 0.05);
+
+  /* Tarjetas y sombras */
+  --card-bg: #1e293b;
+  --card-border: rgba(255, 255, 255, 0.06);
+  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --card-hover-shadow: 0 8px 40px rgba(168, 85, 247, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-nav: 0 4px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(139, 92, 246, 0.05);
+
+  /* Pie, scroll y varios */
+  --footer-bg: #0f172a;
+  --footer-border: #1e293b;
+  --gradient-inner-bg: #0b1120;
+  --scrollbar-track: #0f172a;
+  --scrollbar-thumb: #334155;
+
+  /* Superficies del blog (las usa el fondo de la sección de proyectos) */
+  --blog-bg: linear-gradient(165deg, #0b1120 0%, #0d1529 55%, #10192f 100%);
+  --blog-surface: rgba(15, 23, 42, 0.68);
+  --blog-surface-low: rgba(15, 23, 42, 0.54);
+  --blog-surface-high: rgba(30, 41, 59, 0.66);
+  --blog-text-primary: #e2e8f0;
+  --blog-text-secondary: #cbd5e1;
+  --blog-text-muted: #94a3b8;
+  --blog-outline-variant: rgba(148, 163, 184, 0.28);
+  --blog-glow-primary: rgba(139, 92, 246, 0.22);
+  --blog-glow-secondary: rgba(34, 211, 238, 0.2);
+
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+/* index.css redefine estas tres clases con las fuentes de píxel; aquí vuelven las originales. */
+.clasico-root .typo-title {
+  font-family: var(--type-title-family);
+}
+
+.clasico-root .typo-body {
+  font-family: var(--type-body-family);
+}
+
+.clasico-root .typo-label {
+  font-family: var(--type-label-family);
+}
+
+/* Fondo de la sección de proyectos: index.css lo deja plano y aquí recupera los halos y la rejilla. */
+.clasico-root .ambient-grid-halos {
+  background-image:
+    radial-gradient(ellipse 60% 52% at 12% 18%, rgba(139, 92, 246, 0.14), transparent 72%),
+    radial-gradient(ellipse 58% 50% at 86% 82%, rgba(34, 211, 238, 0.12), transparent 72%),
+    repeating-linear-gradient(0deg, transparent, transparent 55px, rgba(148, 163, 184, 0.048) 55px, rgba(148, 163, 184, 0.048) 56px),
+    repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(148, 163, 184, 0.04) 79px, rgba(148, 163, 184, 0.04) 80px),
+    var(--blog-bg);
+}
+
+/* Contenedor con scroll-snap: cada sección ocupa la pantalla entera. */
+.clasico-root .snap-root {
+  height: 100vh;
+  width: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.clasico-root .snap-root::-webkit-scrollbar {
+  display: none;
+}
+
+.clasico-root .snap-page {
+  height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--nav-height);
+  position: relative;
+  overflow: hidden;
+}
+
+.clasico-root .section-viewport {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding-inline: var(--section-gutter-x);
+  padding-block: var(--section-gutter-y);
+}
+
+.clasico-root .section-viewport__scroll {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.clasico-root .section-viewport__scroll--scroll {
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.clasico-root .section-viewport__scroll--scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.clasico-root .section-viewport__content {
+  width: min(100%, var(--section-content-max, 1040px));
+  min-height: 100%;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* En móvil se desactiva el snap: bloquea el gesto de desplazamiento. */
+@media (max-width: 768px) {
+  .clasico-root .snap-root {
+    scroll-snap-type: none;
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+  }
+
+  .clasico-root .snap-page {
+    height: auto;
+    min-height: 100svh;
+    padding-top: var(--nav-height);
+    padding-bottom: 0;
+    overflow: visible;
+    overscroll-behavior-y: auto;
+    scroll-snap-stop: normal;
+  }
+
+  .clasico-root .section-viewport {
+    padding-inline: 1.25rem;
+    padding-block: 0.5rem;
+    height: auto;
+    min-height: calc(100svh - var(--nav-height));
+    overflow: visible;
+  }
+
+  .clasico-root .section-viewport__scroll,
+  .clasico-root .section-viewport__scroll--scroll {
+    height: auto;
+    overflow: visible;
+    overscroll-behavior-y: auto;
+  }
+
+  .clasico-root .section-viewport__content {
+    min-height: auto;
+    align-items: flex-start;
+  }
+}
+
+/* Carrusel de tecnologías (sección de servicios) */
+@keyframes clasico-tech-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.clasico-root .tech-track {
+  animation: clasico-tech-marquee 28s linear infinite;
+}
+
+.clasico-root .tech-track:hover {
+  animation-play-state: paused;
+}
+
+/* Brillos pulsantes y rejilla de la sección de contacto */
+@keyframes clasico-cta-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.06); }
+}
+
+@keyframes clasico-cta-pulse2 {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50%      { opacity: 0.70; transform: scale(1.08); }
+}
+
+.clasico-root .cta-glow-a { animation: clasico-cta-pulse  8s  ease-in-out infinite; }
+.clasico-root .cta-glow-b { animation: clasico-cta-pulse2 11s ease-in-out infinite; }
+.clasico-root .cta-glow-c { animation: clasico-cta-pulse  14s ease-in-out infinite 3s; }
+
+.clasico-root .cta-grid-bg {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 1) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+
+/* Botones táctiles del Snake */
+.clasico-root .snake-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.clasico-root .snake-btn:active {
+  background: var(--accent-secondary-dim);
+  color: var(--accent-secondary);
+  transform: scale(0.92);
+}
+
+.clasico-root .snake-btn--pause {
+  width: auto;
+  min-width: 7.5rem;
+  padding-inline: 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Quien pide menos movimiento no ve animaciones de decoración. */
+@media (prefers-reduced-motion: reduce) {
+  .clasico-root *,
+  .clasico-root *::before,
+  .clasico-root *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

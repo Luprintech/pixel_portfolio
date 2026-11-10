@@ -28,7 +28,7 @@ Portfolio full-stack de Guadalupe Cano (Luprintech): SPA React + Vite, API Expre
 - Las propuestas del documento (nombres de zonas, mecánicas, estética del modo clásico) no son decisiones tomadas. Las pendientes están en su sección 16: si la tarea depende de una, pregunta a la usuaria antes de implementar.
 - Prioridades que marca: el modo clásico debe funcionar como portfolio profesional sin jugar; el primer edificio completo será el Taller del Código; ninguna mecánica puede esconder información profesional.
 - Aplica los criterios de su sección 17 a cada funcionalidad nueva y pospón la que añada complejidad sin mejorar la experiencia.
-- `/clasico` debe acabar siendo un portfolio clásico y profesional, sin estética de videojuego. Su rediseño se hará con las skills de diseño cuando la usuaria lo pida; hasta entonces, no cambies su aspecto.
+- `/clasico` sirve desde 2026-11-10 la web original de la usuaria (fucsia/cian, sin estética de videojuego), aislada en `frontend/src/clasico/`. Es la excepción explícita decidida por ella; no cambies su aspecto sin que lo pida. Su CSS vive en `frontend/src/clasico/clasico.css`, todo bajo `.clasico-root`, y no puede tener reglas sobre `html`, `body`, `*` ni `:root`.
 - Los proyectos y artículos siguen saliendo una sola vez de `/api/projects` y `/api/posts`; no se duplican por modo.
 - Al cerrar un bloque, anota en `docs/ESTADO.md` qué parte de la visión avanza.
 
@@ -46,14 +46,14 @@ Decidido el 2026-11-09 (detalle en `docs/VISION.md`, sección 6; pendientes en `
 
 Desde 2026-11-08 el portfolio es un overworld pixel art estilo Zelda (Phaser 3) con un **modo clásico** en HTML real. La arquitectura (CMS, blog, API, BD) **no cambió**; solo la capa visual.
 
-- `/` título, `/valle` el juego, `/clasico` todo el contenido de corrido.
+- `/` título, `/valle` el juego, `/clasico` la web original aislada (portada con scroll-snap; el resto de enlaces va a las páginas del sitio actual).
 - El contenido sale **una sola vez** de `/api/projects` y `/api/posts` y se pinta en ambos modos (`components/valle/Content.jsx`).
 - Paleta, fuentes y reglas: ver `frontend/docs/DESIGN.md`. No introduzcas colores fuera de los tokens de `frontend/src/index.css`.
 - El CMS (`/bitacora`) conserva sus colores fijos a propósito; solo recibe tokens.
 
 ## Cosas que NO debes hacer
 
-- No restaures el diseño anterior (fucsia/cian, partículas, gradientes, "Neon Luminary"). Se descartó por genérico: la idea es que el portfolio tenga personalidad propia.
+- No restaures el diseño anterior (fucsia/cian, partículas, gradientes, "Neon Luminary") fuera de `/clasico`. Se descartó por genérico para el resto del sitio; en `/clasico` la usuaria decidió conservarlo (2026-11-10), aislado en `frontend/src/clasico/`.
 - Ya no existen `design/tokens.js`, `data/` ni las secciones del diseño anterior (Expertise, TechSkills, TerminalWidget, ToolsGrid, InteractiveAvatar, FeaturedProjects). No los recrees.
 - No uses gradientes, halos radiales, sombras difuminadas ni colores fucsia/cian/violeta sueltos: usa tokens y sombras duras (`var(--px-ink)`).
 - No cambies slugs públicos sin revisar `backend/lib/sitemap.js`.

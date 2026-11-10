@@ -4,7 +4,7 @@ Sustituye al sistema anterior ("The Neon Luminary", fucsia/cian). Aquel se desca
 
 ## 1. Idea
 
-Un overworld top-down en pixel art, inspirado en los Zelda clásicos pero con identidad propia. Cada zona del portfolio es un edificio del valle. Quien prefiera leer sin jugar tiene el **modo clásico**, hecho en HTML real, accesible e indexable.
+Un overworld top-down en pixel art, inspirado en los Zelda clásicos pero con identidad propia. Cada zona del portfolio es un edificio del valle. Quien prefiera leer sin jugar tiene `/clasico`, que desde 2026-11-10 sirve la web original (ver la excepción al final de la sección 6), hecha en HTML real, accesible e indexable.
 
 Referencia de inspiración (no copiar): alexxblaro16.github.io.
 
@@ -82,16 +82,18 @@ Tokens de superficie y texto: `--bg-primary`, `--bg-surface`, `--text-primary`, 
 
 `frontend/src/pixel.css` define marcos, botones y títulos de píxel a partir de los tokens. Bordes duros, sombras sólidas sin difuminar, esquinas rectas. Nada de gradientes, partículas ni cristal esmerilado.
 
+**Excepción: `/clasico`.** Desde 2026-11-10 esa ruta usa la web original (fucsia `#e879f9`, cian `#22d3ee`, fondo `#0b1120`, Manrope, Plus Jakarta Sans y Space Grotesk, gradientes y cristal incluidos). No usa los tokens del Valle: sus tokens propios viven en `frontend/src/clasico/clasico.css` bajo `.clasico-root`, y nada de ese archivo puede salir de ese selector. Todo lo demás se rige por este documento.
+
 ## 7. Interacción
 
 - Teclado y joystick táctil (`components/valle/Joystick.jsx`) en móvil.
-- El panel de cada zona (`ZonePanel.jsx`) reutiliza `Content.jsx`, igual que el modo clásico.
+- El panel de cada zona (`ZonePanel.jsx`) reutiliza `Content.jsx`.
 - Phaser 3.80.1, lienzo 320×180 con escalado `FIT` y `pixelArt: true`.
 
 ## 8. Accesibilidad
 
-El juego no es la única vía: el modo clásico ofrece todo el contenido como HTML semántico. Mantén contraste suficiente entre token de texto y fondo en ambos temas, y foco visible con `--px-ring`.
+El juego no es la única vía: `/clasico` ofrece el contenido como HTML semántico. Mantén contraste suficiente entre token de texto y fondo en ambos temas, y foco visible con `--px-ring`.
 
 ## 9. Idiomas
 
-Español e inglés. Textos del Valle y del clásico en `frontend/src/lib/valleCopy.js`; el resto con i18next (`frontend/src/locales`).
+Español e inglés. Textos del Valle en `frontend/src/lib/valleCopy.js`; el resto con i18next (`frontend/src/locales`).

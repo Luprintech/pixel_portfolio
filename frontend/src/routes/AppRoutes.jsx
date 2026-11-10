@@ -6,7 +6,8 @@ import ProtectedRoute from "../components/cms/ProtectedRoute";
 // Páginas del portfolio (lazy)
 const Title                  = lazy(() => import("../pages/Title"));
 const Valle                  = lazy(() => import("../pages/Valle"));
-const Clasico                = lazy(() => import("../pages/Clasico"));
+// La web original de /clasico vive aislada en su carpeta; su CSS solo entra con este chunk diferido.
+const Clasico                = lazy(() => import("../clasico/ClasicoHome"));
 const Cv                     = lazy(() => import("../pages/Cv"));
 const Portfolio              = lazy(() => import("../pages/Portfolio"));
 const PortfolioDesarrolloWeb = lazy(() => import("../pages/portfolio/desarrollo-web"));
@@ -63,8 +64,9 @@ export default function AppRoutes() {
           <Route path="/" element={<Title />} />
           <Route path="/valle" element={<Valle />} />
           <Route path="/cv" element={<Cv />} />
-          <Route path="/clasico" element={<Motion.div {...pageTransition}><Clasico /></Motion.div>} />
-          <Route path="/sobre-mi" element={<Navigate to="/clasico#sobre-mi" replace />} />
+          {/* Sin Motion.div: el transform del envoltorio rompería el position: fixed de la barra original */}
+          <Route path="/clasico" element={<Clasico />} />
+          <Route path="/sobre-mi" element={<Navigate to="/clasico#about" replace />} />
           <Route path="/portfolio" element={<Motion.div {...pageTransition}><Portfolio /></Motion.div>} />
           <Route path="/proyectos"                       element={<Motion.div {...pageTransition}><PortfolioDesarrolloWeb /></Motion.div>} />
           <Route path="/portfolio/desarrollo-web"        element={<Navigate to="/proyectos" replace />} />

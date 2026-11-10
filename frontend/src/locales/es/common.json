@@ -8,7 +8,11 @@
     "contact": "Contacto",
     "sub_web": "Desarrollo Web",
     "sub_docs": "Documentación Técnica",
-    "cv": "Descargar CV"
+    "cv": "Descargar CV",
+    "valley": "El valle",
+    "title": "Portada",
+    "menu_open": "Abrir menú",
+    "language": "Idioma"
   },
   "hero": {
     "title": "Dev Web Full Stack Junior",
@@ -28,6 +32,7 @@
     ]
   },
   "home": {
+    "loading_projects": "Cargando proyectos...",
     "ecosystem_title": "Mi Ecosistema de Trabajo",
     "projects_title": "Proyectos Destacados",
     "projects_subtitle": "Una selección de mis mejores trabajos de desarrollo y arquitectura web.",
@@ -101,6 +106,10 @@
     "btn_enabled": "¡Mensaje Enviado!"
   },
   "about": {
+    "yt_aria": "Ver canal Luprintech en YouTube",
+    "yt_preview_alt": "Vista previa del canal Luprintech en YouTube",
+    "yt_eyebrow": "Canal de YouTube",
+    "photo_alt": "Retrato de Guadalupe Cano trabajando con su ordenador",
     "tagline": "Construyo aplicaciones. Integro IA. Automatizo el resto.",
     "summary": "Desarrolladora Full Stack con enfoque en arquitectura e infraestructura real. Construyo aplicaciones completas, integro inteligencia artificial y automatizo procesos. Me formo activamente en ciberseguridad y redes.",
     "badge_fullstack": "Full Stack",

@@ -2,9 +2,21 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
+Última actualización: 2026-11-10 (`/clasico` vuelve a servir la web original, aislada). Antes, 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
 
 ## Hecho
+
+### `/clasico` sirve la web original, aislada (2026-11-10)
+- La usuaria decidió el 2026-11-10 que `/clasico` muestre su web original (portada fucsia y cian "Neon Luminary") en lugar de la página clásica con estética de píxel. Es la única excepción a "no restaurar el diseño anterior"; `/` y `/valle` no cambian.
+- Alcance: solo la portada original (nueve secciones con scroll-snap) y su barra. Proyectos, blog, contacto y políticas siguen apuntando a las páginas actuales del sitio. El CMS no se toca.
+- Código en `frontend/src/clasico/` (`ClasicoHome.jsx`, `components/`, `data/services.js`, `hooks/useScrollSpy.js`, `clasico.css`), copiado de la web original. La página es una ruta diferida (`routes/AppRoutes.jsx`); su CSS y sus fuentes solo se descargan al entrar en ella.
+- Aislamiento de estilos: todo cuelga de `.clasico-root` (con `data-theme="dark"`), que redefine los tokens originales y las fuentes. No hay reglas sobre `html`, `body`, `*` ni `:root`, y los keyframes llevan el prefijo `clasico-`. Dos pruebas lo vigilan (`clasico.css.test.js`). Los fondos de sección ya no leen `useTheme`: la página es siempre oscura y el tema "valle" no la toca.
+- Fuentes originales (Manrope, Plus Jakarta Sans, Space Grotesk) autoalojadas con `@fontsource`, porque la CSP no admite Google Fonts. Dependencias nuevas: `@tsparticles/react`, `@tsparticles/slim`, `react-parallax-tilt`, `react-simple-typewriter` y los tres paquetes `@fontsource`.
+- Barra propia (`ClasicoNavbar.jsx`): Inicio, Proyectos, Blog, Contacto y dos salidas nuevas, "El valle" (`/valle`) y "Portada" (`/`), con textos i18n (`nav.valley`, `nav.title`, `nav.menu_open`, `nav.language`). Se quitó el botón de tema.
+- `App.jsx` oculta la barra y el pie del sitio en `/clasico` pero conserva el chatbot; el banner de cookies sale siempre. `/sobre-mi` redirige ahora a `/clasico#about`.
+- Se borró `pages/Clasico.jsx` y la clave `back` de `lib/valleCopy.js`, que solo usaba esa página. `components/valle/Content.jsx` se queda: lo usa el panel de zona del juego.
+- Se añadieron las claves `about.photo_alt` (en la web original faltaba y el `alt` mostraba la clave), `about.yt_*` y `home.loading_projects`.
+- Visión: no avanza ninguna fase; la fase 2 (`/clasico` como landing profesional) queda sustituida de momento por esta decisión.
 
 ### Atreus, la pareja de Lupe (2026-11-10)
 - Personaje nuevo con aspecto fijo (`game/atreus.js`), dibujado con el generador del avatar: mismo lienzo de 18×34, tres poses y cuatro direcciones. En el código va con su seudónimo del lore, no con el nombre real.
@@ -502,6 +514,13 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Pendiente
 
+### `/clasico` con la web original: lo que queda (2026-11-10)
+- Las secciones completas de la web original y su blog bajo `/clasico/*` no están hechas: Proyectos, Blog, Contacto y las políticas usan las páginas actuales (con estética de píxel).
+- El banner de cookies, el chatbot y el aviso de instalar son los del sitio actual, con estética de píxel; sobre la portada original desentonan. Portarlos o adaptarlos queda a criterio de la usuaria.
+- El chatbot tapa el icono de YouTube del pie en la sección de contacto (también ocurría en la web original).
+- Algunos textos de la web original siguen incrustados en español (por ejemplo etiquetas `aria` de componentes copiados tal cual); pasarlos a i18n.
+- Faltan tests visuales automáticos de `/clasico`; se revisó a mano en escritorio y móvil.
+
 ### Tema "valle": lo que queda (2026-11-09)
 - **Aviso de instalar la aplicación:** usa tokens pero no se ha visto en pantalla con el tema nuevo.
 - **Bocadillo de Lupe sobre la casa:** al estar Lupe delante, el bocadillo tapa parte de la fachada; moverlo lo pasa a tapar la cueva. Probar una variante.
@@ -512,7 +531,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ### Quitar el blog del portfolio (decidido el 2026-11-09)
 - Guadalupe ha decidido **retirar el blog** porque no le da uso. Hoy solo se ha quitado el acceso directo "Blog" del menú de la portada, que ahora muestra Proyectos, Contacto y CV centrados.
 - **Hacerlo al rediseñar el modo clásico (`/clasico`)**, no antes, y avisarla del alcance antes de borrar nada. Dónde sigue el blog:
-  - Frontend público: `pages/Blog.jsx`, `BlogPost.jsx`, `BlogPostPreview.jsx`, rutas en `routes/AppRoutes.jsx`, enlace en `components/Navbar.jsx`, sección en `components/valle/Content.jsx` y `pages/Clasico.jsx`, mención en `pages/PoliticaPrivacidad.jsx`, hook `hooks/usePost.js`, y textos en `lib/valleCopy.js`.
+  - Frontend público: `pages/Blog.jsx`, `BlogPost.jsx`, `BlogPostPreview.jsx`, rutas en `routes/AppRoutes.jsx`, enlace en `components/Navbar.jsx`, sección en `components/valle/Content.jsx`, enlace "Blog" en `clasico/components/ClasicoNavbar.jsx`, mención en `pages/PoliticaPrivacidad.jsx`, hook `hooks/usePost.js`, y textos en `lib/valleCopy.js`.
   - Juego: la mazmorra es la zona del Blog (`game/world.js`, `game/sprites.js`, `components/valle/ZonePanel.jsx`); hay que decidir qué ocupa su lugar en el mapa.
   - Backend y datos: `backend/lib/sitemap.js` (el sitemap incluye los posts), `backend/routes/ogMeta.js`, `backend/lib/database.js`, `backend/data/systemPrompt.js` (el chat habla del blog) y los tests de contenido. Los posts viven en PostgreSQL y el CMS `/bitacora` los edita.
   - Decidir si el CMS conserva la edición de proyectos y se retira la de posts, y qué pasa con las URLs `/blog/...` ya indexadas (redirección o 410).
@@ -557,6 +576,7 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 | Sonidos de botones sintetizados, no grabados | Cinco pitidos de unas décimas de segundo no justifican archivos que descargar; con Web Audio pasan por el mismo bus de efectos y el silencio los apaga sin código extra. Un oyente delegado evita un `onClick` por botón. |
 | Rediseño total con overworld Phaser más modo clásico | Quería un portfolio original y con personalidad propia, sin la estética genérica anterior. El modo clásico garantiza accesibilidad y SEO. |
 | La arquitectura (CMS, blog, API, BD) no se toca | El cambio es solo de capa visual; el backend y el contenido funcionaban. |
+| `/clasico` sirve la web original, aislada en `frontend/src/clasico/` con CSS bajo `.clasico-root` (2026-11-10) | Decisión explícita de la usuaria: quiere conservar su web de siempre en esa ruta. Aislarla evita que su CSS (fucsia, cian, fuentes distintas) contagie al valle y que los tokens del tema "valle" la pisen. Se copia en vez de reutilizar los componentes del sitio porque los de píxel romperían su aspecto. |
 | Contenido pintado una sola vez para ambos modos (`components/valle/Content.jsx`) | Evita duplicar datos y mantiene juego y modo clásico sincronizados. |
 | Phaser 3.80.1 cargado de forma diferida solo en `/valle` | El resto del sitio no paga su peso. |
 | Seguimos con Phaser y los sprites dibujados en canvas; no se migra a p5.play (2026-11-10) | p5.play no cambia cómo se dibuja un sprite (seguiría siendo canvas por código) y solo aporta animación y física, que Phaser ya cubre. Migrar obligaría a reescribir `Valle.jsx` y `game/` o a cargar dos librerías de juego. Se revisó el bundle de una web de referencia, también hecha con Phaser: texturas pequeñas creadas al primer uso, iconos de interfaz en SVG nítido y rejilla entera con `pixelArt` y `roundPixels`. Las tres cosas ya están aquí (`worldAssets.js`, `shapeRendering="crispEdges"` en los iconos, `boot.js`), así que no hubo cambios de código. |
