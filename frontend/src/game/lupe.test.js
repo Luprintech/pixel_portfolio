@@ -20,7 +20,7 @@ describe('Lupe', () => {
 
   it('enseña la Trifuerza solo desde donde se ve', () => {
     ;[0, 1, 2].forEach((pose) => {
-      expect(gold('down', pose)).toBe(8)
+      expect(gold('down', pose)).toBe(10)
       expect(gold('left', pose)).toBe(3)
       expect(gold('right', pose)).toBe(3)
       expect(gold('up', pose)).toBe(0)
@@ -30,8 +30,7 @@ describe('Lupe', () => {
   it('conserva la Trifuerza y solo usa letras conocidas en todas sus poses', () => {
     ;[['idle', 0], ['wave', 0], ['wave', 1], ['pet', 0], ['pet', 1]].forEach(([pose, step]) => {
       const rows = lupeRows(pose, step)
-      expect(rows[20][9]).toBe('Y')
-      expect(rows[22].slice(7, 12)).toBe('YYYYY')
+      expect(rows.slice(19, 23).map((row) => row.slice(6, 12))).toEqual(['DDYYDD', 'DXYYXD', 'XYXXYX', 'YYXXYY'])
       rows.forEach((row) => [...row].forEach((letter) => expect(letter === '.' || LETTERS.includes(letter)).toBe(true)))
     })
   })

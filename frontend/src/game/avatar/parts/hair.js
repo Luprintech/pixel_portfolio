@@ -254,17 +254,18 @@ const SHAPED = {
   },
 }
 
-// Raíz oscura de la melena de Lupe, que se aclara hacia abajo hasta el rubio. Cada tramo alterna
-// celdas con el siguiente (un tablero) para que el degradado no se lea como franjas rectas: raíz en
-// las filas 0 y 1, mezcla de raíz y tono intermedio en la 2, intermedio en la 3 y la 4, y mezcla de
-// intermedio y rubio en la 5 y, más rala, en la 6. Se aplica a todas las capas y vistas.
+// Raíz oscura de la melena de Lupe, que se aclara poco a poco hasta el rubio a media melena (la
+// melena acaba en la fila 21). Cada tramo alterna celdas con el siguiente, en tablero, para que el
+// degradado no se lea como franjas rectas: raíz hasta la fila 3, mezcla de raíz y tono intermedio en
+// la 4 y la 5, intermedio de la 6 a la 8, mezcla de intermedio y rubio de la 9 a la 11 y, más rala,
+// en la 12. Se aplica a todas las capas y vistas.
 function rootLetter(x, y) {
   const odd = (x + y) % 2 === 0
-  if (y <= 1) return 'I'
-  if (y === 2) return odd ? 'I' : 'i'
-  if (y <= 4) return 'i'
-  if (y === 5) return odd ? 'i' : null
-  if (y === 6) return (x + y) % 4 === 0 ? 'i' : null
+  if (y <= 3) return 'I'
+  if (y <= 5) return odd ? 'I' : 'i'
+  if (y <= 8) return 'i'
+  if (y <= 11) return odd ? 'i' : null
+  if (y === 12) return (x + y) % 4 === 0 ? 'i' : null
   return null
 }
 

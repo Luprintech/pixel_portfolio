@@ -7,6 +7,7 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 ## Hecho
 
 ### Raíz oscura de Lupe, complementos y razas nuevas (2026-11-10)
+- Ajuste posterior, a petición de la usuaria: la raíz oscura baja degradándose hasta media melena (fila 12 de 21) y la camiseta pasa a blanca. La Trifuerza se dibuja como sus pendientes: triángulos dorados con el centro y los bordes entre ellos en negro (`TRIFORCE_FRONT` en `parts/body.js`, 6×4 píxeles; no cabe un contorno completo por triángulo).
 - Lupe lleva la raíz castaña oscura y el pelo se aclara hasta el rubio (`hairRoot` en `game/lupe.js`; letras `I` e `i` en `avatar/palette.js`; `darkRoots` en `parts/hair.js`). El degradado alterna celdas entre tramos para no leerse como franjas. Sin `hairRoot` esas letras son el color del pelo, así que la viajera no cambia.
 - Cuatro complementos nuevos en el creador (`parts/accessories.js`, nombres en `look.js`): bufanda, corona de princesa, boina y orejas de gato. La rejilla de complementos pasa de 16 a 20. La bufanda cuelga por el lado izquierdo del personaje: de espalda no se ve el cabo y de perfil solo desde ese lado.
 - Tres razas de perro (labrador, dálmata, corgi) y tres de gato (Scottish Fold, azul ruso, calicó) en `game/pets/` y `game/pet.js`: ocho de cada. No hay siamés a propósito, para que ninguna mascota se confunda con Khalessi.

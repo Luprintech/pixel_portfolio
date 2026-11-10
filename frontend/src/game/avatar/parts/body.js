@@ -57,14 +57,16 @@ function brush(p, { view, g, look }) {
 
 const sleeve = (len, cuff, color = 'D') => ({ len, cuff, color })
 
-// Trifuerza del pecho, en dorado fijo: de frente los tres triángulos con el hueco central (cinco
-// columnas, de r2 a r4) y de perfil solo el canto que asoma por delante del brazo. De espalda no hay.
-const TRIFORCE_FRONT = ['..Y..', '.Y.Y.', 'YYYYY']
-const TRIFORCE_SIDE = [[3, 0], [4, 0], [4, -1]]
+// Trifuerza del pecho, como la de los pendientes de Lupe: tres triángulos dorados con el hueco del centro
+// y los bordes entre ellos en negro. De frente ocupa las seis columnas del
+// torso, de r1 a r4, ; de perfil solo asoma su canto por delante del brazo. De espalda no hay.
+// Y es el dorado fijo y X el negro del contorno.
+const TRIFORCE_FRONT = ['..YY..', '.XYYX.', 'XYXXYX', 'YYXXYY']
+const TRIFORCE_SIDE = [[2, 0, 'X'], [3, 0, 'Y'], [3, -1, 'X'], [4, 0, 'Y'], [4, -1, 'Y']]
 
 function triforce(b) {
-  if (b.front) TRIFORCE_FRONT.forEach((line, i) => [...line].forEach((ch, dx) => ch === 'Y' && b.dot(2 + i, b.c0 - 1 + dx, 'Y')))
-  else if (b.side) TRIFORCE_SIDE.forEach(([r, dx]) => b.dot(r, b.tr - 1 + dx, 'Y'))
+  if (b.front) TRIFORCE_FRONT.forEach((line, i) => [...line].forEach((ch, dx) => ch !== '.' && b.dot(1 + i, b.c0 - 2 + dx, ch)))
+  else if (b.side) TRIFORCE_SIDE.forEach(([r, dx, ch]) => b.dot(r, b.tr - 1 + dx, ch))
 }
 
 const GARMENTS = {
@@ -77,8 +79,10 @@ const GARMENTS = {
     // con el dibujo.
     if (b.emblem === 'trifuerza') {
       b.row(6, b.tl, b.tr, 'M')
-      // Sobre negro el canto de luz del torso se lee como un tirante gris: se deja del color de la tela.
+      // El canto de luz del torso se deja del color de la tela para que no compita con el emblema.
       for (let r = 0; r <= 5; r++) b.dot(r, b.tl, 'D')
+      // Tampoco lleva la sombra sobre el dobladillo: bajo el emblema ensuciaba la tela clara.
+      b.row(5, b.tl + 1, b.tr - 1, 'D')
       b.skinNeck()
       triforce(b)
     } else {
