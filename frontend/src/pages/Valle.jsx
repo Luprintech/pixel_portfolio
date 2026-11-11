@@ -4,11 +4,18 @@ import { Helmet } from 'react-helmet-async'
 import Editor from '../components/valle/Editor'
 import Joystick from '../components/valle/Joystick'
 import MusicControl from '../components/valle/MusicControl'
+import AchievementToast from '../components/valle/AchievementToast'
+import ConsoleGame from '../components/valle/ConsoleGame'
 import CustomizeButton from '../components/valle/CustomizeButton'
+import DialogueBox from '../components/valle/DialogueBox'
+import FiguresViewer from '../components/valle/FiguresViewer'
 import OptionsButton from '../components/valle/OptionsButton'
 import OptionsDialog from '../components/valle/OptionsDialog'
+import PrinterPanel from '../components/valle/PrinterPanel'
+import RetroDesktop from '../components/valle/RetroDesktop'
 import SaveToast from '../components/valle/SaveToast'
 import SkyView from '../components/valle/SkyView'
+import SmartTv from '../components/valle/SmartTv'
 import ZonePanel from '../components/valle/ZonePanel'
 import ZoomControl from '../components/valle/ZoomControl'
 import { defaultLook, randomLook, selectBody } from '../game/look'
@@ -18,9 +25,14 @@ import { loadSave } from '../game/save'
 import { clockOffset, valleSkyAt } from '../game/valleSky'
 import { useThemeContext } from '../context/ThemeContext'
 import { warmWorld } from '../game/worldAssets'
+import { useAchievements } from '../hooks/useAchievements'
 import { useUiSounds } from '../hooks/useUiSounds'
 import { useValleSave } from '../hooks/useValleSave'
 import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
+import { getEngine, startEngineIfAllowed } from '../lib/audioEngine'
+import { playMeow } from '../lib/dialogueSound'
+import { jukebox } from '../lib/jukebox'
+import { startPrinterSound } from '../lib/printerSound'
 import { tone } from '../lib/tone'
 import { useValleCopy } from '../lib/valleCopy'
 
@@ -33,6 +45,8 @@ const HUD_BUTTON = 'px-btn px-btn--bone !min-h-[var(--ctl)] !px-3 !py-0 !text-sm
 function nearLabel(near, copy) {
   if (near === 'telescope') return copy.hud.lookSky
   if (near === 'exit') return copy.hud.leave
+  const action = copy.hud.actions[near.startsWith('bench:') ? 'bench' : near]
+  if (action) return action
   return `${copy.hud.enter}: ${copy.zones[near]}`
 }
 
@@ -63,6 +77,12 @@ export default function Valle() {
   const [game, setGame] = useState(null)
   const [near, setNear] = useState(null)
   const [zone, setZone] = useState(null)
+  // Guion de la conversación abierta (ver `game/dialogue/scripts.js`) o null.
+  const [dialogue, setDialogue] = useState(null)
+  const achievements = useAchievements()
+  // Estado de la impresora pequeña: 'idle' o 'done' (figura impresa pero sin recoger). Y el canal de la tele, o null.
+  const printState = useRef('idle')
+  const [tvChannel, setTvChannel] = useState(null)
   // Límites del zoom que publica la escena; hasta que existe, ambos botones valen.
   const [zoomState, setZoomState] = useState({ canIn: true, canOut: true })
   const hostRef = useRef(null)
@@ -125,6 +145,8 @@ export default function Valle() {
         instance = startGame(hostRef.current, look, pet, pastel, initialWorld)
         instance.events.on('near', setNear)
         instance.events.on('enter', setZone)
+        instance.events.on('talk', setDialogue)
+        instance.events.on('meow', (variant) => playMeow(getEngine() ?? startEngineIfAllowed(), variant))
         // El sonido ambiente sigue al cielo del valle, igual que en la portada.
         // También se guarda el último estado: la vista del telescopio lo lee para pintar el mismo cielo.
         instance.events.on('sky', (sky) => {
@@ -146,6 +168,7 @@ export default function Valle() {
       setGame(null)
       setNear(null)
       setZone(null)
+      setDialogue(null)
     }
     // El tema se fija al entrar al valle; el aspecto cambia después con `appearance`, sin reiniciar.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,10 +210,38 @@ export default function Valle() {
   // Con un panel o el diálogo de opciones abiertos el juego se bloquea: las flechas son del control en foco.
   const [optionsOpen, setOptionsOpen] = useState(false)
   useEffect(() => {
-    game?.registry.set('locked', !!zone || optionsOpen)
-  }, [game, zone, optionsOpen])
+    game?.registry.set('locked', !!zone || !!dialogue || optionsOpen)
+  }, [game, zone, dialogue, optionsOpen])
 
   const closeZone = useCallback(() => setZone(null), [])
+  // La minicadena de la sala enseña si suena la música (la ponga ella o el Winamp del escritorio).
+  useEffect(() => {
+    if (!game) return undefined
+    const sync = ({ playing }) => game.events.emit('interior-action', { type: 'music', on: playing })
+    sync(jukebox.snapshot())
+    return jukebox.subscribe(sync)
+  }, [game])
+  const selectChannel = useCallback((channel) => {
+    setTvChannel(channel)
+    game?.events.emit('interior-action', { type: 'tv', channel })
+    setZone(null)
+  }, [game])
+  const setPrinterMode = useCallback((mode) => {
+    printState.current = mode === 'done' ? 'done' : 'idle'
+    game?.events.emit('interior-action', { type: 'printer', mode })
+  }, [game])
+  const claimFigure = useCallback(() => achievements.unlock('maker'), [achievements])
+  // Junto a la impresora 3D suena su trabajo, mientras no haya un diálogo o un panel delante.
+  const nearPrinter = near === 'printer' && !zone && !dialogue
+  useEffect(() => (nearPrinter ? startPrinterSound() : undefined), [nearPrinter])
+  // Un guion puede acabar abriendo algo (el ordenador de Lupe abre su escritorio retro).
+  const closeDialogue = useCallback((action) => {
+    setDialogue(null)
+    if (action === 'desktop') setZone('pc')
+    else if (action === 'game') setZone('console')
+    else if (action === 'tv') setZone('tv')
+    else if (action === 'music') jukebox.toggle()
+  }, [])
   // Si aún no ha llegado ningún estado (se abre nada más entrar), se parte del cielo con que empieza la visita.
   const getSky = useCallback(() => skyRef.current || valleSkyAt(clockOffset(1), 1), [])
   const zoomView = useCallback((delta) => game?.events.emit('zoom', delta), [game])
@@ -290,8 +341,9 @@ export default function Valle() {
         )}
 
         {!editing && <SaveToast message={toast} style={hudStyle} />}
+        {!editing && <AchievementToast toast={achievements.toast} copy={copy} style={hudStyle} />}
 
-        {near && !zone && !editing && (
+        {near && !zone && !dialogue && !editing && (
           <div className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2" role="status">
             <button type="button" className="px-btn" onClick={() => game?.events.emit('action')}>
               {`${touch ? '' : 'E · '}${nearLabel(near, copy)}`}
@@ -299,15 +351,25 @@ export default function Valle() {
           </div>
         )}
 
-        {touch && status === 'ready' && !zone && !optionsOpen && !editing && <Joystick game={game} />}
+        {touch && status === 'ready' && !zone && !dialogue && !optionsOpen && !editing && <Joystick game={game} />}
         {zone === 'telescope' && !editing && <SkyView getSky={getSky} pastel={pastel} onClose={closeZone} />}
-        {zone && zone !== 'telescope' && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
+        {zone === 'pc' && !editing && <RetroDesktop onClose={closeZone} />}
+        {zone === 'console' && !editing && <ConsoleGame onClose={closeZone} onWin={() => achievements.unlock('retro')} />}
+        {zone === 'tv' && !editing && <SmartTv channel={tvChannel} onSelect={selectChannel} onClose={closeZone} />}
+        {zone === 'printer' && !editing && <PrinterPanel initial={printState.current} claimed={achievements.unlocked.has('maker')} onMode={setPrinterMode} onClaim={claimFigure} onClose={closeZone} />}
+        {zone === 'figures' && !editing && <FiguresViewer unlocked={achievements.unlocked} onClose={closeZone} />}
+        {zone && zone !== 'telescope' && !['pc', 'console', 'tv', 'printer', 'figures'].includes(zone) && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
+        {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} onClose={closeDialogue} />}
 
         <OptionsDialog
           open={optionsOpen && !editing}
           onClose={() => setOptionsOpen(false)}
           saved={saved}
-          onErase={eraseSave}
+          onErase={() => {
+            eraseSave()
+            achievements.reload()
+          }}
+          achievements={achievements.unlocked}
           onSave={saveNow}
           actions={hudActions}
         />

@@ -2,8 +2,8 @@ import Phaser from 'phaser'
 import { PAL } from './palette.js'
 import { BRIDGE, BUILDINGS, COLS, PROPS, ROWS, SPAWN, TILE, blockedWaterTiles, treePositions } from './world.js'
 import { steppedZoom } from './viewport.js'
-import { DECK, FOOT, STAIRS, STAIR_PACE, climb, nearTelescope } from './terrace.js'
-import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, POSES } from './avatar/index.js'
+import { DECK, FOOT, STAIRS, STAIR_PACE, climb, nearRoofDoor, nearTelescope } from './terrace.js'
+import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, SHEET_POSES } from './avatar/index.js'
 import { shadowSprite } from './sprites.js'
 import { makeCanvas, wallRows } from './pixelKit.js'
 import { petCanvas } from './pets/index.js'
@@ -12,6 +12,11 @@ import SkyLayer from './SkyLayer.js'
 import LitWindows from './litWindows.js'
 import { advanceWalk, facingFor, inputVector } from './walk.js'
 import { resumePoint } from './worldSave.js'
+import { characterSheet } from './characters.js'
+import Follower from './follower.js'
+import { registerSheet } from './sheetTexture.js'
+import { sitDown, standUp } from './sitting.js'
+import { valleSkyAt } from './valleSky.js'
 
 const SPEED = 90
 // Lo máximo que cambia la altura de los pies por fotograma al entrar en la escalera: más que la pendiente de la rampa.
@@ -41,6 +46,9 @@ export default class ValleScene extends Phaser.Scene {
     this.zoomSteps = 0
     this.terrace = null
     this.climbMode = 'ground'
+    this.seat = null
+    this.standFrom = null
+    this.benches = []
   }
 
   create() {
@@ -115,6 +123,8 @@ export default class ValleScene extends Phaser.Scene {
 
   // Acerca (+1) o aleja (-1) la vista un nivel entero.
   stepZoom(delta) {
+    // Dentro de un edificio el zoom es el de la sala (lo gobierna `InteriorScene`).
+    if (this.inside) return
     this.zoomSteps += delta
     this.fitCamera()
   }
@@ -161,7 +171,7 @@ export default class ValleScene extends Phaser.Scene {
     const key = `traveller-${(this.sheetCount = (this.sheetCount ?? 0) + 1)}`
     const texture = this.textures.addCanvas(key, avatarSheet(this.look))
     DIRS.forEach((dir) => {
-      for (let pose = 0; pose < POSES; pose++) {
+      for (let pose = 0; pose < SHEET_POSES; pose++) {
         const { x, y, w, h } = frameRect(dir, pose)
         texture.add(frameName(dir, pose), 0, x, y, w, h)
       }
@@ -205,6 +215,8 @@ export default class ValleScene extends Phaser.Scene {
   buildTextures() {
     this.addTravellerSheet()
     ;[0, 1, 2].forEach((v) => this.addPrepared(`tree-${v}`, treeAssets(v, this.pastel)))
+    // Lupe, que acompaña a la viajera: la misma hoja del generador, compartida con los interiores.
+    if (!this.textures.exists('npc-lupe')) registerSheet(this.textures, 'npc-lupe', characterSheet('lupe'))
     this.addCanvas('shadow', shadowSprite(14, 5))
     this.addCanvas('lamp-glow', lampGlowCanvas())
     this.addPrepared('bridge', bridgeAssets(this.pastel))
@@ -351,8 +363,18 @@ export default class ValleScene extends Phaser.Scene {
       sprite.body.forEach(({ l, t, r, b }) => this.solid(px + l, py + t, r - l, b - t))
       if (sprite.glow) this.sky.addLamp(this.add.image(px + sprite.glow.dx, py + sprite.glow.dy, 'lamp-glow'))
       if (prop.zone) this.addDoor(prop.zone, prop.door.x, prop.door.y)
+      if (prop.kind === 'bench') this.addBench(px, py)
     })
     this.placeScenery('bridge', BRIDGE.x * TILE, BRIDGE.y * TILE - 6, [0, 0], 1)
+  }
+
+  // Un banco se puede ocupar: desde delante sale «Sentarse». La viajera se sienta de frente, con la cadera en la tabla.
+  addBench(px, py) {
+    this.benches.push({
+      id: `bench:${this.benches.length}`,
+      zone: new Phaser.Geom.Rectangle(px - 18, py - 2, 36, 18),
+      seat: { x: px, y: py - 5, facing: 'down', depth: py + 0.5 },
+    })
   }
 
   // Arroyo: colisión por tramos de teselas contiguas de cada fila, y destellos lentos en el agua.
@@ -404,6 +426,7 @@ export default class ValleScene extends Phaser.Scene {
     this.events.on('postupdate', this.settle, this)
     this.events.once('shutdown', () => this.events.off('postupdate', this.settle, this))
 
+    this.lupe = new Follower(this, 'npc-lupe', x - 16, y + 4)
     this.buildPet(x, y)
     this.facing = 'down'
     this.walk = { timer: 0, step: 0 }
@@ -421,33 +444,82 @@ export default class ValleScene extends Phaser.Scene {
   // Un edificio lleva a su interior; el telescopio y el buzón avisan a la página para abrir su panel.
   tryEnter() {
     if (this.inside || this.game.registry.get('locked') || !this.near) return
-    if (BUILDINGS.some((b) => b.id === this.near)) this.enterBuilding(this.near)
+    if (this.near === 'standup') this.stand()
+    else if (this.near.startsWith('bench:')) this.sit(this.benches.find((bench) => bench.id === this.near).seat)
+    else if (this.near === 'rooftopDoor') this.enterBuilding('about', 'deck')
+    else if (BUILDINGS.some((b) => b.id === this.near)) this.enterBuilding(this.near)
     else this.game.events.emit('enter', this.near)
   }
 
   // Fundido a color de página, y el valle se duerme mientras la sala interior hace de escena.
-  enterBuilding(id) {
+  // `from` es 'deck' si se entra por la puerta de la cubierta: la sala sitúa a la viajera ante la escalera.
+  enterBuilding(id, from) {
     this.inside = id
     this.near = null
     this.game.events.emit('near', null)
     this.princess.body.setVelocity(0, 0)
     const cam = this.cameras.main
     cam.once('camerafadeoutcomplete', () => {
-      this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel })
+      this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel, night: this.isNight(), from })
       this.scene.sleep()
     })
     cam.fadeOut(220, 220, 203, 240)
   }
 
-  // Al volver la viajera sigue ante la puerta, mirando al camino. Las teclas soltadas durante el sueño no llegaron
-  // a registrarse: se reinician, o seguirían "pulsadas" y echaría a andar sola.
-  onWake() {
+  // De noche (el valle ya ha encendido las ventanas) las casas se iluminan por dentro con leds.
+  isNight() {
+    return valleSkyAt(this.sky.clock(), this.seed).gloom > 0.55
+  }
+
+  sit(seat) {
+    this.seat = seat
+    this.facing = seat.facing
+    this.standFrom = sitDown(this.princess, this.shadow, seat)
+  }
+
+  // Se levanta donde estaba antes de sentarse.
+  stand() {
+    standUp(this.princess, this.shadow, this.standFrom)
+    this.seat = null
+    this.standFrom = null
+  }
+
+  // Al volver la viajera sigue ante la puerta, mirando al camino, salvo si sube por la escalera de la casa (`to: 'deck'`):
+  // entonces aparece en la cubierta, junto al telescopio. Las teclas soltadas durante el sueño no llegaron a
+  // registrarse: se reinician, o seguirían "pulsadas" y echaría a andar sola.
+  onWake(_sys, data) {
     this.inside = null
-    this.facing = 'down'
-    this.princess.setFrame(frameName('down', 0))
     this.input.keyboard.resetKeys()
+    if (data?.to === 'deck' && this.terrace) this.placeOnDeck()
+    else {
+      // Si se entró por la puerta de la cubierta, se sale por la de la calle: de vuelta al suelo, ante ella.
+      if (this.climbMode !== 'ground') this.placeAtFrontDoor()
+      this.facing = 'down'
+      this.princess.setFrame(frameName('down', 0))
+    }
+    this.lupe.place(this.princess.x - 16, this.princess.y + 4)
     this.fitCamera()
     this.cameras.main.fadeIn(250, 220, 203, 240)
+  }
+
+  // Coloca a la viajera junto a la puerta de la derecha de la cubierta, mirando hacia la izquierda, como quien acaba de salir
+  // de la casa. Es un punto de entrada propio: la escalera de la calle sigue entrando por el pie de los peldaños.
+  placeOnDeck() {
+    const { px, py } = this.terrace
+    this.setClimbMode('deck')
+    this.princess.setPosition(px + DECK.right - 18, py + DECK.feet)
+    this.princess.body.updateFromGameObject()
+    this.princess.body.setVelocity(0, 0)
+    this.facing = 'left'
+    this.princess.setFrame(frameName('left', 0))
+    this.near = null
+  }
+
+  placeAtFrontDoor() {
+    const { rect: door } = this.doors.find((d) => d.id === 'about')
+    this.setClimbMode('ground')
+    this.princess.setPosition(door.x + door.width / 2, door.y + door.height)
+    this.princess.body.updateFromGameObject()
   }
 
   // Bucle
@@ -462,6 +534,15 @@ export default class ValleScene extends Phaser.Scene {
       const move = inputVector(this.cursors, this.keys, this.game.registry.get('joy') || undefined)
       vx = move.x
       vy = move.y
+    }
+    // Sentada no se anda: pedir una dirección la levanta.
+    if (this.seat) {
+      if (Math.hypot(vx, vy) <= 0.15) {
+        this.frame = { moving: false, delta }
+        this.sky.update(time)
+        return
+      }
+      this.stand()
     }
 
     const len = Math.hypot(vx, vy)
@@ -488,6 +569,13 @@ export default class ValleScene extends Phaser.Scene {
   // (escalera, cubierta) borraba el paso que acababa de dar la física y la viajera se quedaba clavada.
   settle() {
     if (!this.frame || this.inside) return
+    if (this.seat) {
+      if (this.near !== 'standup') {
+        this.near = 'standup'
+        this.game.events.emit('near', 'standup')
+      }
+      return
+    }
     const { moving, delta } = this.frame
     const body = this.princess.body
     // En la escalera la altura la dan los peldaños: no se sube ni se baja de lado.
@@ -503,6 +591,7 @@ export default class ValleScene extends Phaser.Scene {
 
     // La mascota espera al pie de la escalera: no sabe subir y se perdería tras la pared.
     if (this.companion) this.followPet(moving && onGround, px, py, delta)
+    this.lupe.follow(moving && onGround, px, py, delta)
     this.checkDoors(px, py)
   }
 
@@ -536,7 +625,9 @@ export default class ValleScene extends Phaser.Scene {
     const hit = this.doors.find((d) => d.rect.contains(px, py))
     // El telescopio se usa con E, no al pisarlo: solo cuenta como "cerca" para ofrecerlo.
     const atScope = !hit && this.terrace && nearTelescope(this.climbMode, this.princess.x - this.terrace.px, this.princess.y - this.terrace.py)
-    const id = hit ? hit.id : atScope ? 'telescope' : null
+    const atRoofDoor = !hit && !atScope && this.terrace && nearRoofDoor(this.climbMode, this.princess.x - this.terrace.px, this.princess.y - this.terrace.py)
+    const bench = !hit && !atScope && !atRoofDoor && this.benches.find((b) => b.zone.contains(px, py))
+    const id = hit ? hit.id : atScope ? 'telescope' : atRoofDoor ? 'rooftopDoor' : bench ? bench.id : null
     if (id !== this.near) {
       this.near = id
       this.game.events.emit('near', id)

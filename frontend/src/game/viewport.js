@@ -4,10 +4,24 @@
 // 3 o 4 pantallas de ancho en móvil y unas 25 teselas de alto en escritorio.
 const TARGET_SHORT_SIDE = 220
 
-// Zoom entero que muestra una sala entera en pantalla (a diferencia del valle, que llena la pantalla con el mapa):
-// la mayor escala que deja ver todo el recinto, con un mínimo de 1.
-export function roomZoom(width, height, roomWidth, roomHeight) {
-  return Math.max(1, Math.floor(Math.min(width / roomWidth, height / roomHeight)))
+// Zoom con el que una sala llena toda la pantalla, sin franjas vacías: el mayor de los dos ajustes (ancho y alto), subido
+// al siguiente cuarto de punto para que el relleno sea completo. Lo que no cabe en el eje más corto se recorre con la
+// cámara (que sigue a la viajera dentro de los límites de la sala), igual que el valle. Nunca baja de 1.
+export function roomCover(width, height, roomWidth, roomHeight) {
+  return Math.max(1, Math.ceil(Math.max(width / roomWidth, height / roomHeight) * 4) / 4)
+}
+
+// Zoom de una sala tras `steps` pulsaciones de + (positivas) o - (negativas) sobre el que la llena (`roomCover`). Alejar llega
+// como mucho a ver la sala entera (con franjas a los lados si la pantalla es más ancha o más alta que ella); acercar, tres
+// niveles. Cada nivel es una cuarta parte más, redondeada al cuarto de punto como el zoom base.
+const ROOM_STEP = 1.25
+const ROOM_MAX_IN = 3
+export function steppedRoomZoom(steps, width, height, roomWidth, roomHeight) {
+  const cover = roomCover(width, height, roomWidth, roomHeight)
+  const contain = Math.max(1, Math.min(width / roomWidth, height / roomHeight))
+  const min = Math.min(0, Math.ceil(Math.log(contain / cover) / Math.log(ROOM_STEP)))
+  const level = Math.min(ROOM_MAX_IN, Math.max(min, steps))
+  return { zoom: Math.round(cover * ROOM_STEP ** level * 4) / 4, steps: level, canIn: level < ROOM_MAX_IN, canOut: level > min }
 }
 
 // Cuánto se puede acercar la vista, a partir del zoom que da la pantalla, con el botón +.

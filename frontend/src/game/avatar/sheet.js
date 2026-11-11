@@ -4,9 +4,12 @@
 import { makeCanvas } from '../pixelKit.js'
 import { DIRS, FRAME_H, FRAME_W } from './compose.js'
 import { avatarCanvas } from './paint.js'
-import { POSES } from './stance.js'
+import { POSES, SIT_POSE } from './stance.js'
 
-export { DIRS, FRAME_H, FRAME_W, POSES }
+// La hoja lleva, tras las `POSES` del ciclo de marcha, el fotograma sentado.
+export const SHEET_POSES = POSES + 1
+
+export { DIRS, FRAME_H, FRAME_W, POSES, SIT_POSE }
 
 // Reposo, paso, reposo, paso contrario: el pie que avanza alterna sin pasar por dos pasos seguidos.
 export const WALK_CYCLE = [0, 1, 0, 2]
@@ -19,10 +22,10 @@ export function frameRect(dir, pose) {
 }
 
 export function avatarSheet(look) {
-  const sheet = makeCanvas(POSES * FRAME_W, DIRS.length * FRAME_H)
+  const sheet = makeCanvas(SHEET_POSES * FRAME_W, DIRS.length * FRAME_H)
   const g = sheet.getContext('2d')
   DIRS.forEach((dir) => {
-    for (let pose = 0; pose < POSES; pose++) {
+    for (let pose = 0; pose < SHEET_POSES; pose++) {
       const { x, y } = frameRect(dir, pose)
       g.drawImage(avatarCanvas(look, dir, pose), x, y)
     }

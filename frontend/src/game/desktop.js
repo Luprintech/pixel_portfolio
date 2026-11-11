@@ -1,0 +1,191 @@
+// Escritorio retro del ordenador de Lupe, que imita Windows XP (decisión de Lupe del 2026-11-11: el borrador de
+// `docs/DIALOGOS.md` proponía un sistema inventado, pero quiere la maqueta exacta, con su fondo y su sonido de arranque).
+// Aquí está lo que no depende de React: qué accesos hay, a dónde llevan y el dibujo de los iconos. Sin Phaser ni React.
+import { PAL } from './palette.js'
+
+// Accesos del escritorio. Un acceso con `url: null` está preparado pero aún sin enlace verificado: no se muestra, para no
+// ofrecer un botón que no lleva a ningún sitio. Se activa poniendo aquí su enlace exacto, sin tocar nada más.
+export const DESKTOP_ENTRIES = [
+  { id: 'projects', kind: 'window' },
+  { id: 'ie', kind: 'window' },
+  { id: 'winamp', kind: 'window' },
+  { id: 'paint', kind: 'window' },
+  { id: 'calculator', kind: 'window' },
+  { id: 'notepad', kind: 'window' },
+  { id: 'youtube', kind: 'link', url: 'https://www.youtube.com/@Luprintech' },
+  { id: 'linkedin', kind: 'link', url: 'https://www.linkedin.com/in/guadalupe-cano-moyano/' },
+  { id: 'instagram', kind: 'link', url: null },
+  { id: 'tiktok', kind: 'link', url: null },
+  { id: 'makerworld', kind: 'link', url: null },
+]
+
+export const visibleEntries = (entries = DESKTOP_ENTRIES) => entries.filter((entry) => entry.kind === 'window' || entry.url)
+
+// Iconos de 12×12: una cadena por fila; cada letra es un color de `ICON_COLORS` y '.' deja transparente.
+const ICON_COLORS = { o: PAL.ink, y: PAL.saffron, l: PAL.saffronLight, w: PAL.bone, r: PAL.tile, b: PAL.lagoon, c: PAL.lagoonLight, g: PAL.moss, p: PAL.rose }
+
+export const ICONS = {
+  projects: [
+    '............',
+    '.oooo.......',
+    'olllloooooo.',
+    'olllllllllo.',
+    'oylyyyyyyyo.',
+    'oyyyyyyyyyo.',
+    'oyyyyyyyyyo.',
+    'oyyyyyyyyyo.',
+    'oyyyyyyyyyo.',
+    'oyyyyyyyyyo.',
+    '.ooooooooo..',
+    '............',
+  ],
+  youtube: [
+    '............',
+    '............',
+    '.oooooooooo.',
+    'orrrrrrrrrro',
+    'orrrwwrrrrro',
+    'orrrwwwrrrro',
+    'orrrwwwwrrro',
+    'orrrwwwrrrro',
+    'orrrwwrrrrro',
+    'orrrrrrrrrro',
+    '.oooooooooo.',
+    '............',
+  ],
+  linkedin: [
+    '............',
+    '.oooooooooo.',
+    'obbbbbbbbbbo',
+    'obwbbbbbbbbo',
+    'obbbbbbbbbbo',
+    'obwbwwbwwbbo',
+    'obwbwbwbwbbo',
+    'obwbwbwbwbbo',
+    'obwbwbwbwbbo',
+    'obbbbbbbbbbo',
+    '.oooooooooo.',
+    '............',
+  ],
+  ie: [
+    '.oooooooooo.',
+    'obbbbbbbbbbo',
+    'obbwwwwwwbbo',
+    'obwwbbbbwwbo',
+    'obwbbbbbbwbo',
+    'obwwwwwwwwbo',
+    'obwbbbbbbbbo',
+    'obwwbbbbbwbo',
+    'obbwwwwwwbbo',
+    'obbbbbbbbbbo',
+    '.oooooooooo.',
+    '............',
+  ],
+  calculator: [
+    '.oooooooooo.',
+    'owwwwwwwwwwo',
+    'owggggggggwo',
+    'owggggggggwo',
+    'owwwwwwwwwwo',
+    'owrwbwbwbwwo',
+    'owwwwwwwwwwo',
+    'owbwbwbwbwwo',
+    'owwwwwwwwwwo',
+    'owbwbwbwywwo',
+    'owwwwwwwwwwo',
+    '.oooooooooo.',
+  ],
+  paint: [
+    '..oooooooo..',
+    '.owwwwwwwwo.',
+    'owwrrwwbbwwo',
+    'owrrrwwbbbwo',
+    'owrrwwwwbbwo',
+    'owwwwyywwwwo',
+    'owgggyyywwwo',
+    'owgggwwwwwwo',
+    'owwggwwwpppo',
+    '.owwwwwwwwo.',
+    '..oooooooo..',
+    '............',
+  ],
+  notepad: [
+    '.oooooooooo.',
+    'obbbbbbbbbbo',
+    'owwwwwwwwwwo',
+    'owbbbbbbwwwo',
+    'owwwwwwwwwwo',
+    'owbbbbbbbbwo',
+    'owwwwwwwwwwo',
+    'owbbbbbwwwwo',
+    'owwwwwwwwwwo',
+    'owbbbbbbwwwo',
+    'owwwwwwwwwwo',
+    '.oooooooooo.',
+  ],
+  winamp: [
+    '.oooooooooo.',
+    'oooooooyyooo',
+    'ooooooyyoooo',
+    'oooooyyooooo',
+    'ooooyyyyyyoo',
+    'oooooooyyooo',
+    'ooooooyyoooo',
+    'oooooyyooooo',
+    'oooooyoooooo',
+    'oooooooooooo',
+    'oooooooooooo',
+    '.oooooooooo.',
+  ],
+  instagram: [
+    '............',
+    '.oooooooooo.',
+    'oppppppppppo',
+    'opwwwwwwwwpo',
+    'opwppwwppwpo',
+    'opwpwwwwpwpo',
+    'opwpwwwwpwpo',
+    'opwppwwppwpo',
+    'opwwwwwwwwpo',
+    'oppppppppppo',
+    '.oooooooooo.',
+    '............',
+  ],
+  tiktok: [
+    '............',
+    '.oooooooooo.',
+    'occccccccco.',
+    'ocwwwwwwwcco',
+    'ocwwwcwwwcco',
+    'ocwwwcccwcco',
+    'ocwwwcwwwcco',
+    'ocwcccwwwcco',
+    'ocwcccwwwcco',
+    'occcccccccco',
+    '.oooooooooo.',
+    '............',
+  ],
+  makerworld: [
+    '............',
+    '.....oo.....',
+    '....oggo....',
+    '...oggggo...',
+    '..oggwwggo..',
+    '.oggwggwggo.',
+    '.ogggggggo..',
+    '..ogggggo...',
+    '...oggggo...',
+    '....oooo....',
+    '............',
+    '............',
+  ],
+}
+
+// Dibuja un icono en una cuadrícula de rectángulos para pintarlo como SVG sin suavizar.
+export function iconCells(id) {
+  const rows = ICONS[id] ?? ICONS.projects
+  return rows.flatMap((row, y) => [...row].flatMap((ch, x) => (ch === '.' ? [] : [{ x, y, color: ICON_COLORS[ch] }])))
+}
+
+// Fondo del escritorio: la imagen que aportó Lupe, en `public/images`.
+export const WALLPAPER = '/images/paisaje-colinas-floridas.png'

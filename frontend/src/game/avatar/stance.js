@@ -7,6 +7,11 @@
 // Filas del cuerpo, contadas desde la fila 13 de la figura (`BODY_TOP`): r0 hombros, r1 a r5 torso,
 // r6 dobladillo, r7 a r9 cadera, r10 y r11 piernas, r12 caña de la bota, r13 pie y r14 suela.
 export const POSES = 3
+// Pose sentada: no es parte del ciclo de marcha (`POSES` solo cuenta reposo y pasos), pero va en la misma hoja, tras ellas.
+// El cuerpo (cabeza, torso y cadera) baja `SIT_DROP` filas sobre las piernas, que se quedan en el suelo: la cadera queda
+// a ras de las rodillas y las piernas asoman por delante, como de quien está sentado en una silla.
+export const SIT_POSE = POSES
+export const SIT_DROP = 4
 export const BODY_TOP = 13
 const BOB = 1
 
@@ -24,7 +29,8 @@ function frontStance(male, pose) {
     ? [{ cols: [1, 2], gap: 3, outer: 0 }, { cols: [13, 14], gap: 12, outer: 1 }]
     : [{ cols: [2, 3], gap: 4, outer: 0 }, { cols: [12, 13], gap: 11, outer: 1 }]
   // El brazo que avanza se alarga una fila y el otro se acorta.
-  const reach = [pose === 1 ? -1 : pose === 2 ? 1 : 0, pose === 1 ? 1 : pose === 2 ? -1 : 0]
+  // Sentado los brazos descansan sobre las rodillas: más cortos.
+  const reach = [pose === 1 ? -1 : pose === 2 ? 1 : pose === SIT_POSE ? -1 : 0, pose === 1 ? 1 : pose === 2 ? -1 : pose === SIT_POSE ? -1 : 0]
   arms.forEach((arm, i) => (arm.end = REST_ARM_END + reach[i]))
   return {
     torso,
@@ -36,7 +42,7 @@ function frontStance(male, pose) {
       { cols: [5, 6], out: -1, lift: pose === 1 ? 1 : 0 },
       { cols: [9, 10], out: 1, lift: pose === 2 ? 1 : 0 },
     ],
-    bob: pose ? BOB : 0,
+    bob: pose === SIT_POSE ? SIT_DROP : pose ? BOB : 0,
     sway: 0,
     headDx: 0,
   }
@@ -61,7 +67,12 @@ const SIDE_HEAD_DX = -1
 // con la camiseta. Más de una columna de balanceo sacaría el borde fuera del torso.
 const SIDE_SWING = 1
 
+// De perfil sentado los muslos salen hacia delante y las espinillas bajan: las dos piernas se inclinan mucho al principio
+// y luego caen rectas (la lejana, una columna por detrás).
+const SIDE_SIT = [2, 3, 3, 3]
+
 function sideLegs(pose) {
+  if (pose === SIT_POSE) return [{ far: true, lean: SIDE_SIT.map((dx) => dx - 1) }, { far: false, lean: SIDE_SIT }]
   if (pose === 0) return [{ far: true, lean: SIDE_REST.map((dx) => dx - 1) }, { far: false, lean: SIDE_REST }]
   const ahead = { lean: SIDE_AHEAD }
   const behind = { lean: SIDE_BEHIND }
@@ -84,9 +95,9 @@ function sideStance(male, pose) {
     legs: sideLegs(pose),
     // De perfil el cuerpo no se hunde: con las piernas inclinadas el paso ya se lee y la figura
     // mantiene la misma altura en las tres poses.
-    bob: 0,
+    bob: pose === SIT_POSE ? SIT_DROP : 0,
     // Al dar un paso la pierna que avanza empuja el dobladillo de faldas y vestidos hacia delante.
-    sway: pose ? 1 : 0,
+    sway: pose && pose !== SIT_POSE ? 1 : 0,
     headDx: SIDE_HEAD_DX,
   }
 }

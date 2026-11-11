@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { BUILDINGS, TILE } from './world.js'
-import { EXIT_ID, WALL_ROWS, roomOf } from './interiors.js'
+import { EXIT_ID, roomOf } from './interiors.js'
 import { advanceWalk, facingFor, inputVector } from './walk.js'
 
 describe('salas interiores', () => {
@@ -9,7 +9,7 @@ describe('salas interiores', () => {
       const room = roomOf(b)
       const { bounds, spawn, exit } = room
       expect(room.width).toBe(room.cols * TILE)
-      expect(bounds.y).toBe(WALL_ROWS * TILE)
+      expect(bounds.y).toBe(room.wallRows * TILE)
       expect(spawn.x, b.id).toBeGreaterThan(bounds.x)
       expect(spawn.x, b.id).toBeLessThan(bounds.x + bounds.width)
       expect(spawn.y, b.id).toBeLessThan(bounds.y + bounds.height)

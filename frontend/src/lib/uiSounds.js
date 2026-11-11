@@ -24,6 +24,15 @@ export const UI_SOUNDS = {
   ],
   // Elegir una opción o activar un interruptor: un pip agudo y corto.
   pick: [{ type: 'square', freq: 1175, at: 0, length: 0.045, volume: 0.14 }],
+  // Arranque del escritorio retro del ordenador de Lupe: una melodía propia, de onda triangular, que sube y se posa
+  // (no imita el arranque de ningún sistema real).
+  desktop: [
+    { type: 'triangle', freq: 587, at: 0, length: 0.16, volume: 0.3 },
+    { type: 'triangle', freq: 440, at: 0.14, length: 0.16, volume: 0.3 },
+    { type: 'triangle', freq: 740, at: 0.28, length: 0.16, volume: 0.3 },
+    { type: 'triangle', freq: 880, at: 0.42, length: 0.34, volume: 0.3 },
+    { type: 'triangle', freq: 1109, at: 0.42, length: 0.34, volume: 0.18 },
+  ],
 }
 
 // Qué sonido le toca a un elemento, a partir de lo que ya declara: `data-sound` manda (y `off` lo
@@ -44,7 +53,7 @@ const ATTACK = 0.004
 const MIN_GAP_MS = 40
 let lastPlayed = 0
 
-function playNote(engine, note, origin) {
+export function playNote(engine, note, origin) {
   const { ctx } = engine
   const start = origin + note.at
   const end = start + note.length

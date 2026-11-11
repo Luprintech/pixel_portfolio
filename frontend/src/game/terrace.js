@@ -17,6 +17,12 @@ export function nearTelescope(mode, x, y) {
   return mode === 'deck' && Math.hypot(x - TELESCOPE.x, y - TELESCOPE.base) <= TELESCOPE.reach
 }
 
+// Puerta de cristal de la cubierta, al fondo del entarimado junto al muro de la casa: se usa desde cualquier punto de
+// la franja de suelo pegada a ella.
+export function nearRoofDoor(mode, x, y) {
+  return mode === 'deck' && x >= DECK.right - 16 && y >= DECK.feet - 8
+}
+
 // Subir cuesta: en los peldaños se anda a esta fracción de la velocidad normal. Con la normal, los 40 px de
 // escalera pasaban en menos de medio segundo y la subida parecía un salto.
 export const STAIR_PACE = 0.5

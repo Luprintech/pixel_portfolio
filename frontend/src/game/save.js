@@ -2,6 +2,8 @@
 // se sube `version` y se migra aquí, sin que el resto del código se entere.
 import { upgradeLook } from './look.js'
 import { DEFAULT_PET, upgradePet } from './pet.js'
+import { clearAchievements } from './achievements.js'
+import { clearSeen } from './dialogue/seen.js'
 import { sanitizeWorld } from './worldSave.js'
 
 const SAVE_KEY = 'valle-del-bucle:save'
@@ -72,4 +74,7 @@ export function clearSave() {
   } catch {
     // Nada que borrar si el navegador no deja acceder al almacenamiento.
   }
+  // Las conversaciones ya vistas son parte de la partida: borrarla vuelve a presentar a cada personaje.
+  clearSeen()
+  clearAchievements()
 }

@@ -2,8 +2,8 @@
 // la música, las casitas de la familia y el quiosco de helados de la piscina.
 import { PAL, TONE, shade, tint } from '../palette.js'
 import { dot, ellipse, makeCanvas, rect } from '../pixelKit.js'
-import { STAIRS } from '../terrace.js'
-import { flowerPot, houseDoor, lupePlaque, sillLedge, starMobile, tallPlant, vine } from './homeFacade.js'
+import { DECK, STAIRS } from '../terrace.js'
+import { deckDoor, flowerPot, houseDoor, lupePlaque, sillLedge, starMobile, tallPlant, vine } from './homeFacade.js'
 import { houseGlow } from './homeLight.js'
 import { litPane } from './litPane.js'
 import { FRONT_RAIL, STRAND, backRail, deckFloor, frontRail, parasol, strandPoints, telescope, terraceStairs } from './terraceProps.js'
@@ -158,6 +158,7 @@ export function homeSprite() {
   telescope(g)
   parasol(g)
   terraceStairs(g, STAIRS)
+  deckDoor(g, 108, DECK.feet, { w: 12, h: 24 })
   windowAt(s, 58, 128, 32, 20, { flowers: true, sill: true, curtains: '#e8a8c8', glint: true })
   // Casa de dos plantas. Entre las ventanas pequeñas y las grandes queda una franja libre de pared (cinco filas).
   computerWindow(s, 120, 102)

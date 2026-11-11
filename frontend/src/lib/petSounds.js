@@ -12,6 +12,8 @@ const SOUNDS = {
   perro: '/sounds/Ladrido perro.mp3',
   // El maullido de Khalessi cuando un trueno la asusta en la portada; no es una opción del creador.
   gatoAsustado: '/sounds/maullido gato asustado.mp3',
+  // Arranque del ordenador de Lupe (el escritorio retro): no es una mascota, pero comparte la misma forma de sonar.
+  arranque: '/sounds/windows-xp-startup.mp3',
 }
 
 // Velocidad de cada raza respecto a la grabación: por encima de 1 es más agudo, por debajo, más grave.
@@ -104,3 +106,6 @@ export async function playPetSound(kind, breed) {
     return false
   }
 }
+
+// Hace sonar la grabación del arranque del escritorio retro.
+export const playStartupSound = () => playPetSound('arranque')

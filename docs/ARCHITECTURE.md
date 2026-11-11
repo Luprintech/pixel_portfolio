@@ -63,7 +63,7 @@ Protegido por login. Subrutas: `inicio`, `posts`, `proyectos`, `imagenes`, `cv`,
   El creador es `components/valle/Editor.jsx`; `game/sprites.js` ya no dibuja a la viajera.
 - **Partida:** `game/save.js` guarda `{ version, name, look }` en `localStorage` (`valle-del-bucle:save`, versión 1) y migra la clave anterior `valle-del-bucle:look`.
 - **Khalessi:** `khalessiCanvas` y `khalessiSitCanvas` en `game/pets/cats.js` (lienzo de 26×16, de pie, sentada y aseándose). Solo sale en la portada, donde `game/titleCat.js` calcula sus rutas y juegos. No acompaña a la viajera ni sale en el creador: es la gata de Lupe.
-- **Lupe:** solo existe en la portada. `game/lupe.js` es su aspecto (una combinación del generador de la viajera), `game/lupePoses.js` sus poses y `game/titleLife.js` el guion de lo que hace y dice. No hay todavía NPC ni sistema de diálogo dentro del valle.
+- **Lupe:** solo existe en la portada. `game/lupe.js` es su aspecto (una combinación del generador de la viajera), `game/lupePoses.js` sus poses y `game/titleLife.js` el guion de lo que hace y dice. Dentro de la casa de Lupe hay NPC y diálogos (ver «Interiores y diálogos»); el resto del valle no tiene todavía.
 - **Mascota del visitante:** `game/pet.js` valida la elección (gato o perro, raza y colores) y `game/pets/` la dibuja; se elige en el creador y se guarda en la partida.
 
 ### Portada (`/`)
@@ -83,6 +83,21 @@ Resumen de lo que implicaría la mascota del visitante; las reglas de producto e
 - La mascota sería un módulo propio, separado de `catCanvas` (Khalessi) para que ambas no compartan código ni nombre.
 - Seguimiento, interiores, diálogos y viaje rápido son comportamientos de `ValleScene.js` que dependen de que existan interiores y diálogos (fases 3 y 5 de la visión).
 - CMS, API y base de datos no cambian: todo es del navegador.
+
+## Interiores y diálogos
+
+- **Salas:** `game/interiors.js` (puro) da el plano de cada sala; la mayoría es una sala vacía del tamaño del edificio y la casa de Lupe (`about`) tiene el suyo en `game/interior/homeLayout.js`. `game/InteriorScene.js` la dibuja (`interiorPaint.js` + `interior/roomDecor.js`), mueve a la viajera y calcula qué hay cerca. Una sala sin plano propio no monta nada más.
+- **Muebles:** `game/interior/furniture/` es un catálogo `{ w, h, body, paint, frames?, ms? }` por tipo; `homeBuilder.js` los coloca (profundidad = fila de la base, colisiones por `body`, animación por fotogramas) y monta a Atreus y a Khalessi. Las piezas de dibujo no dependen de Phaser ni de React.
+- **Interacciones:** `INTERACTIONS` en `homeLayout.js` (zonas de suelo y ancla). La escena publica `near` y, al usarlas, `talk` con el id de un guion; la azotea despierta el valle con `to: 'deck'`.
+- **Diálogos:** `game/dialogue/engine.js` (máquina de estados pura), `scripts.js` (estructura, `TALKS` y `FEATURES`), `seen.js` (qué se ha visto, en `localStorage`), `lib/dialogueCopy.js` (textos es/en) y `components/valle/DialogueBox.jsx` (caja con retrato, texto progresivo, voz de `lib/dialogueSound.js` y opciones). `pages/Valle.jsx` guarda el guion abierto y bloquea el juego con `locked`.
+- **Paneles:** el ordenador de Lupe abre `components/valle/RetroDesktop.jsx` (escritorio de Windows XP) al acabar `pc.abrir`; `game/desktop.js` lista sus accesos y oculta los que no tienen enlace verificado. «Jugar a la consola retro» (opción del diálogo de la estantería) abre `components/valle/ConsoleGame.jsx`.
+- **Cámara de las salas:** `roomCover` (`viewport.js`) llena la pantalla y la cámara sigue a la viajera dentro de la sala.
+- **Sentarse y acompañar:** `game/sitting.js` (sentarse en sillas, sofá y bancos, común a casa y valle) y `game/follower.js` (Lupe sigue a la viajera por el rastro de sus pasos). `game/sheetTexture.js` registra hojas de personaje.
+- **Consola retro:** `game/retro/` es un juego aparte: `world.js` (salas), `logic.js` (paso puro, probado sin navegador), `sprites.js` y `render.js` (lienzo de 160×160); `ConsoleGame.jsx` lee teclas y pantalla táctil y lo hace avanzar. Sonidos en `lib/retroSound.js`, textos en `lib/retroCopy.js`.
+- **Pose sentada:** `SIT_POSE` en `avatar/stance.js` (columna extra de la hoja, `SHEET_POSES`); `sitting.js` la usa sin recortes.
+- **Modos de muebles y casa viva:** `modes` en el catálogo (`furniture/index.js`) y `modeFor` (`homeBuilder.js`) para la tele, la minicadena y la impresora pequeña; `interior/catBrain.js` mueve a Khalessi; `lib/jukebox.js` es el reproductor de música de la casa (minicadena y Winamp); `game/achievements.js` guarda los logros.
+- **Programas de XP:** `components/valle/xp/` (Internet Explorer, Calculadora, Paint, Bloc de notas, Winamp) y `RetroDesktop.jsx` como gestor de ventanas.
+- **De noche:** `interior/ledLights.js` dibuja las tiras led; la escena las enciende si el valle estaba a oscuras al entrar (`ValleScene.isNight`).
 
 ## Flujo de contenido
 

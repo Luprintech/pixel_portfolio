@@ -39,6 +39,20 @@ export function houseDoor(sprite, x, bottom, { w, h }) {
   return col
 }
 
+// Puerta de cristal de la cubierta, en el muro de la casa a la altura del entarimado: lleva de vuelta al interior, a la
+// escalera de la azotea. Sin escalón (se pisa desde el suelo de la cubierta).
+export function deckDoor(g, x, bottom, { w, h }) {
+  const top = bottom - h
+  rect(g, x - 2, top - 2, w + 4, h + 2, WOOD1)
+  rect(g, x - 2, top - 2, 1, h + 2, WOOD3)
+  rect(g, x, top, w, h, WOOD2)
+  rect(g, x + 2, top + 2, w - 4, h - 12, '#8fd3dd')
+  rect(g, x + 2, top + 2, w - 4, 1, '#d3f0f2')
+  rect(g, x + Math.floor(w / 2), top + 2, 1, h - 12, WOOD1)
+  rect(g, x + 2, top + h - 8, w - 4, 6, WOOD1)
+  rect(g, x + w - 4, top + 13, 2, 2, PAL.saffronLight)
+}
+
 // Placa de madera con el nombre de la casa, colgada de dos clavos.
 export function lupePlaque(g, x, y) {
   const label = 'LUPE'

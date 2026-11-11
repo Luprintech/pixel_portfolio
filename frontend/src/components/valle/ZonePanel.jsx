@@ -2,24 +2,8 @@ import { useEffect, useRef } from 'react'
 import { PAL } from '../../game/palette'
 import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
+import { panelStyle } from './panelStyle'
 import { AboutBlock, ContactBlock, PostsBlock, ProjectsBlock, StackBlock } from './Content'
-
-// El panel redefine los tokens de su interior para que el contenido compartido con el modo clásico
-// (Content.jsx) se lea igual sobre el juego: lavanda con tarjetas marfil en el valle y azul en modo noche.
-const panelStyle = {
-  background: tone('lavender', PAL.ink),
-  color: tone('ink', PAL.bone),
-  ['--px-ink']: tone('ink', '#0f0e22'),
-  ['--px-ring']: tone('lavender-deep', PAL.saffron),
-  ['--text-primary']: tone('ink', PAL.bone),
-  ['--text-secondary']: tone('ink', '#cfc5e0'),
-  ['--bg-secondary']: tone('lavender-deep', '#2e2d5a'),
-  ['--bg-surface']: tone('ivory', '#242350'),
-  ['--bg-elevated']: tone('ivory', '#242350'),
-  ['--border-color']: tone('ink', '#4b4380'),
-  ['--accent-secondary']: tone('berry-deep', '#4cb3c9'),
-  ['--accent-primary']: tone('berry-deep', PAL.saffron),
-}
 
 // Panel con el contenido de cada zona. Mismo contenido que el modo clásico.
 export default function ZonePanel({ zone, onClose }) {

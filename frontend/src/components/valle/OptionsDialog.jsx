@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ACHIEVEMENT_IDS } from '../../game/achievements'
 import { PAL } from '../../game/palette'
 import { useInstallPrompt } from '../../hooks/useInstallPrompt'
 import { useSoundPrefs } from '../../hooks/useSoundPrefs'
@@ -13,7 +14,7 @@ const BTN = '!min-h-[var(--ctl)] !px-3 !py-0 !text-sm'
 // Ventana de opciones de la portada. Usa <dialog> nativo: el navegador atrapa el foco,
 // cierra con Escape y devuelve el foco al botón que la abrió. `onSave` (solo en el valle) guarda la partida y
 // devuelve si pudo; sin él no hay botón de guardar.
-export default function OptionsDialog({ open, onClose, saved, onErase, onSave = null, actions = null }) {
+export default function OptionsDialog({ open, onClose, saved, onErase, onSave = null, actions = null, achievements = null }) {
   const { copy } = useValleCopy()
   const sound = useSoundPrefs()
   const install = useInstallPrompt()
@@ -118,6 +119,27 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
             )}
             {!saved && !justSaved && <p className="mt-1 text-sm" role="status">{erased ? copy.options.erased : copy.options.noSave}</p>}
           </section>
+
+          {achievements && (
+            <section className="sm:col-start-1">
+              <h3 className="text-sm" style={muted}>{copy.achievements.title} ({achievements.size}/{ACHIEVEMENT_IDS.length})</h3>
+              <ul className="mt-2 space-y-1">
+                {ACHIEVEMENT_IDS.map((id) => {
+                  const done = achievements.has(id)
+                  const item = copy.achievements.items[id]
+                  return (
+                    <li key={id} className="flex items-start gap-2 text-sm" style={{ opacity: done ? 1 : 0.6 }}>
+                      <span aria-hidden="true">{done ? '★' : '☆'}</span>
+                      <span>
+                        <strong>{item.name}</strong>
+                        <span className="block text-xs">{done ? item.desc : `${copy.achievements.locked}: ${item.desc}`}</span>
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )}
 
           {install.available && (
             <section className="sm:col-start-1 sm:row-start-2">

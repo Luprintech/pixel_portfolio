@@ -1,9 +1,9 @@
-// Dibujo de una sala vacía: pared del fondo, paredes laterales, suelo de tablones y felpudo en la puerta.
+// Dibujo de la sala: pared del fondo, paredes laterales, suelo de tablones y felpudo en la puerta.
 // Solo colores de la paleta y sombras duras; con `pastel` se aclaran igual que el resto del valle.
 import { PAL, TONE, tint } from './palette.js'
 import { hash2, makeCanvas, rect } from './pixelKit.js'
 import { TILE } from './world.js'
-import { WALL_ROWS } from './interiors.js'
+import { homeDecorCanvas } from './interior/roomDecor.js'
 
 const PLANK_H = 8
 const PLANK_W = 24
@@ -14,7 +14,7 @@ export function roomCanvas(room, pastel = false) {
   const c = (hex) => (pastel ? tint(hex, 0.3) : hex)
   const [woodDeep, woodDark, woodMid, woodLight] = TONE.wood.map(c)
   const [wallShade, wallBase, wallLight] = TONE.wall.map(c)
-  const wallH = WALL_ROWS * TILE
+  const wallH = room.wallRows * TILE
 
   // Suelo: filas de tablones con las juntas desplazadas y un tono distinto por tablón.
   rect(g, 0, wallH, room.width, room.height - wallH, woodMid)
@@ -50,5 +50,7 @@ export function roomCanvas(room, pastel = false) {
   rect(g, mat.x, mat.y, mat.width, mat.height, c(PAL.tileDark))
   rect(g, mat.x + 1, mat.y + 1, mat.width - 2, mat.height - 2, c(PAL.tile))
   rect(g, mat.x + 3, mat.y + 3, mat.width - 6, 1, c(PAL.saffronLight))
+  // La casa de Lupe suma ventanas, cuadros, alfombra y luces encima de la sala vacía.
+  if (room.home) g.drawImage(homeDecorCanvas(room, pastel), 0, 0)
   return canvas
 }

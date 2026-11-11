@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cameraZoom, steppedZoom } from './viewport.js'
+import { cameraZoom, roomCover, steppedRoomZoom, steppedZoom } from './viewport.js'
 
 const WORLD = [896, 480]
 
@@ -46,5 +46,44 @@ describe('cameraZoom', () => {
       expect(w / zoom).toBeLessThanOrEqual(WORLD[0])
       expect(h / zoom).toBeLessThanOrEqual(WORLD[1])
     })
+  })
+})
+
+describe('roomCover', () => {
+  it('llena la pantalla: la sala cubre el ancho y el alto', () => {
+    ;[[1280, 720], [1920, 1080], [750, 1500], [1024, 768], [390, 844]].forEach(([w, h]) => {
+      const zoom = roomCover(w, h, 384, 224)
+      expect(384 * zoom, `${w}x${h}`).toBeGreaterThanOrEqual(w)
+      expect(224 * zoom, `${w}x${h}`).toBeGreaterThanOrEqual(h)
+    })
+  })
+
+  it('en horizontal se ajusta al ancho y en vertical al alto', () => {
+    expect(roomCover(1920, 1080, 384, 224)).toBe(5)
+    expect(roomCover(750, 1500, 384, 224)).toBeCloseTo(6.75, 2)
+  })
+
+  it('nunca baja de 1', () => {
+    expect(roomCover(100, 100, 384, 224)).toBe(1)
+  })
+})
+
+describe('steppedRoomZoom', () => {
+  it('sin pulsar nada llena la pantalla', () => {
+    expect(steppedRoomZoom(0, 750, 1500, 384, 224).zoom).toBe(roomCover(750, 1500, 384, 224))
+  })
+
+  it('acercar sube y tiene tope; alejar baja hasta ver la sala entera', () => {
+    const base = steppedRoomZoom(0, 750, 1500, 384, 224)
+    expect(steppedRoomZoom(1, 750, 1500, 384, 224).zoom).toBeGreaterThan(base.zoom)
+    expect(steppedRoomZoom(9, 750, 1500, 384, 224).canIn).toBe(false)
+    const far = steppedRoomZoom(-9, 750, 1500, 384, 224)
+    expect(far.canOut).toBe(false)
+    expect(384 * far.zoom).toBeLessThanOrEqual(750 + 384)
+    expect(far.zoom).toBeLessThan(base.zoom)
+  })
+
+  it('en una pantalla casi igual que la sala apenas hay donde alejar', () => {
+    expect(steppedRoomZoom(-3, 1152, 672, 384, 224).zoom).toBeGreaterThanOrEqual(3)
   })
 })

@@ -633,3 +633,42 @@
 :root[data-theme='valle'] .px-pick .px-tile {
   border-bottom: 2px solid var(--t-ink);
 }
+
+/* Flecha que avisa de que el diálogo sigue: sube y baja un píxel a ritmo lento; quieta si se pide menos movimiento. */
+@keyframes px-dialogue-caret {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+.px-dialogue-caret {
+  display: inline-block;
+  animation: px-dialogue-caret 0.9s steps(2, jump-none) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .px-dialogue-caret {
+    animation: none;
+  }
+}
+
+/* Barra de arranque del escritorio retro: tres bloques azules que corren de un lado a otro, como el arranque de los
+   ordenadores de principios de los 2000. Con menos movimiento queda quieta en el centro. */
+@keyframes xp-boot-run {
+  from {
+    transform: translateX(-3rem);
+  }
+  to {
+    transform: translateX(11.5rem);
+  }
+}
+.xp-boot-bar {
+  animation: xp-boot-run 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .xp-boot-bar {
+    animation: none;
+    transform: translateX(4rem);
+  }
+}
