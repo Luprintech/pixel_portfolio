@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { initialStory, newTalkFor, reachNode, recoverStory, sanitizeStory, setTour, storyFeatures, tourOffered } from './story.js'
+import { TOUR_STOPS, completeStop, initialStory, newTalkFor, nextStop, reachNode, recoverStory, sanitizeStory, setTour, storyFeatures, tourOffered, tourStarted } from './story.js'
 
 describe('memoria de la historia', () => {
   it('una partida nueva empieza con la bienvenida pendiente y sin visita', () => {
-    expect(initialStory()).toEqual({ welcome: 'pending', tour: 'none', heard: [], explained: [] })
+    expect(initialStory()).toEqual({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: [] })
   })
 
   it('solo acepta lo que tiene forma de historia', () => {
     expect(sanitizeStory(null)).toBeNull()
     expect(sanitizeStory('x')).toBeNull()
-    expect(sanitizeStory({ welcome: 'otra', tour: 'flotando', heard: 'no', explained: [3, 'ok', '<b>'] })).toEqual({ welcome: 'pending', tour: 'none', heard: [], explained: ['ok'] })
-    expect(sanitizeStory({ welcome: 'done', tour: 'completed', heard: ['a.b', 'a.b'], explained: [] })).toEqual({ welcome: 'done', tour: 'completed', heard: ['a.b'], explained: [] })
+    expect(sanitizeStory({ welcome: 'otra', tour: 'flotando', heard: 'no', explained: [3, 'ok', '<b>'] })).toEqual({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: ['ok'] })
+    expect(sanitizeStory({ welcome: 'done', tour: 'completed', heard: ['a.b', 'a.b'], explained: [] })).toEqual({ welcome: 'done', tour: 'completed', stops: TOUR_STOPS, heard: ['a.b'], explained: [] })
   })
 
   it('acota la lista de conversaciones', () => {
@@ -57,5 +57,38 @@ describe('memoria de la historia', () => {
   it('cambiar a la misma visita devuelve el mismo objeto', () => {
     const story = initialStory()
     expect(setTour(story, 'none')).toBe(story)
+  })
+
+  it('las paradas guardadas solo valen en orden y sin huecos; una visita completada las tiene todas', () => {
+    expect(sanitizeStory({ stops: ['entrada', 'impresoras'] }).stops).toEqual(['entrada', 'impresoras'])
+    expect(sanitizeStory({ stops: ['impresoras', 'entrada'] }).stops).toEqual(['entrada', 'impresoras'])
+    expect(sanitizeStory({ stops: ['entrada', 'pc'] }).stops).toEqual(['entrada'])
+    expect(sanitizeStory({ stops: ['atreus'] }).stops).toEqual([])
+    expect(sanitizeStory({ stops: 'no' }).stops).toEqual([])
+    // Las partidas de antes de las paradas ya tenían la visita completada.
+    expect(sanitizeStory({ tour: 'completed' }).stops).toEqual(TOUR_STOPS)
+  })
+
+  it('completa las paradas una a una y la última completa la visita; saltarse una no hace nada', () => {
+    let story = { ...initialStory(), tour: 'accepted' }
+    expect(nextStop(story)).toBe('entrada')
+    expect(completeStop(story, 'pc')).toBe(story)
+    TOUR_STOPS.slice(0, -1).forEach((id) => {
+      story = completeStop(story, id)
+      expect(story.tour).toBe('accepted')
+    })
+    expect(nextStop(story)).toBe('cierre')
+    story = completeStop(story, 'cierre')
+    expect(story.tour).toBe('completed')
+    expect(nextStop(story)).toBeNull()
+    expect(completeStop(story, 'cierre')).toBe(story)
+  })
+
+  it('con paradas hechas y la visita sin terminar se ofrece retomarla, no empezar otra', () => {
+    const partial = completeStop({ ...initialStory(), tour: 'pending' }, 'entrada')
+    expect(tourStarted(partial)).toBe(true)
+    expect(storyFeatures(partial)).toMatchObject({ offerTour: false, offerResume: true })
+    expect(storyFeatures(initialStory())).toMatchObject({ offerTour: true, offerResume: false })
+    expect(storyFeatures({ ...partial, tour: 'completed' })).toMatchObject({ offerTour: false, offerResume: false })
   })
 })

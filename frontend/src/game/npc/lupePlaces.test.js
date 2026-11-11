@@ -54,4 +54,9 @@ describe('sitios de Lupe', () => {
     ;['none', 'pending', 'accepted', 'cancelled'].forEach((tour) => expect(placesFor(story(tour))).toBe(ENTRANCE))
     expect(placesFor(story('completed'))).toBe(HOME)
   })
+
+  it('también cambia si la visita se dejó a medias: así Lupe no se va a la entrada tras salir de la casa', () => {
+    expect(placesFor({ ...story('pending'), stops: ['entrada'] })).toBe(HOME)
+    expect(placesFor({ ...story('cancelled'), stops: ['entrada', 'impresoras'] })).toBe(HOME)
+  })
 })

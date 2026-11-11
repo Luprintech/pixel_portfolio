@@ -5,8 +5,8 @@
 // Las repeticiones sustituyen el saludo, no la información: por eso `repeticion` ofrece las mismas opciones que la
 // presentación. Una opción con `when` solo sale si esa función está activa (ver `FEATURES`).
 
-const lines = (who, id, count) => Array.from({ length: count }, (_, i) => ({ who, text: `${id}.${i + 1}` }))
-const option = (id, label, extra) => ({ id, label, ...extra })
+import { lines, option } from './builders.js'
+import { TOUR_SCRIPTS } from './tourScripts.js'
 
 const ATREUS_MENU = [
   option('setup', 'casa.opt.setup', { to: 'casa.atreus_setup' }),
@@ -40,6 +40,7 @@ const HIFI_MENU = [
 // historia permite (`story/story.js`, `storyFeatures`): una pregunta ya contestada no se vuelve a ofrecer.
 const INTRO_MENU = [
   option('casa', 'inicio.opt.casa', { when: 'offerTour', to: 'inicio.casa' }),
+  option('retomar', 'inicio.opt.retomar', { when: 'offerResume', to: 'inicio.retomar' }),
   option('dedicas', 'inicio.opt.dedicas', { when: 'offerDedicas', to: 'inicio.dedicas' }),
   option('encontrar', 'inicio.opt.encontrar', { when: 'offerEncontrar', to: 'inicio.encontrar' }),
   option('ayuda', 'inicio.opt.ayuda', { when: 'offerAyuda', to: 'inicio.ayuda' }),
@@ -67,6 +68,8 @@ export const SCRIPTS = {
     options: WELCOME_MENU,
   },
   'inicio.casa': { pages: lines('lupe', 'inicio.casa', 2), action: 'tour-start' },
+  // Con una visita dejada a medias se ofrece retomarla en lugar de empezar otra (`storyFeatures`).
+  'inicio.retomar': { pages: lines('lupe', 'inicio.retomar', 2), action: 'tour-start' },
   'inicio.dedicas': { pages: lines('lupe', 'inicio.dedicas', 3), options: INTRO_MENU },
   'inicio.encontrar': { pages: lines('lupe', 'inicio.encontrar', 3), options: INTRO_MENU },
   'inicio.ayuda': { pages: lines('lupe', 'inicio.ayuda', 2), options: INTRO_MENU },
@@ -82,7 +85,13 @@ export const SCRIPTS = {
     pages: lines('lupe', 'inicio.puerta', 2),
     options: [option('entrar', 'inicio.opt.entrar', { action: 'tour-enter' }), option('luego', 'inicio.opt.luego', { action: 'tour-pause' })],
   },
+  'inicio.puerta_retomar': {
+    pages: lines('lupe', 'inicio.puerta_retomar', 2),
+    options: [option('entrar', 'inicio.opt.entrar', { action: 'tour-enter' }), option('luego', 'inicio.opt.luego', { action: 'tour-pause' })],
+  },
 
+  // Visita guiada por dentro de la casa (`dialogue/tourScripts.js`).
+  ...TOUR_SCRIPTS,
 
   'casa.entrada': { pages: lines('atreus', 'casa.entrada', 3), options: ATREUS_MENU },
   'casa.atreus_setup': {

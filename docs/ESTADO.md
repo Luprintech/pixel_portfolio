@@ -2,9 +2,27 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
+Última actualización: 2026-11-11 (C2: visita guiada por dentro de la casa de Lupe). Antes, 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
 
 ## Hecho
+
+### C2 · Visita guiada por dentro de la casa de Lupe (2026-11-11)
+
+Cierra la fase C del plan maestro: Lupe ya no se queda junto a la puerta, sino que lleva a la viajera por la sala en seis paradas (entrada, impresoras 3D, Atreus, su ordenador, Khalessi y cierre). Avanza la visión de producto (mecánicas de aventura: NPC, memoria de partida y visita guiada) sin tocar el resto de interacciones de la casa.
+
+- **Recorrido** (`game/npc/homeTour.js`, puro, sin Phaser): Lupe anda sola por la rejilla de caminos de la casa (`interior/homeNav.js`, extraída de `catBrain.js` y compartida con Khalessi) hasta el sitio de cada parada, que se calcula a partir de los muebles del plano (`homeLayout.js`) y se ajusta al suelo libre más cercano, sin coordenadas sueltas. Espera a que la viajera se acerque (56 px; en la entrada, algo más lejos de donde aparece, para que haya que dar un paso), se para a esperarla si se retrasa y no da la visita por perdida nunca dentro de casa. La viajera mantiene siempre el control; Lupe no es sólida.
+- **Opciones al final de cada parada:** «Sigamos» (cuenta la parada y va a la siguiente), «Déjame mirar esto con calma» (la cuenta y Lupe espera donde está) y «Prefiero seguir por mi cuenta» (la cuenta y la visita queda pendiente). **Cerrar con Esc no cuenta la parada**: Lupe sigue esperando y no la reabre sola hasta que la viajera se aleje (90 px) y vuelva. Con E (o el botón de acción) ante Lupe se reabre la parada o se abre `tour.pausa` («¿Seguimos…?»: seguir, mirar con calma o dejar la visita); terminada la visita, `tour.despues`. Las paradas con contenido extra ofrecen preguntas opcionales: impresoras (cómo imprimir una figura y la recompensa; las figuras de la vitrina), Atreus (consolas y recreativa) y ordenador (qué hay en el escritorio y «Abrir el ordenador», que abre el escritorio y deja a Lupe esperando).
+- **Progreso guardado** (`story.stops`, `story/story.js`): lista ordenada de paradas contadas (siempre un tramo inicial sin huecos; `sanitizeStory` recorta lo incoherente). `completeStop` solo acepta la siguiente y la última pone la visita en `completed`. Una visita a medias se recupera como `pending` con sus paradas: Lupe vive entonces en su puerta (`placesFor`) y en el valle ofrece «¿Retomamos la visita?» (`inicio.retomar` y `inicio.puerta_retomar`) en lugar de empezar otra; al entrar, la visita sigue por la siguiente parada. Sin subir la versión del guardado (el campo nuevo es opcional): las partidas anteriores se leen igual y, si tenían la visita completada, tienen las seis paradas.
+- **Interior** (`npc/InteriorLupe.js`, dibuja y conecta con diálogos e historia; `InteriorScene` solo le pasa el tiempo y la viajera): exclamación sobre Lupe mientras espera con una parada por contar, bocadillo «Sin prisa, te espero» si se retrasa (el bocadillo ya no es solo de Atreus: `showBubble`), interacción «Hablar con Lupe» con la misma clave que fuera. Al salir de la casa, `ValleNpcs.leaveHome` deja la visita en `pending` si no estaba completa y coloca a Lupe en su puerta (antes marcaba siempre la visita como completada al salir).
+- **Diálogos** (`dialogue/tourScripts.js`, `lib/tourCopy.js`, es y en, con variantes táctiles): definitivos de la implementación en `DIALOGOS.md`, sección 4b. Lupe cuenta de sí misma solo lo confirmado en el lore; del ordenador, lo que existe hoy: Mis proyectos, Internet Explorer con buscador propio y las páginas Sobre Lupe, Tecnologías y Mis proyectos, Winamp (la música de la minicadena), Paint, Calculadora, Bloc de notas, Visual Studio Code con terminal y vista previa, accesos a YouTube y LinkedIn y un par de secretos sin desvelar. En las impresoras: Fusion 360 y Blender básico, piezas, figuras con IA, la A1 mini, la vitrina y la recompensa real (Pikachu y el logro «Primera impresión»). Atreus habla con su voz en su parada y Khalessi con su maullido; sus conversaciones propias no se tocan.
+- **Pruebas** (696 en 83 archivos, lint y build pasan): `homeTour.test.js` (sitios en suelo libre y alcanzables, espera hasta que la viajera se acerca, Esc, mirar con calma, dejar, retomar, recorrido completo, camino libre en cada fotograma, textos es/en, variantes táctiles y que el escritorio cita los programas reales), `story.test.js` (paradas, orden, retomar), `save.test.js` (paradas guardadas y partidas anteriores) y `lupePlaces.test.js`. **Comprobado en el navegador** (Chrome de la app sobre el servidor de desarrollo, avanzando el juego a mano porque el panel oculto frena los fotogramas): la bienvenida de la entrada se abre sola al acercarse; Lupe echa a andar hacia las impresoras, espera y habla al llegar; «Prefiero seguir por mi cuenta» (visita pendiente, paradas guardadas); hablar con Lupe, Esc (se queda esperando sin contar la parada) y «Sigamos» (reanuda); salir de casa a medias (Lupe en su puerta, visita pendiente con sus paradas); «¿Retomamos la visita?», entrar y seguir por Atreus; recorrido hasta `completed` con las seis paradas guardadas en `localStorage`; «Abrir el ordenador» desde su parada; sitio de Lupe en impresoras, Atreus, ordenador, Khalessi y cierre; y el menú de cinco opciones en 375×812. **No comprobado:** móvil real con el dedo, el inglés a ojo en pantalla, el sonido (voz de Lupe y maullido de la parada de Khalessi), la visita de noche o con lluvia, y recargar la página con la visita en curso dentro de la casa (solo por pruebas de `recoverStory`).
+
+**Decisiones**
+- Una parada cuenta al elegir una opción de su final, no al llegar a su última página: así Esc no la da por escuchada (distinto de la bienvenida del valle, que cuenta al llegar al final).
+- Mirar con calma y dejar la visita se diferencian solo en lo guardado (la segunda queda `pending`); en ambos casos Lupe espera donde está y se retoma hablando con ella.
+- Terminada la visita, Lupe se queda en la sala (quieta, con `tour.despues`) hasta que la viajera sale; entonces va a su puerta. No hay copias suyas en dos sitios.
+- Si la viajera sale de la casa antes de completar la primera parada, Lupe vuelve al cruce de la entrada con el mundo dormido (`placesFor` solo la fija en su puerta con paradas hechas).
+- Los logros secretos del ordenador no se desvelan: solo se insinúa que existen.
 
 ### Telescopio AstroMaster 130EQ y conversación de Lupe (2026-11-11)
 
@@ -32,6 +50,15 @@ Avanza la visión de producto: objetos con vida propia en la casa de Lupe. La vi
 - No se publicarán datos de clientes, galerías reales, URLs privadas, capturas no seleccionadas ni detalles internos no verificados. La mención de SEO y seguridad se mantendrá descriptiva, sin afirmar auditorías o certificaciones.
 - La autorización de uso del seudónimo Ylonem, del estudio, del dominio y del concepto «El Gran Estreno» está confirmada por Lupe el 2026-11-11.
 - **Pendiente:** crear el sprite, decidir su posición exacta en Gran Capitán, implementar sus diálogos, decidir si la ficha abre el dominio externo y revisar el texto final antes de publicar.
+
+### Actualización de nombres de amistades y perrita (2026-11-11)
+
+- La casa de juegos de mesa deja de utilizar los nombres provisionales **Link**, **Zelda**, **Ana**, **Paco**, **Pepe** y **Vicky**.
+- Sus nombres editoriales actuales son **Dexter** y **Naviky**; son pareja y quedan vinculados a la casa donde Lupe juega a juegos de mesa.
+- Dexter y Naviky tendrán una perrita llamada **Tina**, negra y mezcla de salchicha y schnauzer.
+- Dexter, Naviky y Tina todavía no tienen sprites, rutinas ni implementación. Tina queda diferenciada de Navi, la perrita de Robin.
+- **Grace** sustituye a Jenny como nombre público pendiente de retrato y diálogos para la amistad de la etapa de DAW.
+- No se modificó código: los cambios de nombres quedan preparados en el lore y el guion para una futura fase de NPC.
 
 ### Sincronización documental de historia, NPC y mapa previsto (2026-11-11)
 
@@ -862,10 +889,10 @@ Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, aquí la casa) y
 
 ## Pendiente
 
-### Siguiente bloque narrativo: C2 y aprobación editorial (2026-11-11)
+### Siguiente bloque narrativo: aprobación editorial (2026-11-11)
 
-- Revisar con Lupe y aprobar o reescribir las líneas marcadas como borrador de `inicio.bienvenida`, `inicio.casa`, `inicio.dedicas`, `inicio.encontrar`, `inicio.explorar`, `inicio.guia_pausa`, `inicio.puerta` y los bocadillos ambientales. La tercera página actual de `inicio.encontrar` menciona artículos y biblioteca y debe cambiar antes de aprobarse por la retirada decidida del blog.
-- Diseñar C2: visita breve y opcional dentro de la casa, con paradas mínimas ante PC, impresoras, Atreus y Khalessi, posibilidad de saltar o abandonar y cierre explícito del tutorial. Lupe ya entra durante una visita aceptada, pero hoy permanece junto a la puerta.
+- Revisar con Lupe y aprobar o reescribir las líneas marcadas como borrador de `inicio.bienvenida`, `inicio.casa`, `inicio.dedicas`, `inicio.encontrar`, `inicio.explorar`, `inicio.guia_pausa`, `inicio.puerta` y los bocadillos ambientales, y los de la visita interior (`DIALOGOS.md`, sección 4b). La tercera página actual de `inicio.encontrar` menciona artículos y biblioteca y debe cambiar antes de aprobarse por la retirada decidida del blog.
+- **C2 implementada** (ver «Hecho»). Queda por decidir con Lupe si la visita debería poder repetirse desde el valle una vez completada y si quiere un cierre distinto con lluvia o de noche; hoy la visita completada no se vuelve a ofrecer.
 - No empezar nuevos NPC biográficos hasta cerrar los textos de C1/C2 y decidir el alcance publicable de terceros.
 - Fase posterior de mapa: retirar Cervantes y biblioteca/blog, incorporar Ayuntamiento de Córdoba, convertir Gran Capitán en el nodo principal de DAW y conservar Trassierra, Messina y Granada como recuerdos cuando no necesiten edificio propio. El código y el mapa no se modificaron en la sincronización documental.
 

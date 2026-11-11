@@ -133,11 +133,22 @@ describe('partida guardada', () => {
   })
 
   it('guarda la historia y la recupera; una visita en curso vuelve como pendiente', () => {
-    const story = { welcome: 'done', tour: 'accepted', heard: ['inicio.bienvenida'], explained: ['dedicas'] }
+    const story = { welcome: 'done', tour: 'accepted', stops: ['entrada', 'impresoras'], heard: ['inicio.bienvenida'], explained: ['dedicas'] }
     writeSave({ name: 'Lupe', look: DEFAULT_LOOK, story })
     expect(loadSave().story).toEqual({ ...story, tour: 'pending' })
     writeSave({ name: 'Lupe', look: DEFAULT_LOOK, story: { ...story, tour: 'completed' } })
     expect(loadSave().story.tour).toBe('completed')
+  })
+
+  it('las paradas de la visita guiada se guardan y se recuperan tal cual, aunque la visita estuviera en curso', () => {
+    const story = { welcome: 'done', tour: 'accepted', stops: ['entrada', 'impresoras', 'atreus'], heard: [], explained: [] }
+    writeSave({ name: 'Lupe', look: DEFAULT_LOOK, story })
+    expect(loadSave().story).toEqual({ ...story, tour: 'pending' })
+  })
+
+  it('una partida de antes de las paradas, con la visita ya hecha, las tiene todas', () => {
+    localStorage.setItem('valle-del-bucle:save', JSON.stringify({ version: 5, name: 'Lupe', look: DEFAULT_LOOK, story: { welcome: 'done', tour: 'completed', heard: [], explained: [] } }))
+    expect(loadSave().story.stops).toHaveLength(6)
   })
 
   it('una historia dañada no tira la partida', () => {

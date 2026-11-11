@@ -3,9 +3,9 @@
 // esquiva los muebles, ver `catNav.js`), esperar en una pose o dar un salto (al arenero, a la caja, al rascador). Esta parte es pura (sin
 // Phaser ni lienzo), así se prueba sin navegador; la escena (`homeBuilder.js`) la dibuja.
 // Los sitios clave salen del plano (`homeLayout.js`): caja, rascador, comedero y arenero contra la pared derecha, Atreus en su mesa.
-import { FURNITURE, solidsOf } from './furniture/index.js'
-import { ATREUS_BODY, FURNITURE_PLAN, NPC_PLAN, SPOTS, homeRoom } from './homeLayout.js'
-import { createNav } from './catNav.js'
+import { FURNITURE } from './furniture/index.js'
+import { NPC_PLAN, SPOTS } from './homeLayout.js'
+import { homeNav } from './homeNav.js'
 
 const atreus = NPC_PLAN.find((npc) => npc.id === 'atreus')
 
@@ -34,11 +34,7 @@ const DROP_MS = 520
 // Por encima de esta fila no pasea: es la franja de los muebles de pared, donde se perdería de vista.
 const MIN_Y = 100
 
-export const NAV = createNav({
-  bounds: homeRoom().bounds,
-  solids: [...FURNITURE_PLAN.flatMap(solidsOf), { x: atreus.x + ATREUS_BODY.l, y: atreus.y + ATREUS_BODY.t, w: ATREUS_BODY.r - ATREUS_BODY.l, h: ATREUS_BODY.b - ATREUS_BODY.t }],
-  minY: MIN_Y,
-})
+export const NAV = homeNav(MIN_Y)
 
 const WANDER_POINTS = NAV.wanderPoints()
 

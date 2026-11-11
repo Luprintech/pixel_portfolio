@@ -328,14 +328,19 @@ export default function Valle() {
   }, [game])
   const reactionText = reaction ? copy.bubbles[reaction.key][reaction.id % copy.bubbles[reaction.key].length] : null
   // Un guion puede acabar abriendo algo (el ordenador de Lupe abre su escritorio retro).
-  // Las acciones `tour-*` son de la visita guiada de Lupe y las atiende el valle (`game/npc/ValleNpcs.js`).
+  // Las acciones `tour-*` son de la visita guiada de Lupe: las atiende el valle (`game/npc/ValleNpcs.js`) o, dentro de la casa, su visita
+  // (`game/npc/InteriorLupe.js`).
   const closeDialogue = useCallback((action) => {
     setDialogue(null)
     if (action === 'desktop') setZone('pc')
     else if (action === 'tv') setZone('tv')
     else if (action === 'sky') setZone('telescope')
     else if (action === 'music') jukebox.toggle()
-    else if (action?.startsWith('tour-')) game?.events.emit('npc-action', action)
+    // Abrir el ordenador desde la visita: Lupe espera (la parada queda contada) mientras se usa.
+    else if (action === 'tour-pc') {
+      game?.events.emit('npc-action', 'tour-linger')
+      setZone('pc')
+    } else if (action?.startsWith('tour-')) game?.events.emit('npc-action', action)
   }, [game])
   // La historia recuerda lo que Lupe ya ha contado: cada nodo que se abre y cuándo se llega a su última página.
   const reachDialogue = useCallback((id, finished) => game && updateStory(game, (current) => reachNode(current, id, finished)), [game])

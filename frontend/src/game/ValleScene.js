@@ -491,7 +491,7 @@ export default class ValleScene extends Phaser.Scene {
     this.princess.body.setVelocity(0, 0)
     const cam = this.cameras.main
     cam.once('camerafadeoutcomplete', () => {
-      // Con una visita guiada en marcha, Lupe ya espera dentro (la visita interior se desarrolla en la fase siguiente).
+      // Con una visita guiada en marcha, Lupe ya espera dentro y la lleva de parada en parada (ver `npc/homeTour.js`).
       const guided = id === 'about' && getStory(this.game).tour === 'accepted'
       if (guided) this.npcs.goInside()
       this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel, from, guided })
@@ -526,8 +526,8 @@ export default class ValleScene extends Phaser.Scene {
       this.facing = 'down'
       this.princess.setFrame(frameName('down', 0))
     }
-    // Si salió de la casa tras la visita guiada, esa visita ya está hecha y Lupe se queda en su puerta.
-    if (data?.guided) this.npcs.finishTour()
+    // Si salió de la casa tras la visita guiada, Lupe se queda en su puerta; la visita queda hecha o pendiente según hasta dónde llegó.
+    if (data?.guided) this.npcs.leaveHome()
     this.fitCamera()
     this.cameras.main.fadeIn(250, 220, 203, 240)
   }

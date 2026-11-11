@@ -61,7 +61,7 @@ Protegido por login. Subrutas: `inicio`, `posts`, `proyectos`, `imagenes`, `cv`,
   - `compose.js` apila las partes, hunde el cuerpo un píxel en los pasos, añade el contorno y devuelve una matriz de letras, sin canvas ni Phaser. Frente, perfil derecho y espalda tienen dibujo propio; el perfil izquierdo es el derecho reflejado salvo en lo asimétrico (guiño, rapado lateral, lazo y flor), que se dibuja desde el lado que enseña.
   - `palette.js` resuelve cada letra a un color del aspecto; `paint.js` y `sheet.js` son lo único que usa canvas: `avatarCanvas` pinta un fotograma y `avatarSheet` una hoja de 3 poses × 4 direcciones (lienzo de cada fotograma 18×34). `ValleScene.js` registra esa hoja como una textura con un fotograma por pose y dirección y recorre `WALK_CYCLE` al andar.
   El creador es `components/valle/Editor.jsx`; `game/sprites.js` ya no dibuja a la viajera.
-- **Partida:** `game/save.js` guarda nombre, aspecto, mascota, mundo e historia en `localStorage` (`valle-del-bucle:save`, versión 5) y migra versiones anteriores. La historia guarda bienvenida, estado de la visita y conversaciones; una visita en curso se recupera como pendiente.
+- **Partida:** `game/save.js` guarda nombre, aspecto, mascota, mundo e historia en `localStorage` (`valle-del-bucle:save`, versión 5) y migra versiones anteriores. La historia guarda bienvenida, estado de la visita, paradas contadas de la visita interior (`stops`, un tramo ordenado de `TOUR_STOPS`) y conversaciones; una visita en curso se recupera como pendiente conservando sus paradas. El campo `stops` es opcional al leer, así que no subió la versión.
 - **Khalessi:** `game/pets/cats.js` aporta sus dibujos. En la portada la gobierna `titleCat.js`; en la casa, `interior/catBrain.js`; en el exterior, `npc/catCompanion.js` la hace acompañar a Lupe. Nunca es la mascota del visitante.
 - **Lupe:** `game/lupe.js` define su aspecto y el generador común crea sprite y retrato. `npc/lupeBrain.js` contiene su máquina de comportamiento pura; `npc/ValleNpcs.js` la integra con Phaser, Khalessi, diálogos, exclamación y memoria. Solo acompaña durante una visita aceptada; fuera de ella tiene su propia rutina.
 - **Atreus:** NPC doméstico construido desde la misma hoja de avatar, con retrato y conversaciones en la casa.
@@ -105,7 +105,15 @@ Resumen de lo que implicaría la mascota del visitante; las reglas de producto e
 - `game/story/story.js` define una memoria serializable: bienvenida, visita, conversaciones escuchadas y explicaciones completadas. `storyStore.js` la publica en el registro de Phaser.
 - `game/npc/lupeBrain.js` es lógica pura de estados, espera, abandono y rutas. `valleNav.js` adapta la navegación A* a los sólidos del tramo entrada–casa; `lupePlaces.js` define los lugares habituales de Lupe.
 - `game/npc/ValleNpcs.js` coordina a Lupe y Khalessi, la exclamación, los bocadillos ambientales, el diálogo que corresponde y las acciones de la visita. `ValleScene` solo publica la posición de la viajera y delega el comportamiento.
-- C1 exterior está implementada. En el interior, Lupe aparece durante una visita aceptada, pero la presentación guiada de PC, impresoras, Atreus y Khalessi pertenece a C2 y sigue pendiente.
+- C1 exterior está implementada.
+
+### Visita guiada interior (C2)
+
+- `game/story/story.js` añade `TOUR_STOPS` (entrada, impresoras, atreus, pc, khalessi, cierre), `stops`, `completeStop`, `nextStop` y `tourStarted`. Una parada solo se completa en orden y la última completa la visita.
+- `game/interior/homeNav.js` expone la rejilla de caminos de la casa (`homeNav(minY)`, sobre `HOME_SOLIDS`), que comparten Khalessi (`catBrain.js`) y Lupe.
+- `game/npc/homeTour.js` es lógica pura: calcula los sitios de las paradas a partir de `homeLayout.js`, hace andar a Lupe con `lupeBrain.js` (mismos estados, `holdPosition` para pausarla y `abandonMs` infinito dentro de casa), decide cuándo abrir cada conversación y aplica las acciones `tour-next`, `tour-finish`, `tour-linger`, `tour-leave` y `tour-resume`, devolviendo la historia nueva.
+- `game/npc/InteriorLupe.js` es la capa de Phaser: dibuja a Lupe (`NpcActor`), la exclamación y el bocadillo, emite `talk`, recibe las opciones por `npc-action` (`Valle.jsx` las reenvía; `tour-pc` abre además el ordenador) y guarda con `updateStory`. Cerrar un diálogo sin elegir nada se detecta al desbloquearse el juego y no cuenta la parada. `InteriorScene` solo la crea cuando la visita está aceptada y le pasa el tiempo y la posición de la viajera.
+- `game/dialogue/tourScripts.js` define los guiones (con `builders.js` compartido con `scripts.js`) y `lib/tourCopy.js` sus textos es/en, mezclados en `dialogueCopy.js`. `ValleNpcs.leaveHome` recoge a Lupe al salir de la casa y `placesFor` la deja en su puerta si la visita se completó o se dejó a medias.
 
 ## Flujo de contenido
 

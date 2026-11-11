@@ -26,7 +26,8 @@ export const TUNING = {
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
 
-export function createLupeBrain({ nav, post, spots = [], rng = Math.random }) {
+// `abandonMs` es lo que aguanta con la viajera lejos antes de dar la visita por interrumpida (dentro de casa no la da por perdida nunca).
+export function createLupeBrain({ nav, post, spots = [], rng = Math.random, abandonMs = TUNING.abandonMs }) {
   return {
     nav,
     rng,
@@ -48,6 +49,7 @@ export function createLupeBrain({ nav, post, spots = [], rng = Math.random }) {
     arrived: false,
     far: 0,
     abandoned: false,
+    abandonMs,
     // A qué vuelve al terminar una conversación.
     resume: 'idle',
     // Ya ha cruzado la puerta de su casa y espera dentro: en el valle no se dibuja ni se puede hablar con ella.
@@ -143,6 +145,17 @@ export function stopGuide(brain) {
   walkTo(brain, brain.post)
 }
 
+// Se queda donde está, quieta y sin pasear: la visita por dentro de la casa la deja así cuando se pausa o se acaba (no tiene sitio
+// al que volver). Con `arrived` el paseo propio no la manda a ningún sitio.
+export function holdPosition(brain) {
+  brain.goal = null
+  brain.far = 0
+  brain.path = []
+  brain.walking = false
+  brain.arrived = true
+  brain.state = go(brain.state, 'idle')
+}
+
 // Lupe va sola a la puerta de su casa y entra a esperar dentro. No lleva a la viajera consigo: ella entra cuando quiere, con E.
 // Si no hay camino hasta la puerta, entra de inmediato en lugar de quedarse a medias.
 export function enterHome(brain, door) {
@@ -175,7 +188,7 @@ function nextStroll(brain) {
 // Si la viajera se aleja demasiado y demasiado rato, la visita se da por interrumpida: Lupe vuelve a lo suyo y lo avisa.
 function checkAbandon(brain, gap, dt) {
   brain.far = gap > TUNING.abandonGap ? brain.far + dt : 0
-  if (brain.far < TUNING.abandonMs) return false
+  if (brain.far < brain.abandonMs) return false
   brain.abandoned = true
   stopGuide(brain)
   return true

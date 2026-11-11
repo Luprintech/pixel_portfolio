@@ -2,6 +2,8 @@
 // idioma. Las claves son las que lleva cada página en `game/dialogue/scripts.js`. Los hablantes y los textos fijos de
 // la caja de diálogo también están aquí.
 
+import { TOUR_COPY } from './tourCopy.js'
+
 export const DIALOGUE_COPY = {
   es: {
     speakers: { atreus: 'Atreus', lupe: 'Lupe', khalessi: 'Khalessi' },
@@ -14,6 +16,7 @@ export const DIALOGUE_COPY = {
       portrait: 'Retrato de',
     },
     lines: {
+      ...TOUR_COPY.es.lines,
       // Llegada al valle (`docs/DIALOGOS.md`, sección 3). Las líneas 1 y 3 de la bienvenida, el maullido y `inicio.regreso` son del
       // guion aprobado; el resto son borradores nuevos (`docs/DIALOGOS.md`, «Borradores nuevos de la bienvenida»), pendientes de revisión.
       'inicio.bienvenida.1': '¡Hola! Soy Lupe. Te doy la bienvenida al Valle del Bucle, mi portfolio con caminos, casas y alguna que otra distracción con bigotes.',
@@ -87,6 +90,7 @@ export const DIALOGUE_COPY = {
       'pc.proyectos.1': 'Si quieres ver mi trabajo de desarrollo web, por aquí tienes los proyectos del portfolio, con su descripción y los enlaces disponibles.',
     },
     options: {
+      ...TOUR_COPY.es.options,
       'inicio.opt.casa': '¿Me enseñas tu casa?',
       'inicio.opt.dedicas': '¿A qué te dedicas?',
       'inicio.opt.encontrar': '¿Qué puedo encontrar aquí?',
@@ -126,6 +130,7 @@ export const DIALOGUE_COPY = {
       portrait: 'Portrait of',
     },
     lines: {
+      ...TOUR_COPY.en.lines,
       // Arriving in the valley (`docs/DIALOGOS.md`, section 3). Welcome lines 1 and 3, the meow and `inicio.regreso` come from the
       // approved script; the rest are new drafts awaiting review.
       'inicio.bienvenida.1': "Hi! I'm Lupe. Welcome to Valle del Bucle, my portfolio with paths, houses and the odd whiskered distraction.",
@@ -198,6 +203,7 @@ export const DIALOGUE_COPY = {
       'pc.proyectos.1': 'If you want to see my web development work, here are the portfolio projects, with their description and the links available.',
     },
     options: {
+      ...TOUR_COPY.en.options,
       'inicio.opt.casa': 'Will you show me your house?',
       'inicio.opt.dedicas': 'What do you do?',
       'inicio.opt.encontrar': 'What can I find here?',

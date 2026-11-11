@@ -12,20 +12,39 @@
 export const TOURS = ['none', 'pending', 'accepted', 'completed', 'cancelled']
 export const WELCOMES = ['pending', 'done']
 
+// Paradas de la visita por dentro de la casa, en orden. `stops` guarda las ya presentadas por completo (siempre un prefijo de
+// esta lista), así que abandonar, pausar o recargar no pierde el avance: la visita se retoma por la siguiente.
+export const TOUR_STOPS = ['entrada', 'impresoras', 'atreus', 'pc', 'khalessi', 'cierre']
+
 // Lo que se guarda son ids de conversaciones y de preguntas: se acota el tamaño por si el guardado viene manipulado.
 const ID = /^[a-z0-9._-]{1,48}$/
 const MAX_IDS = 200
 
-export const initialStory = () => ({ welcome: 'pending', tour: 'none', heard: [], explained: [] })
+export const initialStory = () => ({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: [] })
 
 const cleanIds = (raw) => (Array.isArray(raw) ? [...new Set(raw.filter((id) => typeof id === 'string' && ID.test(id)))].slice(0, MAX_IDS) : [])
+
+// Solo vale el tramo inicial de paradas sin saltos: una lista con huecos o desordenada se recorta hasta donde es coherente. Una
+// visita completada tiene todas (también las partidas guardadas antes de que existieran las paradas).
+function cleanStops(raw, tour) {
+  if (tour === 'completed') return [...TOUR_STOPS]
+  const given = new Set(Array.isArray(raw) ? raw : [])
+  const prefix = []
+  for (const id of TOUR_STOPS) {
+    if (!given.has(id)) break
+    prefix.push(id)
+  }
+  return prefix
+}
 
 // Lo guardado puede venir de otra versión o estar manipulado: solo se acepta lo que tiene forma de historia.
 export function sanitizeStory(raw) {
   if (!raw || typeof raw !== 'object') return null
+  const tour = TOURS.includes(raw.tour) ? raw.tour : 'none'
   return {
     welcome: WELCOMES.includes(raw.welcome) ? raw.welcome : 'pending',
-    tour: TOURS.includes(raw.tour) ? raw.tour : 'none',
+    tour,
+    stops: cleanStops(raw.stops, tour),
     heard: cleanIds(raw.heard),
     explained: cleanIds(raw.explained),
   }
@@ -38,6 +57,19 @@ export function recoverStory(story) {
 }
 
 export const setTour = (story, tour) => (story.tour === tour ? story : { ...story, tour })
+
+// Siguiente parada por presentar, o null si ya se hicieron todas.
+export const nextStop = (story) => TOUR_STOPS.find((id) => !story.stops.includes(id)) ?? null
+
+// Hay avance guardado de una visita que no se terminó: se ofrece retomarla en lugar de empezar otra.
+export const tourStarted = (story) => story.stops.length > 0 && story.tour !== 'completed'
+
+// Da por presentada una parada. Solo vale la siguiente en orden (no se salta ninguna) y la última completa la visita.
+export function completeStop(story, id) {
+  if (id !== nextStop(story)) return story
+  const next = { ...story, stops: [...story.stops, id] }
+  return nextStop(next) ? next : { ...next, tour: 'completed' }
+}
 
 const withId = (list, id) => (list.includes(id) ? list : [...list, id])
 
@@ -70,7 +102,8 @@ export function newTalkFor(npc, story) {
 // Lo que las opciones de los guiones comprueban con `when` (ver `dialogue/scripts.js`).
 export function storyFeatures(story) {
   return {
-    offerTour: tourOffered(story),
+    offerTour: tourOffered(story) && !tourStarted(story),
+    offerResume: tourOffered(story) && tourStarted(story),
     offerDedicas: !story.explained.includes('dedicas'),
     offerEncontrar: !story.explained.includes('encontrar'),
     offerAyuda: !story.explained.includes('ayuda'),

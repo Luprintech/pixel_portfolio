@@ -6,7 +6,7 @@ import { steppedRoomZoom } from './viewport.js'
 import { advanceWalk, facingFor, inputVector } from './walk.js'
 import { talkFor } from './dialogue/scripts.js'
 import { loadSeen, markSeen } from './dialogue/seen.js'
-import NpcActor from './npc/NpcActor.js'
+import InteriorLupe from './npc/InteriorLupe.js'
 import { buildHome, faceTraveller } from './interior/homeBuilder.js'
 import { ARCADE_FRONT, FACE_TO_SEAT, SEATS, interactionAt } from './interior/homeLayout.js'
 import InteriorSky from './interior/InteriorSky.js'
@@ -26,6 +26,8 @@ const FADE = [220, 203, 240]
 const REOPEN_GUARD_MS = 250
 const ENTRANCE = 'casa.entrada'
 const TELEVISION = 'casa.television'
+// La interacción con Lupe durante la visita (la misma clave que fuera, en `hud.actions`).
+const LUPE = 'npc:lupe'
 // Por donde se aparece al volver de la azotea: ante la escalera de la casa.
 const ROOF_ARRIVAL = { x: 38, y: 98 }
 const SEAT_IDS = new Set(SEATS.map((seat) => seat.id))
@@ -45,7 +47,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.building = data.building
     this.pastel = !!data.pastel
     this.fromRoof = data.from === 'deck'
-    // Con una visita guiada en marcha Lupe entra con la viajera; si no, la casa no la tiene a su lado (ver `story/story.js`).
+    // Con una visita guiada en marcha Lupe entra con la viajera y la lleva de parada en parada; si no, la casa no la tiene a su lado
+    // (ver `story/story.js` y `npc/homeTour.js`).
     this.guided = !!data.guided
     this.facing = this.fromRoof ? 'down' : 'up'
     this.walk = { timer: 0, step: 0 }
@@ -63,6 +66,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.printStage = -1
     this.gifted = false
     this.bubbleOpen = false
+    // De quién es el bocadillo abierto (Atreus o Lupe): la página lo coloca sobre su cabeza.
+    this.bubbleOwner = 'atreus'
   }
 
   create() {
@@ -83,9 +88,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.buildFurniture()
     // Misma hora, estación y tiempo que fuera: el cielo lo lleva el reloj del valle.
     this.sky = new InteriorSky(this, { room, pastel: this.pastel, source: this.scene.get('valle').sky })
-    // Lupe espera dentro, junto a la puerta, solo durante la visita guiada. No sigue a la viajera: la visita interior guiada,
-    // que le dará algo que hacer aquí, llega en la fase siguiente.
-    this.lupe = this.guided ? new NpcActor(this, 'npc-lupe', start.x - 14, start.y + 2) : null
+    // Lupe está dentro solo durante la visita guiada: ella es la única que se mueve sola (la viajera mantiene el control).
+    this.lupe = this.guided && room.home ? new InteriorLupe(this) : null
     this.exitZone = new Phaser.Geom.Rectangle(room.exit.x, room.exit.y, room.exit.width, room.exit.height)
 
     const kb = this.input.keyboard
@@ -208,6 +212,7 @@ export default class InteriorScene extends Phaser.Scene {
     else if (this.near === 'printerCollect') this.collectPrint()
     else if (this.near === 'arcade') this.game.events.emit('enter', 'console')
     else if (this.near === 'figures') this.game.events.emit('enter', 'figures')
+    else if (this.near === LUPE) this.lupe.talk(this.princess)
     else this.talk(this.near)
   }
 
@@ -353,6 +358,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.publishBubble()
     const body = this.princess.body
     const locked = this.game.registry.get('locked') || this.leaving || this.showing
+    this.lupe?.update(delta, this.princess, locked)
     const { x, y } = locked ? { x: 0, y: 0 } : inputVector(this.cursors, this.keys, this.game.registry.get('joy'))
     const len = Math.hypot(x, y)
     const moving = len > 0.15
@@ -392,34 +398,34 @@ export default class InteriorScene extends Phaser.Scene {
     const delivered = cat.giving && cat.toyPhase === 'ground'
     if (delivered && !this.gifted) {
       this.gifted = true
-      this.bubbleOpen = true
-      this.game.events.emit('atreus-react', 'sardine')
+      this.showBubble('atreus', 'sardine')
     } else if (!cat.giving) this.gifted = false
+  }
+
+  // Un bocadillo sin diálogo sobre Atreus o Lupe: la página lo escribe y lo quita sola pasado un rato.
+  showBubble(owner, key) {
+    this.bubbleOwner = owner
+    this.bubbleOpen = true
+    this.game.events.emit(owner === 'lupe' ? 'npc-bubble' : 'atreus-react', key)
   }
 
   onBubbleClosed() {
     this.bubbleOpen = false
   }
 
-  // Mientras el bocadillo está abierto, la página sabe dónde está la cabeza de Atreus en la pantalla (en píxeles CSS del lienzo):
+  // Mientras el bocadillo está abierto, la página sabe dónde está la cabeza de quien habla en la pantalla (en píxeles CSS del lienzo):
   // la cámara hace zoom y se mueve, así que se calcula cada fotograma.
   publishBubble() {
-    if (!this.bubbleOpen || !this.atreus) return
+    const speaker = this.bubbleOwner === 'lupe' ? this.lupe : this.atreus
+    if (!this.bubbleOpen || !speaker) return
     const camera = this.cameras.main
     const { canvas } = this.game
     const ratio = canvas.clientWidth / this.scale.width
-    const { x, y } = this.atreus.sprite
+    const { x, y } = speaker.sprite
     this.game.events.emit('bubble-anchor', {
       x: (x - camera.worldView.x) * camera.zoom * ratio,
       y: (y - BUBBLE_ABOVE - camera.worldView.y) * camera.zoom * ratio,
     })
-  }
-
-  // Lupe, quieta junto a la puerta, mira a la viajera estando donde esté.
-  faceLupe(px, py) {
-    if (!this.lupe) return
-    const { x, y } = this.lupe.sprite
-    this.lupe.render({ x, y, facing: facingFor(px - x, py - y), walking: false }, 0)
   }
 
   // Khalessi fuera de la caja se puede saludar donde esté: cerca de ella, y no solo ante la caja.
@@ -437,13 +443,12 @@ export default class InteriorScene extends Phaser.Scene {
       this.princess.setDepth(py)
       this.shadow.setPosition(this.princess.x, this.princess.y - 1)
     }
-    this.faceLupe(px, py)
     if (this.atreus) faceTraveller(this.atreus, this.cat?.cat.giving ? this.cat.sprite : this.princess, facingFor)
     let id = null
     if (this.leaving) id = null
     else if (this.seat) id = this.seat.use ?? 'standup'
     else if (this.exitZone.contains(px, py)) id = EXIT_ID
-    else if (this.room.home) id = this.catNear(px, py) ? 'khalessi' : this.switchAction(interactionAt(px, py, this.facing))
+    else if (this.room.home) id = this.lupe?.canTalk(px, py) ? LUPE : this.catNear(px, py) ? 'khalessi' : this.switchAction(interactionAt(px, py, this.facing))
     if (id !== this.near) {
       this.near = id
       this.game.events.emit('near', id)

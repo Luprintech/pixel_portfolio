@@ -203,6 +203,7 @@ Esta sección separa cuatro niveles, para que no se mezclen: (1) lo que existe y
 - **Khalessi:** aparece en portada, casa y exterior. En el exterior acompaña a Lupe, no a la viajera; en la casa conserva su comportamiento doméstico independiente.
 - **Atreus:** existe como NPC de la casa con sprite, retrato, conversación e interacción propias.
 - **Ylonem:** definido editorialmente, todavía no implementado. Es el seudónimo autorizado de un antiguo compañero de DAW y buen amigo actual de Lupe. Es fotógrafo y videógrafo profesional de bodas. Su presencia prevista es opcional en Gran Capitán y conecta con el caso profesional de la aplicación creada por Lupe para Ahi Está la Película (`ahiestalapelicula.com`).
+- **Dexter, Naviky y Tina:** nombres editoriales actuales para la casa de juegos de mesa; sustituyen a los nombres provisionales Link, Zelda, Ana, Paco, Pepe y Vicky. Dexter y Naviky son pareja; Tina es su perrita negra, mezcla de salchicha y schnauzer. Los tres siguen pendientes de sprites y comportamiento.
 - **Memoria narrativa:** el estado de bienvenida, visita, conversaciones escuchadas y preguntas explicadas vive en la partida. Una exclamación indica contenido nuevo; las conversaciones completadas no se repiten íntegramente.
 
 ### 6.2 Decisiones de producto aprobadas (2026-11-09)
@@ -305,7 +306,7 @@ Los edificios deberían tener interiores propios.
 
 **Propuesta técnica:** plantilla reutilizable de escenas interiores con punto de entrada y de salida, colisiones, objetos interactivos, eventos de interacción, cámara y límites, e integración con paneles React. Cada interior tiene decoración y contenido propios, pero comparte los mecanismos de navegación.
 
-**Estado y prioridad:** la casa de Lupe es el primer edificio completo y reutilizable; incluye interior recorrible, cuarto gaming, impresoras, telescopio, PC, Atreus, Khalessi y diálogos. El resto de interiores sigue pendiente. La visita guiada exterior hasta la casa está implementada; la presentación guiada de objetos dentro de ella será C2.
+**Estado y prioridad:** la casa de Lupe es el primer edificio completo y reutilizable; incluye interior recorrible, cuarto gaming, impresoras, telescopio, PC, Atreus, Khalessi y diálogos. El resto de interiores sigue pendiente. La visita guiada exterior hasta la casa y la presentación guiada de impresoras, Atreus, el ordenador y Khalessi dentro de ella (C2) están implementadas.
 
 La casa es una habitación compacta y recorrible: dos escritorios (el de Atreus con dos pantallas, cascos y torre blanca), cama doble, TV, estantería de consolas, rincón de impresión 3D y acceso a la azotea.
 
@@ -500,7 +501,7 @@ Respetar `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN
 | 2 · Portfolio profesional | `/clasico` como landing, tarjetas de proyectos, contenidos reales, responsive, accesibilidad y SEO | Portfolio completo y presentable sin jugar y sin cargar Phaser |
 | 3 · Primer edificio completo | Casa de Lupe con interior, entrada, salida, objetos, NPC y contenido real | **Implementada**; quedan revisiones y ampliaciones registradas en `ESTADO.md` |
 | 4 · Expansión del pueblo | Resto de edificios funcionales y autobiográficos, correos y señalización; sin ampliar la biblioteca/blog | Todas las secciones principales accesibles desde el mapa |
-| 5 · Conversación y biografía | **C1 exterior implementada:** panel, bienvenida, Lupe y acompañamiento hasta la casa. **C2 pendiente:** visita interior. Después: Mihrab, Copos, piscina, formación, RACE y DAW | Cada lugar muestra hechos aprobados, recuerda lo completado y ofrece salida rápida |
+| 5 · Conversación y biografía | **C1 exterior implementada:** panel, bienvenida, Lupe y acompañamiento hasta la casa. **C2 implementada:** visita interior. Después: Mihrab, Copos, piscina, formación, RACE y DAW | Cada lugar muestra hechos aprobados, recuerda lo completado y ofrece salida rápida |
 | 6 · Entorno personal | Personajes con seudónimos y escenas cotidianas; Ylonem como compañero de DAW y colaborador profesional | Relaciones coherentes, autorización de Ylonem registrada y revisión de identidad completada |
 | 7 · Experiencia de aventura | Base de NPC, Khalessi y mascota implementada; mapa futuro, viaje rápido, diario y posibles misiones opcionales pendientes | Exploración agradable sin obstaculizar la navegación |
 | 8 · Ambiente | Día/noche, lluvia, telescopio y audio opcional | Variantes coherentes, con control de movimiento y de sonido |
@@ -530,7 +531,7 @@ Antes de implementar nuevas funcionalidades extensas, definir:
 2. ~~Escala de tiles y sprites~~ — decidida: 16 × 16 y viajera de 16 × 28.
 3. Estilo final de los edificios.
 4. Diseño definitivo del modo clásico.
-5. Comportamiento de los interiores restantes y diseño de la visita guiada interior de la casa (C2).
+5. Comportamiento de los interiores restantes (la visita guiada interior de la casa, C2, ya está implementada y puede servir de modelo).
 6. Apariencia, privacidad, nombres públicos y rutinas de los futuros NPC. Lupe, Khalessi, Atreus y las mascotas del visitante ya tienen una base implementada; Ylonem está definido editorialmente pero aún no tiene sprite ni comportamiento.
 7. Qué mecánicas entran en la primera versión pública.
 8. ~~Primer edificio completo.~~ Decidido e implementado: casa de Lupe.

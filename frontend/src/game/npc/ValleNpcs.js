@@ -4,7 +4,7 @@
 // (`npc-action`) y guarda en la historia (`story/`) cómo va la visita guiada. La escena solo le da el tiempo y la posición de la
 // viajera, y le avisa de lo que pasa con los edificios y los diálogos.
 import { getStory, updateStory } from '../story/storyStore.js'
-import { newTalkFor, setTour } from '../story/story.js'
+import { newTalkFor, setTour, tourStarted } from '../story/story.js'
 import CatActor from './CatActor.js'
 import NpcActor from './NpcActor.js'
 import { buildExclamation } from './exclaim.js'
@@ -81,7 +81,7 @@ export default class ValleNpcs {
 
   // Qué conversación abre Lupe ahora: la visita en marcha manda sobre todo; después la bienvenida, si no se ha escuchado.
   talkId(story) {
-    if (story.tour === 'accepted') return this.brain.arrived ? 'inicio.puerta' : 'inicio.guia_pausa'
+    if (story.tour === 'accepted') return this.brain.arrived ? (tourStarted(story) ? 'inicio.puerta_retomar' : 'inicio.puerta') : 'inicio.guia_pausa'
     return story.welcome === 'pending' ? 'inicio.bienvenida' : 'inicio.regreso'
   }
 
@@ -178,9 +178,10 @@ export default class ValleNpcs {
     }
   }
 
-  // Al volver de la casa tras la visita: Lupe ya la ha enseñado, así que vive en su puerta y deja de acompañar.
-  finishTour() {
-    updateStory(this.game, (story) => setTour(story, 'completed'))
+  // Al volver de la casa tras la visita guiada: Lupe deja de acompañar y vuelve a su puerta, donde vive. Si la viajera salió antes
+  // de terminarla, la visita queda pendiente con las paradas ya vistas (ver `story.stops`).
+  leaveHome() {
+    updateStory(this.game, (story) => (story.tour === 'accepted' ? setTour(story, 'pending') : story))
     const { post } = placesFor(getStory(this.game))
     placeAt(this.brain, post.x, post.y)
     placeCompanion(this.companion, post.x + 13, post.y + 4)
