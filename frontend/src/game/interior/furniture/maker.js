@@ -4,10 +4,10 @@
 // la pieza crece desde la placa, el eje (el brazo) sube con ella y el cabezal barre de lado a lado, de modo que la boquilla
 // siempre apoya sobre la última capa (nunca por encima ni por dentro). La vitrina de piezas ya terminadas está en
 // `shelves.js`.
-import { drawText } from '../../pixelFont.js'
+import { drawSmallText } from '../../pixelFont.js'
 import { line } from '../../pixelKit.js'
 import { INK, WHITE_FURNITURE, canvasOf, rect, slab } from '../draw.js'
-import { drawPokemon } from '../figures.js'
+import { FIGURES, drawPokemon } from '../figures.js'
 
 const WHITE = INK.white
 const SHADE = INK.whiteShade
@@ -56,6 +56,14 @@ export const armFor = (top, height) => top - 2 - height - NOZZLE_DROP
 // barrido, una o dos filas de la suya.
 export const printedRows = (stage, sweep) => stage * ROWS_PER_STAGE + (sweep < SWEEPS / 2 ? 1 : 2)
 
+// Figura que crece desde los pies sobre la placa: se copian solo las filas de abajo, tantas como lleva impresas.
+function growFigure(g, draw, height, centerX, plateTop) {
+  if (!height) return
+  const { canvas, g: figure } = canvasOf(16, 16)
+  draw(figure)
+  g.drawImage(canvas, 0, 16 - height, 16, height, centerX - 8, plateTop - height, 16, height)
+}
+
 // Soporte vertical blanco con la varilla del eje Z a la vista, tapa verde arriba y una banda verde de la marca.
 function column(g, x, top, bottom) {
   slab(g, x, top, 5, bottom - top, WHITE, BRIGHT, SHADE)
@@ -67,10 +75,10 @@ function column(g, x, top, bottom) {
 
 // Cuerpo de una impresora Bambu: base con pantalla y logotipo, soportes (uno a la izquierda, o los dos con un travesaño
 // arriba), el brazo que sube y baja por ellos con el cabezal (cuya posición manda `armY`, a la altura de la pieza), el tubo de
-// filamento hasta el cabezal y la placa con la pieza (`piece`, que pinta sobre `plateTop`).
-function bambu(g, { x, top, w, columnTop, framed, armY, headX, screenLit, piece, tubeFrom }) {
+// filamento hasta el cabezal, el rótulo (`label`, en letra pequeña para que no tape la pantalla) y la placa con la pieza (`piece`, que pinta sobre `plateTop`).
+function bambu(g, { x, top, w, columnTop, framed, armY, headX, screenLit, piece, tubeFrom, label }) {
   slab(g, x, top, w, 7, WHITE, BRIGHT, SHADE)
-  drawText(g, x + 4, top + 1, 'BAMBU', GREEN)
+  drawSmallText(g, x + 3, top + 2, label, GREEN)
   rect(g, x + w - 11, top + 1, 8, 5, INK.night)
   rect(g, x + w - 10, top + 2, 6, 3, screenLit ? INK.lagoonLight : INK.night2)
   rect(g, x + w - 10, top + 2, 3, 1, screenLit ? BRIGHT : INK.slate)
@@ -100,17 +108,19 @@ function bambu(g, { x, top, w, columnTop, framed, armY, headX, screenLit, piece,
   rect(g, headX + 3, armY + 13, 3, 2, INK.saffron)
 }
 
-// A1 (izquierda): imprime en bucle un jarrón turquesa, ocho tandas de cuatro movimientos del cabezal, y lo deja terminado un
+// A1 (izquierda): imprime en bucle a Tanjiro, ocho tandas de cuatro movimientos del cabezal, y lo deja terminado un
 // momento antes de empezar otro. Los fotogramas 0 a 31 son los movimientos (tanda × 4 + tramo) y el 32 la pieza acabada,
 // con el brazo subido; `sequence` es el orden en que se enseñan.
 const A1_STAGES = 8
 const A1_DONE = A1_STAGES * SWEEPS
+const TANJIRO_DRAW = FIGURES.find((figure) => figure.id === 'tanjiro').draw
 export const printerA1 = {
   w: 64,
   h: 92,
   frames: A1_DONE + 1,
-  ms: 260,
-  sequence: [...Array.from({ length: A1_DONE }, (_, i) => i), ...Array(4).fill(A1_DONE)],
+  // Lenta a propósito, para que se aprecie la figura creciendo; al acabar se queda un rato terminada y vuelve a empezar.
+  ms: 560,
+  sequence: [...Array.from({ length: A1_DONE }, (_, i) => i), ...Array(5).fill(A1_DONE)],
   body: [{ l: -30, t: -14, r: 30, b: 0 }],
   paint(g, frame) {
     const top = 65
@@ -140,10 +150,8 @@ export const printerA1 = {
       headX: center - 4 + (done ? 0 : SWEEP[sweep]),
       screenLit: frame % 2 === 0,
       tubeFrom: { x: center, y: 18 },
-      piece(gg, plateTop) {
-        for (let row = 0; row < height; row++) rect(gg, center - 6, plateTop - 1 - row, 12, 1, row % 2 ? INK.teal : INK.lagoonLight)
-        rect(gg, center - 6, plateTop - height, 12, 1, BRIGHT)
-      },
+      label: 'bambu A1',
+      piece: (gg, plateTop) => growFigure(gg, TANJIRO_DRAW, height, center, plateTop),
     })
   },
 }
@@ -186,13 +194,8 @@ export const printerMini = {
       headX: center - 4 + (printing ? SWEEP[sweep] : 0),
       screenLit: printing || done || frame === 0,
       tubeFrom: { x: x + 10, y: 14 },
-      piece(gg, plateTop) {
-        if (!height) return
-        // La figura crece desde los pies: se copian solo las filas de abajo, tantas como lleva impresas.
-        const { canvas, g: figure } = canvasOf(16, 16)
-        drawPokemon(figure, 0, 0)
-        gg.drawImage(canvas, 0, 16 - height, 16, height, center - 8, plateTop - height, 16, height)
-      },
+      label: 'bambu',
+      piece: (gg, plateTop) => growFigure(gg, (figure) => drawPokemon(figure, 0, 0), height, center, plateTop),
     })
   },
 }

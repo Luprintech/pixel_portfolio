@@ -24,6 +24,19 @@ export function progressOf(job, now) {
   return Math.min(1, Math.max(0, (now - job.startedAt) / PRINT_MS))
 }
 
+// Estado de la impresora para quien la usa: `idle` (lista, aún sin premio), `printing`, `completed` (terminada y sin
+// recoger) y `reward_given` (en reposo con el premio ya entregado: solo ofrece reimprimir). El premio es aparte del trabajo
+// y no se pierde al reimprimir.
+export function printerState(job, now, rewardGiven) {
+  const { state } = jobAt(job, now)
+  if (state === 'printing') return 'printing'
+  if (state === 'done') return 'completed'
+  return rewardGiven ? 'reward_given' : 'idle'
+}
+
+// Al recoger la figura la impresora vuelve a reposo, y el premio se entrega solo si aún no se había entregado.
+export const collectOutcome = (rewardGiven) => ({ job: idleJob(), reward: !rewardGiven })
+
 // Qué enseñar en la impresora: reposo, una tanda de la impresión (de 0 a `stages - 1`) o la figura terminada.
 export function printView(job, now, stages) {
   const current = jobAt(job, now)

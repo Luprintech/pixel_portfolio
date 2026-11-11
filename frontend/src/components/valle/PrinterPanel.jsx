@@ -97,8 +97,8 @@ export default function PrinterPanel({ job, claimed, onStart, onClose }) {
             </div>
           )}
 
-          {phase === 'ready' && !claimed && (
-            <button type="button" className="w-full rounded-lg py-3 text-base font-bold text-white" style={{ background: BAMBU }} onClick={() => setPreparing(true)}>{p.print}</button>
+          {phase === 'ready' && (
+            <button type="button" className="w-full rounded-lg py-3 text-base font-bold text-white" style={{ background: BAMBU }} onClick={() => setPreparing(true)}>{claimed ? p.reprint : p.print}</button>
           )}
           {phase === 'done' && <p className="text-xs" style={{ color: '#9a9ba3' }}>{p.pickUp}</p>}
         </div>

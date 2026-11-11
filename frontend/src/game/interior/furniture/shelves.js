@@ -4,6 +4,8 @@
 // El borde de cada balda lleva el color de su familia (rojo, azul, verde) para que se lea la clasificación. Cada pieza se
 // coloca por su base (`SHELF` es la fila de la balda): apoya sobre la madera, nunca queda en el aire.
 import { INK, WHITE_FURNITURE, rect, slab } from '../draw.js'
+import { SIGN_H, drawLuprintechSign } from '../signs.js'
+import { FIGURES, drawMap } from '../figures.js'
 
 const SHELF_RED = INK.tile
 const SHELF_BLUE = INK.blue
@@ -147,54 +149,47 @@ export const consoleShelf = {
   },
 }
 
-// Vitrina del rincón maker: un cartel luminoso en forma de corazón, figuras pintadas a mano y llaveros colgados.
+// Vitrina del rincón maker: el rótulo de Luprintech encima y, debajo, las figuras de `FIGURES` con `shelf`, colocadas solas
+// de tres en tres por balda (centradas en su fila). Añadir una figura al catálogo basta: si no cabe, la vitrina gana una balda.
+export const SHELF_COLS = 3
+const SLOT_W = 10
+const ROW_PITCH = 15
+const shelfFigures = FIGURES.filter((figure) => figure.shelf)
+const ROWS = Math.max(1, Math.ceil(shelfFigures.length / SHELF_COLS))
+// Alto del mueble sin el rótulo.
+export const SHELF_BODY_H = ROW_PITCH * ROWS + 1
+
 export const makerShelf = {
-  w: 36,
-  h: 46,
+  w: 44,
+  h: SIGN_H + SHELF_BODY_H,
   body: [{ l: -18, t: -10, r: 18, b: 0 }],
   paint(g) {
     const [deep, dark, mid, light] = WHITE_FURNITURE
-    rect(g, 0, 0, 36, 46, mid)
+    // El rótulo flota encima de la vitrina, más ancho que ella: arriba del todo y sin fondo.
+    drawLuprintechSign(g, 0, 0, false)
+    g.save()
+    g.translate(4, SIGN_H)
+    rect(g, 0, 0, 36, SHELF_BODY_H, mid)
     rect(g, 0, 0, 36, 2, light)
-    rect(g, 0, 0, 2, 46, light)
-    rect(g, 34, 0, 2, 46, dark)
-    ;[[3, 3], [3, 18], [3, 33]].forEach(([x, y]) => {
-      rect(g, x, y, 30, 11, dark)
-      rect(g, x, y, 30, 1, deep)
+    rect(g, 0, 0, 2, SHELF_BODY_H, light)
+    rect(g, 34, 0, 2, SHELF_BODY_H, dark)
+    for (let row = 0; row < ROWS; row++) {
+      const top = 3 + ROW_PITCH * row
+      rect(g, 3, top, 30, 11, dark)
+      rect(g, 3, top, 30, 1, deep)
+      if (row < ROWS - 1) {
+        rect(g, 2, top + 11, 32, 3, light)
+        rect(g, 2, top + 13, 32, 1, dark)
+      }
+    }
+    rect(g, 2, SHELF_BODY_H - 3, 32, 3, deep)
+    // Cada figura apoya en el suelo de su compartimento (una fila de 3 ocupa los 30 de ancho; si hay menos, se centran).
+    shelfFigures.forEach((figure, i) => {
+      const row = Math.floor(i / SHELF_COLS)
+      const inRow = Math.min(SHELF_COLS, shelfFigures.length - row * SHELF_COLS)
+      const left = 3 + (30 - inRow * SLOT_W) / 2 + (i % SHELF_COLS) * SLOT_W + 1
+      drawMap(g, left, 4 + ROW_PITCH * row, figure.shelf)
     })
-    ;[14, 29].forEach((y) => {
-      rect(g, 2, y, 32, 3, light)
-      rect(g, 2, y + 2, 32, 1, dark)
-    })
-    rect(g, 2, 43, 32, 3, deep)
-    // Cartel luminoso: placa oscura con un corazón encendido.
-    rect(g, 8, 5, 20, 9, INK.night2)
-    ;[[11, 7, 2], [14, 7, 2], [18, 7, 2], [21, 7, 2]].forEach(([x, y, w]) => rect(g, x, y, w, 2, INK.rose))
-    rect(g, 11, 9, 12, 1, INK.rose)
-    rect(g, 12, 10, 10, 1, INK.rose)
-    rect(g, 14, 11, 6, 1, INK.rose)
-    rect(g, 16, 12, 2, 1, INK.rose)
-    rect(g, 12, 7, 1, 1, '#fde0e8')
-    // Figuritas pintadas: una redonda con orejas y otra con alas, sobre su balda.
-    rect(g, 6, 22, 7, 7, INK.saffronLight)
-    rect(g, 7, 20, 2, 2, INK.saffronLight)
-    rect(g, 10, 20, 2, 2, INK.saffronLight)
-    rect(g, 8, 24, 1, 1, INK.night)
-    rect(g, 11, 24, 1, 1, INK.night)
-    rect(g, 9, 26, 1, 1, INK.tile)
-    rect(g, 18, 23, 6, 6, INK.lagoonLight)
-    rect(g, 16, 24, 2, 3, INK.lagoon)
-    rect(g, 24, 24, 2, 3, INK.lagoon)
-    rect(g, 19, 25, 1, 1, INK.night)
-    rect(g, 22, 25, 1, 1, INK.night)
-    rect(g, 27, 25, 4, 4, INK.plum)
-    // Jarrón de líneas y llaveros colgados de ganchos.
-    rect(g, 6, 38, 6, 5, INK.teal)
-    rect(g, 7, 36, 4, 2, INK.teal)
-    rect(g, 6, 40, 6, 1, '#1f6b68')
-    ;[[16, INK.tile], [20, INK.saffronLight], [24, INK.meadow], [28, INK.lagoonLight]].forEach(([x, color]) => {
-      rect(g, x, 35, 1, 3, INK.steelLight)
-      rect(g, x - 1, 38, 3, 3, color)
-    })
+    g.restore()
   },
 }

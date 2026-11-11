@@ -9,6 +9,8 @@
 // dibuja; `InteriorSky` coloca las capas, las enciende con la hora del valle y les pone el orden de dibujo (`LED_DEPTH`).
 import { INK, canvasOf, rect } from './draw.js'
 import { SPOTS, WALL_BASE, WALL_X } from './homeLayout.js'
+import { SHELF_BODY_H } from './furniture/shelves.js'
+import { SIGN_H, drawLuprintechSign } from './signs.js'
 import { stringLightBulbs } from './interiorLight.js'
 
 export const LED_LAYERS = ['wall', 'furniture', 'shelf']
@@ -29,8 +31,8 @@ export const ledStrips = (room) => [
   { layer: 'furniture', x: WALL_X.tv - 35, y: 36, w: 1, h: 40 },
   { layer: 'furniture', x: WALL_X.tv + 35, y: 36, w: 1, h: 40 },
   // A los lados de la vitrina de piezas impresas.
-  { layer: 'shelf', x: SPOTS.makerShelf.x - 19, y: SPOTS.makerShelf.y - 46, w: 1, h: 40 },
-  { layer: 'shelf', x: SPOTS.makerShelf.x + 18, y: SPOTS.makerShelf.y - 46, w: 1, h: 40 },
+  { layer: 'shelf', x: SPOTS.makerShelf.x - 19, y: SPOTS.makerShelf.y - SHELF_BODY_H, w: 1, h: SHELF_BODY_H - 6 },
+  { layer: 'shelf', x: SPOTS.makerShelf.x + 18, y: SPOTS.makerShelf.y - SHELF_BODY_H, w: 1, h: SHELF_BODY_H - 6 },
 ]
 
 // Pantallas que siguen luciendo bajo la penumbra: x, y, ancho y alto de un velo claro sobre cada una. Van en la capa de los
@@ -62,6 +64,10 @@ export function ledCanvas(room, palette, layer) {
     g.globalAlpha = 1
     rect(g, strip.x, strip.y, strip.w, strip.h, color)
   })
+  if (layer === 'shelf') {
+    // El rótulo sobre la vitrina (su textura mide 44 de ancho y está centrada en la vitrina) luce de noche junto con sus tiras.
+    drawLuprintechSign(g, SPOTS.makerShelf.x - 22, SPOTS.makerShelf.y - SHELF_BODY_H - SIGN_H, true)
+  }
   if (layer === 'furniture') {
     g.globalAlpha = 0.2
     screenVeils().forEach(([x, y, w, h]) => rect(g, x, y, w, h, INK.white))

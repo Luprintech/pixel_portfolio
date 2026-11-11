@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PRINT_MS, idleJob, jobAt, printView, progressOf, startJob } from './printJob.js'
+import { PRINT_MS, collectOutcome, idleJob, jobAt, printView, printerState, progressOf, startJob } from './printJob.js'
 
 describe('trabajo de impresión', () => {
   it('empieza en reposo y no avanza sin lanzarse', () => {
@@ -29,5 +29,21 @@ describe('trabajo de impresión', () => {
     const job = startJob(5000)
     expect(progressOf(job, 0)).toBe(0)
     expect(progressOf(job, 5000 + PRINT_MS * 3)).toBe(1)
+  })
+
+  it('el premio solo se entrega la primera vez, aunque se reimprima', () => {
+    // Primera impresión: idle → printing → completed → se recoge y se entrega.
+    expect(printerState(idleJob(), 0, false)).toBe('idle')
+    const job = startJob(0)
+    expect(printerState(job, 1, false)).toBe('printing')
+    expect(printerState(job, PRINT_MS, false)).toBe('completed')
+    const first = collectOutcome(false)
+    expect(first.reward).toBe(true)
+    expect(first.job).toEqual(idleJob())
+    // Reimpresión: la impresora ofrece reimprimir, se vuelve a ver todo el proceso y no se premia otra vez.
+    expect(printerState(first.job, 0, true)).toBe('reward_given')
+    expect(printerState(startJob(0), 1, true)).toBe('printing')
+    expect(printerState(startJob(0), PRINT_MS, true)).toBe('completed')
+    expect(collectOutcome(true).reward).toBe(false)
   })
 })

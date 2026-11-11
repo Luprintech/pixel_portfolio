@@ -30,12 +30,21 @@ export default function FiguresViewer({ unlocked, onClose }) {
           <button ref={closeRef} type="button" data-sound="back" className="px-btn px-btn--bone shrink-0" style={{ color: PAL.ink }} onClick={onClose}>{copy.hud.close}</button>
         </header>
         <ul className="grid grid-cols-2 gap-4 overflow-y-auto p-5 pt-3 sm:grid-cols-3">
-          {shown.map((figure) => (
-            <li key={figure.id} className="flex flex-col items-center gap-2 text-center">
-              <img src={images[figure.id]} alt="" className="h-28 w-28 [image-rendering:pixelated]" style={{ background: tone('ivory', PAL.bone), boxShadow: `0 0 0 3px ${PAL.ink}` }} />
-              <span className="px-text text-sm">{copy.figures.items[figure.id]}</span>
-            </li>
-          ))}
+          {shown.map((figure) => {
+            const card = (
+              <>
+                <img src={images[figure.id]} alt="" className="h-28 w-28 object-contain [image-rendering:pixelated]" style={figure.bare ? undefined : { background: figure.dark ? PAL.ink : tone('ivory', PAL.bone), boxShadow: `0 0 0 3px ${PAL.ink}` }} />
+                <span className="px-text text-sm">{copy.figures.items[figure.id]}</span>
+              </>
+            )
+            const layout = 'flex flex-col items-center gap-2 text-center'
+            // Una figura con enlace (el Funko) es toda ella un enlace externo: se abre en otra pestaña sin salir del juego.
+            return (
+              <li key={figure.id}>
+                {figure.href ? <a href={figure.href} target="_blank" rel="noopener noreferrer" className={`${layout} rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4`}>{card}</a> : <div className={layout}>{card}</div>}
+              </li>
+            )
+          })}
         </ul>
       </section>
     </div>

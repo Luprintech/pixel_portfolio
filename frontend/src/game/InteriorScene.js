@@ -14,7 +14,7 @@ import { jukebox } from '../lib/jukebox.js'
 import { prefersReducedMotion } from '../lib/reducedMotion.js'
 import { figureCanvas, FIGURES } from './interior/figures.js'
 import { MINI_STAGES, miniFrameInfo, miniStageFrames } from './interior/furniture/maker.js'
-import { idleJob, jobAt, printView, startJob } from './interior/printJob.js'
+import { collectOutcome, jobAt, idleJob, printView, startJob } from './interior/printJob.js'
 import { sitDown, standUp } from './sitting.js'
 
 const SPEED = 90
@@ -267,12 +267,13 @@ export default class InteriorScene extends Phaser.Scene {
   }
 
   // Recoger la impresión terminada: la figura sale de la placa, la viajera, de frente, levanta el Pikachu por encima de la
-  // cabeza, con un destello, y lo enseña un momento antes de recibirlo (después se da el logro). Durante la escena no se anda
+  // cabeza, con un destello, y lo enseña un momento antes de recibirlo (después se da el logro, solo la primera vez: las reimpresiones se recogen igual). Durante la escena no se anda
   // ni se usa nada. Con la impresión sin terminar no hay nada que recoger.
   collectPrint() {
     if (this.showing || this.printKind !== 'done') return
     this.showing = true
-    this.game.registry.set('printJob', idleJob())
+    const { job, reward } = collectOutcome(Boolean(this.game.registry.get('makerRewarded')))
+    this.game.registry.set('printJob', job)
     if (this.seat) this.stand()
     this.princess.body.setVelocity(0, 0)
     this.facing = 'down'
@@ -294,7 +295,7 @@ export default class InteriorScene extends Phaser.Scene {
       figure.destroy()
       glow.destroy()
       this.showing = false
-      this.game.events.emit('figure-shown')
+      this.game.events.emit('figure-shown', { reward })
     })
   }
 

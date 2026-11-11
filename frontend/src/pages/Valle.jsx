@@ -279,10 +279,15 @@ export default function Valle() {
     setZone(null)
   }, [game])
   const { unlock } = achievements
+  // La sala necesita saber si el premio de la impresora ya se entregó para no repetirlo al reimprimir.
+  const makerRewarded = achievements.unlocked.has('maker')
+  useEffect(() => {
+    game?.registry.set('makerRewarded', makerRewarded)
+  }, [game, makerRewarded])
   useEffect(() => {
     if (!game) return undefined
     const engine = () => getEngine() ?? startEngineIfAllowed()
-    const done = () => unlock('maker')
+    const done = ({ reward }) => reward && unlock('maker')
     // La impresora solo suena mientras imprime y siguiendo a la animación: cada movimiento del cabezal que avisa la sala.
     const step = (move) => !activeZone.current && playPrintStep(move)
     const finished = () => playPrintDone()
@@ -436,7 +441,7 @@ export default function Valle() {
         {zone === 'pc' && !editing && <RetroDesktop onClose={closeZone} unlock={achievements.unlock} onMinimizedChange={setPcMinimized} />}
         {zone === 'console' && !editing && <ConsoleGame onClose={closeArcade} onWin={() => achievements.unlock('retro')} />}
         {zone === 'tv' && !editing && <SmartTv channel={tvChannel} onSelect={selectChannel} onClose={closeZone} />}
-        {zone === 'printer' && !editing && <PrinterPanel job={game?.registry.get('printJob')} claimed={achievements.unlocked.has('maker')} onStart={startPrint} onClose={closeZone} />}
+        {zone === 'printer' && !editing && <PrinterPanel job={game?.registry.get('printJob')} claimed={makerRewarded} onStart={startPrint} onClose={closeZone} />}
         {zone === 'figures' && !editing && <FiguresViewer unlocked={achievements.unlocked} onClose={closeZone} />}
         {zone && zone !== 'telescope' && !['pc', 'console', 'tv', 'printer', 'figures'].includes(zone) && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
         {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} onClose={closeDialogue} />}

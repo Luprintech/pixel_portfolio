@@ -6,6 +6,14 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Casa de Lupe, décima pasada: impresoras, vitrina y rótulo Luprintech (2026-11-11)
+
+- La A1 (izquierda) imprime a Tanjiro en bucle y más despacio; las dos llevan su rótulo en letra pequeña («bambu A1» y «bambu»).
+- La A1 mini ofrece «Reimprimir» tras recoger a Pikachu. El estado de la impresora está en `printJob.js` (`idle`, `printing`, `completed`, `reward_given`) y el logro solo se entrega la primera vez.
+- La vitrina se pinta desde la lista `FIGURES` (`figures.js`): Nezuko, Eren, Zelda, Tanjiro y el Funko personalizado (enlace a YouTube, sin tarjeta de fondo en el visor). Se coloca sola de tres en tres y gana baldas si hacen falta. Quitados el cartel del corazón, el jarrón y los llaveros.
+- Rótulo «LUPRINTECH» sobre la vitrina, sin placa: apagado de día y encendido de noche con la capa de luces. Decisión: una sola línea y vitrina más ancha (44) porque en dos líneas no se leía.
+- Visión: avanza el rincón maker de la Casa de Lupe. No comprobado a ojo en el juego (ver pendiente).
+
 ### Casa de Lupe, novena pasada: caja de Khalessi, setup blanco y asientos (2026-11-11)
 
 Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, la casa de Lupe).
