@@ -6,6 +6,17 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Recreativa en móvil: más limpia, más grande y sin gestos del navegador (2026-11-11)
+
+- **Opciones:** en táctil la marquesina lleva un botón "Opciones" que abre un panel dentro del monitor con Reanudar (abrirlo pausa la partida), Reiniciar y Salir del juego; en el selector, Volver y Salir de la recreativa. Desaparecen la franja de tres botones y la ✕ suelta (no se cierra sin querer). En escritorio nada cambia.
+- **Disposición:** en vertical el monitor ocupa todo el ancho y los mandos se reparten el resto de la altura; en horizontal el movimiento queda a la izquierda, la acción a la derecha y el monitor en medio (`useLandscape.js`). Respeta las áreas seguras. En móvil el lienzo sube a pasos de un cuarto para llenar el monitor (`snapScale` con `fine`).
+- **Mandos (`TouchPad.jsx`):** toda la zona responde, no solo el palo: la dirección sale de dónde está el dedo respecto al centro. El joystick de cuatro direcciones descarta el eje débil (empujar arriba con el pulgar torcido no mete paso lateral). Invasión Galáctica usa una banda con dos flechas grandes (mitad izquierda, mitad derecha, sin zona muerta). La acción es toda su zona y mantenida repite el disparo. Cada zona captura su propio dedo, así que los dos pulgares no se estorban.
+- **Gestos:** al abrir la recreativa en táctil se pone `overscroll-behavior: none` en `html` y `body` y se cancela `touchmove` en toda la máquina (salvo en los paneles con `data-scroll`, el selector y los resultados, que se desplazan por dentro); las zonas llevan `touch-action: none`. Un gesto que nace en el borde del sistema (barra de inicio, borde superior) no lo controla la web: por eso hay margen de seguridad abajo.
+- **Selector táctil:** sin título visible, descripción en tres líneas como máximo, controles en un desplegable y botón "Jugar" más grande.
+- **Panel de mandos decorativo (`ControlPanel` en `CabinetDecor.jsx`):** rejilla de altavoz, luces, pegatina, franja de rayas, joystick grande, Start, ranura de monedas y botones. En el selector móvil llena el resto del frontal; en escritorio, versión compacta.
+- **Fondo del selector móvil:** la ilustración pixel art de Lupe (`frontend/public/arcade/fondo-movil.png`, reducida a 48 colores: de 1,3 MB a 0,5 MB) cubre el panel de mandos del selector y se recorta para que se vean la rejilla, el invasor y las franjas. Con ella el panel pierde su rejilla y sus rayas propias. Durante la partida no se usa.
+- **Comprobado en el navegador integrado** (emulación móvil, vertical y horizontal): selector, los tres juegos, opciones, zona amplia del joystick, banda de Galáctica, `preventDefault` de `touchmove` y escritorio con teclado. **No se probó en un móvil real:** el gesto de subir del sistema (iOS/Android) solo se puede confirmar allí.
+
 ### Ylonem y Grace en el IES Gran Capitán (2026-11-11)
 
 Avanza la Fase D (Gran Capitán) y la visión (NPC con seudónimo, fase 6). No se tocaron `/clasico`, la casa de Lupe ni su visita guiada.

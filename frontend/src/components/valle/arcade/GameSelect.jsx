@@ -18,7 +18,7 @@ function Cover({ id, label }) {
 // récord) con su botón «Jugar». Las flechas (o WASD) cambian de juego y E, Espacio o Enter juegan; con el ratón o el dedo se toca
 // una portada y «Jugar». Los tamaños de letra salen del ancho del monitor (`cqw`), así el menú cabe igual en el escritorio y en un
 // móvil; si aun así no cupiera, solo este menú se desplaza por dentro, nunca la página.
-export default function GameSelect({ ui, games, scores, unlocked, selected, onSelect, onPlay }) {
+export default function GameSelect({ ui, games, scores, unlocked, selected, touch, onSelect, onPlay }) {
   const play = useRef(null)
   useEffect(() => {
     play.current?.focus({ preventScroll: true })
@@ -29,8 +29,8 @@ export default function GameSelect({ ui, games, scores, unlocked, selected, onSe
   const record = scores[game.id]
 
   return (
-    <div className="absolute inset-0 flex flex-col gap-[1.6cqw] overflow-y-auto p-[2.4cqw]" style={{ background: PAL.ink, color: PAL.bone, fontSize: 'max(12px, 2.5cqw)' }}>
-      <h3 className="px-text text-center font-semibold uppercase tracking-widest" style={{ color: PAL.saffronLight, fontSize: '1.15em' }}>
+    <div data-scroll className="absolute inset-0 flex touch-pan-y flex-col gap-[1.6cqw] overflow-y-auto overscroll-contain p-[2.4cqw]" style={{ background: PAL.ink, color: PAL.bone, fontSize: 'max(12px, 2.5cqw)' }}>
+      <h3 className={`px-text text-center font-semibold uppercase tracking-widest ${touch ? 'sr-only' : ''}`} style={{ color: PAL.saffronLight, fontSize: '1.15em' }}>
         {ui.pick}
       </h3>
       <ul className="grid shrink-0 grid-cols-3 gap-[2cqw]">
@@ -62,16 +62,28 @@ export default function GameSelect({ ui, games, scores, unlocked, selected, onSe
           )}
         </div>
         <p className="px-text uppercase tracking-wide" style={{ color: PAL.lagoonLight, fontSize: '0.8em' }}>{copy.tag}</p>
-        <p className="px-text leading-snug">{copy.desc}</p>
-        <p className="px-text leading-snug" style={{ opacity: 0.8, fontSize: '0.85em' }}>
-          <strong>{ui.controls}:</strong> {copy.controls}
-        </p>
+        {touch ? (
+          <>
+            <p className="px-text line-clamp-3 leading-snug">{copy.desc}</p>
+            <details className="px-text leading-snug" style={{ fontSize: '0.85em' }}>
+              <summary className="cursor-pointer py-1" style={{ color: PAL.lagoonLight }}>{ui.controls}</summary>
+              <p style={{ opacity: 0.8 }}>{copy.controls}</p>
+            </details>
+          </>
+        ) : (
+          <>
+            <p className="px-text leading-snug">{copy.desc}</p>
+            <p className="px-text leading-snug" style={{ opacity: 0.8, fontSize: '0.85em' }}>
+              <strong>{ui.controls}:</strong> {copy.controls}
+            </p>
+          </>
+        )}
       </article>
       <div className="flex shrink-0 items-center justify-between gap-2">
         <p className="px-text" style={{ color: PAL.saffronLight }}>
           {ui.best}: {record.best > 0 ? record.best : ui.noBest}
         </p>
-        <button type="button" ref={play} data-arcade data-sound="confirm" className="px-btn !min-h-10 !px-4 !text-sm" onClick={() => onPlay(game.id)}>
+        <button type="button" ref={play} data-arcade data-sound="confirm" className={`px-btn !px-4 !text-sm ${touch ? '!min-h-12 !px-6' : '!min-h-10'}`} onClick={() => onPlay(game.id)}>
           {ui.play}
         </button>
       </div>

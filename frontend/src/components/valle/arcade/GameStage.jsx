@@ -20,7 +20,7 @@ export default function GameStage({ gameId, runKey, paused, input, lang, ui, onV
   const pausedRef = useRef(paused)
   const callbacks = useRef({ onView, onEvents, onFinish })
   const [view, setView] = useState(null)
-  const scale = useStageScale(boxRef, FRAME.width, FRAME.height)
+  const scale = useStageScale(boxRef, FRAME.width, FRAME.height, window.matchMedia?.('(pointer: coarse)').matches)
 
   useEffect(() => {
     pausedRef.current = paused
@@ -69,7 +69,7 @@ export default function GameStage({ gameId, runKey, paused, input, lang, ui, onV
   const bubble = view?.bubble
 
   return (
-    <div ref={boxRef} className="absolute inset-0 flex items-center justify-center overflow-hidden">
+    <div ref={boxRef} className="absolute inset-0 flex touch-none select-none items-center justify-center overflow-hidden">
       <div className="relative shrink-0" style={{ width, height }}>
         <canvas
           ref={canvasRef}
