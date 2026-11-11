@@ -117,6 +117,10 @@ export const COPY = {
     stackLead: 'Las herramientas que uso a diario.',
     // Bocadillos que salen junto a un personaje de la casa sin abrir un diálogo (ver `components/valle/WorldBubble.jsx`).
     bubbles: {
+      // Lupe durante la visita guiada: al echar a andar, al esperar a la viajera y al quedarse sola.
+      lupeGuide: ['¡Por aquí!', 'Sígueme, que no está lejos.'],
+      lupeWait: ['Sin prisa, te espero.', 'Tómate tu tiempo.'],
+      lupeLeft: ['Cuando quieras, te enseño la casa. Estaré por aquí.'],
       sardine: [
         'Otra sardina. Gracias, Khalessi, qué detalle.',
         '¿Esto es para mí? Eres única, Khalessi.',
@@ -135,6 +139,7 @@ export const COPY = {
       actions: {
         atreus: 'Hablar con Atreus',
         khalessi: 'Saludar a Khalessi',
+        'npc:lupe': 'Hablar con Lupe',
         shelf: 'Mirar las consolas',
         arcade: 'Jugar a la recreativa',
         television: 'Usar la tele',
@@ -409,6 +414,9 @@ export const COPY = {
     projects: { all: 'See all projects', demo: 'View demo', code: 'View code', empty: 'No projects published yet.', loading: 'Loading projects…' },
     stackLead: 'The tools I use every day.',
     bubbles: {
+      lupeGuide: ['This way!', "Follow me, it's not far."],
+      lupeWait: ["No rush, I'll wait for you.", 'Take your time.'],
+      lupeLeft: ["Whenever you like, I'll show you the house. I'll be around."],
       sardine: [
         'Another sardine. Thanks, Khalessi, how thoughtful.',
         "Is this for me? You're one of a kind, Khalessi.",
@@ -426,6 +434,7 @@ export const COPY = {
       actions: {
         atreus: 'Talk to Atreus',
         khalessi: 'Say hi to Khalessi',
+        'npc:lupe': 'Talk to Lupe',
         shelf: 'Look at the consoles',
         arcade: 'Play the arcade machine',
         television: 'Use the TV',

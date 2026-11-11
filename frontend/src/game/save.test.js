@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { colorName, DEFAULT_LOOK, defaultLook, isValidLook, LOOK_LABELS, LOOK_SECTIONS, LOOK_TABS, randomLook, selectBody, upgradeLook, visibleBlocks } from './look'
 import { DEFAULT_PET } from './pet'
+import { initialStory } from './story/story'
 import { clearSave, loadSave, NAME_MAX, sanitizeName, SAVE_VERSION, writeSave } from './save'
 
 describe('look', () => {
@@ -104,7 +105,7 @@ describe('partida guardada', () => {
   it('guarda y recupera nombre y aspecto con versión', () => {
     const pet = { kind: 'perro', breed: 'husky', coat: '#8c93a6', marks: '#f4efe3' }
     writeSave({ name: 'Lupe', look: DEFAULT_LOOK, pet, petName: 'Nube' })
-    expect(loadSave()).toEqual({ version: SAVE_VERSION, name: 'Lupe', look: DEFAULT_LOOK, pet, petName: 'Nube' })
+    expect(loadSave()).toEqual({ version: SAVE_VERSION, name: 'Lupe', look: DEFAULT_LOOK, pet, petName: 'Nube', story: initialStory() })
   })
 
   it('el nombre de la mascota se limpia como el de la viajera y no existe sin mascota', () => {
@@ -118,12 +119,30 @@ describe('partida guardada', () => {
   it('una partida de la versión 2 se lee con la mascota y sin nombre para ella', () => {
     const pet = { kind: 'perro', breed: 'husky', coat: '#8c93a6', marks: '#f4efe3' }
     localStorage.setItem('valle-del-bucle:save', JSON.stringify({ version: 2, name: 'Lupe', look: DEFAULT_LOOK, pet }))
-    expect(loadSave()).toEqual({ version: SAVE_VERSION, name: 'Lupe', look: DEFAULT_LOOK, pet, petName: '' })
+    expect(loadSave()).toEqual({ version: SAVE_VERSION, name: 'Lupe', look: DEFAULT_LOOK, pet, petName: '', story: initialStory() })
   })
 
   it('una partida de la versión 1 se lee sin mascota', () => {
     localStorage.setItem('valle-del-bucle:save', JSON.stringify({ version: 1, name: 'Lupe', look: DEFAULT_LOOK }))
-    expect(loadSave()).toEqual({ version: SAVE_VERSION, name: 'Lupe', look: DEFAULT_LOOK, pet: DEFAULT_PET, petName: '' })
+    expect(loadSave()).toEqual({ version: SAVE_VERSION, name: 'Lupe', look: DEFAULT_LOOK, pet: DEFAULT_PET, petName: '', story: initialStory() })
+  })
+
+  it('una partida de la versión 4 se lee con la bienvenida de Lupe pendiente', () => {
+    localStorage.setItem('valle-del-bucle:save', JSON.stringify({ version: 4, name: 'Lupe', look: DEFAULT_LOOK, pet: DEFAULT_PET }))
+    expect(loadSave().story).toEqual(initialStory())
+  })
+
+  it('guarda la historia y la recupera; una visita en curso vuelve como pendiente', () => {
+    const story = { welcome: 'done', tour: 'accepted', heard: ['inicio.bienvenida'], explained: ['dedicas'] }
+    writeSave({ name: 'Lupe', look: DEFAULT_LOOK, story })
+    expect(loadSave().story).toEqual({ ...story, tour: 'pending' })
+    writeSave({ name: 'Lupe', look: DEFAULT_LOOK, story: { ...story, tour: 'completed' } })
+    expect(loadSave().story.tour).toBe('completed')
+  })
+
+  it('una historia dañada no tira la partida', () => {
+    localStorage.setItem('valle-del-bucle:save', JSON.stringify({ version: SAVE_VERSION, name: 'Lupe', look: DEFAULT_LOOK, story: { welcome: 'x', tour: 7, heard: 'no' } }))
+    expect(loadSave().story).toEqual(initialStory())
   })
 
   it('una mascota dañada no tira la partida', () => {
@@ -135,7 +154,7 @@ describe('partida guardada', () => {
     const old = { hair: '#1c1b3a', skin: '#a8714f', dress: '#7a3f8f', trim: '#cfd6e6' }
     const upgraded = upgradeLook(old)
     localStorage.setItem('valle-del-bucle:look', JSON.stringify(old))
-    expect(loadSave()).toEqual({ version: SAVE_VERSION, name: '', look: upgraded, pet: DEFAULT_PET, petName: '' })
+    expect(loadSave()).toEqual({ version: SAVE_VERSION, name: '', look: upgraded, pet: DEFAULT_PET, petName: '', story: initialStory() })
     writeSave({ name: 'Lupe', look: upgraded })
     expect(localStorage.getItem('valle-del-bucle:look')).toBeNull()
   })

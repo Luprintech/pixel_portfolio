@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { clearSave, loadSave, writeSave } from '../game/save'
+import { getStory } from '../game/story/storyStore'
 
 // Cada cuánto se guarda sola la partida mientras se juega, y cuánto se ve el aviso.
 export const AUTOSAVE_MS = 60_000
@@ -20,7 +21,7 @@ export function useValleSave({ game, active, name, look, pet, petName, autosaved
     // reescribirla sin hora ni posición.
     const scene = game ? game.scene.getScene('valle') : null
     if (game && !scene) return false
-    return writeSave({ name, look, pet, petName, world: scene?.snapshot() })
+    return writeSave({ name, look, pet, petName, world: scene?.snapshot(), story: game ? getStory(game) : undefined })
   }, [game, name, look, pet, petName])
 
   // Guardado explícito: de la persona (Opciones) o al confirmar el creador. Devuelve si pudo guardar.
@@ -55,6 +56,17 @@ export function useValleSave({ game, active, name, look, pet, petName, autosaved
       quiet()
     }
   }, [game, active, write, autosavedText])
+
+  // La historia se guarda en cuanto cambia (bienvenida, visita guiada, conversaciones): si la página se cierra a mitad, la
+  // partida recupera un estado coherente sin esperar al guardado de cada minuto.
+  useEffect(() => {
+    if (!game || !active) return undefined
+    const onStory = () => {
+      if (!erased.current) write()
+    }
+    game.registry.events.on('changedata-story', onStory)
+    return () => game.registry.events.off('changedata-story', onStory)
+  }, [game, active, write])
 
   useEffect(() => {
     if (!toast) return undefined

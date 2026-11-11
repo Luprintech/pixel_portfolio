@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { advance, choose, openNode, view } from '../../game/dialogue/engine'
 import { FEATURES, SCRIPTS } from '../../game/dialogue/scripts'
 import { portraitUrl } from '../../game/interior/portraits'
@@ -21,14 +21,17 @@ const engine = () => getEngine() ?? startEngineIfAllowed()
 // su pitido, retrato a la derecha y, al final, las opciones. Sirve a cualquier personaje u objeto: solo necesita un id de
 // guion (`game/dialogue/scripts.js`). Con la caja abierta, E o Enter avanzan (o completan el texto si aún se escribe),
 // Esc cierra, ↑ y ↓ eligen opción y tocar la caja avanza. `onClose` recibe la acción con la que acabó el guion, si la hay.
-export default function DialogueBox({ scriptId, onClose }) {
+// `features` activa las opciones con `when` que dependen de la historia, y `onReach(id, última)` avisa de cada nodo que se abre y
+// de cuándo se llega a su última página (la historia recuerda así lo escuchado).
+export default function DialogueBox({ scriptId, features: extra, onReach, onClose }) {
   const { lang } = useValleCopy()
   const copy = DIALOGUE_COPY[lang] ?? DIALOGUE_COPY.es
   const [state, setState] = useState(() => openNode(scriptId))
   const [selected, setSelected] = useState(0)
   const optionRefs = useRef([])
 
-  const { page, options } = view(SCRIPTS, state, FEATURES)
+  const features = useMemo(() => ({ ...FEATURES, ...extra }), [extra])
+  const { page, last, options } = view(SCRIPTS, state, features)
   const text = lineText(lang, page.text)
   // Con movimiento reducido el texto aparece entero y sin pitidos.
   const cps = prefersReducedMotion() ? 0 : TYPE_CPS
@@ -45,6 +48,10 @@ export default function DialogueBox({ scriptId, onClose }) {
     }
   }, [shown, text, page.who, cps])
 
+  useEffect(() => {
+    onReach?.(state.id, last)
+  }, [state.id, last, onReach])
+
   // Algunas páginas llevan un efecto de sonido propio (el maullido de Khalessi) que suena al abrirse.
   useEffect(() => {
     if (page.sfx === 'meow') playMeow(engine())
@@ -59,18 +66,18 @@ export default function DialogueBox({ scriptId, onClose }) {
   const next = useCallback(() => {
     if (!done) return finish()
     if (options.length) {
-      const result = choose(SCRIPTS, state, options[selected].id, FEATURES)
+      const result = choose(SCRIPTS, state, options[selected].id, features)
       return result.done ? onClose(result.action) : setState(result.state)
     }
-    const result = advance(SCRIPTS, state, FEATURES)
+    const result = advance(SCRIPTS, state, features)
     return result.done ? onClose(result.action) : setState(result.state)
-  }, [done, finish, options, selected, state, onClose])
+  }, [done, finish, options, selected, state, features, onClose])
 
   const pick = useCallback((id) => {
-    const result = choose(SCRIPTS, state, id, FEATURES)
+    const result = choose(SCRIPTS, state, id, features)
     if (result.done) onClose(result.action)
     else setState(result.state)
-  }, [state, onClose])
+  }, [state, features, onClose])
 
   useEffect(() => {
     const onKey = (event) => {

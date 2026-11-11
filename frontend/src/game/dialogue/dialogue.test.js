@@ -83,7 +83,7 @@ describe('guiones de la casa', () => {
   })
 
   it('las opciones con recurso pendiente no se ofrecen mientras no esté activo', () => {
-    const pending = options.filter((option) => option.when)
+    const pending = options.filter((option) => option.when && option.when in FEATURES)
     expect(pending.length).toBeGreaterThan(0)
     pending.forEach(({ when }) => expect(FEATURES[when]).toBe(false))
     // Con la galería sin activar, "Ver trabajos" no sale en ninguna página de la impresora.
@@ -98,7 +98,7 @@ describe('guiones de la casa', () => {
 
   it('todo diálogo con opciones ofrece una forma de cerrar o seguir', () => {
     Object.entries(SCRIPTS).forEach(([id, node]) => {
-      if (node.options) expect(node.options.some((option) => option.close || option.to), id).toBe(true)
+      if (node.options) expect(node.options.some((option) => option.close || option.to || option.action), id).toBe(true)
     })
   })
 

@@ -36,7 +36,54 @@ const HIFI_MENU = [
   option('seguir', 'casa.opt.seguir', { close: true }),
 ]
 
+// Conversaciones de Lupe al llegar al valle (`docs/DIALOGOS.md`, sección 3). Las opciones llevan `when` con lo que la
+// historia permite (`story/story.js`, `storyFeatures`): una pregunta ya contestada no se vuelve a ofrecer.
+const INTRO_MENU = [
+  option('casa', 'inicio.opt.casa', { when: 'offerTour', to: 'inicio.casa' }),
+  option('dedicas', 'inicio.opt.dedicas', { when: 'offerDedicas', to: 'inicio.dedicas' }),
+  option('encontrar', 'inicio.opt.encontrar', { when: 'offerEncontrar', to: 'inicio.encontrar' }),
+  option('ayuda', 'inicio.opt.ayuda', { when: 'offerAyuda', to: 'inicio.ayuda' }),
+  option('seguir', 'inicio.opt.explorar_seguir', { close: true }),
+]
+
+// La bienvenida ofrece exactamente estas cuatro respuestas; «explorar por mi cuenta» rechaza la visita.
+const WELCOME_MENU = [
+  option('casa', 'inicio.opt.casa', { to: 'inicio.casa' }),
+  option('dedicas', 'inicio.opt.dedicas', { to: 'inicio.dedicas' }),
+  option('encontrar', 'inicio.opt.encontrar', { to: 'inicio.encontrar' }),
+  option('explorar', 'inicio.opt.explorar', { to: 'inicio.explorar' }),
+]
+
 export const SCRIPTS = {
+  'inicio.bienvenida': {
+    pages: [
+      { who: 'lupe', text: 'inicio.bienvenida.1' },
+      { who: 'lupe', text: 'inicio.bienvenida.2' },
+      { who: 'lupe', text: 'inicio.bienvenida.3' },
+      { who: 'khalessi', text: 'inicio.bienvenida.4', sfx: 'meow' },
+      { who: 'lupe', text: 'inicio.bienvenida.5' },
+      { who: 'lupe', text: 'inicio.bienvenida.6' },
+    ],
+    options: WELCOME_MENU,
+  },
+  'inicio.casa': { pages: lines('lupe', 'inicio.casa', 2), action: 'tour-start' },
+  'inicio.dedicas': { pages: lines('lupe', 'inicio.dedicas', 3), options: INTRO_MENU },
+  'inicio.encontrar': { pages: lines('lupe', 'inicio.encontrar', 3), options: INTRO_MENU },
+  'inicio.ayuda': { pages: lines('lupe', 'inicio.ayuda', 2), options: INTRO_MENU },
+  'inicio.explorar': { pages: lines('lupe', 'inicio.explorar', 1), action: 'tour-decline' },
+  'inicio.regreso': { pages: lines('lupe', 'inicio.regreso', 2), options: INTRO_MENU },
+  // Durante la visita, hablar con Lupe permite seguir o dejarla.
+  'inicio.guia_pausa': {
+    pages: lines('lupe', 'inicio.guia_pausa', 1),
+    options: [option('seguir', 'inicio.opt.seguir_visita', { close: true }), option('cancelar', 'inicio.opt.explorar', { action: 'tour-cancel' })],
+  },
+  // Al llegar a la puerta: entrar o seguir explorando (la visita queda pendiente).
+  'inicio.puerta': {
+    pages: lines('lupe', 'inicio.puerta', 2),
+    options: [option('entrar', 'inicio.opt.entrar', { action: 'tour-enter' }), option('luego', 'inicio.opt.luego', { action: 'tour-pause' })],
+  },
+
+
   'casa.entrada': { pages: lines('atreus', 'casa.entrada', 3), options: ATREUS_MENU },
   'casa.atreus_setup': {
     pages: [{ who: 'atreus', text: 'casa.atreus_setup.1' }, { who: 'atreus', text: 'casa.atreus_setup.2' }, { who: 'lupe', text: 'casa.atreus_setup.3' }],

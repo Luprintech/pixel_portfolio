@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import InteriorScene from './InteriorScene.js'
 import ValleScene from './ValleScene.js'
+import { initialStory } from './story/story.js'
 
 // Píxeles del lienzo por píxel CSS. Con una escala del sistema fraccionaria (125 % o 150 % en Windows) un
 // lienzo en píxeles CSS se estira con un factor no entero y el pixel art vibra y se ve borroso al moverse; con
@@ -33,8 +34,9 @@ function keepSized(game, parent) {
 
 // Se importa de forma diferida desde la página del juego: Phaser no pesa en el resto del sitio.
 // `pastel` pinta el escenario con la paleta del tema valle; en modo noche conserva sus colores de siempre.
-// `world` es el estado guardado del valle (hora y posición); sin él se empieza en la entrada, de mañana.
-export function startGame(parent, look, pet, pastel = false, world = null) {
+// `world` es el estado guardado del valle (hora y posición); sin él se empieza en la entrada, de mañana. `story` es la memoria
+// de la historia (bienvenida, visita guiada, conversaciones); sin ella la partida empieza por la bienvenida de Lupe.
+export function startGame(parent, look, pet, pastel = false, world = null, story = initialStory()) {
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent,
@@ -51,6 +53,7 @@ export function startGame(parent, look, pet, pastel = false, world = null) {
   keepSized(game, parent)
   game.registry.set('locked', false)
   game.registry.set('joy', { x: 0, y: 0 })
+  game.registry.set('story', story)
   game.scene.add('interior', InteriorScene, false)
   game.scene.add('valle', ValleScene, true, { look, pet, pastel, world })
   if (import.meta.env.DEV) window.__valle = game

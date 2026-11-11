@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import Editor from '../components/valle/Editor'
@@ -24,6 +24,8 @@ import { DEFAULT_PET } from '../game/pet'
 import { PAL } from '../game/palette'
 import { MENU_THEME, gameById } from '../game/arcade/games'
 import { loadSave } from '../game/save'
+import { initialStory, reachNode, storyFeatures } from '../game/story/story'
+import { updateStory } from '../game/story/storyStore'
 import { clockOffset, valleSkyAt } from '../game/valleSky'
 import { useThemeContext } from '../context/ThemeContext'
 import { warmWorld } from '../game/worldAssets'
@@ -105,6 +107,11 @@ export default function Valle() {
   const touch = isTouch()
   // El valle guardado (hora y posición) solo se reanuda al continuar: una aventura nueva empieza de cero.
   const [initialWorld] = useState(() => (mode === 'nueva' ? null : existing?.world ?? null))
+  // La historia (bienvenida de Lupe, visita guiada, conversaciones escuchadas) también: una aventura nueva empieza por la bienvenida.
+  const [initialStoryValue] = useState(() => (mode === 'nueva' ? initialStory() : existing?.story ?? initialStory()))
+  // Copia de la historia que vive en el juego (ver `game/story/storyStore.js`): la página solo la lee para ofrecer las opciones que tocan.
+  const [story, setStory] = useState(initialStoryValue)
+  const storyFeaturesNow = useMemo(() => storyFeatures(story), [story])
 
   // Se declara antes que el efecto del juego: al salir, su limpieza guarda mientras la escena aún existe.
   const { saved, toast, saveNow, eraseSave } = useValleSave({ game, active: phase === 'play', name, look, pet, petName, autosavedText: copy.hud.autosaved })
@@ -157,9 +164,10 @@ export default function Valle() {
       .then(({ startGame }) => {
         if (cancelled || !hostRef.current) return
         applied.current = { look, pet }
-        instance = startGame(hostRef.current, look, pet, pastel, initialWorld)
+        instance = startGame(hostRef.current, look, pet, pastel, initialWorld, initialStoryValue)
         instance.events.on('near', setNear)
         instance.events.on('enter', setZone)
+        instance.registry.events.on('changedata-story', (_parent, value) => setStory(value))
         instance.events.on('talk', setDialogue)
         // Con una actividad abierta (ordenador, recreativa...) la casa calla: ni maullidos ni impresora compiten con ella.
         instance.events.on('meow', (variant) => !activeZone.current && playMeow(getEngine() ?? startEngineIfAllowed(), variant))
@@ -303,12 +311,14 @@ export default function Valle() {
     game.events.on('print-done', finished)
     game.events.on('item-get', item)
     game.events.on('atreus-react', react)
+    game.events.on('npc-bubble', react)
     return () => {
       game.events.off('figure-shown', done)
       game.events.off('print-step', step)
       game.events.off('print-done', finished)
       game.events.off('item-get', item)
       game.events.off('atreus-react', react)
+      game.events.off('npc-bubble', react)
     }
   }, [game, unlock])
   // El bocadillo se quita solo; la escena deja de mandar su posición.
@@ -318,12 +328,16 @@ export default function Valle() {
   }, [game])
   const reactionText = reaction ? copy.bubbles[reaction.key][reaction.id % copy.bubbles[reaction.key].length] : null
   // Un guion puede acabar abriendo algo (el ordenador de Lupe abre su escritorio retro).
+  // Las acciones `tour-*` son de la visita guiada de Lupe y las atiende el valle (`game/npc/ValleNpcs.js`).
   const closeDialogue = useCallback((action) => {
     setDialogue(null)
     if (action === 'desktop') setZone('pc')
     else if (action === 'tv') setZone('tv')
     else if (action === 'music') jukebox.toggle()
-  }, [])
+    else if (action?.startsWith('tour-')) game?.events.emit('npc-action', action)
+  }, [game])
+  // La historia recuerda lo que Lupe ya ha contado: cada nodo que se abre y cuándo se llega a su última página.
+  const reachDialogue = useCallback((id, finished) => game && updateStory(game, (current) => reachNode(current, id, finished)), [game])
   // Si aún no ha llegado ningún estado (se abre nada más entrar), se parte del cielo con que empieza la visita.
   const getSky = useCallback(() => skyRef.current || valleSkyAt(clockOffset(1), 1), [])
   const zoomView = useCallback((delta) => game?.events.emit('zoom', delta), [game])
@@ -448,7 +462,7 @@ export default function Valle() {
         {zone === 'printer' && !editing && <PrinterPanel job={game?.registry.get('printJob')} claimed={makerRewarded} onStart={startPrint} onClose={closeZone} />}
         {zone === 'figures' && !editing && <FiguresViewer unlocked={achievements.unlocked} onClose={closeZone} />}
         {zone && zone !== 'telescope' && !['pc', 'console', 'tv', 'printer', 'figures'].includes(zone) && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
-        {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} onClose={closeDialogue} />}
+        {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} features={storyFeaturesNow} onReach={reachDialogue} onClose={closeDialogue} />}
 
         <OptionsDialog
           open={optionsOpen && !editing}

@@ -6,7 +6,7 @@ import { steppedRoomZoom } from './viewport.js'
 import { advanceWalk, facingFor, inputVector } from './walk.js'
 import { talkFor } from './dialogue/scripts.js'
 import { loadSeen, markSeen } from './dialogue/seen.js'
-import Follower from './follower.js'
+import NpcActor from './npc/NpcActor.js'
 import { buildHome, faceTraveller } from './interior/homeBuilder.js'
 import { ARCADE_FRONT, FACE_TO_SEAT, SEATS, interactionAt } from './interior/homeLayout.js'
 import InteriorSky from './interior/InteriorSky.js'
@@ -45,6 +45,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.building = data.building
     this.pastel = !!data.pastel
     this.fromRoof = data.from === 'deck'
+    // Con una visita guiada en marcha Lupe entra con la viajera; si no, la casa no la tiene a su lado (ver `story/story.js`).
+    this.guided = !!data.guided
     this.facing = this.fromRoof ? 'down' : 'up'
     this.walk = { timer: 0, step: 0 }
     this.near = null
@@ -81,8 +83,9 @@ export default class InteriorScene extends Phaser.Scene {
     this.buildFurniture()
     // Misma hora, estación y tiempo que fuera: el cielo lo lleva el reloj del valle.
     this.sky = new InteriorSky(this, { room, pastel: this.pastel, source: this.scene.get('valle').sky })
-    // Lupe acompaña a la viajera también dentro de casa.
-    this.lupe = new Follower(this, 'npc-lupe', start.x - 14, start.y + 2)
+    // Lupe espera dentro, junto a la puerta, solo durante la visita guiada. No sigue a la viajera: la visita interior guiada,
+    // que le dará algo que hacer aquí, llega en la fase siguiente.
+    this.lupe = this.guided ? new NpcActor(this, 'npc-lupe', start.x - 14, start.y + 2) : null
     this.exitZone = new Phaser.Geom.Rectangle(room.exit.x, room.exit.y, room.exit.width, room.exit.height)
 
     const kb = this.input.keyboard
@@ -333,7 +336,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.game.events.emit('near', null)
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.stop()
-      this.scene.wake('valle', to ? { to } : undefined)
+      this.scene.wake('valle', { ...(to && { to }), guided: this.guided })
     })
     this.cameras.main.fadeOut(220, ...FADE)
   }
@@ -412,6 +415,13 @@ export default class InteriorScene extends Phaser.Scene {
     })
   }
 
+  // Lupe, quieta junto a la puerta, mira a la viajera estando donde esté.
+  faceLupe(px, py) {
+    if (!this.lupe) return
+    const { x, y } = this.lupe.sprite
+    this.lupe.render({ x, y, facing: facingFor(px - x, py - y), walking: false }, 0)
+  }
+
   // Khalessi fuera de la caja se puede saludar donde esté: cerca de ella, y no solo ante la caja.
   catNear(px, py) {
     const cat = this.cat?.cat
@@ -427,7 +437,7 @@ export default class InteriorScene extends Phaser.Scene {
       this.princess.setDepth(py)
       this.shadow.setPosition(this.princess.x, this.princess.y - 1)
     }
-    if (this.frame) this.lupe.follow(this.frame.moving, px, py, this.frame.delta)
+    this.faceLupe(px, py)
     if (this.atreus) faceTraveller(this.atreus, this.cat?.cat.giving ? this.cat.sprite : this.princess, facingFor)
     let id = null
     if (this.leaving) id = null

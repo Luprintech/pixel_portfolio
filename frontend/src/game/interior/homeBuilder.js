@@ -6,6 +6,7 @@ import { khalessiCanvas, khalessiEatCanvas, khalessiSitCanvas, khalessiSleepCanv
 import { makeCanvas, rect } from '../pixelKit.js'
 import { prefersReducedMotion } from '../../lib/reducedMotion.js'
 import { atreusBlink, atreusSheet } from './atreusSheet.js'
+import { buildExclamation } from '../npc/exclaim.js'
 import { FURNITURE, framesOf, furnitureCanvas, solidsOf } from './furniture/index.js'
 import { catDepth, createCat, updateCat } from './catBrain.js'
 import { ATREUS_BODY, FURNITURE_PLAN, NPC_PLAN } from './homeLayout.js'
@@ -219,20 +220,7 @@ function buildKhalessi(scene, onMeow) {
 }
 
 // Exclamación discreta sobre Atreus mientras no se haya hablado con él: avisa de una conversación opcional.
-function buildExclamation(scene, atreus) {
-  if (!scene.textures.exists('npc-exclaim')) {
-    const canvas = makeCanvas(7, 12)
-    const g = canvas.getContext('2d')
-    rect(g, 1, 0, 5, 8, '#1c1b3a')
-    rect(g, 2, 1, 3, 6, '#f8d77a')
-    rect(g, 1, 9, 5, 3, '#1c1b3a')
-    rect(g, 2, 9, 3, 2, '#f8d77a')
-    scene.textures.addCanvas('npc-exclaim', canvas)
-  }
-  const mark = scene.add.image(atreus.sprite.x, atreus.sprite.y - 38, 'npc-exclaim').setDepth(9999)
-  if (!prefersReducedMotion()) scene.tweens.add({ targets: mark, y: mark.y - 2, duration: 500, yoyo: true, repeat: -1 })
-  return mark
-}
+const buildAtreusExclamation = (scene, atreus) => buildExclamation(scene, () => ({ x: atreus.sprite.x, y: atreus.sprite.y - 38 }))
 
 // Aviso sobre la impresora pequeña cuando la figura está lista: una exclamación verde (el color de la marca) que sube y baja
 // sobre la máquina. Empieza oculta; la escena la enseña mientras haya algo que recoger.
@@ -260,7 +248,7 @@ export function buildHome(scene, pastel, addSolid, onMeow = () => {}) {
   const atreusPlan = NPC_PLAN.find((npc) => npc.id === 'atreus')
   const atreus = buildAtreus(scene, atreusPlan, addSolid)
   const khalessi = buildKhalessi(scene, onMeow)
-  return { atreus, exclamation: buildExclamation(scene, atreus), switches, khalessi, printMark: buildPrintMark(scene) }
+  return { atreus, exclamation: buildAtreusExclamation(scene, atreus), switches, khalessi, printMark: buildPrintMark(scene) }
 }
 
 // Hacia dónde mira Atreus según dónde esté la viajera; vuelve a mirar de frente cuando se aleja.

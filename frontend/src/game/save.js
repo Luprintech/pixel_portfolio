@@ -6,13 +6,15 @@ import { clearScores } from './arcade/scores.js'
 import { clearAchievements } from './achievements.js'
 import { clearSeen } from './dialogue/seen.js'
 import { sanitizeWorld } from './worldSave.js'
+import { initialStory, recoverStory, sanitizeStory } from './story/story.js'
 
 const SAVE_KEY = 'valle-del-bucle:save'
 // Clave de antes del creador de personaje: solo guardaba el aspecto, sin nombre.
 const LEGACY_LOOK_KEY = 'valle-del-bucle:look'
 // Versión 2: añade la mascota. Versión 3: añade el nombre de la mascota. Versión 4: añade el estado del valle
-// (hora y posición). Las partidas anteriores se leen igual: sin mascota, sin nombre de mascota o empezando en la entrada.
-export const SAVE_VERSION = 4
+// (hora y posición). Versión 5: añade la historia (bienvenida, visita guiada y conversaciones escuchadas). Las partidas
+// anteriores se leen igual: sin mascota, sin nombre de mascota, empezando en la entrada y con la bienvenida de Lupe pendiente.
+export const SAVE_VERSION = 5
 export const NAME_MAX = 16
 
 // Deja solo letras, números, espacios, guion y apóstrofo, sin espacios repetidos ni sobrantes.
@@ -40,26 +42,28 @@ function readJson(key) {
   }
 }
 
-// Devuelve { version, name, look, pet, petName, world? } o null si no hay partida o está dañada. `world` (hora del
+// Devuelve { version, name, look, pet, petName, story, world? } o null si no hay partida o está dañada. `world` (hora del
 // valle y posición, ver worldSave.js) solo está si se guardó y es válido.
 export function loadSave() {
   const saved = readJson(SAVE_KEY)
-  if (saved && [1, 2, 3, SAVE_VERSION].includes(saved.version)) {
+  if (saved && [1, 2, 3, 4, SAVE_VERSION].includes(saved.version)) {
     const look = upgradeLook(saved.look)
     if (look) {
       const pet = upgradePet(saved.pet)
       const world = sanitizeWorld(saved.world)
-      return { version: SAVE_VERSION, name: sanitizeName(saved.name), look, pet, petName: petNameFor(pet, saved.petName), ...(world && { world }) }
+      // Una visita guiada "en curso" no se reanuda: se recupera como pendiente (ver `recoverStory`).
+      const story = recoverStory(sanitizeStory(saved.story) ?? initialStory())
+      return { version: SAVE_VERSION, name: sanitizeName(saved.name), look, pet, petName: petNameFor(pet, saved.petName), story, ...(world && { world }) }
     }
   }
   const legacy = upgradeLook(readJson(LEGACY_LOOK_KEY))
-  return legacy ? { version: SAVE_VERSION, name: '', look: legacy, pet: DEFAULT_PET, petName: '' } : null
+  return legacy ? { version: SAVE_VERSION, name: '', look: legacy, pet: DEFAULT_PET, petName: '', story: initialStory() } : null
 }
 
 // Devuelve si se pudo guardar: sin almacenamiento (modo privado, cuota llena) la partida dura solo esta visita.
-export function writeSave({ name, look, pet = DEFAULT_PET, petName = '', world }) {
+export function writeSave({ name, look, pet = DEFAULT_PET, petName = '', world, story }) {
   try {
-    const save = { version: SAVE_VERSION, name: sanitizeName(name), look, pet, petName: petNameFor(pet, petName), world: sanitizeWorld(world) ?? undefined }
+    const save = { version: SAVE_VERSION, name: sanitizeName(name), look, pet, petName: petNameFor(pet, petName), world: sanitizeWorld(world) ?? undefined, story: sanitizeStory(story) ?? initialStory() }
     localStorage.setItem(SAVE_KEY, JSON.stringify(save))
     localStorage.removeItem(LEGACY_LOOK_KEY)
     return true

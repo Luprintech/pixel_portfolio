@@ -13,7 +13,9 @@ import LitWindows from './litWindows.js'
 import { advanceWalk, facingFor, inputVector } from './walk.js'
 import { resumePoint } from './worldSave.js'
 import { characterSheet } from './characters.js'
-import Follower from './follower.js'
+import ValleNpcs from './npc/ValleNpcs.js'
+import { createValleNav } from './npc/valleNav.js'
+import { getStory } from './story/storyStore.js'
 import { registerSheet } from './sheetTexture.js'
 import { sitDown, standUp } from './sitting.js'
 
@@ -80,7 +82,11 @@ export default class ValleScene extends Phaser.Scene {
     // Con un panel abierto, las teclas vuelven a la página (Enter y Espacio activan botones).
     const onLock = (_parent, locked) => {
       if (locked) this.input.keyboard.disableGlobalCapture()
-      else this.input.keyboard.enableGlobalCapture()
+      else {
+        this.input.keyboard.enableGlobalCapture()
+        // Lupe retoma lo que hacía al cerrarse el diálogo.
+        this.npcs.onUnlock()
+      }
     }
     this.game.registry.events.on('changedata-locked', onLock)
     this.game.events.on('action', this.tryEnter, this)
@@ -425,7 +431,9 @@ export default class ValleScene extends Phaser.Scene {
     this.events.on('postupdate', this.settle, this)
     this.events.once('shutdown', () => this.events.off('postupdate', this.settle, this))
 
-    this.lupe = new Follower(this, 'npc-lupe', x - 16, y + 4)
+    // Lupe y Khalessi tienen vida propia: andan por los mismos caminos libres que la viajera (los cuerpos sólidos del mapa).
+    const bodies = this.solids.map((body) => ({ x: body.x - body.width / 2, y: body.y - body.height / 2, w: body.width, h: body.height }))
+    this.npcs = new ValleNpcs(this, createValleNav(bodies), () => ({ x: this.princess.x, y: this.princess.y }))
     this.buildPet(x, y)
     this.facing = 'down'
     this.walk = { timer: 0, step: 0 }
@@ -444,6 +452,7 @@ export default class ValleScene extends Phaser.Scene {
   tryEnter() {
     if (this.inside || this.game.registry.get('locked') || !this.near) return
     if (this.near === 'standup') this.stand()
+    else if (this.near === 'npc:lupe') this.npcs.talk()
     else if (this.near.startsWith('bench:')) this.sit(this.benches.find((bench) => bench.id === this.near).seat)
     else if (this.near === 'rooftopDoor') this.enterBuilding('about', 'deck')
     else if (BUILDINGS.some((b) => b.id === this.near)) this.enterBuilding(this.near)
@@ -459,7 +468,9 @@ export default class ValleScene extends Phaser.Scene {
     this.princess.body.setVelocity(0, 0)
     const cam = this.cameras.main
     cam.once('camerafadeoutcomplete', () => {
-      this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel, from })
+      // Con una visita guiada en marcha, Lupe entra con ella (la visita interior se desarrolla en la fase siguiente).
+      const guided = id === 'about' && getStory(this.game).tour === 'accepted'
+      this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel, from, guided })
       this.scene.sleep()
     })
     cam.fadeOut(220, 220, 203, 240)
@@ -491,7 +502,8 @@ export default class ValleScene extends Phaser.Scene {
       this.facing = 'down'
       this.princess.setFrame(frameName('down', 0))
     }
-    this.lupe.place(this.princess.x - 16, this.princess.y + 4)
+    // Si salió de la casa tras la visita guiada, esa visita ya está hecha y Lupe se queda en su puerta.
+    if (data?.guided) this.npcs.finishTour()
     this.fitCamera()
     this.cameras.main.fadeIn(250, 220, 203, 240)
   }
@@ -523,6 +535,9 @@ export default class ValleScene extends Phaser.Scene {
     const body = this.princess.body
     let vx = 0
     let vy = 0
+
+    // Lupe y Khalessi siguen a lo suyo aunque la viajera esté sentada o leyendo.
+    this.npcs.update(delta, locked)
 
     if (!locked) {
       const move = inputVector(this.cursors, this.keys, this.game.registry.get('joy') || undefined)
@@ -585,8 +600,7 @@ export default class ValleScene extends Phaser.Scene {
 
     // La mascota espera al pie de la escalera: no sabe subir y se perdería tras la pared.
     if (this.companion) this.followPet(moving && onGround, px, py, delta)
-    this.lupe.follow(moving && onGround, px, py, delta)
-    this.checkDoors(px, py)
+    this.checkDoors(px, py, onGround)
   }
 
   followPet(moving, px, py, delta) {
@@ -615,7 +629,15 @@ export default class ValleScene extends Phaser.Scene {
     this.petShadow.setPosition(pet.x + bodyShift, pet.y - 1)
   }
 
-  checkDoors(px, py) {
+  checkDoors(px, py, onGround) {
+    // Lupe, si está al lado, tiene prioridad sobre una puerta cercana: hablar con ella es lo que se espera junto a su casa.
+    if (onGround && this.npcs.canTalk(px, py)) {
+      if (this.near !== 'npc:lupe') {
+        this.near = 'npc:lupe'
+        this.game.events.emit('near', 'npc:lupe')
+      }
+      return
+    }
     const hit = this.doors.find((d) => d.rect.contains(px, py))
     // El telescopio se usa con E, no al pisarlo: solo cuenta como "cerca" para ofrecerlo.
     const atScope = !hit && this.terrace && nearTelescope(this.climbMode, this.princess.x - this.terrace.px, this.princess.y - this.terrace.py)
