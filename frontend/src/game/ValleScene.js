@@ -16,7 +16,6 @@ import { characterSheet } from './characters.js'
 import Follower from './follower.js'
 import { registerSheet } from './sheetTexture.js'
 import { sitDown, standUp } from './sitting.js'
-import { valleSkyAt } from './valleSky.js'
 
 const SPEED = 90
 // Lo máximo que cambia la altura de los pies por fotograma al entrar en la escalera: más que la pendiente de la rampa.
@@ -460,15 +459,10 @@ export default class ValleScene extends Phaser.Scene {
     this.princess.body.setVelocity(0, 0)
     const cam = this.cameras.main
     cam.once('camerafadeoutcomplete', () => {
-      this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel, night: this.isNight(), from })
+      this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel, from })
       this.scene.sleep()
     })
     cam.fadeOut(220, 220, 203, 240)
-  }
-
-  // De noche (el valle ya ha encendido las ventanas) las casas se iluminan por dentro con leds.
-  isNight() {
-    return valleSkyAt(this.sky.clock(), this.seed).gloom > 0.55
   }
 
   sit(seat) {

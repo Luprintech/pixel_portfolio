@@ -15,6 +15,12 @@ export const TRACKS = [
 export const trackUrl = (track) => `/audio/${encodeURIComponent(track.file)}`
 
 const listeners = new Set()
+// Quien manda en la música de la casa (`musicDirector`) puede retrasar el arranque de una pista hasta que la de fondo haya
+// callado. Sin él, arranca al instante.
+let gate = null
+export const setJukeboxGate = (fn) => {
+  gate = fn
+}
 let audio = null
 let state = { playing: false, index: 0 }
 
@@ -49,7 +55,9 @@ export const jukebox = {
     const changed = !el.src.endsWith(encodeURIComponent(track.file))
     if (changed) el.src = trackUrl(track)
     set({ index: TRACKS.indexOf(track), playing: true })
-    el.play().catch(() => set({ playing: false }))
+    const start = () => el.play().catch(() => set({ playing: false }))
+    if (gate) gate(start)
+    else start()
   },
   pause() {
     audio?.pause()

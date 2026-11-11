@@ -78,7 +78,6 @@ export default class SkyLayer {
     if (this.origin === null) this.origin = time
     const ms = time - this.origin + this.offset
     const sky = valleSkyAt(ms, this.seed)
-    const { game } = this.scene
 
     tintLayers(sky).forEach(({ alpha }, i) => this.setIfChanged(this.tints[i], alpha))
     this.seasons.autumn.forEach((image) => this.setIfChanged(image, sky.autumn))
@@ -88,7 +87,14 @@ export default class SkyLayer {
 
     paintWeather(this.texture.getContext(), sky, ms, this.seed, this.size)
     this.texture.refresh()
+    this.publishWorld(ms, sky)
+    return sky
+  }
 
+  // Lo que el resto del juego oye del cielo: los truenos de los rayos que han caído y el estado del tiempo (que el sonido
+  // ambiente sigue). Lo comparten el valle y el interior de las casas, así hay un solo reloj y cada rayo suena una vez.
+  publishWorld(ms, sky) {
+    const { game } = this.scene
     // Con la pestaña oculta el reloj da un salto: no se recuperan los rayos que hubo mientras tanto.
     const live = ms - this.lastMs <= 500
     if (live) valleStrikesBetween(this.lastMs, ms, this.seed).forEach((strike) => game.events.emit('thunder', strike.delay))
@@ -97,6 +103,5 @@ export default class SkyLayer {
       this.lastPublish = ms
       game.events.emit('sky', sky)
     }
-    return sky
   }
 }

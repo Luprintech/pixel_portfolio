@@ -16,6 +16,7 @@ import RetroDesktop from '../components/valle/RetroDesktop'
 import SaveToast from '../components/valle/SaveToast'
 import SkyView from '../components/valle/SkyView'
 import SmartTv from '../components/valle/SmartTv'
+import WorldBubble from '../components/valle/WorldBubble'
 import ZonePanel from '../components/valle/ZonePanel'
 import ZoomControl from '../components/valle/ZoomControl'
 import { defaultLook, randomLook, selectBody } from '../game/look'
@@ -26,14 +27,17 @@ import { clockOffset, valleSkyAt } from '../game/valleSky'
 import { useThemeContext } from '../context/ThemeContext'
 import { warmWorld } from '../game/worldAssets'
 import { useAchievements } from '../hooks/useAchievements'
+import { useJukebox } from '../hooks/useJukebox'
 import { useUiSounds } from '../hooks/useUiSounds'
 import { useValleSave } from '../hooks/useValleSave'
-import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
+import { acquireAmbience, setAmbienceDuck, setAmbienceScene, thunder } from '../lib/ambience'
 import { getEngine, startEngineIfAllowed } from '../lib/audioEngine'
 import { playMeow } from '../lib/dialogueSound'
 import { jukebox } from '../lib/jukebox'
-import { playPrintDone, startPrinterSound } from '../lib/printerSound'
+import { setActivity, startMusicDirector } from '../lib/musicDirector'
+import { playPrintDone, playPrintStep } from '../lib/printerSound'
 import { tone } from '../lib/tone'
+import { playUiSound } from '../lib/uiSounds'
 import { useValleCopy } from '../lib/valleCopy'
 
 // Todos los controles de la barra del valle miden lo mismo (36 px) y comparten la tipografía pequeña: iguales
@@ -49,6 +53,12 @@ function nearLabel(near, copy) {
   if (action) return action
   return `${copy.hud.enter}: ${copy.zones[near]}`
 }
+
+// Lo que suena a la vez que cada actividad (ver `lib/chiptuneSongs.js`). Hoy la recreativa tiene un solo minijuego.
+const ARCADE_THEME = 'adventure'
+// El exterior (viento, lluvia, pájaros) llega más suave a través de las paredes, y casi nada con la minicadena sonando.
+const INDOOR_AMBIENCE = 0.35
+const MUSIC_AMBIENCE = 0.12
 
 const isTouch =() => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
 
@@ -80,15 +90,19 @@ export default function Valle() {
   // Guion de la conversación abierta (ver `game/dialogue/scripts.js`) o null.
   const [dialogue, setDialogue] = useState(null)
   const achievements = useAchievements()
-  // Canal de la tele, o null si está apagada. Y si la impresora pequeña está imprimiendo (para que suene su trabajo).
+  // Canal de la tele, o null si está apagada.
   const [tvChannel, setTvChannel] = useState(null)
-  const [printing, setPrinting] = useState(false)
+  // Si la viajera está dentro de una casa, y el bocadillo de reacción de un personaje (o null).
+  const [indoors, setIndoors] = useState(false)
+  const [reaction, setReaction] = useState(null)
   // El ordenador de Lupe minimizado deja de bloquear el juego.
   const [pcMinimized, setPcMinimized] = useState(false)
   // Límites del zoom que publica la escena; hasta que existe, ambos botones valen.
   const [zoomState, setZoomState] = useState({ canIn: true, canOut: true })
   const hostRef = useRef(null)
   const skyRef = useRef(null)
+  // La zona abierta, para los avisos del juego que llegan por eventos y no deben sonar encima de una actividad.
+  const activeZone = useRef(null)
   const touch = isTouch()
   // El valle guardado (hora y posición) solo se reanuda al continuar: una aventura nueva empieza de cero.
   const [initialWorld] = useState(() => (mode === 'nueva' ? null : existing?.world ?? null))
@@ -148,7 +162,9 @@ export default function Valle() {
         instance.events.on('near', setNear)
         instance.events.on('enter', setZone)
         instance.events.on('talk', setDialogue)
-        instance.events.on('meow', (variant) => playMeow(getEngine() ?? startEngineIfAllowed(), variant))
+        // Con una actividad abierta (ordenador, recreativa...) la casa calla: ni maullidos ni impresora compiten con ella.
+        instance.events.on('meow', (variant) => !activeZone.current && playMeow(getEngine() ?? startEngineIfAllowed(), variant))
+        instance.events.on('indoors', setIndoors)
         // El sonido ambiente sigue al cielo del valle, igual que en la portada.
         // También se guarda el último estado: la vista del telescopio lo lee para pintar el mismo cielo.
         instance.events.on('sky', (sky) => {
@@ -171,6 +187,8 @@ export default function Valle() {
       setNear(null)
       setZone(null)
       setDialogue(null)
+      setIndoors(false)
+      setReaction(null)
     }
     // El tema se fija al entrar al valle; el aspecto cambia después con `appearance`, sin reiniciar.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -209,6 +227,24 @@ export default function Valle() {
     return acquireAmbience()
   }, [started, phase])
 
+  // Música de la casa: el director (`lib/musicDirector.js`) calla la pista de fondo cuando una actividad tiene la suya, para que
+  // no haya dos a la vez, y la devuelve al salir. El ordenador cuenta mientras no esté minimizado: minimizado se vuelve a la casa.
+  useEffect(() => startMusicDirector(), [])
+  const activity = zone === 'pc' && !pcMinimized ? 'pc' : zone === 'console' ? ARCADE_THEME : null
+  useEffect(() => {
+    setActivity(activity)
+    return () => setActivity(null)
+  }, [activity])
+  useEffect(() => {
+    activeZone.current = zone
+  }, [zone])
+  // El exterior suena más suave dentro de casa y se calla con una actividad abierta; la minicadena también lo baja.
+  const { playing: hifiPlaying } = useJukebox()
+  useEffect(() => {
+    setAmbienceDuck(zone ? 0 : hifiPlaying ? MUSIC_AMBIENCE : indoors ? INDOOR_AMBIENCE : 1)
+    return () => setAmbienceDuck(1)
+  }, [zone, hifiPlaying, indoors])
+
   // Con un panel o el diálogo de opciones abiertos el juego se bloquea: las flechas son del control en foco.
   const [optionsOpen, setOptionsOpen] = useState(false)
   useEffect(() => {
@@ -245,23 +281,33 @@ export default function Valle() {
   const { unlock } = achievements
   useEffect(() => {
     if (!game) return undefined
+    const engine = () => getEngine() ?? startEngineIfAllowed()
     const done = () => unlock('maker')
-    const sound = setPrinting
+    // La impresora solo suena mientras imprime y siguiendo a la animación: cada movimiento del cabezal que avisa la sala.
+    const step = (move) => !activeZone.current && playPrintStep(move)
     const finished = () => playPrintDone()
+    // Al recoger la figura suena el efecto de objeto conseguido; el logro suena aparte, al darse (`useAchievements`).
+    const item = () => playUiSound('item', engine())
+    const react = (key) => setReaction({ key, id: Date.now() })
     game.events.on('figure-shown', done)
-    game.events.on('print-sound', sound)
+    game.events.on('print-step', step)
     game.events.on('print-done', finished)
+    game.events.on('item-get', item)
+    game.events.on('atreus-react', react)
     return () => {
       game.events.off('figure-shown', done)
-      game.events.off('print-sound', sound)
+      game.events.off('print-step', step)
       game.events.off('print-done', finished)
+      game.events.off('item-get', item)
+      game.events.off('atreus-react', react)
     }
   }, [game, unlock])
-  // Mientras se imprime en la sala suena la impresora.
-  useEffect(() => (printing ? startPrinterSound() : undefined), [printing])
-  // Junto a la impresora grande suena su trabajo, mientras no haya un diálogo o un panel delante.
-  const nearPrinter = near === 'printer' && !zone && !dialogue
-  useEffect(() => (nearPrinter ? startPrinterSound() : undefined), [nearPrinter])
+  // El bocadillo se quita solo; la escena deja de mandar su posición.
+  const closeReaction = useCallback(() => {
+    setReaction(null)
+    game?.events.emit('bubble-closed')
+  }, [game])
+  const reactionText = reaction ? copy.bubbles[reaction.key][reaction.id % copy.bubbles[reaction.key].length] : null
   // Un guion puede acabar abriendo algo (el ordenador de Lupe abre su escritorio retro).
   const closeDialogue = useCallback((action) => {
     setDialogue(null)
@@ -370,13 +416,20 @@ export default function Valle() {
         {!editing && <SaveToast message={toast} style={hudStyle} />}
         {!editing && <AchievementToast toast={achievements.toast} copy={copy} style={hudStyle} />}
 
+        {/* En pantallas táctiles el aviso sube por encima del joystick y del botón A (ver `Joystick.jsx`), dentro del área segura,
+            y puede partirse en dos líneas: nunca queda tapado por los controles. */}
         {near && !zone && !dialogue && !editing && (
-          <div className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2" role="status">
-            <button type="button" className="px-btn" onClick={() => game?.events.emit('action')}>
+          <div
+            className="absolute left-1/2 z-10 flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 justify-center"
+            style={{ bottom: touch ? 'var(--valle-prompt-bottom-touch)' : 'var(--valle-prompt-bottom)' }}
+            role="status"
+          >
+            <button type="button" className="px-btn !h-auto !whitespace-normal !text-center" onClick={() => game?.events.emit('action')}>
               {`${touch ? '' : 'E · '}${nearLabel(near, copy)}`}
             </button>
           </div>
         )}
+        {reactionText && !editing && <WorldBubble key={reaction.id} game={game} text={reactionText} onDone={closeReaction} />}
 
         {touch && status === 'ready' && !zone && !dialogue && !optionsOpen && !editing && <Joystick game={game} />}
         {zone === 'telescope' && !editing && <SkyView getSky={getSky} pastel={pastel} onClose={closeZone} />}

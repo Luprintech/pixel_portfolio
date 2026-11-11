@@ -27,6 +27,10 @@ let scene = ambienceLevels({})
 let users = 0
 let lastApply = 0
 let releaseTimer = null
+// Cuánto se oye el exterior: 1 al aire libre, menos dentro de casa (llega apagado por las paredes) y nada mientras hay una
+// actividad abierta, para no competir con ella. Se suma al volumen de efectos del mezclador, no lo sustituye.
+let duck = 1
+const DUCK_EASE_S = 0.4
 let birdTimer = null
 let chimeTimer = null
 const cricketTimers = []
@@ -118,6 +122,7 @@ function ensureGraph() {
   const { ctx } = engine
   started = []
   const out = ctx.createGain()
+  out.gain.value = duck
   out.connect(engine.fx)
   const noise = noiseBuffer(ctx, 3)
   graph = { ctx, out, noise, wind: buildWind(ctx, out, noise), rain: buildRain(ctx, out, noise) }
@@ -275,6 +280,12 @@ export function thunder(delaySeconds = 0.5) {
   sub.stop(start + 4)
 }
 
+// Baja o sube el exterior (de 0 a 1) con un fundido suave.
+export function setAmbienceDuck(value) {
+  duck = Math.min(1, Math.max(0, value))
+  if (graph) graph.out.gain.setTargetAtTime(duck, graph.ctx.currentTime, DUCK_EASE_S)
+}
+
 // Un gorjeo suelto para oír cómo suenan los efectos al mover su volumen.
 export function previewFx() {
   if (!ensureGraph()) return
@@ -314,7 +325,7 @@ export function acquireAmbience() {
   users += 1
   clearTimeout(releaseTimer)
   startEngineIfAllowed()
-  if (graph) graph.out.gain.setTargetAtTime(1, graph.ctx.currentTime, 0.1)
+  if (graph) graph.out.gain.setTargetAtTime(duck, graph.ctx.currentTime, 0.1)
   else ensureGraph()
 
   return () => {

@@ -73,3 +73,14 @@ describe('playUiSound', () => {
     expect(playUiSound('select', engine)).toBe(false)
   })
 })
+
+describe('sonidos de objeto y de logro', () => {
+  it('hay un sonido para conseguir un objeto y uno solo para los logros, cortos', () => {
+    ;['item', 'achievement'].forEach((name) => {
+      const notes = UI_SOUNDS[name]
+      expect(notes, name).toBeTruthy()
+      const end = Math.max(...notes.map((note) => note.at + note.length))
+      expect(end, name).toBeLessThan(0.8)
+    })
+  })
+})

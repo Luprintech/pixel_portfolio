@@ -24,6 +24,9 @@ let audio = null
 let routed = false
 let snapshot = { available: false, playing: false }
 let users = 0
+// Actividades que piden silencio (el ordenador, la recreativa, la minicadena): mientras haya alguna, la pista de fondo no
+// suena aunque haya quien la use. Ver `holdBackground`.
+let holds = 0
 let graceTimer = null
 let fadeTimer = null
 // Pista que suena o que toca sonar, y si su archivo existe (se comprueba una vez por pista).
@@ -80,6 +83,7 @@ function route(element) {
 }
 
 async function start() {
+  if (holds > 0) return
   const element = ensureAudio()
   route(element)
   if (fadeTimer) cancelFade()
@@ -200,6 +204,25 @@ function fadeOut(then) {
     if (step >= FADE_STEPS) finish()
   }, FADE_MS / FADE_STEPS)
   return undefined
+}
+
+// Una actividad con música propia pide silencio para la pista de fondo: se apaga con un fundido y, cuando ya no suena,
+// se llama a `onQuiet` (así la música de la actividad nunca se solapa con ella). Devuelve cómo soltarla: cuando no queda
+// ninguna actividad, la pista de fondo vuelve donde estaba si alguien la sigue usando.
+export function holdBackground(onQuiet) {
+  holds += 1
+  if (holds === 1) fadeOut(onQuiet)
+  else onQuiet?.()
+  let released = false
+  return () => {
+    if (released) return
+    released = true
+    holds -= 1
+    if (holds > 0) return
+    // Un fundido a medias se cancela: si no, acabaría parando la pista que ahora vuelve.
+    if (fadeTimer) cancelFade()
+    if (users > 0 && getSoundPrefs().music > 0 && snapshot.available) start()
+  }
 }
 
 // Con el volumen de la música a cero se apaga; al subirlo vuelve a sonar.

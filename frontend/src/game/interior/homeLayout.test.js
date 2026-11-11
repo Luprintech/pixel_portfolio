@@ -3,7 +3,7 @@ import { BUILDINGS, TILE } from '../world.js'
 import { roomOf } from '../interiors.js'
 import { CAT_SEQUENCE, CAT_SPOTS } from './catBrain.js'
 import { FURNITURE, solidsOf } from './furniture/index.js'
-import { ARCADE_FRONT, ATREUS_BODY, FURNITURE_PLAN, HOME_ID, INTERACTIONS, NPC_PLAN, homeRoom, interactionAt } from './homeLayout.js'
+import { ARCADE_FRONT, ATREUS_BODY, FURNITURE_PLAN, HOME_ID, INTERACTIONS, LUPE_TOWER_W, NPC_PLAN, ROOF_DOOR, SEATS, WALL_X, WINDOWS, homeRoom, interactionAt } from './homeLayout.js'
 
 const room = homeRoom()
 const atreus = NPC_PLAN.find((npc) => npc.id === 'atreus')
@@ -158,5 +158,94 @@ describe('muebles', () => {
       expect(typeof FURNITURE[kind].paint).toBe('function')
       expect(FURNITURE[kind].body, kind).toBeInstanceOf(Array)
     })
+  })
+})
+
+describe('sentarse', () => {
+  const seatIds = ['chairAtreus', 'chairLupe', 'sofaLeft', 'sofaRight']
+
+  it('el aviso solo sale delante del asiento y mirando hacia él', () => {
+    seatIds.forEach((id) => {
+      const { anchor } = INTERACTIONS.find((interaction) => interaction.id === id)
+      expect(interactionAt(anchor.x, anchor.y, 'up'), `${id} de cara`).toBe(id)
+      ;['down', 'left', 'right'].forEach((facing) => expect(interactionAt(anchor.x, anchor.y, facing), `${id} mirando ${facing}`).not.toBe(id))
+    })
+  })
+
+  it('sin orientación (las pruebas de alcance) se reconoce igual', () => {
+    seatIds.forEach((id) => {
+      const { anchor } = INTERACTIONS.find((interaction) => interaction.id === id)
+      expect(interactionAt(anchor.x, anchor.y)).toBe(id)
+    })
+  })
+
+  it('las zonas de asiento están delante del asiento (al sur) y nunca a su lado ni detrás', () => {
+    SEATS.forEach((seat) => {
+      expect(seat.zone.y, seat.id).toBeGreaterThan(seat.y)
+      expect(seat.zone.x + seat.zone.w, seat.id).toBeGreaterThan(seat.x - 20)
+      expect(seat.zone.x, seat.id).toBeLessThan(seat.x + 20)
+    })
+  })
+
+  it('la viajera sentada va por delante de la capa de atrás del asiento y por detrás de la de delante', () => {
+    ;[['chairAtreus', 'chairAtreusFront', 'chairAtreus'], ['chairLupe', 'chairLupeFront', 'chairLupe'], ['sofa', 'sofaFront', 'sofaLeft'], ['sofa', 'sofaFront', 'sofaRight']].forEach(([back, front, id]) => {
+      const backPiece = FURNITURE_PLAN.find((piece) => piece.kind === back)
+      const frontPiece = FURNITURE_PLAN.find((piece) => piece.kind === front)
+      const seat = SEATS.find((candidate) => candidate.id === id)
+      expect(seat.depth, id).toBeGreaterThan(backPiece.y + backPiece.dz)
+      expect(seat.depth, id).toBeLessThan(frontPiece.y + frontPiece.dz)
+    })
+  })
+})
+
+describe('ventanas', () => {
+  it('todas caben en la pared del fondo y ninguna se pisa con otra', () => {
+    WINDOWS.forEach((window) => {
+      expect(window.x, window.id).toBeGreaterThanOrEqual(TILE)
+      expect(window.x + window.w, window.id).toBeLessThanOrEqual(room.width - TILE)
+      expect(window.y, window.id).toBeGreaterThanOrEqual(0)
+      expect(window.y + window.h, window.id).toBeLessThanOrEqual(room.wallRows * TILE)
+    })
+    WINDOWS.forEach((a, i) => WINDOWS.slice(i + 1).forEach((b) => expect(overlaps({ x: a.x, y: a.y, w: a.w, h: a.h }, { x: b.x, y: b.y, w: b.w, h: b.h }), `${a.id} con ${b.id}`).toBe(false)))
+  })
+
+  it('la puerta de la azotea deja su cristal dentro de su propio dibujo', () => {
+    const door = WINDOWS.find((window) => window.id === 'roofDoor')
+    const stairs = FURNITURE_PLAN.find((piece) => piece.kind === 'roofStairs')
+    expect(door.x).toBe(stairs.x - ROOF_DOOR.w / 2 + ROOF_DOOR.glass.x)
+    expect(door.y).toBe(stairs.y - ROOF_DOOR.h + ROOF_DOOR.glass.y)
+    expect(FURNITURE.roofStairs.w).toBe(ROOF_DOOR.w)
+    expect(FURNITURE.roofStairs.h).toBe(ROOF_DOOR.h)
+  })
+})
+
+describe('zona gaming y rincón de impresión', () => {
+  const printers = FURNITURE_PLAN.filter((piece) => piece.kind.startsWith('printer'))
+  const gaming = { x: 96, y: 84, w: 90, h: 56 }
+
+  it('las impresoras están por delante de la vitrina y no pisan la zona de Atreus', () => {
+    expect(printers).toHaveLength(2)
+    const shelf = FURNITURE_PLAN.find((piece) => piece.kind === 'makerShelf')
+    printers.forEach((printer) => {
+      expect(printer.y, printer.kind).toBeGreaterThan(shelf.y)
+      const { w, h } = FURNITURE[printer.kind]
+      expect(overlaps({ x: printer.x - w / 2, y: printer.y - h, w, h }, gaming), printer.kind).toBe(false)
+    })
+  })
+
+  it('se puede usar cada impresora desde el suelo de delante de ellas', () => {
+    ;['printer', 'printerMini'].forEach((id) => {
+      const { anchor } = INTERACTIONS.find((interaction) => interaction.id === id)
+      expect(standable(anchor.x, anchor.y), id).toBe(true)
+    })
+  })
+
+  it('la mesa de Lupe lleva su torre a la izquierda sin pisar la minicadena', () => {
+    const desk = FURNITURE_PLAN.find((piece) => piece.kind === 'lupeDesk')
+    const hifi = FURNITURE_PLAN.find((piece) => piece.kind === 'hifi')
+    expect(desk.x - FURNITURE.lupeDesk.w / 2).toBeGreaterThanOrEqual(hifi.x + FURNITURE.hifi.w / 2)
+    expect(desk.x + FURNITURE.lupeDesk.w / 2).toBeLessThanOrEqual(room.width - TILE)
+    // La tabla sigue centrada donde estaba: el ordenador se usa desde el mismo sitio.
+    expect(desk.x + LUPE_TOWER_W / 2).toBe(WALL_X.lupeDesk)
   })
 })

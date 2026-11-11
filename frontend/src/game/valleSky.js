@@ -19,6 +19,8 @@ export const clockOffset = (seed) => ((((FIRST_PHASE - startPhase(seed)) % 1) + 
 // Estado del cielo del valle a un instante de su reloj (en milisegundos reales, ya con el desplazamiento).
 export const valleSkyAt = (ms, seed) => skyAt(ms, seed, false, VALLE_PACE)
 export const valleStrikesBetween = (fromMs, toMs, seed) => strikesBetween(fromMs, toMs, seed, VALLE_PACE)
+// Destello del rayo que cae a un instante del reloj del valle (o null): lo ven el valle y, por las ventanas, la casa.
+export const valleLightningAt = (ms, seed) => lightningAt(ms, seed, VALLE_PACE)
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 
@@ -37,7 +39,7 @@ export function paintWeather(g, sky, ms, seed, size) {
   g.clearRect(0, 0, size.width, size.height)
   paintRain(g, sky, ms, size)
   paintSnow(g, sky, ms, size)
-  const strike = lightningAt(ms, seed, VALLE_PACE)
+  const strike = valleLightningAt(ms, seed)
   if (strike) {
     g.globalAlpha = 0.45 * strike.flash
     g.fillStyle = '#ffffff'

@@ -1,30 +1,35 @@
-// Lo que no se mueve ni se usa en la casa de Lupe y vive pegado a la pared o al suelo: ventanas, cuadros, la guirnalda de
-// luces y las alfombras de cada zona. Se pinta una sola vez sobre la sala vacía (`interiorPaint.js`), con los mismos colores
-// de la paleta y sombras duras que el resto del valle. El suelo no lleva manchas de luz ni de brillo de pantalla: las
-// sombras de contacto las ponen los muebles y los personajes, y el brillo de la noche, `ledLights.js`.
+// Lo que no se mueve ni se usa en la casa de Lupe y vive pegado a la pared o al suelo: marcos de ventana, cuadros, la
+// guirnalda de luces y las alfombras de las zonas de relax y de impresión. Se pinta una sola vez sobre la sala vacía
+// (`interiorPaint.js`), con los mismos colores de la paleta y sombras duras que el resto del valle. El suelo no lleva manchas
+// de luz ni de brillo de pantalla (ni alfombras oscuras o claras delante de las mesas, que se leían como sombras): las sombras
+// de contacto las ponen los muebles y los personajes, y el brillo de la noche, `ledLights.js`. El cristal de las ventanas es
+// un hueco; el cielo lo pone `InteriorSky` y los travesaños y cortinas, `windowOverlayCanvas`.
 import { INK, WOOD, canvasOf, hash2, pastelize, rect, slab } from './draw.js'
 import { roofSign } from './furniture/decor.js'
-import { SPOTS, WALL_X } from './homeLayout.js'
+import { SPOTS, WALL_X, WINDOWS } from './homeLayout.js'
+import { STRING_SAG, STRING_SPAN, stringLightBulbs } from './interiorLight.js'
 
-// Ventana pequeña de la pared: marco de madera, dos hojas con cielo y nubes, y cortinas si `curtains` es un color.
-function windowPane(g, x, y, w, h, curtains) {
+// Marco de madera y repisa de una ventana de la pared; el cristal queda hueco (se ve el cielo que hay detrás).
+function windowFrame(g, { x, y, w, h }) {
   const [deep, dark, mid, light] = WOOD
   rect(g, x - 2, y - 2, w + 4, h + 4, dark)
   rect(g, x - 2, y - 2, w + 4, 1, mid)
-  rect(g, x, y, w, h, INK.lagoonLight)
-  rect(g, x, y + Math.floor(h * 0.6), w, h - Math.floor(h * 0.6), '#b3e3ea')
-  rect(g, x + 3, y + 3, 7, 2, INK.white)
-  rect(g, x + w - 11, y + 6, 6, 2, INK.white)
-  rect(g, x + Math.floor(w / 2) - 1, y, 2, h, dark)
-  rect(g, x, y + Math.floor(h / 2), w, 1, dark)
   rect(g, x - 3, y + h + 1, w + 6, 2, light)
   rect(g, x - 3, y + h + 2, w + 6, 1, deep)
-  if (curtains) {
-    ;[x - 2, x + w - 4].forEach((cx) => {
-      rect(g, cx, y - 2, 6, h + 3, curtains)
-      for (let i = 0; i < h + 3; i += 4) rect(g, cx + (cx === x - 2 ? 4 : 1), y - 2 + i, 1, 2, INK.whiteShade)
-    })
-  }
+}
+
+// Lo que va por delante del cristal: travesaños en cruz, un reflejo y, si la ventana lleva, cortinas.
+function windowBars(g, { x, y, w, h, curtains }) {
+  const dark = WOOD[1]
+  rect(g, x + Math.floor(w / 2) - 1, y, 2, h, dark)
+  rect(g, x, y + Math.floor(h / 2), w, 1, dark)
+  rect(g, x + 2, y + 1, 3, 1, INK.white)
+  rect(g, x + 2, y + 2, 1, 2, INK.white)
+  if (!curtains) return
+  ;[x - 2, x + w - 4].forEach((cx) => {
+    rect(g, cx, y - 2, 6, h + 3, INK.rose)
+    for (let i = 0; i < h + 3; i += 4) rect(g, cx + (cx === x - 2 ? 4 : 1), y - 2 + i, 1, 2, INK.whiteShade)
+  })
 }
 
 // Cuadro con marco de madera y un dibujo hecho a mano por `art` dentro del hueco.
@@ -98,22 +103,21 @@ function triforceArt(g, x, y, w, h) {
   triangle(cx + 4, y + 7, 4)
 }
 
-// Guirnalda de bombillas cálidas a lo largo de la pared, en tramos que se descuelgan entre dos puntos.
+// Guirnalda de bombillas cálidas a lo largo de la pared, en tramos que se descuelgan entre dos puntos. Las bombillas salen de
+// `stringLightBulbs`, las mismas que enciende `ledLights.js` de noche.
 function stringLights(g, from, to, y) {
-  const span = 56
-  for (let start = from; start < to; start += span) {
-    const end = Math.min(to, start + span)
+  for (let start = from; start < to; start += STRING_SPAN) {
+    const end = Math.min(to, start + STRING_SPAN)
     for (let x = start; x <= end; x++) {
-      const t = (x - start) / (end - start)
-      const sag = Math.round(Math.sin(t * Math.PI) * 4)
+      const sag = Math.round(Math.sin(((x - start) / (end - start)) * Math.PI) * STRING_SAG)
       rect(g, x, y + sag, 1, 1, INK.slate)
-      if ((x - start) % 8 === 4) {
-        rect(g, x, y + sag + 1, 1, 2, INK.slate)
-        rect(g, x - 1, y + sag + 3, 3, 3, INK.saffronLight)
-        rect(g, x, y + sag + 3, 1, 1, '#fff3c4')
-      }
     }
   }
+  stringLightBulbs(from, to, y).forEach((bulb) => {
+    rect(g, bulb.x, bulb.y + 1, 1, 2, INK.slate)
+    rect(g, bulb.x - 1, bulb.y + 3, 3, 3, INK.saffronLight)
+    rect(g, bulb.x, bulb.y + 3, 1, 1, '#fff3c4')
+  })
 }
 
 // Estante flotante sobre la mesa de Lupe: libros, una figurita impresa y una planta colgante.
@@ -144,10 +148,9 @@ function wall(g, room) {
   stringLights(g, 20, room.width - 20, 4)
   // Sobre la mesa de Atreus, solo un cuadro apaisado con el Ferrari F40.
   frame(g, WALL_X.atreusDesk - 20, 6, 40, 24, f40Art)
-  // Sobre la estantería de consolas y la tele: una ventana pequeña cada una. Sobre la recreativa no cuelga nada: su marquesina
-  // ya ilumina la pared.
-  windowPane(g, WALL_X.consoleShelf - 22, 6, 28, 14, null)
-  windowPane(g, WALL_X.tv - 18, 7, 36, 18, INK.rose)
+  // Sobre la estantería de consolas y la tele: una ventana pequeña cada una (`WINDOWS`). Sobre la recreativa no cuelga nada:
+  // su marquesina ya ilumina la pared.
+  WINDOWS.filter((window) => window.frame).forEach((window) => windowFrame(g, window))
   frame(g, WALL_X.hifi - 9, 14, 18, 18, recordArt)
   // Sobre la escalera, el cartel de la azotea; sobre la mesa de Lupe, la Trifuerza y su estante.
   roofSign(g, WALL_X.stairs - 14, 7)
@@ -182,30 +185,6 @@ function rug(g, x, y, w, h) {
   }
 }
 
-// Alfombra de la zona de Atreus: azul noche con un filo de luz y unos puntos de color, a juego con su setup.
-function gamerRug(g, x, y, w, h) {
-  rect(g, x, y, w, h, INK.night)
-  rect(g, x + 2, y + 2, w - 4, h - 4, INK.night2)
-  rect(g, x + 2, y + 2, w - 4, 1, INK.lagoonLight)
-  rect(g, x + 2, y + h - 3, w - 4, 1, INK.rose)
-  for (let px = x + 8; px < x + w - 8; px += 10) {
-    rect(g, px, y + 6, 2, 2, INK.slateLight)
-    rect(g, px + 4, y + h - 8, 2, 2, INK.slateLight)
-  }
-}
-
-// Alfombra de la zona de Lupe: cálida, con franjas de colores y fleco.
-function workRug(g, x, y, w, h) {
-  rect(g, x, y, w, h, INK.plum)
-  rect(g, x + 2, y + 2, w - 4, h - 4, INK.saffronLight)
-  rect(g, x + 4, y + 4, w - 8, h - 8, INK.white)
-  for (let py = y + 8; py < y + h - 6; py += 8) rect(g, x + 4, py, w - 8, 2, INK.rose)
-  for (let fx = x + 2; fx < x + w - 2; fx += 3) {
-    rect(g, fx, y - 2, 1, 2, INK.whiteShade)
-    rect(g, fx, y + h, 1, 2, INK.whiteShade)
-  }
-}
-
 // Esterilla del rincón de impresión 3D: goma gris carbón con un borde claro y la franja verde de la marca, para que se lea
 // como una zona de trabajo aparte.
 function makerMat(g, x, y, w, h) {
@@ -216,15 +195,20 @@ function makerMat(g, x, y, w, h) {
 }
 
 function floor(g) {
-  gamerRug(g, 70, 86, 98, 50)
-  workRug(g, WALL_X.lupeDesk - 34, 88, 68, 44)
   rug(g, SPOTS.sofa.x - 62, 108, 124, 96)
-  makerMat(g, 22, 236, 184, 32)
+  makerMat(g, 22, 242, 184, 28)
   // Pequeños restos de vida: unas zapatillas junto a la puerta.
   ;[[292, 258], [299, 259]].forEach(([x, y]) => {
     rect(g, x, y, 6, 3, INK.rose)
     rect(g, x, y, 3, 3, INK.whiteShade)
   })
+}
+
+// Travesaños y cortinas de las ventanas, como una capa transparente del tamaño de la sala que va por delante del cristal.
+export function windowOverlayCanvas(room, pastel) {
+  const { canvas, g } = canvasOf(room.width, room.height)
+  WINDOWS.filter((window) => window.frame).forEach((window) => windowBars(g, window))
+  return pastelize(canvas, pastel)
 }
 
 // Decoración de pared y suelo de la casa como una capa transparente del tamaño de la sala.

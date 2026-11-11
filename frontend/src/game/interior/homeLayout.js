@@ -7,7 +7,8 @@
 //   2. Estantería de videoconsolas y recreativa arcade, en medio de la pared del fondo.
 //   3. Relax (tele, minicadena, sofá y alfombra), a la derecha del centro.
 //   4. Lupe (setup de trabajo), en la esquina derecha del fondo.
-//   5. Impresión 3D (dos Bambu Lab y la vitrina de piezas), abajo a la izquierda y por delante.
+//   5. Impresión 3D (dos Bambu Lab y la vitrina de piezas), abajo a la izquierda y por delante. Las impresoras están
+//      adelantadas unos píxeles respecto a la vitrina, sin llegar a la zona gaming de Atreus.
 //   6. Khalessi (caja, rascador, comida y arenero), en el centro, con el recorrido hasta Atreus libre.
 import { TILE } from '../world.js'
 
@@ -29,10 +30,34 @@ export const SPOTS = {
   sofa: { x: WALL_X.tv, y: 190 },
   coffeeTable: { x: WALL_X.tv, y: 140 },
   box: { x: 236, y: 176 },
-  printerA1: { x: 58, y: 248 },
-  printerMini: { x: 122, y: 248 },
+  printerA1: { x: 58, y: 256 },
+  printerMini: { x: 122, y: 256 },
   makerShelf: { x: 176, y: 248 },
 }
+
+// La torre del PC de Lupe va pegada a la izquierda de su mesa, dentro del mismo dibujo: la mesa mide 14 píxeles más y su
+// centro (el de la tabla, `WALL_X.lupeDesk`) se desplaza media torre.
+export const LUPE_TOWER_W = 14
+
+// La puerta de cristal de la escalera de la azotea: el tamaño del mueble y su cristal, relativo a su esquina.
+export const ROOF_DOOR = { w: 36, h: 62, glass: { x: 7, y: 3, w: 22, h: 24 } }
+
+// Cristales por los que se ve el exterior, en píxeles de la sala. La sala los deja huecos (el dibujo estático no pinta cielo)
+// y `InteriorSky` pone detrás el cielo vivo del valle: la misma hora, estación y tiempo. `frame` es si el hueco lleva
+// marco y repisa en la pared (la puerta de la azotea ya lo trae en su propio dibujo) y `curtains` si lleva cortinas.
+export const WINDOWS = [
+  { id: 'shelf', x: WALL_X.consoleShelf - 22, y: 6, w: 28, h: 14, frame: true, curtains: false },
+  { id: 'tv', x: WALL_X.tv - 18, y: 7, w: 36, h: 18, frame: true, curtains: true },
+  {
+    id: 'roofDoor',
+    x: WALL_X.stairs - ROOF_DOOR.w / 2 + ROOF_DOOR.glass.x,
+    y: WALL_BASE - ROOF_DOOR.h + ROOF_DOOR.glass.y,
+    w: ROOF_DOOR.glass.w,
+    h: ROOF_DOOR.glass.h,
+    frame: false,
+    curtains: false,
+  },
+]
 
 // `dz` ajusta el orden de dibujo respecto a otros elementos de la misma base (la caja de Khalessi va en dos capas).
 export const FURNITURE_PLAN = [
@@ -44,7 +69,7 @@ export const FURNITURE_PLAN = [
   { kind: 'arcade', x: WALL_X.arcade, y: WALL_BASE },
   { kind: 'tvUnit', x: WALL_X.tv, y: WALL_BASE },
   { kind: 'hifi', x: WALL_X.hifi, y: WALL_BASE },
-  { kind: 'lupeDesk', x: WALL_X.lupeDesk, y: WALL_BASE },
+  { kind: 'lupeDesk', x: WALL_X.lupeDesk - LUPE_TOWER_W / 2, y: WALL_BASE },
   // Cada silla va en dos capas (`dz`): persona sentada entre ellas.
   { kind: 'chairAtreus', x: 108, y: 108, dz: -0.5 },
   { kind: 'chairAtreusFront', x: 108, y: 108, dz: 0.5 },
@@ -104,16 +129,21 @@ export const INTERACTIONS = [
   { id: 'television', anchor: { x: WALL_X.tv, y: 92 }, zones: [{ x: 302, y: 82, w: 72, h: 18 }] },
   { id: 'hifi', anchor: { x: WALL_X.hifi, y: 92 }, zones: [{ x: 384, y: 82, w: 36, h: 18 }] },
   { id: 'roof', anchor: { x: WALL_X.stairs, y: 92 }, zones: [{ x: 16, y: 82, w: 44, h: 24 }] },
-  { id: 'pc', anchor: { x: WALL_X.lupeDesk, y: 96 }, zones: [{ x: 436, y: 82, w: 76, h: 40 }] },
-  { id: 'printer', anchor: { x: SPOTS.printerA1.x, y: 258 }, zones: [{ x: 28, y: 252, w: 62, h: 20 }] },
-  { id: 'printerMini', anchor: { x: SPOTS.printerMini.x, y: 258 }, zones: [{ x: 98, y: 252, w: 46, h: 20 }] },
+  { id: 'pc', anchor: { x: WALL_X.lupeDesk, y: 96 }, zones: [{ x: WALL_X.lupeDesk - 38, y: 82, w: 76, h: 40 }] },
+  { id: 'printer', anchor: { x: SPOTS.printerA1.x, y: 266 }, zones: [{ x: 28, y: 260, w: 62, h: 12 }] },
+  { id: 'printerMini', anchor: { x: SPOTS.printerMini.x, y: 266 }, zones: [{ x: 98, y: 260, w: 46, h: 12 }] },
   { id: 'figures', anchor: { x: SPOTS.makerShelf.x, y: 258 }, zones: [{ x: 152, y: 252, w: 48, h: 20 }] },
-  ...SEATS.map(({ id, anchor, zone }) => ({ id, anchor, zones: [zone] })),
+  // Sentarse solo se ofrece de cara al asiento: `faces` es hacia dónde hay que mirar (el asiento está al norte de su zona).
+  ...SEATS.map(({ id, anchor, zone, facing }) => ({ id, anchor, zones: [zone], faces: facing })),
 ]
 
-// Interacción cuya zona contiene los pies en (x, y), o null. Si hay dos a la vez gana la de ancla más cercana.
-export function interactionAt(x, y) {
-  const inside = INTERACTIONS.filter(({ zones }) => zones.some((z) => x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h))
+// Interacción cuya zona contiene los pies en (x, y), o null. Si hay dos a la vez gana la de ancla más cercana. Con `facing`
+// (hacia dónde mira la viajera) se descartan las que exigen mirar a otro lado: la silla y el sofá solo se ofrecen de cara.
+// Sin `facing` no se filtra por orientación.
+export function interactionAt(x, y, facing = null) {
+  const inside = INTERACTIONS.filter(
+    ({ zones, faces }) => (!faces || !facing || faces === facing) && zones.some((z) => x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h),
+  )
   const distance = ({ anchor }) => Math.hypot(anchor.x - x, anchor.y - y)
   return inside.sort((a, b) => distance(a) - distance(b))[0]?.id ?? null
 }

@@ -302,6 +302,14 @@
 
 /* El lienzo de Phaser tiene el tamaño del dispositivo, no el CSS: se estira al contenedor con !important porque
    Phaser reescribe su estilo en línea. */
+/* Dónde queda el aviso de interacción del valle (E · Sentarse, Salir de la casa...). Con ratón, cerca del borde; en pantallas
+   táctiles, por encima del joystick (2rem + 7rem de alto + su anillo) y dentro del área segura, para que ni el joystick ni el
+   botón A lo tapen. Los controles táctiles viven en `components/valle/Joystick.jsx`. */
+:root {
+  --valle-prompt-bottom: 1.5rem;
+  --valle-prompt-bottom-touch: calc(10.25rem + env(safe-area-inset-bottom, 0px));
+}
+
 .valle-host canvas {
   width: 100% !important;
   height: 100% !important;

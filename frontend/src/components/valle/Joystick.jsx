@@ -3,6 +3,10 @@ import { PAL } from '../../game/palette'
 import { tone } from '../../lib/tone'
 
 const RADIUS = 38
+// Los controles respetan el área segura (muescas, barra de inicio del iPhone) y dejan de ese lado un margen fijo. El aviso de
+// interacción (`Valle.jsx`) sube por encima de ellos con `--valle-prompt-bottom-touch`: ver `pixel.css`.
+const EDGE = '2rem'
+const safe = (side) => `calc(${EDGE} + env(safe-area-inset-${side}, 0px))`
 
 // Joystick táctil: escribe un vector -1..1 en el registro del juego y un botón A para entrar.
 export default function Joystick({ game }) {
@@ -32,8 +36,8 @@ export default function Joystick({ game }) {
         ref={baseRef}
         role="application"
         aria-label="Joystick"
-        className="absolute bottom-8 left-8 z-20 h-28 w-28 touch-none select-none rounded-full"
-        style={{ background: tone('joy', 'rgba(28,27,58,0.8)'), boxShadow: ring }}
+        className="absolute z-20 h-28 w-28 touch-none select-none rounded-full"
+        style={{ left: safe('left'), bottom: safe('bottom'), background: tone('joy', 'rgba(28,27,58,0.8)'), boxShadow: ring }}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId)
           handleMove(e)
@@ -51,8 +55,8 @@ export default function Joystick({ game }) {
         type="button"
         aria-label="A"
         data-sound="confirm"
-        className="absolute bottom-10 right-8 z-20 h-16 w-16 touch-none select-none rounded-full px-title text-3xl"
-        style={{ background: tone('berry', PAL.tile), color: tone('ivory', PAL.bone), boxShadow: ring, textShadow: 'none' }}
+        className="absolute z-20 h-16 w-16 touch-none select-none rounded-full px-title text-3xl"
+        style={{ right: safe('right'), bottom: `calc(2.5rem + env(safe-area-inset-bottom, 0px))`, background: tone('berry', PAL.tile), color: tone('ivory', PAL.bone), boxShadow: ring, textShadow: 'none' }}
         onPointerDown={() => game?.events.emit('action')}
       >
         A

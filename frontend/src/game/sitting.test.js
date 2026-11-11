@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { printerNotes } from '../lib/printerSound.js'
+import { printStepNotes } from '../lib/printerSound.js'
 import { RETRO_SOUNDS } from '../lib/retroSound.js'
 import { SIT_POSE, frameName } from './avatar/index.js'
 import { sitDown, standUp } from './sitting.js'
@@ -56,10 +56,18 @@ describe('puerta de la cubierta', () => {
 })
 
 describe('sonidos de la casa', () => {
-  it('la impresora siempre suena y a veces añade el barrido del eje', () => {
-    for (let tick = 0; tick < 12; tick++) expect(printerNotes(tick).length).toBeGreaterThan(0)
-    expect(printerNotes(5).some((note) => note.to)).toBe(true)
-    expect(printerNotes(1).some((note) => note.to)).toBe(false)
+  it('cada movimiento del cabezal suena suave, y la capa nueva añade el golpe del eje', () => {
+    for (let sweep = 0; sweep < 4; sweep++) {
+      const notes = printStepNotes({ sweep, layer: false })
+      expect(notes.length).toBeGreaterThan(0)
+      notes.forEach((note) => expect(note.volume, `tramo ${sweep}`).toBeLessThanOrEqual(0.05))
+    }
+    expect(printStepNotes({ sweep: 0, layer: true }).length).toBe(printStepNotes({ sweep: 0, layer: false }).length + 1)
+    // Ida y vuelta suenan distinto: el motor sube de tono hacia la derecha y baja al volver.
+    const rising = printStepNotes({ sweep: 0, layer: false })[0]
+    const falling = printStepNotes({ sweep: 3, layer: false })[0]
+    expect(rising.to).toBeGreaterThan(rising.freq)
+    expect(falling.to).toBeLessThan(falling.freq)
   })
 
   it('cada suceso del juego retro tiene su sonido', () => {

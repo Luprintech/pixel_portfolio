@@ -2,6 +2,7 @@
 // dentro), plantas y el acceso a la azotea (escalera con puerta de cristal y su cartel).
 import { drawText, textWidth } from '../../pixelFont.js'
 import { INK, WOOD, hash2, rect, slab } from '../draw.js'
+import { ROOF_DOOR } from '../homeLayout.js'
 
 // Silla gamer vista desde atrás: respaldo alto con reposacabezas, base de cinco brazos y ruedas.
 function gamerChair(g, body, light, dark, accent) {
@@ -122,19 +123,18 @@ export const tallPlant = {
 }
 
 // Escalera a la azotea: peldaños de madera con barandilla hasta una puerta de cristal por la que entra el cielo, vista de
-// frente en la pared de la izquierda, como la escalera exterior de la casa. El cartel va encima (`roofSign`).
+// frente en la pared de la izquierda, como la escalera exterior de la casa. El cartel va encima (`roofSign`). El cristal de
+// la puerta es un hueco (no pinta cielo), igual que las ventanas de la pared.
 export const roofStairs = {
-  w: 36,
-  h: 62,
+  w: ROOF_DOOR.w,
+  h: ROOF_DOOR.h,
   body: [{ l: -17, t: -16, r: 17, b: 0 }],
   paint(g) {
     const [deep, dark, mid, light] = WOOD
     slab(g, 4, 0, 28, 38, dark, mid, deep)
-    rect(g, 7, 3, 22, 24, INK.lagoonLight)
-    rect(g, 7, 3, 22, 1, INK.white)
-    rect(g, 7, 17, 22, 10, '#b3e3ea')
-    rect(g, 11, 6, 7, 2, INK.white)
-    rect(g, 20, 9, 6, 2, INK.white)
+    // El cristal queda hueco: por él se ve el cielo vivo del valle (`InteriorSky`), que está detrás del mueble.
+    const { glass } = ROOF_DOOR
+    g.clearRect(glass.x, glass.y, glass.w, glass.h)
     rect(g, 17, 3, 2, 24, dark)
     rect(g, 7, 14, 22, 2, dark)
     rect(g, 7, 30, 22, 6, mid)

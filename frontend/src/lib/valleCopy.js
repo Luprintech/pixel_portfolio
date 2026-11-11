@@ -115,6 +115,14 @@ export const COPY = {
     blog: { lead: 'Notas de lo que voy aprendiendo y construyendo.', all: 'Ver todos los posts', open: 'Bajar a la mazmorra', empty: 'Aún no hay posts publicados.' },
     projects: { all: 'Ver todos los proyectos', demo: 'Ver demo', code: 'Ver código', empty: 'Aún no hay proyectos publicados.', loading: 'Cargando proyectos…' },
     stackLead: 'Las herramientas que uso a diario.',
+    // Bocadillos que salen junto a un personaje de la casa sin abrir un diálogo (ver `components/valle/WorldBubble.jsx`).
+    bubbles: {
+      sardine: [
+        'Otra sardina. Gracias, Khalessi, qué detalle.',
+        '¿Esto es para mí? Eres única, Khalessi.',
+        'Un regalo. Con esto ya he pagado mis impuestos felinos.',
+      ],
+    },
     hud: {
       customize: 'Personalizar aspecto',
       zoom: { group: 'Zoom del mapa', in: 'Acercar la vista', out: 'Alejar la vista' },
@@ -394,6 +402,13 @@ export const COPY = {
     blog: { lead: "Notes on what I'm learning and building.", all: 'See all posts', open: 'Go down the dungeon', empty: 'No posts published yet.' },
     projects: { all: 'See all projects', demo: 'View demo', code: 'View code', empty: 'No projects published yet.', loading: 'Loading projects…' },
     stackLead: 'The tools I use every day.',
+    bubbles: {
+      sardine: [
+        'Another sardine. Thanks, Khalessi, how thoughtful.',
+        "Is this for me? You're one of a kind, Khalessi.",
+        "A gift. That settles this month's cat taxes.",
+      ],
+    },
     hud: {
       customize: 'Customize traveller',
       zoom: { group: 'Map zoom', in: 'Zoom in', out: 'Zoom out' },

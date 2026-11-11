@@ -30,15 +30,18 @@ function buildFurniture(scene, pastel, addSolid) {
     if (FURNITURE[piece.kind].modes) {
       switches[piece.kind] = modeFor(scene, sprite, piece.kind, pastel, still)
     } else if (frames > 1 && !still) {
-      let frame = 0
+      // El orden de los fotogramas es el del dibujo salvo que el mueble declare su propia secuencia (las impresoras repiten
+      // unos y se detienen en otros).
+      const order = FURNITURE[piece.kind].sequence ?? Array.from({ length: frames }, (_, i) => i)
+      let step = 0
       // Cada pieza empieza en un punto distinto del ciclo para que los monitores no parpadeen todos a la vez.
-      const offset = Math.round(piece.x) % frames
+      const offset = Math.round(piece.x) % order.length
       scene.time.addEvent({
         delay: FURNITURE[piece.kind].ms,
         loop: true,
         callback: () => {
-          frame = (frame + 1) % frames
-          sprite.setTexture(furnitureKey(piece.kind, (frame + offset) % frames, pastel))
+          step = (step + 1) % order.length
+          sprite.setTexture(furnitureKey(piece.kind, order[(step + offset) % order.length], pastel))
         },
       })
     }
@@ -61,12 +64,20 @@ function modeFor(scene, sprite, kind, pastel, still) {
     get on() {
       return mode !== Object.keys(modes)[0]
     },
-    // Enseña un fotograma concreto del modo actual sin animar (la impresora pequeña sigue el avance de la pantalla).
-    showFrame(frame) {
+    // Recorre en bucle unos fotogramas concretos (la impresora pequeña enseña los movimientos de la capa en curso) y avisa
+    // de cada uno con `onFrame`, así el sonido va al ritmo de lo que se ve. Con movimiento reducido enseña solo el primero.
+    playFrames(frames, onFrame) {
       mode = 'printing'
       timer?.remove()
       timer = null
-      show(frame)
+      let i = 0
+      const showNext = () => {
+        show(frames[i])
+        onFrame?.(frames[i])
+      }
+      showNext()
+      if (frames.length < 2 || still) return
+      timer = scene.time.addEvent({ delay: ms, loop: true, callback: () => { i = (i + 1) % frames.length; showNext() } })
     },
     set(next) {
       if (!modes[next]) return

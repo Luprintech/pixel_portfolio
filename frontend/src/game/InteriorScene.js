@@ -9,11 +9,11 @@ import { loadSeen, markSeen } from './dialogue/seen.js'
 import Follower from './follower.js'
 import { buildHome, faceTraveller } from './interior/homeBuilder.js'
 import { ARCADE_FRONT, SEATS, interactionAt } from './interior/homeLayout.js'
-import { LED_PALETTES, ledCanvas } from './interior/ledLights.js'
+import InteriorSky from './interior/InteriorSky.js'
 import { jukebox } from '../lib/jukebox.js'
 import { prefersReducedMotion } from '../lib/reducedMotion.js'
 import { figureCanvas, FIGURES } from './interior/figures.js'
-import { MINI_STAGES } from './interior/furniture/maker.js'
+import { MINI_STAGES, miniFrameInfo, miniStageFrames } from './interior/furniture/maker.js'
 import { idleJob, jobAt, printView, startJob } from './interior/printJob.js'
 import { sitDown, standUp } from './sitting.js'
 
@@ -29,10 +29,13 @@ const TELEVISION = 'casa.television'
 // Por donde se aparece al volver de la azotea: ante la escalera de la casa.
 const ROOF_ARRIVAL = { x: 38, y: 98 }
 const SEAT_IDS = new Set(SEATS.map((seat) => seat.id))
+// Lo alto sobre los pies al que sale el bocadillo de Atreus (sobre su cabeza).
+const BUBBLE_ABOVE = 40
 
 // Sala interior de un edificio. La mayoría están vacías; la casa de Lupe tiene su plano (`interior/homeLayout.js`) con
 // muebles, personajes, asientos e interacciones. El valle se duerme al entrar y despierta al salir, con la viajera donde
-// la dejó. La textura de la viajera y su aspecto los pone el valle (`travellerKey` del registro).
+// la dejó. La textura de la viajera y su aspecto los pone el valle (`travellerKey` del registro), y la hora y el tiempo
+// también: `InteriorSky` lee el reloj del valle, que sigue corriendo mientras la viajera está dentro.
 export default class InteriorScene extends Phaser.Scene {
   constructor() {
     super('interior')
@@ -41,7 +44,6 @@ export default class InteriorScene extends Phaser.Scene {
   init(data) {
     this.building = data.building
     this.pastel = !!data.pastel
-    this.night = !!data.night
     this.fromRoof = data.from === 'deck'
     this.facing = this.fromRoof ? 'down' : 'up'
     this.walk = { timer: 0, step: 0 }
@@ -57,6 +59,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.showing = false
     this.printKind = 'idle'
     this.printStage = -1
+    this.gifted = false
+    this.bubbleOpen = false
   }
 
   create() {
@@ -75,7 +79,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.princess.body.setSize(8, FEET_BODY).setOffset(5, 30)
     this.princess.setCollideWorldBounds(true)
     this.buildFurniture()
-    this.buildNight()
+    // Misma hora, estación y tiempo que fuera: el cielo lo lleva el reloj del valle.
+    this.sky = new InteriorSky(this, { room, pastel: this.pastel, source: this.scene.get('valle').sky })
     // Lupe acompaña a la viajera también dentro de casa.
     this.lupe = new Follower(this, 'npc-lupe', start.x - 14, start.y + 2)
     this.exitZone = new Phaser.Geom.Rectangle(room.exit.x, room.exit.y, room.exit.width, room.exit.height)
@@ -100,10 +105,15 @@ export default class InteriorScene extends Phaser.Scene {
     this.input.on('wheel', this.onWheel, this)
     this.game.registry.events.on('changedata-travellerKey', this.retexture, this)
     this.game.registry.events.on('changedata-locked', this.onLock, this)
+    this.game.events.on('bubble-closed', this.onBubbleClosed, this)
     this.events.on('postupdate', this.settle, this)
+    // La página baja el sonido del exterior mientras la viajera está dentro.
+    this.game.events.emit('indoors', true)
     this.events.once('shutdown', () => {
-      this.game.events.emit('print-sound', false)
+      this.game.events.emit('indoors', false)
+      this.sky.destroy()
       this.events.off('postupdate', this.settle, this)
+      this.game.events.off('bubble-closed', this.onBubbleClosed, this)
       this.scale.off('resize', this.fit, this)
       this.game.events.off('action', this.act, this)
       this.game.events.off('interior-action', this.onDialogueAction, this)
@@ -136,21 +146,6 @@ export default class InteriorScene extends Phaser.Scene {
     this.switches.hifi?.set(jukebox.snapshot().playing ? 'on' : 'off')
     exclamation.setVisible(!this.seen.has(ENTRANCE))
     this.physics.add.collider(this.princess, this.solids)
-  }
-
-  // De noche la casa se queda a media luz y se encienden las tiras led, que cambian de color despacio.
-  buildNight() {
-    if (!this.night || !this.room.home) return
-    this.add.rectangle(this.room.width / 2, this.room.height / 2, this.room.width, this.room.height, 0x1c1b3a, 0.4).setDepth(8000)
-    const layers = LED_PALETTES.map((palette, i) => {
-      const key = `leds:${i}`
-      if (!this.textures.exists(key)) this.textures.addCanvas(key, ledCanvas(this.room, palette))
-      return key
-    })
-    const leds = this.add.image(0, 0, layers[0]).setOrigin(0, 0).setDepth(8001)
-    if (prefersReducedMotion()) return
-    let index = 0
-    this.time.addEvent({ delay: 2200, loop: true, callback: () => leds.setTexture(layers[(index = (index + 1) % layers.length)]) })
   }
 
   // El registro avisa cuando el juego se bloquea (diálogo o panel abierto) y cuando se desbloquea.
@@ -246,15 +241,20 @@ export default class InteriorScene extends Phaser.Scene {
     const { kind, stage } = printView(job, now, MINI_STAGES)
     if (kind === this.printKind && stage === this.printStage) return
     const printer = this.switches.printerMini
-    if (kind === 'printing') printer?.showFrame(1 + stage)
+    // Cada movimiento del cabezal se avisa a la página (`print-step`) para que el sonido siga a la animación: sin movimiento
+    // no hay sonido, así que al terminar, cancelar o irse de la casa se calla solo.
+    if (kind === 'printing') printer?.playFrames(miniStageFrames(stage), (frame) => this.announcePrintStep(frame))
     else printer?.set(kind)
     this.printMark?.setVisible(kind === 'done')
-    if (kind !== this.printKind) {
-      this.game.events.emit('print-sound', kind === 'printing')
-      if (kind === 'done' && this.printKind === 'printing') this.game.events.emit('print-done')
-    }
+    if (kind === 'done' && this.printKind === 'printing') this.game.events.emit('print-done')
     this.printKind = kind
     this.printStage = stage
+  }
+
+  // Un movimiento del cabezal: el tramo del barrido y si es el primero de una capa nueva (sube el eje).
+  announcePrintStep(frame) {
+    const { sweep } = miniFrameInfo(frame)
+    this.game.events.emit('print-step', { sweep, layer: sweep === 0 })
   }
 
   // Recoger la impresión terminada: la figura sale de la placa, la viajera, de frente, levanta el Pikachu por encima de la
@@ -268,6 +268,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.princess.body.setVelocity(0, 0)
     this.facing = 'down'
     this.princess.setFrame(frameName('down', 0))
+    this.game.events.emit('item-get')
     const key = 'fig-pokemon'
     if (!this.textures.exists(key)) this.textures.addCanvas(key, figureCanvas(FIGURES.find((figure) => figure.id === 'pokemon')))
     const { x, y } = this.princess
@@ -331,7 +332,10 @@ export default class InteriorScene extends Phaser.Scene {
   }
 
   update(_time, delta) {
+    this.sky.update()
     if (this.room.home) this.updatePrint()
+    this.watchGift()
+    this.publishBubble()
     const body = this.princess.body
     const locked = this.game.registry.get('locked') || this.leaving || this.showing
     const { x, y } = locked ? { x: 0, y: 0 } : inputVector(this.cursors, this.keys, this.game.registry.get('joy'))
@@ -363,6 +367,37 @@ export default class InteriorScene extends Phaser.Scene {
     return this.printKind === 'done' ? 'printerCollect' : this.printKind === 'printing' ? 'printerBusy' : id
   }
 
+  // Cuando Khalessi deja la sardina a los pies de Atreus (ya en el suelo), él reacciona con un bocadillo: la página lo
+  // escribe y lo quita sola pasado un rato, sin abrir ninguna ventana que cerrar.
+  watchGift() {
+    const cat = this.cat?.cat
+    if (!cat) return
+    const delivered = cat.giving && cat.toyPhase === 'ground'
+    if (delivered && !this.gifted) {
+      this.gifted = true
+      this.bubbleOpen = true
+      this.game.events.emit('atreus-react', 'sardine')
+    } else if (!cat.giving) this.gifted = false
+  }
+
+  onBubbleClosed() {
+    this.bubbleOpen = false
+  }
+
+  // Mientras el bocadillo está abierto, la página sabe dónde está la cabeza de Atreus en la pantalla (en píxeles CSS del lienzo):
+  // la cámara hace zoom y se mueve, así que se calcula cada fotograma.
+  publishBubble() {
+    if (!this.bubbleOpen || !this.atreus) return
+    const camera = this.cameras.main
+    const { canvas } = this.game
+    const ratio = canvas.clientWidth / this.scale.width
+    const { x, y } = this.atreus.sprite
+    this.game.events.emit('bubble-anchor', {
+      x: (x - camera.worldView.x) * camera.zoom * ratio,
+      y: (y - BUBBLE_ABOVE - camera.worldView.y) * camera.zoom * ratio,
+    })
+  }
+
   // Khalessi fuera de la caja se puede saludar donde esté: cerca de ella, y no solo ante la caja.
   catNear(px, py) {
     const cat = this.cat?.cat
@@ -384,7 +419,7 @@ export default class InteriorScene extends Phaser.Scene {
     if (this.leaving) id = null
     else if (this.seat) id = this.seat.use ?? 'standup'
     else if (this.exitZone.contains(px, py)) id = EXIT_ID
-    else if (this.room.home) id = this.catNear(px, py) ? 'khalessi' : this.printerAction(interactionAt(px, py))
+    else if (this.room.home) id = this.catNear(px, py) ? 'khalessi' : this.printerAction(interactionAt(px, py, this.facing))
     if (id !== this.near) {
       this.near = id
       this.game.events.emit('near', id)
