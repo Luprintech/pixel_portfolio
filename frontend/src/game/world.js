@@ -6,8 +6,11 @@ import { seeded } from './palette.js'
 export const TILE = 16
 export const COLS = 80
 export const ROWS = 54
-// La viajera aparece en el camino, junto a la entrada del sur.
+// El cruce de caminos de la entrada: donde espera Lupe y a donde vuelve la viajera si guardó su posición en un sitio inválido.
 export const SPAWN = { x: 38 * TILE, y: 44 * TILE }
+// Una partida nueva empieza fuera del valle, al sur del arco: la viajera entra andando por el camino hasta `stopY`, donde
+// recupera el control, y se encuentra a Lupe esperando en el cruce.
+export const ARRIVAL = { x: 600, y: 836, stopY: 780 }
 
 // Cada lugar: esquina superior izquierda y tamaño en teselas, y la tesela de la puerta, que queda justo
 // debajo del edificio (donde se pisa para entrar). `zone` es el panel que abre; sin él, la puerta aún no

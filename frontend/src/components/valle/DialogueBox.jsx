@@ -6,7 +6,8 @@ import { PAL } from '../../game/palette'
 import { useTypewriter } from '../../hooks/useTypewriter'
 import { getEngine, startEngineIfAllowed } from '../../lib/audioEngine'
 import { DIALOGUE_COPY, lineText, optionText } from '../../lib/dialogueCopy'
-import { isSpoken, playBlip, playMeow } from '../../lib/dialogueSound'
+import { isSpoken, playBlip } from '../../lib/dialogueSound'
+import { playPetSound } from '../../lib/petSounds'
 import { prefersReducedMotion } from '../../lib/reducedMotion'
 import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
@@ -14,6 +15,7 @@ import { useValleCopy } from '../../lib/valleCopy'
 // Velocidad de escritura (caracteres por segundo) y cada cuántas letras que suenan va un pitido.
 const TYPE_CPS = 42
 const BLIP_EVERY = 2
+const MAX_BLIPS_PER_FRAME = 8
 
 const engine = () => getEngine() ?? startEngineIfAllowed()
 
@@ -32,7 +34,8 @@ export default function DialogueBox({ scriptId, features: extra, onReach, onClos
 
   const features = useMemo(() => ({ ...FEATURES, ...extra }), [extra])
   const { page, last, options } = view(SCRIPTS, state, features)
-  const text = lineText(lang, page.text)
+  const touch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
+  const text = lineText(lang, page.text, touch)
   // Con movimiento reducido el texto aparece entero y sin pitidos.
   const cps = prefersReducedMotion() ? 0 : TYPE_CPS
   const { shown, done, finish } = useTypewriter(text, cps)
@@ -42,19 +45,26 @@ export default function DialogueBox({ scriptId, features: extra, onReach, onClos
   useEffect(() => {
     const previous = lastShown.current.text === text ? lastShown.current.count : 0
     lastShown.current = { text, count: shown }
-    if (!cps) return
+    // La página que lleva su propio maullido no suena a pitidos de 8 bits mientras se escribe.
+    if (!cps || page.sfx === 'meow') return
+    // Al tocar la caja el texto se completa de golpe: sonar todas las letras a la vez apila decenas de tonos en el mismo
+    // instante y satura (el ruido "roto"). Un avance normal son una o dos letras por fotograma; más que eso, no suena.
+    if (shown - previous > MAX_BLIPS_PER_FRAME) return
     for (let i = previous; i < shown; i++) {
       if (isSpoken(text[i]) && i % BLIP_EVERY === 0) playBlip(engine(), page.who, text[i])
     }
-  }, [shown, text, page.who, cps])
+  }, [shown, text, page.who, page.sfx, cps])
 
   useEffect(() => {
     onReach?.(state.id, last)
   }, [state.id, last, onReach])
 
-  // Algunas páginas llevan un efecto de sonido propio (el maullido de Khalessi) que suena al abrirse.
+  // Algunas páginas llevan un efecto de sonido propio (el maullido de Khalessi) que suena al abrirse. Es la grabación del
+  // gato de verdad, la misma de la portada, no el maullido sintetizado.
   useEffect(() => {
-    if (page.sfx === 'meow') playMeow(engine())
+    if (page.sfx !== 'meow') return
+    engine()
+    playPetSound('gato', 'comun')
   }, [page.sfx, state])
 
   // Cada página nueva empieza con la primera opción marcada.
@@ -100,7 +110,6 @@ export default function DialogueBox({ scriptId, features: extra, onReach, onClos
 
   const speaker = copy.speakers[page.who] ?? page.who
   const portrait = portraitUrl(page.who)
-  const touch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-3 pb-4 sm:pb-6" role="presentation">

@@ -2,7 +2,7 @@
 
 **Proyecto:** Portfolio interactivo de Guadalupe Cano (Luprintech)  
 **Estado:** Diseño y desarrollo en curso  
-**Última integración:** 9 de noviembre de 2026 (unifica la visión inicial del 8 de noviembre con "Visión y decisiones de producto" del 9)  
+**Última sincronización:** 11 de noviembre de 2026 (biografía, mapa previsto, NPC, bienvenida, Ylonem y estado real de implementación)
 **Tipo:** Documento de visión, decisiones y propuestas de implementación
 
 ---
@@ -122,39 +122,41 @@ El valle tiene una capa **funcional** (dónde se consulta el contenido profesion
 | Plaza central | Entrada y centro de navegación: señales, accesos a otras zonas, NPC de bienvenida |
 | Casa de Lupe | Sobre mí: presentación, formación, trayectoria, experiencia, CV y enlaces profesionales |
 | Taller del Código | Proyectos como máquinas, mesas de trabajo u objetos interactivos. Cada uno abre una ficha con nombre, descripción, problema que resuelve, tecnologías, capturas reales, funcionalidades y enlaces a GitHub y demo si existen. Se obtienen de la API existente |
-| Biblioteca de los Logs | Blog: artículos como libros o estanterías, con recientes, búsqueda y acceso al post completo. El contenido sigue viniendo del CMS |
+| Biblioteca de los Logs | **Retirada decidida, aún presente en el código y mapa actuales.** No ampliar; conservar el registro técnico hasta la fase específica que retire o redirija blog, rutas, CMS y contenido |
 | Taberna del Debug | Tecnologías, herramientas y experiencia. Puede incluir NPC con diálogos breves. No sustituye la información estructurada y accesible |
 | Oficina de Correos | Contacto: reutiliza el sistema de envío y validación existente |
 
-El taller, la biblioteca y el buzón son propuestas funcionales. **No sustituir ni renombrar automáticamente los lugares autobiográficos ya decididos**. Cómo se reparten la Taberna del Debug y el Mihrab, o la Casa de Lupe y la casa del cuarto gaming, está en las decisiones pendientes (sección 16).
+El taller y el buzón siguen siendo propuestas funcionales. La biblioteca/blog se retirará, pero no se borra desde esta sincronización documental: sus rutas, CMS, contenido y edificio todavía existen y requieren una fase técnica propia. **No sustituir ni renombrar automáticamente los lugares autobiográficos ya decididos**.
 
 **Capa autobiográfica (detalle en `LORE_Y_MUNDO.md`, sección 7):**
 
 ```text
-NORTE   Jardín del aprendizaje ── Escuelas ── Patio universitario
-                  │                              │
-OESTE   Piscina ── Plaza de bienvenida ── Taller de proyectos   ESTE
-          │            │      │                  │
-        Mihrab       Copos   Parada de bus     Biblioteca*
-          │            │      │                  │
-SUR     Casa de Lupe ── Zona de asistencia ── Punto de encuentro
-          └─ azotea         y grúa             de amigos
+NORTE   Dionisio Ortiz ── Universidad de Burgos ── IES Gran Capitán
+                                │                         │
+OESTE   Piscina Santuario ── Plaza/entrada ── Taller de proyectos   ESTE
+          │                       │                  │
+        Mihrab ── Copos       Parada de bus     Ayuntamiento*
+          │                       │                  │
+SUR     Casa de Lupe ── RACE / asistencia ── Punto de encuentro
+          └─ azotea                               de amigos
 
-* Taller, biblioteca y buzón/contacto: ampliaciones funcionales propuestas.
+* Decidido para una fase posterior; todavía no existe en el mapa implementado.
 ```
 
-El dibujo expresa conexiones, no coordenadas ni tamaño. La casa no necesita estar junto al bar en el diseño final.
+El dibujo expresa conexiones, no coordenadas ni tamaño. El mapa actual todavía conserva Cervantes y la biblioteca/blog y aún no incorpora el Ayuntamiento. Esta visión define el destino editorial; no autoriza a modificar el mapa fuera de su fase.
 
 | Lugar | Qué representa | Qué permite descubrir |
 | --- | --- | --- |
 | Casa y cuarto gaming | Aficiones y hogar compartido | Impresora (3D), PC retro (redes), consolas, TV, Khalessi, azotea con telescopio |
 | Mihrab | Empleo en el bar | Caja registradora: investigar un problema y configurar una solución |
-| Copos | Empleo antes del Bachillerato | Etapa anterior al desarrollo web |
-| Piscina y kiosko | Primer trabajo, a los 16 | Primer empleo y vínculo con su hermana |
-| Cervantes, Dionisio Ortiz | ESO y Bachillerato de Artes | Hitos de formación |
-| Burgos, Messina, Granada | Pedagogía, Erasmus, SICUE | Itinerario universitario y TFG |
-| Escuela de DAW y laboratorio | Desarrollo web y máster en curso | Paso hacia el desarrollo y formación en seguridad |
-| Zona de asistencia y grúa | Nueve años en RACE | Atención y coordinación, sin inventar métricas |
+| Copos | Un verano aproximadamente a los 18, antes del Bachillerato | Etapa anterior al desarrollo web |
+| Piscina Santuario | Quiosco de helados con Hylia y regreso posterior al bar de la piscina | Dos recuerdos laborales diferentes en el mismo recinto |
+| Dionisio Ortiz | Bachillerato de Artes | Centro que se mantiene; Cervantes se retira del recorrido previsto |
+| Universidad de Burgos | Pedagogía, Erasmus en Messina, SICUE en Granada, prácticas, TFG y VocaAcción | Messina y Granada como recuerdos o espacios dependientes del nodo universitario |
+| IES Gran Capitán | DAW, comienzo a distancia en Trassierra, proyecto Vocacción y amistad con Ylonem | NPC opcional de compañero de DAW; el caso de Ahi Está la Película se descubre mediante una ficha o panel profesional, separado de Vocacción |
+| Ayuntamiento de Córdoba | Prácticas de DAW | Incorporación futura decidida; marca y recursos pendientes de revisión |
+| RACE / asistencia | Etapa 2015–2024 compartida con Marnie | Funciones confirmadas de atención, SOS, geolocalización, formación, análisis y coordinación; la grúa es un símbolo |
+| Laboratorio | Formación posterior en ciberseguridad | Denominación y estado a verificar; no atribuir experiencia profesional de seguridad |
 | Parada, rincón musical, punto de encuentro, paseo, jardín | Entorno familiar y de amistades | Escenas cotidianas opcionales |
 
 Cada episodio relaciona un hecho con una capacidad observable. No atribuir experiencia profesional en ciberseguridad a una formación en curso.
@@ -193,12 +195,15 @@ Caminos con bordes y esquinas naturales, variaciones de terreno, árboles de dis
 
 Esta sección separa cuatro niveles, para que no se mezclen: (1) lo que existe y está comprobado en el código, (2) las decisiones de producto aprobadas, (3) las propuestas aún por concretar y (4) las funciones futuras sin implementar. El estado de la implementación se lleva en `docs/ESTADO.md`; aquí no se repite.
 
-### 6.1 Estado actual (comprobado en el código el 2026-11-09)
+### 6.1 Estado actual (comprobado en el código y en `ESTADO.md` el 2026-11-11)
 
-- **Viajera:** existe un creador de personaje por capas (cuerpo, cara, pelo, vello, complementos y ropa), con vista previa que gira entre las cuatro direcciones, botones "Aleatoria" y "Restablecer" sobre todo el aspecto, y partida versionada en `localStorage` (`valle-del-bucle:save`, versión 1, con migración de formatos anteriores). Los sprites se generan por código con un único generador por partes (`game/avatar/`), con hoja de 3 poses × 4 direcciones.
-- **Khalessi:** existe como sprite (`catCanvas`). Hoy aparece en la portada (pasea y descansa), en la vista previa del creador y dentro del valle, donde **sigue a la viajera** desde la plaza (`ValleScene.js`). Esto último contradice la decisión de abajo y está registrado como pendiente en `docs/ESTADO.md`.
-- **Lupe:** no existe como personaje en pantalla (ni sprite, ni retrato, ni diálogo). Solo aparece como autora en textos y en el guion de `DIALOGOS.md`.
-- **Mascota del visitante:** no existe.
+- **Viajera:** creador por capas, nombre, vista previa animada, personalización y mascota opcional. El generador común de `game/avatar/` alimenta creador, NPC y juego. La partida local está versionada; la versión 5 guarda aspecto, mascota, mundo e historia y migra versiones anteriores.
+- **Mascota del visitante:** perro, gato o ninguna, con razas y colores cosméticos, nombre separado y seguimiento durante la exploración. No comparte identidad ni comportamiento narrativo con Khalessi y espera fuera de los interiores actuales.
+- **Lupe:** existe en portada, valle y retrato de diálogo. En una partida nueva espera en la entrada; tiene estados `idle`, `talking`, `guiding`, `waiting` y `routine`, pasea por rutas válidas y solo acompaña al aceptarse una visita. No persigue permanentemente a la viajera. La bienvenida y la visita exterior hasta la casa están implementadas; sus textos nuevos siguen siendo borradores editoriales.
+- **Khalessi:** aparece en portada, casa y exterior. En el exterior acompaña a Lupe, no a la viajera; en la casa conserva su comportamiento doméstico independiente.
+- **Atreus:** existe como NPC de la casa con sprite, retrato, conversación e interacción propias.
+- **Ylonem:** definido editorialmente, todavía no implementado. Es el seudónimo autorizado de un antiguo compañero de DAW y buen amigo actual de Lupe. Es fotógrafo y videógrafo profesional de bodas. Su presencia prevista es opcional en Gran Capitán y conecta con el caso profesional de la aplicación creada por Lupe para Ahi Está la Película (`ahiestalapelicula.com`).
+- **Memoria narrativa:** el estado de bienvenida, visita, conversaciones escuchadas y preguntas explicadas vive en la partida. Una exclamación indica contenido nuevo; las conversaciones completadas no se repiten íntegramente.
 
 ### 6.2 Decisiones de producto aprobadas (2026-11-09)
 
@@ -213,11 +218,11 @@ Esta sección separa cuatro niveles, para que no se mezclen: (1) lo que existe y
 - Completar animaciones de frente, espalda y laterales; caminar e inactividad; transiciones entre direcciones.
 - Mantener las opciones de personalización y conservarlas al navegar por el mundo.
 
-### 6.4 Función futura: mascota del visitante (no implementada)
+### 6.4 Mascota del visitante (implementada; ampliaciones opcionales)
 
-Es una función futura. Sus puntos se dividen entre lo que ya se ha pedido y lo que está por concretar.
+La elección entre perro, gato o ninguna mascota, el nombre independiente, las variaciones cosméticas, la previsualización, el seguimiento exterior y la persistencia local ya están implementados. Las razas tienen dimensiones propias y los gatos del visitante evitan el aspecto siamés de Khalessi. La lista siguiente conserva el diseño original para poder comparar decisiones; `ESTADO.md` es la fuente de verdad sobre su implementación.
 
-**Pedido para esta función**
+**Diseño original, ya implementado en su parte principal**
 
 - Elección opcional: sin mascota, perro o gato.
 - Nombre personalizable, independiente del nombre del avatar.
@@ -227,7 +232,7 @@ Es una función futura. Sus puntos se dividen entre lo que ya se ha pedido y lo 
 - Acompañamiento opcional durante la exploración, con animaciones de reposo y marcha.
 - Poder cambiar nombre, apariencia o desactivar el acompañamiento después.
 
-**Propuestas por concretar (pendientes de aprobación)**
+**Ampliaciones y decisiones que deben contrastarse con lo ya implementado**
 
 - *Nombre:* de 1 a 16 caracteres, con los mismos caracteres admitidos que el nombre de la viajera (`sanitizeName`: letras, números, espacio, guion y apóstrofo). Valor predeterminado si queda vacío: "Perro" o "Gato" según la especie, traducido por i18n. No puede ser "Khalessi" (comparación sin mayúsculas ni acentos), para no confundirla con la gata de Lupe.
 - *Selección inicial de apariencias* (pequeña, y cada una con nombre accesible además de verse):
@@ -235,41 +240,41 @@ Es una función futura. Sus puntos se dividen entre lo que ya se ha pedido y lo 
   - Gato: naranja atigrado, negro, blanco y negro (bicolor), gris atigrado.
   - Se evita la combinación siamesa crema con máscara marrón en los gatos del visitante, para que Khalessi siga siendo reconocible.
 - *Seguimiento:* distancia de seguimiento corta, con retraso suave; si queda más lejos de un umbral (por ejemplo, ocho teselas) o fuera de pantalla, reaparece junto a la viajera. La Khalessi actual sirve de referencia técnica, sin reutilizar su sprite.
-- *Interiores:* al entrar a un edificio, la mascota entra con la viajera y se coloca junto a la puerta, fuera de la ruta hacia la salida y los objetos.
+- *Interiores:* actualmente la mascota espera fuera. Que entre y se coloque junto a la puerta es una ampliación futura, no una función existente.
 - *Diálogos:* durante una conversación se queda quieta y en reposo; no habla ni interviene.
 - *Viaje rápido:* aparece junto a la viajera en el destino, sin recorrer el trayecto.
 - *Sin bloqueos:* no tiene colisión con la viajera ni con puertas, objetos interactivos o NPC; puede atravesar lo que la viajera ocupa, y nunca impide una interacción.
 - *Accesibilidad:* la elección y el nombre se manejan con teclado y en móvil; el acompañamiento se puede desactivar. Por decidir: si con `prefers-reduced-motion` activado la mascota se queda quieta junto a la viajera o no acompaña.
-- *Persistencia:* local, sin cuenta, dentro de la partida `valle-del-bucle:save`. Requiere subir `SAVE_VERSION` a 2 con un bloque `pet` (`{ species, coat, name, follows }`), una migración desde la versión 1 (sin mascota, acompañamiento activado) y tolerancia a apariencias desconocidas (se sustituyen por la de partida en vez de descartar la partida). Una partida de otra versión mayor se ignora, como hoy. **No se toca el CMS, la API ni la base de datos.**
-- *Dimensiones de los sprites:* se fijan después de aprobar la base visual del avatar (ver el orden de trabajo de 6.6).
+- *Persistencia:* ya vive en la partida local, sin cuenta. El guardado está en la versión 5 y también incluye mundo e historia. **No toca el CMS, la API ni la base de datos.**
+- *Dimensiones de los sprites:* ya están definidas por raza; cualquier ampliación debe conservar esas proporciones.
 
-### 6.5 Otras mejoras futuras del editor (no implementadas)
+### 6.5 Otras mejoras del editor
 
-- Guardar y recuperar la personalización.
-- Aleatorizar categorías individuales y bloquear las que se quieran conservar (hoy "Aleatoria" cambia todo).
-- Vista previa en cuatro direcciones, en reposo y caminando (hoy hay vista previa con giro, en reposo).
-- Restablecer una categoría sin borrar toda la apariencia (hoy "Restablecer" vuelve a todo lo de partida).
-- Controles accesibles por teclado y móvil.
+- Guardar y recuperar la personalización: **implementado**.
+- Vista previa en cuatro direcciones, en reposo y caminando: **implementado**.
+- Aleatorizar categorías individuales y bloquear las que se quieran conservar: ampliación opcional; hoy «Al azar» cambia el avatar seleccionado.
+- Restablecer una categoría sin borrar toda la apariencia: ampliación opcional.
+- Accesibilidad por teclado y emulación táctil: implementada y probada mediante scripts/emulación; pendiente una prueba con lector de pantalla y dispositivo táctil reales.
 
 ### 6.6 Orden de trabajo
 
 1. ~~Aprobar y consolidar la base visual del avatar (cuerpo, cabeza, escala, contorno).~~ Hecho el 2026-11-09.
 2. ~~Adaptar las opciones actuales (pelo, ropa, complementos) a esa base.~~ Hecho el 2026-11-09.
-3. Mejorar guardado, aleatorización y previsualización (6.5).
-4. Diseñar e implementar las mascotas del visitante (6.4).
+3. ~~Mejorar guardado y previsualización.~~ Hecho; aleatorización por categorías queda como ampliación opcional.
+4. ~~Diseñar e implementar las mascotas del visitante.~~ Hecho; ver ampliaciones opcionales en 6.4.
 
 No se fijan dimensiones nuevas de sprites hasta cerrar el paso 1.
 
 ### 6.7 Creación de personaje (primera versión hecha el 2026-11-09; ver `docs/ESTADO.md` para lo que falta)
 
-Decisión de Lupe (2026-11-09): al elegir "Nueva aventura" el juego abre un creador de personaje al estilo de Stardew Valley, con el nombre de la viajera. Los apartados siguientes son la propuesta original; lo implementado y lo pendiente está en `docs/ESTADO.md`. La vista previa del creador mostraba a Khalessi junto a la viajera: con la decisión de 6.2, esa compañía se sustituirá por la mascota del visitante cuando exista (6.4).
+Decisión de Lupe (2026-11-09): al elegir «Nueva aventura» el juego abre un creador de personaje al estilo de Stardew Valley, con el nombre de la viajera. Los apartados siguientes conservan la propuesta original; lo implementado y lo pendiente está en `docs/ESTADO.md`. Khalessi ya no aparece como mascota del creador: la vista previa usa la mascota independiente del visitante.
 
-**Orden de trabajo:** primero se termina la pantalla de inicio (animación, música y "Continuar aventura"); el creador se aborda después como un bloque propio.
+**Estado:** pantalla de inicio, «Continuar aventura», creador y mascota están implementados. Las opciones de abajo sirven como especificación histórica y lista de posibles ampliaciones, no como trabajo íntegramente pendiente.
 
 **Flujo propuesto:**
 
 1. Nombre de la viajera (campo de texto con límite de longitud y validación; sin datos personales).
-2. Creador con vista previa en vivo, que reutiliza el sprite del juego (y, en el futuro, la mascota del visitante).
+2. Creador con vista previa en vivo, que reutiliza el sprite del juego y la mascota del visitante.
 3. Confirmar y entrar al valle. Si ya hay partida guardada, avisar de que "Nueva aventura" la sustituye.
 
 **Opciones a ofrecer:**
@@ -300,7 +305,7 @@ Los edificios deberían tener interiores propios.
 
 **Propuesta técnica:** plantilla reutilizable de escenas interiores con punto de entrada y de salida, colisiones, objetos interactivos, eventos de interacción, cámara y límites, e integración con paneles React. Cada interior tiene decoración y contenido propios, pero comparte los mecanismos de navegación.
 
-**Prioridad:** empezar por un solo edificio completo y reutilizar lo aprendido para el resto. La visión inicial elige el Taller del Código; la propuesta del 9 de noviembre empieza por la casa (bienvenida, cuarto gaming, impresora, telescopio y PC). Está por decidir (sección 16).
+**Estado y prioridad:** la casa de Lupe es el primer edificio completo y reutilizable; incluye interior recorrible, cuarto gaming, impresoras, telescopio, PC, Atreus, Khalessi y diálogos. El resto de interiores sigue pendiente. La visita guiada exterior hasta la casa está implementada; la presentación guiada de objetos dentro de ella será C2.
 
 La casa es una habitación compacta y recorrible: dos escritorios (el de Atreus con dos pantallas, cascos y torre blanca), cama doble, TV, estantería de consolas, rincón de impresión 3D y acceso a la azotea.
 
@@ -316,7 +321,7 @@ La casa es una habitación compacta y recorrible: dos escritorios (el de Atreus 
 | Entrar, hablar, examinar | E al estar cerca del objetivo |
 | Leer un diálogo | Panel inferior con retrato del hablante a la derecha |
 
-### Contrato de interacción (propuesto)
+### Contrato de interacción (implementado en la base; ampliable)
 
 - Mostrar un único objetivo contextual: "E · Hablar", "E · Entrar" o "E · Examinar". Resolver por distancia y orientación; no activar dos conversaciones a la vez.
 - E revela de golpe el texto en curso; la siguiente pulsación avanza. Enter como alternativa accesible. Esc cierra o vuelve atrás.
@@ -328,20 +333,20 @@ La casa es una habitación compacta y recorrible: dos escritorios (el de Atreus 
 - Restaurar el foco al cerrar paneles. Menú accesible con controles, volumen y modo clásico.
 - La bienvenida se reproduce una vez por partida o hasta completarla; después se puede repetir voluntariamente.
 
-### Mecánicas (propuestas, progresivas)
+### Mecánicas (estado mixto, progresivas)
 
-- **NPC:** explicaciones breves y enlaces a contenido real. Diálogos opcionales y omitibles. No convertir a cada personaje en una recomendación profesional artificial; los objetos pueden mostrar hechos directamente con voz de Lupe.
+- **NPC:** Lupe, Khalessi exterior y Atreus están implementados. Los futuros NPC tendrán explicaciones breves, memoria, exclamación solo ante contenido nuevo y diálogos opcionales y omitibles. No convertir a cada personaje en una recomendación profesional artificial.
 - **Diario de aventuras:** mapa del pueblo, proyectos descubiertos, lugares visitados y accesos directos.
 - **Viaje rápido:** desplazarse directamente a edificios o zonas, sin obligar a recorrer el mapa repetidamente.
-- **Misiones opcionales:** tres objetivos (conocer a Lupe, descubrir un proyecto, visitar la biblioteca). Nunca bloquean una sección.
-- **Guardado:** preferencias y progreso básico en `localStorage`. Sin autenticación ni tablas nuevas sin necesidad real.
+- **Misiones opcionales:** concepto pendiente. Si se incorporan, no incluirán «visitar la biblioteca» porque el blog se retirará y nunca bloquearán una sección.
+- **Guardado:** preferencias, aspecto, mascota, mundo y memoria narrativa en `localStorage`, versión 5. Sin autenticación ni tablas nuevas.
 - **Cofres y secretos:** opcionales; nunca esconden información profesional importante.
 
 ---
 
 ## 9. Diálogos y contenido profesional
 
-La bienvenida presenta a Lupe y a Khalessi y después permite explorar sin tutorial obligatorio. Las conversaciones son de pocas páginas, con una idea por intervención y opciones como "Cuéntame más", "Ver experiencia" o "Seguir explorando". El guion completo, con IDs, condiciones y notas de producción, está en [DIALOGOS.md](DIALOGOS.md).
+La bienvenida interactiva presenta a Lupe y a Khalessi y después permite explorar o aceptar una visita exterior opcional a la casa. Las preguntas ya contestadas no se repiten y la visita puede abandonarse. La estructura está implementada y verificada; los textos nuevos siguen marcados como borradores pendientes de aprobación en [DIALOGOS.md](DIALOGOS.md).
 
 Reglas:
 
@@ -357,7 +362,7 @@ Reglas:
 | Pedagogía y movilidad | Formación, enseñanza y orientación laboral |
 | DAW | Paso hacia el desarrollo web mientras trabajaba |
 | Impresión 3D | Diseño y fabricación como afición creativa |
-| Máster en ciberseguridad | Formación en curso y atención a la seguridad desde el desarrollo |
+| Formación posterior en ciberseguridad | Atención a la seguridad desde el desarrollo; denominación y estado exactos pendientes de verificar |
 
 ---
 
@@ -397,7 +402,7 @@ Composición moderna y limpia, tipografía legible, espaciado equilibrado, total
 - **Sobre mí:** trayectoria, formación y especialización.
 - **Proyectos destacados:** aplicaciones reales con capturas, tecnologías, descripción y enlaces.
 - **Experiencia y stack:** información estructurada y fácil de consultar.
-- **Blog:** últimos artículos.
+- **Blog:** retirada decidida. Mientras sigan existiendo sus rutas, contenido y CMS, se trata como legado técnico pendiente de retirada, no como una zona futura que ampliar.
 - **Contacto:** formulario y enlaces profesionales.
 
 ### Requisitos
@@ -493,11 +498,11 @@ Respetar `CLAUDE.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`, `frontend/docs/DESIGN
 | 1 · Identidad y bases visuales | Composición de la portada, paleta, escala y sprites, distribución del valle, criterios de edificios, terreno y vegetación | Identidad visual consistente |
 | 1b · Inicio vivo y creador de personaje | Ver detalle abajo | Portada con vida y primera partida personal |
 | 2 · Portfolio profesional | `/clasico` como landing, tarjetas de proyectos, contenidos reales, responsive, accesibilidad y SEO | Portfolio completo y presentable sin jugar y sin cargar Phaser |
-| 3 · Primer edificio completo | Un edificio con interior, entrada y salida, conectado a contenido real (Taller del Código o casa; ver sección 16) | Primer recorrido completo desde el valle hasta un proyecto o una conversación |
-| 4 · Expansión del pueblo | Resto de edificios funcionales (casa, biblioteca, taberna, correos) y señalización | Todas las secciones principales accesibles desde el mapa |
-| 5 · Conversación y biografía | Panel de diálogo, bienvenida, objetos de la casa; Mihrab, Copos, piscina, escuelas, asistencia y DAW | Cada lugar muestra hechos aprobados y ofrece salida rápida |
-| 6 · Entorno personal | Personajes con seudónimos y escenas cotidianas | Relaciones coherentes y revisión de identidad completada |
-| 7 · Experiencia de aventura | NPC, mapa, viaje rápido, diario, animaciones de Khalessi, mascota del visitante (6.4) y misiones opcionales | Exploración agradable sin obstaculizar la navegación |
+| 3 · Primer edificio completo | Casa de Lupe con interior, entrada, salida, objetos, NPC y contenido real | **Implementada**; quedan revisiones y ampliaciones registradas en `ESTADO.md` |
+| 4 · Expansión del pueblo | Resto de edificios funcionales y autobiográficos, correos y señalización; sin ampliar la biblioteca/blog | Todas las secciones principales accesibles desde el mapa |
+| 5 · Conversación y biografía | **C1 exterior implementada:** panel, bienvenida, Lupe y acompañamiento hasta la casa. **C2 pendiente:** visita interior. Después: Mihrab, Copos, piscina, formación, RACE y DAW | Cada lugar muestra hechos aprobados, recuerda lo completado y ofrece salida rápida |
+| 6 · Entorno personal | Personajes con seudónimos y escenas cotidianas; Ylonem como compañero de DAW y colaborador profesional | Relaciones coherentes, autorización de Ylonem registrada y revisión de identidad completada |
+| 7 · Experiencia de aventura | Base de NPC, Khalessi y mascota implementada; mapa futuro, viaje rápido, diario y posibles misiones opcionales pendientes | Exploración agradable sin obstaculizar la navegación |
 | 8 · Ambiente | Día/noche, lluvia, telescopio y audio opcional | Variantes coherentes, con control de movimiento y de sonido |
 | 9 · Evolución editorial | Evaluar CMS de diálogos | Fuente única, borradores protegidos y ningún dato privado en la API pública |
 | 10 · Pulido y publicación | Rendimiento, accesibilidad, móvil, pruebas de navegación y SEO | Experiencia estable para visitantes reales |
@@ -521,17 +526,17 @@ Bienvenida, ayuda, entrada a casa, Atreus, Khalessi, impresora, telescopio bási
 
 Antes de implementar nuevas funcionalidades extensas, definir:
 
-1. Distribución definitiva del mapa, y cómo se reparten las dos capas: ¿la Taberna del Debug, la Biblioteca y el Taller conviven con el Mihrab, la casa y las escuelas, o los lugares autobiográficos asumen esas funciones?
+1. Distribución definitiva del mapa con Cervantes y biblioteca/blog retirados, Gran Capitán como nodo de DAW, Ayuntamiento incorporado y recuerdos de Messina, Granada y Trassierra sin edificios innecesarios.
 2. ~~Escala de tiles y sprites~~ — decidida: 16 × 16 y viajera de 16 × 28.
 3. Estilo final de los edificios.
 4. Diseño definitivo del modo clásico.
-5. Comportamiento de los interiores.
-6. Apariencia de NPC (incluida Lupe) y de las mascotas del visitante, y dimensiones de los retratos y sprites (leer antes `DESIGN.md`; las dimensiones esperan a la aprobación de la base visual del avatar). Detalle y propuestas abiertas de las mascotas en 6.4.
+5. Comportamiento de los interiores restantes y diseño de la visita guiada interior de la casa (C2).
+6. Apariencia, privacidad, nombres públicos y rutinas de los futuros NPC. Lupe, Khalessi, Atreus y las mascotas del visitante ya tienen una base implementada; Ylonem está definido editorialmente pero aún no tiene sprite ni comportamiento.
 7. Qué mecánicas entran en la primera versión pública.
-8. Primer edificio completo: Taller del Código (visión inicial) o casa (propuesta del 9 de noviembre).
+8. ~~Primer edificio completo.~~ Decidido e implementado: casa de Lupe.
 9. Seudónimos definitivos y cuánto detalle de cada profesión se publica.
-10. Fechas y denominaciones oficiales (centros, título del máster, estado de estudios), URLs sociales, CV, contacto, proyectos y fotografías a mostrar.
-11. Duración del ciclo día/noche, frecuencia de lluvia y persistencia local.
+10. Denominaciones oficiales (mención de Pedagogía y formación de ciberseguridad), ubicación del centro de empleo, alcance de VocaAcción, estado técnico de Vocacción, identidad del Ayuntamiento, URLs sociales, CV, contacto, proyectos y fotografías.
+11. Duración del ciclo día/noche y frecuencia de lluvia. La persistencia local básica ya está implementada.
 12. Si el lore llegará al CMS y con qué contrato de publicación.
 13. Revisar lore y diálogos antes de que el repositorio o el sitio pasen a público (sección 13).
 14. Verificar el pendiente documentado de `/clasico` en el sitemap; no asumir que sigue abierto.

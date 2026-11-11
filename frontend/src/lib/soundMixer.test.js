@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { channelLevels, fxLevel, getSoundPrefs, masterLevel, musicLevel, subscribeSoundPrefs, updateSoundPrefs } from './soundMixer'
 
 describe('soundMixer', () => {
-  beforeEach(() => updateSoundPrefs({ muted: false, master: 1, music: 0.5, fx: 0.7 }))
+  beforeEach(() => updateSoundPrefs({ muted: false, master: 1, music: 0.5, fx: 0.3 }))
 
   it('avisa a todos los que escuchan cuando cambia el volumen general', () => {
     const barOnScreen = vi.fn()

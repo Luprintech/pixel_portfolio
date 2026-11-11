@@ -30,6 +30,8 @@ export const DIALOGUE_COPY = {
       'inicio.encontrar.1': 'Cada edificio guarda una parte de mi historia: dónde estudié, dónde trabajé, lo que programo y lo que hago en mi tiempo libre.',
       'inicio.encontrar.2': 'Algunos están ya abiertos y otros se están construyendo. El valle crece poco a poco.',
       'inicio.encontrar.3': 'Y si lo que buscas son mis proyectos o mis artículos, el taller y la biblioteca los enseñan tal cual, sin necesidad de jugar.',
+      'inicio.bienvenida.6.touch': 'Te mueves con el joystick de la esquina, y con el botón de acción hablas con la gente y entras en los sitios. El portfolio clásico siempre está en el menú.',
+      'inicio.ayuda.1.touch': 'El joystick para caminar y el botón de acción para interactuar cuando estés cerca. No hace falta pulsar más fuerte: las puertas no se impresionan.',
       'inicio.ayuda.1': 'WASD o flechas para caminar y E para interactuar cuando estés cerca. No hace falta pulsar más fuerte: las puertas no se impresionan.',
       'inicio.ayuda.2': 'Mientras lees, E completa el texto y después lo avanza. Puedes salir con Esc o usar los botones del panel.',
       'inicio.explorar.1': '¡Perfecto! El valle es tuyo. Si me necesitas, estaré por aquí.',
@@ -77,6 +79,9 @@ export const DIALOGUE_COPY = {
       'hifi.favoritas.1': 'Todavía estoy decidiendo cuáles entran. No quiero que sea una lista cualquiera.',
       'hifi.favoritas.2': 'Cuando esté lista, podrás escucharla aquí y contarte por qué me gusta cada una.',
       'hifi.repeticion.1': 'La minicadena sigue a lo suyo. Si quieres, ponemos algo de música mientras miras la casa.',
+      'cielo.telescopio.1': '¡Ah, mi telescopio! Es un Celestron AstroMaster 130EQ. Me gusta mucho la astronomía, aunque todavía tengo muchísimo por aprender.',
+      'cielo.telescopio.2': 'A veces subo aquí simplemente para desconectar. Me relaja observar la Luna, buscar planetas y quedarme un rato mirando el cielo.',
+      'cielo.telescopio.3': 'Si te apetece, puedes echar un vistazo. Según la hora, podrás ver cosas diferentes.',
       'pc.abrir.1': 'Bienvenida a mi pequeño escritorio retro. Tiene aire de ordenador de principios de los 2000, con paisaje tranquilo y ganas de abrir ventanas.',
       'pc.abrir.2': 'Desde aquí podrás encontrar mis redes y mis creaciones como Luprintech.',
       'pc.proyectos.1': 'Si quieres ver mi trabajo de desarrollo web, por aquí tienes los proyectos del portfolio, con su descripción y los enlaces disponibles.',
@@ -106,6 +111,7 @@ export const DIALOGUE_COPY = {
       'hifi.opt.musica': 'Poner o quitar la música',
       'hifi.opt.favoritas': 'Tus canciones favoritas',
       'casa.opt.tv_on': 'Encender la tele',
+      'cielo.opt.mirar': 'Mirar por el telescopio',
       'consolas.opt.volver': 'Volver',
     },
   },
@@ -136,6 +142,8 @@ export const DIALOGUE_COPY = {
       'inicio.encontrar.1': 'Every building holds a part of my story: where I studied, where I worked, what I code and what I do in my free time.',
       'inicio.encontrar.2': 'Some are already open and others are still being built. The valley grows little by little.',
       'inicio.encontrar.3': "And if you're after my projects or my articles, the workshop and the library show them as they are, no game needed.",
+      'inicio.bienvenida.6.touch': 'Move with the joystick in the corner, and use the action button to talk to people and go into places. The classic portfolio is always in the menu.',
+      'inicio.ayuda.1.touch': "The joystick to walk and the action button to interact when you're close. No need to press harder: doors aren't easily impressed.",
       'inicio.ayuda.1': "WASD or arrow keys to walk and E to interact when you're close. No need to press harder: doors aren't easily impressed.",
       'inicio.ayuda.2': 'While you read, E completes the text and then moves it on. You can leave with Esc or use the panel buttons.',
       'inicio.explorar.1': "Perfect! The valley is yours. If you need me, I'll be around.",
@@ -182,6 +190,9 @@ export const DIALOGUE_COPY = {
       'hifi.favoritas.1': "I'm still deciding which ones make the cut. I don't want it to be just any list.",
       'hifi.favoritas.2': 'When it is ready, you will be able to listen to it here and I will tell you why I like each one.',
       'hifi.repeticion.1': 'The hi-fi is doing its own thing. If you like, we can put some music on while you look around.',
+      'cielo.telescopio.1': "Ah, my telescope! It's a Celestron AstroMaster 130EQ. I really love astronomy, though I still have so much to learn.",
+      'cielo.telescopio.2': 'Sometimes I come up here just to unwind. Watching the Moon, looking for planets and staring at the sky for a while helps me relax.',
+      'cielo.telescopio.3': "If you like, take a look. Depending on the time, you'll see different things.",
       'pc.abrir.1': 'Welcome to my little retro desktop. It has the air of an early-2000s computer, with a calm landscape and a wish to open windows.',
       'pc.abrir.2': 'From here you can find my social networks and my creations as Luprintech.',
       'pc.proyectos.1': 'If you want to see my web development work, here are the portfolio projects, with their description and the links available.',
@@ -211,11 +222,16 @@ export const DIALOGUE_COPY = {
       'hifi.opt.musica': 'Turn the music on or off',
       'hifi.opt.favoritas': 'Your favourite songs',
       'casa.opt.tv_on': 'Turn the TV on',
+      'cielo.opt.mirar': 'Look through the telescope',
       'consolas.opt.volver': 'Back',
     },
   },
 }
 
 // Texto de una página u opción en el idioma dado (con el español de reserva).
-export const lineText = (lang, key) => (DIALOGUE_COPY[lang] ?? DIALOGUE_COPY.es).lines[key] ?? DIALOGUE_COPY.es.lines[key] ?? ''
+// Con pantalla táctil, una línea puede llevar su variante `<clave>.touch` (los controles sin teclado).
+export function lineText(lang, key, touch = false) {
+  const lines = (DIALOGUE_COPY[lang] ?? DIALOGUE_COPY.es).lines
+  return (touch && lines[`${key}.touch`]) || lines[key] || DIALOGUE_COPY.es.lines[key] || ''
+}
 export const optionText = (lang, key) => (DIALOGUE_COPY[lang] ?? DIALOGUE_COPY.es).options[key] ?? DIALOGUE_COPY.es.options[key] ?? ''

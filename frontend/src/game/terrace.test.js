@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DECK, DECK_WIDEN, FOOT, ROOF_ENTRY, STAIRS, STAIR_PACE, TABLE, TELESCOPE, climb, nearRoofDoor, nearTelescope, stairLift } from './terrace.js'
+import { DECK, DECK_WIDEN, FOOT, ROOF_ENTRY, STAIRS, STAIR_PACE, STAIR_REACH, TABLE, LUPE_SPOT, TELESCOPE, climb, nearRoofDoor, nearTelescope, stairLift } from './terrace.js'
 
 describe('escalera y cubierta de la casa de Lupe', () => {
   it('el telescopio está dentro de la cubierta y se alcanza desde cualquier lado', () => {
@@ -17,6 +17,14 @@ describe('escalera y cubierta de la casa de Lupe', () => {
     expect(nearTelescope('stairs', TELESCOPE.x, TELESCOPE.base)).toBe(false)
     expect(nearTelescope('deck', DECK.left + 1, DECK.feet)).toBe(false)
     expect(nearTelescope('deck', DECK.right, DECK.feet)).toBe(false)
+  })
+
+  it('Lupe espera en un sitio libre del entarimado: ni dentro de un mueble ni en la zona de la silla', () => {
+    expect(climb('deck', LUPE_SPOT.x, LUPE_SPOT.y)).toMatchObject({ x: LUPE_SPOT.x, y: LUPE_SPOT.y })
+    expect(LUPE_SPOT.x).toBeGreaterThan(DECK.left)
+    expect(LUPE_SPOT.x).toBeLessThan(DECK.right)
+    expect(LUPE_SPOT.y).toBeLessThanOrEqual(DECK.feet)
+    expect(nearTelescope('deck', LUPE_SPOT.x, LUPE_SPOT.y)).toBe(false)
   })
 
   it('la azotea es ancha y honda: una terraza con sitio para andar, no una pasarela', () => {
@@ -77,16 +85,52 @@ describe('escalera y cubierta de la casa de Lupe', () => {
     expect(climb('ground', 20, STAIRS.bottom + 6).mode).toBe('ground')
   })
 
+  it('solo se empieza a subir por el primer peldaño: de lado, desde debajo o a media escalera no', () => {
+    expect(climb('ground', STAIRS.x + STAIRS.run - 0.5, 156).mode).toBe('stairs')
+    ;[STAIRS.x + STAIRS.run, 12, 25, DECK.left - 1].forEach((x) => {
+      ;[FOOT.top, 156, STAIRS.bottom].forEach((y) => expect(climb('ground', x, y).mode, `x ${x}, y ${y}`).toBe('ground'))
+    })
+    expect(climb('ground', 2, STAIRS.bottom + 1).mode).toBe('ground')
+  })
+
   it('subiendo, los pies siguen los peldaños y al final pasan a la cubierta', () => {
-    const mid = climb('stairs', 17, 130)
-    expect(mid).toEqual({ mode: 'stairs', x: 17, y: STAIRS.bottom - stairLift(17) })
-    expect(climb('stairs', DECK.left, 120)).toEqual({ mode: 'deck', x: DECK.left, y: DECK.feet })
-    expect(climb('stairs', -1, 150)).toMatchObject({ mode: 'ground', y: STAIRS.bottom })
+    const lane = STAIRS.bottom - stairLift(17)
+    expect(climb('stairs', 17, lane)).toEqual({ mode: 'stairs', x: 17, y: lane })
+    expect(climb('stairs', DECK.left, DECK.feet)).toEqual({ mode: 'deck', x: DECK.left, y: DECK.feet })
+    expect(climb('stairs', -1, 150)).toMatchObject({ mode: 'ground', y: 150 })
+  })
+
+  it('se sube por todo el ancho de la escalera, no solo por delante, y se queda dentro de ella', () => {
+    const lane = (x) => STAIRS.bottom - stairLift(x)
+    // Por detrás, a todo lo que llega la franja, se anda sin que la devuelvan al borde delantero.
+    const back = lane(20) - STAIR_REACH.foot / 2
+    expect(climb('stairs', 20, back).y).toBe(back)
+    // Más allá del borde trasero o del delantero no se pasa.
+    expect(climb('stairs', 20, lane(20) - 100).y).toBeGreaterThanOrEqual(lane(20) - STAIR_REACH.foot)
+    expect(climb('stairs', 20, lane(20) + 100).y).toBe(lane(20))
+    // Andando de lado la franja sube con los peldaños: quien va por detrás sigue por detrás.
+    const next = climb('stairs', 24, back, 20)
+    expect(next.y).toBeCloseTo(back + lane(24) - lane(20), 5)
+  })
+
+  it('se empieza a subir por el primer peldaño desde cualquier punto de su anchura, sin saltos de posición', () => {
+    for (let y = FOOT.top; y <= STAIRS.bottom; y += 4) {
+      const spot = climb('ground', 1, y)
+      expect(spot.mode, `y ${y}`).toBe('stairs')
+      expect(Math.abs(spot.y - y), `y ${y}`).toBeLessThanOrEqual(8)
+    }
+    expect(climb('ground', 1, FOOT.top - 1).mode).toBe('ground')
   })
 
   it('en la cubierta no se sale de su franja y por la izquierda se vuelve a la escalera', () => {
     expect(climb('deck', 500, 0)).toEqual({ mode: 'deck', x: DECK.right, y: DECK.top })
     expect(climb('deck', 90, 200)).toEqual({ mode: 'deck', x: 90, y: DECK.feet })
+    // Se baja desde cualquier punto del borde izquierdo, sin saltar de sitio.
+    for (let y = DECK.top; y <= DECK.feet; y += 3) {
+      const at = climb('deck', DECK.left - 1, y)
+      expect(at.mode, `y ${y}`).toBe('stairs')
+      expect(Math.abs(at.y - y), `y ${y}`).toBeLessThanOrEqual(1)
+    }
     const down = climb('deck', DECK.left - 1, DECK.feet)
     expect(down.mode).toBe('stairs')
     expect(Math.abs(down.y - DECK.feet)).toBeLessThan(1)

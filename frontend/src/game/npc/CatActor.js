@@ -32,6 +32,11 @@ export default class CatActor {
     this.shadow.setPosition(cat.x, cat.y - 1)
   }
 
+  setVisible(visible) {
+    this.sprite.setVisible(visible)
+    this.shadow.setVisible(visible)
+  }
+
   destroy() {
     this.sprite.destroy()
     this.shadow.destroy()

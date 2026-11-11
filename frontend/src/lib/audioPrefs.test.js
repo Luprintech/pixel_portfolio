@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { clampVolume, loadAudioPrefs, saveAudioPrefs } from './audioPrefs'
 
-const DEFAULTS = { muted: false, master: 1, music: 0.5, fx: 0.7 }
+const DEFAULTS = { muted: false, master: 0.5, music: 0.5, fx: 0.3 }
 
 describe('audioPrefs', () => {
   beforeEach(() => localStorage.clear())
@@ -32,6 +32,6 @@ describe('audioPrefs', () => {
     localStorage.setItem('valle-del-bucle:audio', '{no es json')
     expect(loadAudioPrefs()).toEqual(DEFAULTS)
     localStorage.setItem('valle-del-bucle:audio', JSON.stringify({ on: false, music: 9, fx: 'x', master: -1 }))
-    expect(loadAudioPrefs()).toEqual({ muted: false, master: 0, music: 1, fx: 0.7 })
+    expect(loadAudioPrefs()).toEqual({ muted: false, master: 0, music: 1, fx: 0.3 })
   })
 })

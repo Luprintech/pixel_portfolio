@@ -6,18 +6,16 @@ import { DECK_WIDEN, STAIRS } from '../terrace.js'
 import { flowerPot, houseDoor, lupePlaque, sillLedge, starMobile, tallPlant, vine } from './homeFacade.js'
 import { houseGlow } from './homeLight.js'
 import { litPane } from './litPane.js'
-import { FRONT_RAIL, STRAND, backRail, deckFloor, frontRail, parasol, strandPoints, telescope, terraceStairs } from './terraceProps.js'
-import { frontRailSnow, terraceSnow } from './terraceWinter.js'
+import { LOWER_WINDOW, RAIL_BOX, STRAND, backRail, deckChair, deckFloor, lowerWindowXs, parasol, stairRail, strandPoints, telescope, terraceRail, terraceStairs } from './terraceProps.js'
+import { railSnow, terraceSnow } from './terraceWinter.js'
 import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, chimney, doorAt, finish, hipRoof, iconAt, leanRoof, newSprite, signBoard, wall, windowAt } from './shared.js'
 
 const SLATE = '#6b5b95'
 
-// Guirnalda de bombillas entre el mástil de la cubierta y la pared. Las bombillas se encienden de noche.
+// Guirnalda de bombillas entre los dos postes de las esquinas traseras de la cubierta (que dibuja `backRail`). Las bombillas se
+// encienden de noche.
 function stringLights(s) {
   const { g } = s
-  const { from } = STRAND
-  rect(g, from.x - 1, from.y - 2, 2, 60, WOOD1)
-  dot(g, from.x - 1, from.y - 3, PAL.saffron)
   strandPoints().forEach(({ x, y, bulb }) => {
     dot(g, x, y, WOOD0)
     if (bulb) {
@@ -100,8 +98,9 @@ function smallWindow(s, x, y) {
 }
 
 // Piedras de esquina alternas, para que las esquinas del muro no sean un poste liso.
-function quoins(g, x, y, h, side) {
+function quoins(g, x, y, h, side, skip = null) {
   for (let qy = y, i = 0; qy < y + h; qy += 8, i++) {
+    if (skip && qy + 7 > skip.from && qy < skip.to) continue
     const w = i % 2 ? 5 : 8
     const qx = side === 'left' ? x : x - w
     rect(g, qx, qy, w, 7, STONE1)
@@ -133,17 +132,19 @@ export function homeSprite() {
   quoins(g, 109 + DX, 80, 72, 'left')
   quoins(g, 249 + DX, 80, 72, 'right')
   vine(g, 246 + DX, 108, 44)
-  // Sala baja y cubierta. De atrás adelante: suelo, guirnalda, balaustrada trasera, telescopio, mesa con sombrilla
-  // y escalera. La barandilla delantera va aparte (`overlay`): se dibuja por encima de la viajera. La cubierta no lleva
-  // puerta dibujada: se entra a la casa desde su zona junto al muro (`nearRoofDoor`).
+  // Sala baja y cubierta. De atrás adelante: suelo, guirnalda, escalera con su pasamanos trasero, balaustrada trasera (que
+  // lo recibe en el poste de la esquina), telescopio, silla y mesa con sombrilla. El pasamanos y la barandilla delantera van aparte (`overlay`): se dibujan por encima de la viajera. En el
+  // muro del extremo del entarimado no hay puerta dibujada; la zona de entrada (`nearRoofDoor`) es solo de uso.
   wall(g, { x: 38, y: 118, w: 70 + DX, h: 42, post: false })
   deckFloor(g)
   stringLights(s)
+  terraceStairs(g, STAIRS)
+  stairRail(g, STAIRS, 'back')
   backRail(g)
   telescope(g)
+  deckChair(g)
   parasol(g)
-  terraceStairs(g, STAIRS)
-  ;[54, 104 + DX / 2].forEach((wx, i) => windowAt(s, wx, 128, 32, 20, { flowers: true, sill: true, curtains: i ? '#b8e0c8' : '#e8a8c8', glint: true }))
+  lowerWindowXs().forEach((wx, i) => windowAt(s, wx, LOWER_WINDOW.y, LOWER_WINDOW.w, LOWER_WINDOW.h, { sill: true, curtains: i ? '#b8e0c8' : '#e8a8c8', glint: true }))
   // Casa de dos plantas. Entre las ventanas pequeñas y las grandes queda una franja libre de pared (cinco filas).
   shelfWindow(s, 120 + DX, 102)
   lampWindow(s, 202 + DX, 102)
@@ -162,7 +163,7 @@ export function homeSprite() {
   tallPlant(g, 158 + DX, 147)
   flowerPot(g, 192 + DX, 148)
   lupePlaque(g, 190 + DX, 138)
-  return { ...finish(s), overlay: frontRailLayer(), glow: houseGlow(), snow: snowLayer(256 + DX, 160, terraceSnow) }
+  return { ...finish(s), overlay: railLayer(), glow: houseGlow(), snow: snowLayer(256 + DX, 160, terraceSnow) }
 }
 
 // Capa de nieve de un dibujo: se pinta aparte y la escena la funde sobre la versión de invierno (ver worldAssets).
@@ -174,17 +175,14 @@ function snowLayer(w, h, paint, origin = { x: 0, y: 0 }) {
   return canvas
 }
 
-// Barandilla delantera de la cubierta como lienzo propio, con un margen de dos píxeles para su contorno. Lleva la
-// esquina (`x`, `y`) donde se coloca sobre el dibujo de la casa, y su propia capa de nieve.
-function frontRailLayer() {
-  const ox = FRONT_RAIL.x - 2
-  const oy = FRONT_RAIL.top - 2
-  const w = FRONT_RAIL.right - FRONT_RAIL.x + 4
-  const h = FRONT_RAIL.bottom - FRONT_RAIL.top + 3
+// Pasamanos de la escalera y barandilla delantera de la cubierta como lienzo propio, con un margen para su contorno. Lleva
+// la esquina (`x`, `y`) donde se coloca sobre el dibujo de la casa, y su propia capa de nieve.
+function railLayer() {
+  const { x: ox, y: oy, w, h } = RAIL_BOX
   const layer = newSprite(w, h)
   layer.g.translate(-ox, -oy)
-  frontRail(layer.g)
-  return { canvas: finish(layer).canvas, snow: snowLayer(w, h, frontRailSnow, { x: ox, y: oy }), x: ox, y: oy }
+  terraceRail(layer.g)
+  return { canvas: finish(layer).canvas, snow: snowLayer(w, h, railSnow, { x: ox, y: oy }), x: ox, y: oy }
 }
 
 // Casa de los amigos: dos plantas, guirnaldas de luces bajo el alero y puerta verde.

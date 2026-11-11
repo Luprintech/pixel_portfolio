@@ -50,6 +50,8 @@ export function createLupeBrain({ nav, post, spots = [], rng = Math.random }) {
     abandoned: false,
     // A qué vuelve al terminar una conversación.
     resume: 'idle',
+    // Ya ha cruzado la puerta de su casa y espera dentro: en el valle no se dibuja ni se puede hablar con ella.
+    inside: false,
   }
 }
 
@@ -89,6 +91,7 @@ function advancePath(brain, dt) {
 export function placeAt(brain, x, y) {
   brain.x = x
   brain.y = y
+  brain.inside = false
   rest(brain)
 }
 
@@ -138,6 +141,20 @@ export function stopGuide(brain) {
   brain.path = []
   brain.state = go(brain.state, 'idle')
   walkTo(brain, brain.post)
+}
+
+// Lupe va sola a la puerta de su casa y entra a esperar dentro. No lleva a la viajera consigo: ella entra cuando quiere, con E.
+// Si no hay camino hasta la puerta, entra de inmediato en lugar de quedarse a medias.
+export function enterHome(brain, door) {
+  const path = brain.nav.path({ x: brain.x, y: brain.y }, door)
+  brain.goal = null
+  brain.arrived = false
+  brain.far = 0
+  brain.state = go(brain.state, 'entering')
+  brain.walking = false
+  brain.path = path ?? []
+  brain.speed = TUNING.guideSpeed
+  brain.inside = brain.path.length === 0
 }
 
 function walkTo(brain, target) {
@@ -196,6 +213,13 @@ export function updateLupe(brain, dt, traveller) {
     case 'routine':
       brain.walking = advancePath(brain, dt)
       if (!brain.path.length) rest(brain)
+      break
+    case 'entering':
+      brain.walking = advancePath(brain, dt)
+      if (!brain.path.length) {
+        brain.walking = false
+        brain.inside = true
+      }
       break
     default:
       brain.walking = false

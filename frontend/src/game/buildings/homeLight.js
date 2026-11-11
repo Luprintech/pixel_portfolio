@@ -5,7 +5,7 @@
 // curvas que las ventanas (`sky.addWindows`). El lienzo es más alto que el dibujo de la casa para alcanzar el suelo.
 import { ellipse, makeCanvas } from '../pixelKit.js'
 import { DECK, DECK_WIDEN, TABLE } from '../terrace.js'
-import { STRAND, strandPoints } from './terraceProps.js'
+import { LOWER_WINDOW, STRAND, lowerWindowXs, strandPoints } from './terraceProps.js'
 
 export const GLOW_H = 190
 const warm = (alpha) => `rgba(255,205,110,${alpha})`
@@ -32,8 +32,7 @@ export function houseGlow() {
   // Las dos ventanas grandes y las dos de la sala baja.
   windowLight(g, { x: 120 + DX, y: 102, w: 36, h: 30 })
   windowLight(g, { x: 202 + DX, y: 102, w: 36, h: 30 })
-  windowLight(g, { x: 54, y: 128, w: 32, h: 20 })
-  windowLight(g, { x: 104 + DX / 2, y: 128, w: 32, h: 20 })
+  lowerWindowXs().forEach((x) => windowLight(g, { x, y: LOWER_WINDOW.y, w: LOWER_WINDOW.w, h: LOWER_WINDOW.h }))
   // Puerta y farol.
   pool(g, 179 + DX, 165, 22, 8, { rings: 3, alpha: 0.08 })
   pool(g, 162 + DX, 138, 11, 9, { rings: 2, alpha: 0.09 })

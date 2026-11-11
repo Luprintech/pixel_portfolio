@@ -21,9 +21,17 @@ export const TELESCOPE = { x: 66, base: 94, reach: 17 }
 // Mesa de la sombrilla: `x` es el centro de su mástil y `base`, la fila donde apoya.
 export const TABLE = { x: 120, base: 95 }
 
-// Lo que se ve sobre el entarimado y no se atraviesa: las patas del trípode y la mesa. Rectángulos en píxeles del dibujo.
+// Silla de la cubierta, a la derecha del telescopio: `x` es su centro y `base`, la fila donde apoyan sus patas (la misma
+// que la del telescopio y la mesa). Se sienta uno de cara a la cámara desde la franja de suelo que hay delante (`CHAIR_ZONE`)
+// y, sentado, se mira por el telescopio (ver `seatOnDeck` en ValleScene.js).
+export const CHAIR = { x: 92, base: 95 }
+export const CHAIR_ZONE = { x: CHAIR.x - 12, y: CHAIR.base + 2, w: 24, h: 14 }
+
+// Lo que se ve sobre el entarimado y no se atraviesa: las patas del trípode, la silla y la mesa. Rectángulos en píxeles del dibujo.
 const DECK_SOLIDS = [
-  { x: TELESCOPE.x - 9, y: TELESCOPE.base - 5, w: 18, h: 8 },
+  // Del contrapeso colgante (a la izquierda) a la pata derecha del trípode.
+  { x: TELESCOPE.x - 13, y: TELESCOPE.base - 5, w: 22, h: 8 },
+  { x: CHAIR.x - 10, y: CHAIR.base - 5, w: 20, h: 7 },
   { x: TABLE.x - 11, y: TABLE.base - 6, w: 22, h: 9 },
 ]
 
@@ -31,8 +39,12 @@ export function nearTelescope(mode, x, y) {
   return mode === 'deck' && Math.hypot(x - TELESCOPE.x, y - TELESCOPE.base) <= TELESCOPE.reach
 }
 
-// Entrada a la casa desde la cubierta, sin puerta dibujada (vista de frente, la pared de la casa no tiene una puerta que
-// se vea): se usa desde cualquier punto de la franja de suelo pegada al muro de la casa, a todo lo hondo de la cubierta.
+// Dónde espera Lupe cuando sube a saludar a quien llega por primera vez a la azotea (ver `npc/deckVisit.js`): por delante de
+// la mesa y la silla, lejos de la escalera para no quedar encima de quien sube y a la vista de quien entra por la puerta.
+export const LUPE_SPOT = { x: TABLE.x - 10, y: TABLE.base + 11 }
+
+// Entrada a la casa desde la cubierta: el hueco dibujado en el extremo del entarimado (`DOORWAY` en terraceProps.js) es su
+// aspecto, pero se usa desde cualquier punto de la franja de suelo pegada al muro, a todo lo hondo de la cubierta.
 export const ROOF_ENTRY = 14
 
 export function nearRoofDoor(mode, x, y) {
@@ -43,8 +55,20 @@ export function nearRoofDoor(mode, x, y) {
 // escalera pasaban en menos de medio segundo y la subida parecía un salto.
 export const STAIR_PACE = 0.5
 
-// Franja de suelo ante la escalera desde la que se empieza a subir (la pared sólida acaba más arriba).
-export const FOOT = { top: 152 }
+// Hondura por la que se anda en la escalera, medida hacia atrás desde la fila de los pies de la rampa (`lane`): en el pie
+// llega a `STAIR_REACH.foot` y, al llegar a la cubierta, a la hondura de esta, para que la franja de la escalera y la de la
+// cubierta se junten sin escalón. Es casi todo el ancho de los peldaños dibujados (`STAIR_DEPTH` en terraceProps.js), con un
+// margen ante el pasamanos trasero.
+export const STAIR_REACH = { foot: 26, top: DECK.feet - DECK.top }
+const reachAt = (x) => {
+  const run = STAIRS.steps * STAIRS.run
+  const along = Math.min(run, Math.max(0, x - STAIRS.x)) / run
+  return STAIR_REACH.foot + (STAIR_REACH.top - STAIR_REACH.foot) * along
+}
+
+// Franja de suelo ante el primer peldaño desde la que se empieza a subir, a todo lo ancho de la escalera. Solo se sube por
+// ese primer peldaño, viniendo desde la izquierda: `ValleScene.buildTerrace` cierra con muros sólidos el resto del perímetro.
+export const FOOT = { top: STAIRS.bottom - STAIR_REACH.foot }
 
 // Altura de los pies sobre el suelo en la columna `x`. Es una rampa continua, no un salto por peldaño: con
 // saltos de 6 px la cámara, pegada a la viajera, temblaba al subir. Los pies se alzan `STAIR_SINK` píxeles sobre la
@@ -60,29 +84,40 @@ export function stairLift(x) {
   return (along / run) * STAIRS.steps * STAIRS.rise + raise
 }
 
-const onStairs = (x) => ({ mode: 'stairs', x, y: STAIRS.bottom - stairLift(x) })
+// Fila de los pies en la columna `x`, por la parte delantera de la escalera.
+const laneAt = (x) => STAIRS.bottom - stairLift(x)
 
-// Dónde queda la viajera tras moverse. `mode` es 'ground' (en el suelo), 'stairs' (subiendo: la altura la
-// da la columna, no se puede subir ni bajar de lado) o 'deck' (sobre la cubierta, en una franja estrecha).
-// Devuelve el modo nuevo y la posición corregida, en las mismas coordenadas.
-export function climb(mode, x, y) {
+// Pone a la viajera en la escalera: en la columna `x`, a la hondura que traiga (`y`) siempre que quepa entre el borde delantero
+// y el trasero. `from` es la columna donde estaba antes: la franja sube con los peldaños, así que quien anda de lado sube con
+// ella (conserva su sitio en la anchura) en vez de quedarse atrás.
+function onStairs(x, y, from = x) {
+  const front = laneAt(x)
+  const shifted = y + front - laneAt(from)
+  return { mode: 'stairs', x, y: Math.min(front, Math.max(front - reachAt(x), shifted)) }
+}
+
+// Dónde queda la viajera tras moverse. `mode` es 'ground' (en el suelo), 'stairs' (subiendo: se anda por toda la anchura de
+// la escalera, y la franja sube con los peldaños) o 'deck' (sobre la cubierta). `last` es la columna corregida del fotograma
+// anterior (solo la usa la escalera). Devuelve el modo nuevo y la posición corregida, en las mismas coordenadas.
+export function climb(mode, x, y, last = x) {
   if (mode === 'ground') {
-    const atFoot = x >= STAIRS.x && x < DECK.left && y >= FOOT.top && y <= STAIRS.bottom
-    return atFoot ? onStairs(x) : { mode, x, y }
+    const atFoot = x >= STAIRS.x && x < STAIRS.x + STAIRS.run && y >= FOOT.top && y <= STAIRS.bottom
+    return atFoot ? onStairs(x, y) : { mode, x, y }
   }
   if (mode === 'stairs') {
-    if (x < STAIRS.x) return { mode: 'ground', x, y: STAIRS.bottom }
-    if (x >= DECK.left) return { mode: 'deck', x, y: DECK.feet }
-    return onStairs(x)
+    if (x < STAIRS.x) return { mode: 'ground', x, y }
+    if (x >= DECK.left) return { mode: 'deck', ...clampToDeck(x, y) }
+    return onStairs(x, y, Math.min(Math.max(last, STAIRS.x), DECK.left))
   }
-  if (x < DECK.left) return onStairs(DECK.left - 0.5)
+  // Se baja a la escalera desde cualquier punto del borde izquierdo de la cubierta: las dos franjas tienen la misma hondura.
+  if (x < DECK.left) return onStairs(DECK.left - 0.5, y)
   const spot = pushOutOfSolids(clampToDeck(x, y))
   return { mode, ...clampToDeck(spot.x, spot.y) }
 }
 
 const clampToDeck = (x, y) => ({ x: Math.min(x, DECK.right), y: Math.min(Math.max(y, DECK.top), DECK.feet) })
 
-// Si el punto cae dentro del telescopio o de la mesa, lo saca por el lado más cercano (a izquierda, derecha o hacia delante:
+// Si el punto cae dentro del telescopio, la silla o la mesa, lo saca por el lado más cercano (a izquierda, derecha o hacia delante:
 // hacia atrás no hay sitio, la cubierta acaba en `top`).
 function pushOutOfSolids({ x, y }) {
   const solid = DECK_SOLIDS.find((s) => x > s.x && x < s.x + s.w && y > s.y && y < s.y + s.h)

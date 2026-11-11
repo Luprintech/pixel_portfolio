@@ -2,13 +2,62 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-11 (fase C del plan maestro: bienvenida de Lupe, visita guiada a la casa, sistema de estados de NPC, memoria de la historia y exclamación de conversación nueva). Antes, 2026-11-11 (recreativa de tres juegos: selector, La espada del Bucle ampliada, Invasión Galáctica, Río en Peligro, logros, récords, música por juego y conversación de las consolas). Antes, 2026-11-11 (novena pasada de la casa: caja de Khalessi de vuelta, impresoras y vitrina más arriba, setup de Atreus y mesa de Lupe blancos con alfombras, muebles del rincón maker y estantería de consolas blancos, sentarse por delante con pose de espaldas rehecha, ordenador de Lupe de pie o sentada y minicadena movida). Antes, 2026-11-11 (octava pasada de la casa: rincón propio de Khalessi a la derecha, planta en la esquina, sofá y alfombra más adelante, impresoras más adelante). Antes, 2026-11-11 (séptima pasada de la casa: Khalessi pasea por toda la sala y duerme en su caja, y lámpara de pie interactiva). Antes, 2026-11-11 (sexta pasada de la casa: audio contextual y música retro por actividad, clima y ciclo día/noche compartidos con el valle, impresoras Bambu blancas, torres de PC, bocadillo de Atreus y controles móviles). Antes, 2026-11-11 (quinta pasada de la casa: fachada sin vistas imposibles, azotea ancha y honda, recreativa arcade, interior reorganizado por zonas, impresión visible en la máquina y logros en Opciones). Antes, 2026-11-11 (cuarta pasada de la casa: encuadre, sofá y sillas en capas, Khalessi, impresión progresiva con Pikachu, gestor de ventanas de XP, Internet Explorer, VS Code y logros secretos). Antes, 2026-11-11 (tercera pasada de la casa: pose sentada del generador, auriculares de perfil, azotea, impresoras Bambu, Khalessi y la sardina, smart TV, logros, minicadena, programas de XP). Antes, 2026-11-11 (segunda pasada de la casa: salas a pantalla completa, sentarse, Windows XP, consola retro, Lupe acompañante). Antes, 2026-11-11 (interior de la casa de Lupe, Atreus como NPC y sistema de diálogos). Antes, 2026-11-10 (fachada de la casa de Lupe). Antes, 2026-11-10 (entrada con E y salas interiores vacías). Antes, 2026-11-10 (`/clasico` vuelve a servir la web original, aislada). Antes, 2026-11-10 (rediseño de Lupe y coherencia de peinados entre vistas). Antes, 2026-11-10 (revisión del perfil del avatar: cara, brazo, cabeza sobre el cuerpo, calzado abierto, vuelo de faldas, gorros y nariz). Antes, 2026-11-10 (arco de entrada en la línea de la valla y cartel del valle). Antes, 2026-11-09 (tema pastel "valle" en toda la aplicación, modo noche con el diseño anterior, menú y jerarquía de la portada, pistacho en el creador).
+Última actualización: 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
 
 ## Hecho
 
-### Bienvenida de Lupe y visita guiada a la casa (2026-11-11)
+### Telescopio AstroMaster 130EQ y conversación de Lupe (2026-11-11)
 
-Avanza la fase C del plan maestro (`docs/PLAN MAESTRO VALLE.md`, sección 7) y la fase 4 de `docs/VISION.md` (mecánicas de aventura: NPC, memoria de partida). No toca la habitación terminada ni los demás edificios.
+Avanza la visión de producto: objetos con vida propia en la casa de Lupe. La vista del cielo (`SkyView`) no se tocó.
+
+- **Sprite rehecho** (`telescope` en `buildings/terraceProps.js`, partido en `tripod`, `equatorialMount` y `opticalTube`): tubo azul oscuro metalizado tendido en diagonal con la boca grande y oscura (aro claro) hacia arriba a la izquierda, buscador paralelo encima con dos soportes, ocular en el focalizador, montura ecuatorial con acentos naranjas, contrapeso colgando de su varilla, trípode alto de patas plateadas con la pata trasera más corta y bandeja triangular negra. Mismo sitio (`TELESCOPE`); todo queda a la izquierda del centro y la culata llega a 10 columnas, así que no toca la silla (`CHAIR.x - 10`), la barandilla ni la guirnalda.
+- **Colisión:** el sólido del telescopio crece a la izquierda para cubrir el contrapeso (`DECK_SOLIDS`, de 18 a 22 px).
+- **Conversación** `cielo.telescopio` (3 páginas de Lupe, es y en, en `dialogue/scripts.js` y `lib/dialogueCopy.js`): «Mirar por el telescopio» lanza la acción `sky`, que abre la vista de siempre (`Valle.jsx`), y «Seguir explorando» cierra.
+- **Visita de Lupe a la azotea** (`npc/deckVisit.js`, fases `away → here → talking → leaving`, con tests; cableada en `ValleNpcs.greetOnDeck` y en `ValleScene.setClimbMode`): la primera vez que la viajera sube (por la escalera o desde la casa), Lupe aparece con un fundido en `LUPE_SPOT` (`terrace.js`, delante de la mesa), con su propio dibujo a la profundidad de la cubierta mientras la Lupe del valle se esconde. A los 1,1 s se abre `cielo.telescopio`; al cerrarse (y al cerrar la vista del cielo, si se abre) se desvanece y no vuelve. Si la viajera baja antes de que hable, se cancela y se repite la próxima vez. No se da con la visita guiada aceptada. Con Lupe allí, E ante el telescopio abre la conversación; sin ella, la vista directa.
+- **Pruebas:** guion y textos en los dos idiomas, acciones de las opciones, fases de la visita, sitio libre de Lupe, hueco de la guirnalda sobre el nuevo ocular y silla a la derecha de la culata. 666 pruebas, lint y build pasan. **Comprobado en el navegador** (avanzando el juego a mano, porque el panel oculto frena los fotogramas): subir a la cubierta, aparición, conversación abierta y marcada como escuchada, cierre con Esc, desvanecimiento, Lupe del valle de vuelta y sin repetir al volver a subir. **No comprobado:** el aspecto de Lupe sobre la cubierta en una captura, de noche ni con nieve, ni la opción «Mirar por el telescopio» dentro de la visita.
+
+**Decisiones**
+- La réplica de la viajera del encargo no se escribe: la viajera no habla en el sistema de diálogos. La primera línea de Lupe empieza por «¡Ah, mi telescopio!» en lugar de «¡Sí!» para no responder a nada.
+- Lupe sube una sola vez y se va (decidido por la usuaria): así la azotea queda como siempre salvo en la primera subida, y no hay que darle rutina propia arriba.
+- El tubo apunta a la izquierda, como en la foto del modelo real (antes apuntaba a la derecha, hacia la silla).
+
+### Integración editorial de Ylonem (2026-11-11)
+
+- **Ylonem** queda definido como el nombre público autorizado del antiguo compañero de DAW de Lupe y buen amigo actual.
+- Es fotógrafo y videógrafo profesional de bodas.
+- Su presencia prevista es un NPC opcional en IES Gran Capitán. Todavía no existe sprite, rutina ni interacción implementada.
+- Lupe creó como freelance para su estudio **Ahi Está la Película** (`ahiestalapelicula.com`) una aplicación completa, separada de la landing pública, con gestión interna de estudio (ERP, CRM y CMS), pagos, gastos, proyectos, panel de clientes, galerías, firma de contratos y presupuestos, recibos y entrega audiovisual.
+- **El Gran Estreno** queda registrado como función autorizada: los fotógrafos comparten la película en el panel a una hora acordada para verla en directo; las parejas pueden reaccionar, compartirla con su familia y enviarla a una televisión.
+- La aplicación puede aparecer más adelante como caso profesional en Gran Capitán, el Taller de Proyectos o el PC, pero no se crea todavía un edificio nuevo ni se duplica Ylonem en varias zonas.
+- No se publicarán datos de clientes, galerías reales, URLs privadas, capturas no seleccionadas ni detalles internos no verificados. La mención de SEO y seguridad se mantendrá descriptiva, sin afirmar auditorías o certificaciones.
+- La autorización de uso del seudónimo Ylonem, del estudio, del dominio y del concepto «El Gran Estreno» está confirmada por Lupe el 2026-11-11.
+- **Pendiente:** crear el sprite, decidir su posición exacta en Gran Capitán, implementar sus diálogos, decidir si la ficha abre el dominio externo y revisar el texto final antes de publicar.
+
+### Sincronización documental de historia, NPC y mapa previsto (2026-11-11)
+
+- Se aplicó el orden de autoridad: plan maestro y correcciones recientes; decisiones y comprobaciones de este estado; visión; lore y guion.
+- `LORE_Y_MUNDO.md` ya distingue Hylia/piscina y Marnie/RACE, corrige primeros trabajos, Pedagogía, VocaAcción/Vocacción, DAW, voluntariado y RACE 2015–2024.
+- `DIALOGOS.md` conserva como borradores los textos nuevos y corrige los bloques biográficos que utilizaban versiones antiguas. Cervantes queda retirado del recorrido previsto, pero registrado mientras exista en código.
+- `VISION.md` refleja que Lupe, Khalessi exterior, Atreus, la mascota, la memoria narrativa y C1 ya existen. El mapa futuro incorpora Gran Capitán y Ayuntamiento y retira Cervantes y blog/biblioteca, sin modificar todavía `world.js`.
+- `ARCHITECTURE.md` documenta guardado versión 5, `story/`, `npc/`, eliminación del seguimiento permanente y recreativa actual.
+- No se modificó código como parte de esta sincronización.
+
+### Entrada a pie al valle, Lupe entra antes en su casa y sonido equilibrado (2026-11-11)
+
+Pulido de la fase C (bienvenida y visita guiada), sin cambiar el guion de los diálogos.
+
+- **Entrada a pie.** Una partida nueva empieza fuera del valle, al sur del arco (`ARRIVAL` en `world.js`), y la viajera sube sola por el camino mirando al norte hasta recuperar el control. Lupe espera en el cruce de la entrada (`ENTRANCE.post`, antes `SPAWN`), con Khalessi. Las partidas guardadas reanudan donde estaban; la entrada tiene un tope de 6 s por si algo frena a la viajera.
+- **Lupe entra antes que la viajera.** Al elegir «¿Entramos?» ya no se abre la sala de golpe: Lupe va sola a la baldosa de la puerta (`HOME_DOOR`, estado nuevo `entering` en `npcStates.js`, `enterHome` en `lupeBrain.js`), entra con Khalessi (dejan de dibujarse) y dice «Pasa cuando quieras, te espero dentro». La viajera entra con E ante la puerta, como a cualquier edificio, y dentro Lupe ya está esperando. Si la viajera cruza la puerta antes de que Lupe llegue, Lupe pasa a estar dentro al instante.
+- **Sonido.** La lluvia bajó de 0,32 a 0,09 (era ruido blanco al triple de volumen que el viento y las voces) y el trueno de 1,1 a 0,6. La presentación de Khalessi (y su página de la casa) suena con la grabación del gato de la portada en lugar del maullido de 8 bits, sin los pitidos mientras se escribe esa página.
+- **Volúmenes por defecto** (`audioPrefs.js`, ahora única fuente de los valores): general 50 %, música 50 %, efectos 30 % (antes 100/50/70). Solo afecta a quien no tiene preferencias guardadas.
+- **Lupe, pegada a la puerta:** el destino de la visita (`TOUR_GOAL`) pasa a 18 px de la puerta y la oferta de entrar salta a 36 px, para que la viajera llegue junto a la puerta y entrar sea natural.
+- **Controles en táctil:** con `(pointer: coarse)` la bienvenida y «¿Cómo se juega?» hablan del joystick y del botón de acción, sin WASD ni E (variantes `<clave>.touch` en `dialogueCopy.js`, es y en).
+- **Ruido al tocar la caja de diálogo:** al completar el texto de golpe sonaban a la vez los pitidos de todas las letras restantes y saturaban. Ahora, si el avance es de más de 8 letras en un fotograma, no suena ninguno.
+- **Pruebas:** `lupeBrain.test.js` (entrar en casa, sin camino, recolocar) y `lupePlaces.test.js` (llegada al sur de Lupe, puerta). 651 pruebas, lint y build pasan. **No comprobado en el navegador** (el panel no dejó abrir la página en esta sesión): el recorrido de entrada por el arco, el paseo de Lupe hasta la puerta y el volumen real de la lluvia se han de ver y oír.
+
+### C1 · Bienvenida de Lupe y acompañamiento exterior hasta la casa (2026-11-11)
+
+Completa C1 del plan maestro y avanza las mecánicas de aventura: NPC y memoria de partida. No implementa todavía C2, la presentación guiada dentro de la habitación, ni toca los demás edificios.
 
 - **Lupe ya no persigue a la viajera.** Se quitó `follower.js`. Lupe tiene un cerebro propio (`game/npc/lupeBrain.js`, sin Phaser) sobre una máquina de estados común a cualquier NPC (`game/npc/npcStates.js`): `idle` (quieta en su sitio, mira a la viajera si está cerca), `talking` (se para y la mira), `guiding` (lleva a la viajera a un destino), `waiting` (se para si la viajera se retrasa) y `routine` (paseos cortos por su cuenta). Una transición no permitida se ignora. Solo `guiding` y `waiting` acompañan; al terminar, cancelar, aplazar o perder a la viajera, Lupe recupera su autonomía y vuelve andando a su sitio.
 - **Caminos válidos, sin atravesar ni teletransportarse.** Anda por la rejilla A* de `interior/catNav.js` (la misma de Khalessi en casa), que `npc/valleNav.js` construye sobre los cuerpos sólidos del valle en la zona de la entrada y la casa; si no hay camino, se queda donde está. Guía a 66 px/s (la viajera, a 90), se para a esperar a 78 px y sigue al volver a 46 (con histéresis), y si la viajera se queda a más de 300 px durante 14 s da la visita por interrumpida («Cuando quieras, te enseño la casa») y se vuelve sola. Sus sitios están en `npc/lupePlaces.js`: junto a la entrada (con un paseo corto por el camino) y, cuando la visita se completa, junto a la puerta de su casa.
@@ -128,6 +177,17 @@ Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, la casa de Lupe)
 - Khalessi: al dejar la sardina, Atreus reacciona con un bocadillo (`WorldBubble.jsx`, ajuste de ancho compartido con la portada en `fitBubble.js`) que se quita solo según la longitud del texto, sin modal.
 
 **Comprobado:** pruebas, lint y build; en navegador, casa de día, atardecer y noche, lluvia, tormenta y nieve por las ventanas, impresoras y torres a escala 4–5, taza de Atreus en las cuatro direcciones, cambio de música entre fondo, ordenador, recreativa y minicadena (sin pistas a la vez) y, en móvil vertical y horizontal, aviso, controles y bocadillo. **No comprobado:** escuchar los sonidos (el audio no se oye desde aquí), que cada ventana muestre el sol justo a la hora de un amanecer concreto, el aspecto en un móvil real y la partida en inglés.
+
+### Casa de Lupe, sexta pasada: ventanas limpias, barandilla continua y acceso a la azotea (2026-11-11)
+
+Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, la casa de Lupe).
+
+- **Ventanas sin rayas de color:** la raya eran las flores de la jardinera (`flowerBox`, `flowers: true`) en las ventanas bajas de la casa y el `bloom` de `houseSprite` en la portada, más la sombra translúcida morada bajo `sillLedge`. Se quitan en esos tres sitios y queda el alféizar de piedra de la fachada. `flowers` sigue existiendo en `windowAt` para las demás casas, que no se tocan.
+- **Barandilla única:** el pasamanos de la escalera y la barandilla delantera se dibujan juntos en la capa que va por encima de quien pasa (`terraceRail`, `RAIL_BOX`, lienzo `railLayer` en `homes.js`). Antes el pasamanos estaba en el dibujo base y la viajera subía por delante de él; ahora sube por detrás de postes y pasamanos, y quien anda por el suelo delante de la escalera sigue quedando por encima (su profundidad es su `y`). La escalera tiene un poste al pie, dos intermedios y el de esquina (`stairRailPosts`) y un balaustre en cada peldaño sin poste. La barandilla delantera arranca en el poste de esquina de la escalera, con su barandal a la altura donde acaba el pasamanos, y reparte sus postes a partes iguales hasta el marco del acceso (`frontRailPosts`). Pasamanos más bajo (`RAIL_H` 11).
+- **Terraza y fachada:** el entarimado, su canto y la balaustrada acaban en `DECK.right`, a ras del muro; antes pasaban 4 px por encima de la esquina y de la primera piedra.
+- **Acceso a la casa:** el borde de madera continuo del muro se sustituye por un hueco de 28 px de alto con marco, dintel, interior en penumbra y suelo iluminado (`roofDoorway`, `DOORWAY`). Se quitan las piedras de esquina que ocupaba y el cristal interior se enciende de noche. No cambian colisiones: la viajera ya llegaba hasta `DECK.right` y `nearRoofDoor` sigue siendo su zona de uso.
+- **Guirnalda:** sale del poste de la esquina de la balaustrada trasera, ahora alto (`CORNER_POST`, remate de latón); el mástil suelto desaparece. Mismos puntos y bombillas, con el cable a unos 8 px de la sombrilla y el telescopio, que los respetan (`terraceProps.test.js`). Nieve del pasamanos y de la barandilla en `railSnow`.
+- **Comprobado:** pruebas (653), lint y build; dibujo ampliado de la casa y viajera subiendo por la escalera en el valle, por detrás de los postes. **No comprobado:** la noche y la nieve con la nueva guirnalda y el hueco, ni subir andando con el teclado de punta a punta de la escalera hasta el hueco.
 
 ### Casa de Lupe, quinta pasada: fachada, azotea, recreativa, zonas y flujo de impresión (2026-11-11)
 
@@ -311,7 +371,7 @@ Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, aquí la casa) y
 - Piezas solo suyas, que no aparecen en el creador: el peinado `haciaAtras` (`parts/hair.js`), el vello `candado` (bigote y perilla, `parts/traits.js`) y la expresión `sonrisaRasgada` (`parts/face.js`).
 - Revisión de la usuaria (2026-11-10): sin patillas (el pelo acaba sobre la oreja), sin pendiente, pelo negro intenso con reflejos gris oscuro (`deepHair` en `palette.js` salta el aclarado del pelo oscuro, solo para él) y nariz de perfil de una fila (`nose: 'corta'` en `parts/head.js`); no lleva rubor en las mejillas (`cheeks: false` en su expresión) y de perfil el bigote va bajo la nariz y baja por delante de la boca. La perilla se probó dentro de la barbilla y la usuaria prefirió dejarla donde estaba, bajo el labio.
 - `game/characters.js` reúne los personajes de aspecto fijo (Lupe y Atreus) y da su hoja de sprites con `characterSheet(id)`, lista para registrarla en el juego igual que la de la viajera.
-- Pendiente: Atreus no aparece todavía en ninguna pantalla. Su sitio según el guion es el interior de la casa de Lupe (`casa.atreus_*` en `docs/DIALOGOS.md`), que aún no existe, y el juego no tiene sistema de NPC.
+- Nota histórica de aquel bloque: Atreus todavía no aparecía. **Superado el 2026-11-11:** ya existe en el interior de la casa con sprite, retrato, interacción y diálogos; el sistema común de NPC llegó después con C1.
 
 ### Raíz oscura de Lupe, complementos y razas nuevas (2026-11-10)
 - Ajuste posterior, a petición de la usuaria: la raíz pasa a castaño (el marrón oscuro parecía un casco), baja degradándose hasta media melena (fila 12 de 21) y la camiseta pasa a blanca. La Trifuerza se dibuja como sus pendientes: triángulos dorados con el centro y los bordes entre ellos en negro (`TRIFORCE_FRONT` en `parts/body.js`, 6×4 píxeles; no cabe un contorno completo por triángulo).
@@ -802,6 +862,13 @@ Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, aquí la casa) y
 
 ## Pendiente
 
+### Siguiente bloque narrativo: C2 y aprobación editorial (2026-11-11)
+
+- Revisar con Lupe y aprobar o reescribir las líneas marcadas como borrador de `inicio.bienvenida`, `inicio.casa`, `inicio.dedicas`, `inicio.encontrar`, `inicio.explorar`, `inicio.guia_pausa`, `inicio.puerta` y los bocadillos ambientales. La tercera página actual de `inicio.encontrar` menciona artículos y biblioteca y debe cambiar antes de aprobarse por la retirada decidida del blog.
+- Diseñar C2: visita breve y opcional dentro de la casa, con paradas mínimas ante PC, impresoras, Atreus y Khalessi, posibilidad de saltar o abandonar y cierre explícito del tutorial. Lupe ya entra durante una visita aceptada, pero hoy permanece junto a la puerta.
+- No empezar nuevos NPC biográficos hasta cerrar los textos de C1/C2 y decidir el alcance publicable de terceros.
+- Fase posterior de mapa: retirar Cervantes y biblioteca/blog, incorporar Ayuntamiento de Córdoba, convertir Gran Capitán en el nodo principal de DAW y conservar Trassierra, Messina y Granada como recuerdos cuando no necesiten edificio propio. El código y el mapa no se modificaron en la sincronización documental.
+
 ### Historia y NPC (fase C, lo que queda)
 - **Visita guiada interior** (siguiente fase): Lupe ya entra con la viajera (`InteriorScene` recibe `guided`) pero se queda quieta junto a la puerta; falta que presente el PC, las impresoras, Atreus y Khalessi, con objetos opcionales y posibilidad de saltarla.
 - **Sitio de Lupe en el interior tras la visita:** ahora la casa no tiene a Lupe fuera de la visita (solo habla como narradora en los objetos). Decidir con la usuaria si debe estar en casa por rutina.
@@ -977,3 +1044,15 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 | Pistacho `#b5d19a` para las tarjetas del creador (2026-11-09) | El verde oscuro era la masa más pesada de una pantalla pastel. El contorno de los sprites sube a 11:1; ningún fondo da 3:1 a los 39 colores elegibles, pero el contorno sostiene la silueta. |
 | Suavizar el paisaje en el dibujo y no con un filtro CSS (2026-11-09) | El filtro afectaba también a Lupe, Khalessi y las flores móviles y obligaba a repetir la cuenta en CSS y JS. Con el repintado por tono solo se tocan hierba, tierra y cielo. |
 | Lupe no explica la personalización en la portada (2026-11-09) | Se descubre dentro del valle; la portada se queda con la bienvenida y el sonido. |
+
+### Terraza de Lupe, tercera pasada (2026-11-11)
+
+- Balaustrada trasera continua de esquina a esquina, con un poste alto en cada esquina (el izquierdo en la columna del poste de la escalera, el derecho pegado al muro). La guirnalda cuelga de uno a otro con caída suave y 13 bombillas a distancias iguales (`STRAND`, `strandPoints`).
+- Se quita el hueco de puerta dibujado junto al muro (`roofDoorway`): la zona de entrada a la casa (`nearRoofDoor`) sigue existiendo como zona de uso sin dibujo. Decisión: no se inventan aperturas visibles en esa vista.
+- Las dos ventanas de la sala baja se reparten con el mismo margen y separación (`lowerWindowXs`).
+- Silla blanca junto al telescopio (`CHAIR` en `terrace.js`). Se ocupa como un banco desde delante y, sentada, ofrece mirar por el telescopio (`use: 'telescope'`, mismo patrón que las sillas interiores); levantarse es pedir una dirección.
+
+### Escalera exterior ancha y acceso por el primer peldaño (2026-11-11)
+
+- La escalera tiene ahora la anchura de la cubierta (`STAIR_DEPTH` = `FLOOR_DEPTH`, 30 px): cada peldaño es una tabla ancha que corre hacia el fondo, y el pasamanos trasero (`stairRail(g, STAIRS, 'back')`, en el dibujo de la casa, por detrás de la viajera) sube en paralelo al delantero y acaba en el poste de la esquina trasera izquierda, donde empieza la balaustrada trasera. La viajera anda entre ambos: el delantero va en la capa superior (`overlay`) y el trasero forma parte de la casa.
+- Se sube y se baja por todo el ancho de la escalera (`STAIR_REACH` en `terrace.js`: 26 px en el pie, que se estrechan hasta la hondura de la cubierta al llegar a ella, así que las dos franjas se juntan sin escalón). La franja sube con los peldaños: `climb` recibe la columna anterior y quien anda por detrás sigue por detrás. Solo se empieza a subir por el primer peldaño, desde la izquierda y a cualquier hondura (`FOOT.top` es el borde trasero de esa entrada); los muros sólidos de encima y de debajo llegan hasta `STAIRS.x`, así que ni de lado ni desde debajo se puede montar. Se baja desde cualquier punto del borde izquierdo de la cubierta. Sin saltos de posición: la corrección de altura va suavizada a 4 px por fotograma.

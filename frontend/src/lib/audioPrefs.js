@@ -2,7 +2,8 @@
 // efectos) y si todo el sonido está silenciado. La música suena si su volumen no es cero, pero los
 // navegadores no dejan sonar nada sin un gesto del usuario: suena en cuanto hay el primero.
 const STORAGE_KEY = 'valle-del-bucle:audio'
-const DEFAULTS = { muted: false, master: 1, music: 0.5, fx: 0.7 }
+// Niveles con los que se oye todo equilibrado desde la primera visita (ambiente y voces incluidos); quien quiera, los mueve en Opciones.
+export const DEFAULTS = { muted: false, master: 0.5, music: 0.5, fx: 0.3 }
 
 export const clampVolume = (value, fallback = DEFAULTS.music) => {
   const number = Number(value)

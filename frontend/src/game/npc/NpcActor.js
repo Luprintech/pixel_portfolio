@@ -11,12 +11,24 @@ export default class NpcActor {
     this.sprite.setDepth(y)
   }
 
-  render({ x, y, facing, walking }, delta) {
+  // `depth` fija la profundidad cuando no es la de la fila de los pies (sobre la cubierta, que se dibuja por encima de la casa).
+  render({ x, y, facing, walking }, delta, depth) {
     const step = advanceWalk(this.walk, walking, delta)
     this.sprite.setPosition(x, y)
     this.sprite.setFrame(frameName(facing, WALK_CYCLE[step]))
-    this.sprite.setDepth(Math.round(y))
+    this.sprite.setDepth(depth ?? Math.round(y))
     this.shadow.setPosition(x, y - 1)
+    if (depth !== undefined) this.shadow.setDepth(depth - 1)
+  }
+
+  setAlpha(alpha) {
+    this.sprite.setAlpha(alpha)
+    this.shadow.setAlpha(alpha)
+  }
+
+  setVisible(visible) {
+    this.sprite.setVisible(visible)
+    this.shadow.setVisible(visible)
   }
 
   destroy() {

@@ -141,6 +141,23 @@ describe('qué conversación abre cada cosa', () => {
   })
 })
 
+describe('azotea: conversación del telescopio', () => {
+  const talk = SCRIPTS['cielo.telescopio']
+
+  it('son tres páginas de Lupe con el modelo real del telescopio, en español e inglés', () => {
+    expect(talk.pages.map((page) => page.who)).toEqual(['lupe', 'lupe', 'lupe'])
+    expect(DIALOGUE_COPY.es.lines['cielo.telescopio.1']).toContain('Celestron AstroMaster 130EQ')
+    expect(DIALOGUE_COPY.en.lines['cielo.telescopio.1']).toContain('Celestron AstroMaster 130EQ')
+  })
+
+  it('ofrece mirar, que lanza la vista del cielo ya existente, o seguir explorando, que cierra', () => {
+    const last = view(SCRIPTS, { id: 'cielo.telescopio', index: 2 }).options
+    expect(last.map((option) => option.id)).toEqual(['mirar', 'seguir'])
+    expect(choose(SCRIPTS, { id: 'cielo.telescopio', index: 2 }, 'mirar')).toMatchObject({ done: true, action: 'sky' })
+    expect(choose(SCRIPTS, { id: 'cielo.telescopio', index: 2 }, 'seguir')).toMatchObject({ done: true, action: undefined })
+  })
+})
+
 describe('voz', () => {
   it('solo suenan letras y números, y cada letra siempre da la misma nota', () => {
     expect(isSpoken('a')).toBe(true)

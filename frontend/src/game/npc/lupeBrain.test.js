@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createNav } from '../interior/catNav.js'
-import { TUNING, createLupeBrain, endTalk, placeAt, setAnchor, startGuide, startTalk, stopGuide, updateLupe } from './lupeBrain.js'
+import { TUNING, createLupeBrain, endTalk, enterHome, placeAt, setAnchor, startGuide, startTalk, stopGuide, updateLupe } from './lupeBrain.js'
 import { canGo, go, isAccompanying } from './npcStates.js'
 
 // Camino en línea recta: basta para probar los estados sin mapa.
@@ -50,6 +50,36 @@ describe('Lupe autónoma', () => {
     frames(brain, far, 4000)
     expect(brain.state).toBe('idle')
     expect(brain.x).toBeGreaterThan(POST.x)
+  })
+})
+
+describe('entrar en casa', () => {
+  it('va sola a la puerta, entra y se queda dentro aunque la viajera esté lejos o cerca', () => {
+    const brain = createLupeBrain({ nav: straight, post: POST })
+    enterHome(brain, DOOR)
+    expect(brain.state).toBe('entering')
+    expect(brain.inside).toBe(false)
+    frames(brain, { x: 900, y: 900 }, 4000)
+    expect(brain.inside).toBe(true)
+    expect(brain.x).toBe(DOOR.x)
+    frames(brain, { x: DOOR.x, y: DOOR.y + 10 }, 20000)
+    expect(brain.state).toBe('entering')
+    expect(brain.walking).toBe(false)
+  })
+
+  it('si no hay camino hasta la puerta entra de inmediato', () => {
+    const brain = createLupeBrain({ nav: { path: () => null }, post: POST })
+    enterHome(brain, DOOR)
+    expect(brain.inside).toBe(true)
+  })
+
+  it('al recolocarla fuera de casa vuelve a verse y a pasar el rato', () => {
+    const brain = createLupeBrain({ nav: straight, post: POST })
+    enterHome(brain, DOOR)
+    frames(brain, { x: 900, y: 900 }, 4000)
+    placeAt(brain, POST.x, POST.y)
+    expect(brain.inside).toBe(false)
+    expect(brain.state).toBe('idle')
   })
 })
 

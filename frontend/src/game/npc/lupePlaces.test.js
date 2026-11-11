@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { BUILDINGS, TILE, blockedWaterTiles, plazaTiles, roadTiles } from '../world.js'
+import { ARRIVAL, BUILDINGS, TILE, blockedWaterTiles, plazaTiles, roadTiles } from '../world.js'
 import { initialStory } from '../story/story.js'
-import { ENTRANCE, HOME, TOUR_GOAL, placesFor } from './lupePlaces.js'
+import { ENTRANCE, HOME, HOME_DOOR, TOUR_GOAL, placesFor } from './lupePlaces.js'
 import { NAV_REGION } from './valleNav.js'
 
 const story = (tour) => ({ ...initialStory(), welcome: 'done', tour })
@@ -37,6 +37,17 @@ describe('sitios de Lupe', () => {
     expect(Math.abs(TOUR_GOAL.x - doorX)).toBeGreaterThan(14)
     expect(Math.abs(TOUR_GOAL.x - doorX)).toBeLessThan(48)
     expect(TOUR_GOAL.y).toBeGreaterThanOrEqual(home.door.y * TILE)
+  })
+
+  it('la viajera llega por el arco del sur y se encuentra a Lupe esperando más al norte', () => {
+    expect(ARRIVAL.y).toBeGreaterThan(ENTRANCE.post.y)
+    expect(ARRIVAL.stopY).toBeGreaterThan(ENTRANCE.post.y)
+    expect(ARRIVAL.stopY).toBeLessThan(ARRIVAL.y)
+  })
+
+  it('la puerta donde entra Lupe es la baldosa de la puerta de su casa', () => {
+    const home = BUILDINGS.find((b) => b.id === 'about')
+    expect(tileOf(HOME_DOOR)).toBe(`${home.door.x},${home.door.y}`)
   })
 
   it('el sitio habitual cambia a la puerta de su casa solo cuando la visita se ha completado', () => {

@@ -121,6 +121,7 @@ export const COPY = {
       lupeGuide: ['¡Por aquí!', 'Sígueme, que no está lejos.'],
       lupeWait: ['Sin prisa, te espero.', 'Tómate tu tiempo.'],
       lupeLeft: ['Cuando quieras, te enseño la casa. Estaré por aquí.'],
+      lupeInside: ['Pasa cuando quieras, te espero dentro.'],
       sardine: [
         'Otra sardina. Gracias, Khalessi, qué detalle.',
         '¿Esto es para mí? Eres única, Khalessi.',
@@ -155,6 +156,7 @@ export const COPY = {
         lampOn: 'Apagar la lámpara',
         chairAtreus: 'Sentarse',
         chairLupe: 'Sentarse',
+        chairDeck: 'Sentarse',
         sofaLeft: 'Sentarse en el sofá',
         sofaRight: 'Sentarse en el sofá',
         bench: 'Sentarse en el banco',
@@ -417,6 +419,7 @@ export const COPY = {
       lupeGuide: ['This way!', "Follow me, it's not far."],
       lupeWait: ["No rush, I'll wait for you.", 'Take your time.'],
       lupeLeft: ["Whenever you like, I'll show you the house. I'll be around."],
+      lupeInside: ["Come in whenever you like, I'll wait for you inside."],
       sardine: [
         'Another sardine. Thanks, Khalessi, how thoughtful.',
         "Is this for me? You're one of a kind, Khalessi.",
@@ -450,6 +453,7 @@ export const COPY = {
         lampOn: 'Turn the lamp off',
         chairAtreus: 'Sit down',
         chairLupe: 'Sit down',
+        chairDeck: 'Sit down',
         sofaLeft: 'Sit on the sofa',
         sofaRight: 'Sit on the sofa',
         bench: 'Sit on the bench',

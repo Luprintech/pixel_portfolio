@@ -142,7 +142,8 @@ function applyScene(force = false) {
   const t = graph.ctx.currentTime
   graph.wind.gain.gain.setTargetAtTime(0.1 * scene.wind, t, 0.5)
   graph.wind.swellDepth.gain.setTargetAtTime(0.06 * scene.wind, t, 0.5)
-  graph.rain.gain.gain.setTargetAtTime(0.32 * scene.rain, t, 0.5)
+  // Ruido blanco filtrado: a igual ganancia suena mucho más fuerte que el viento y que las voces, que son tonos.
+  graph.rain.gain.gain.setTargetAtTime(0.09 * scene.rain, t, 0.5)
 }
 
 const running = () => graph && graph.ctx.state === 'running'
@@ -264,7 +265,7 @@ export function thunder(delaySeconds = 0.5) {
   filter.frequency.exponentialRampToValueAtTime(90, start + 2.6)
   const env = ctx.createGain()
   env.gain.setValueAtTime(0, start)
-  env.gain.linearRampToValueAtTime(1.1, start + 0.05)
+  env.gain.linearRampToValueAtTime(0.6, start + 0.05)
   env.gain.setTargetAtTime(0, start + 0.3, 0.9)
   chain(rumble, filter, env, out)
   rumble.start(start, Math.random() * 2)
@@ -273,7 +274,7 @@ export function thunder(delaySeconds = 0.5) {
   sub.frequency.value = 48
   const subEnv = ctx.createGain()
   subEnv.gain.setValueAtTime(0, start)
-  subEnv.gain.linearRampToValueAtTime(0.5, start + 0.08)
+  subEnv.gain.linearRampToValueAtTime(0.3, start + 0.08)
   subEnv.gain.setTargetAtTime(0, start + 0.3, 0.8)
   chain(sub, subEnv, out)
   sub.start(start)

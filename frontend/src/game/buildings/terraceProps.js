@@ -4,49 +4,72 @@
 // necesitan la nieve (terraceWinter.js) y la luz (homeLight.js) se exportan desde aquí.
 import { PAL, shade, tint } from '../palette.js'
 import { dot, ellipse, line, rect } from '../pixelKit.js'
-import { DECK, TABLE, TELESCOPE } from '../terrace.js'
+import { CHAIR, DECK, DECK_WIDEN, STAIRS, TABLE, TELESCOPE } from '../terrace.js'
 import { WOOD0, WOOD1, WOOD2, WOOD3 } from './shared.js'
 
 export const BRASS = [shade(PAL.saffron, 0.55), shade(PAL.saffron, 0.78), PAL.saffron, PAL.saffronLight]
-const TUBE = ['#34497a', '#5c7aa8', '#9fb8d8']
-const LEG = '#2a2250'
 const PINK = '#e07a9c'
 const CREAM = '#f6f0e0'
 const RIM = '#8a3a5c'
+// Pintura blanca de la silla: luz, cuerpo y sombra.
+const CHAIR_WHITE = ['#ffffff', '#ece6f2', '#b3a8c4']
 
 // Fondo del entarimado: del pie de la balaustrada trasera (`FLOOR_TOP`) al canto delantero. Los muebles apoyan en
 // `FLOOR_Y`, contra el fondo, y delante queda el suelo libre por el que se anda (ver `DECK.top` en terrace.js).
 export const FLOOR_TOP = 84
 export const FLOOR_DEPTH = 30
+// Anchura de la escalera, de la barandilla delantera a la trasera: la misma que la hondura de la cubierta, para que el
+// pasamanos trasero llegue justo al poste de la esquina trasera y los peldaños se lean como la continuación del entarimado.
+export const STAIR_DEPTH = FLOOR_DEPTH
 export const FLOOR_Y = TABLE.base
-// Barandilla delantera: la viajera queda detrás. Entre la escalera (x < 40) y su primer poste queda libre la entrada.
-export const FRONT_RAIL = { x: 52, top: 106, bottom: 119, right: DECK.right + 1 }
-const RAIL_POST_GAP = 18
+// Altura de los pasamanos sobre el filo de los peldaños, y de la cara superior del pasamanos en la columna `px`.
+export const RAIL_H = 11
+export const stairRailTop = (px, { x, bottom, run, rise }) => Math.round(bottom - rise - (rise / run) * (px - x - run / 2)) - RAIL_H
 
-// Postes de la barandilla delantera: uno cada `RAIL_POST_GAP` píxeles y siempre uno en el extremo derecho.
+// Poste de esquina de la escalera: es el último poste de su pasamanos y el primero de la barandilla delantera, así que
+// las dos son una sola estructura.
+const NEWEL_X = STAIRS.x + (STAIRS.steps - 1) * STAIRS.run + 1
+// Barandilla delantera: la viajera queda detrás. Arranca en el poste de esquina de la escalera, con su barandal a la
+// altura donde acaba el pasamanos, y llega hasta el muro de la casa.
+export const FRONT_RAIL = { x: NEWEL_X, top: stairRailTop(NEWEL_X + 2, STAIRS) - 2, bottom: 117, right: DECK.right }
+const RAIL_POST_GAP = 19
+
+// Postes de la barandilla delantera, repartidos a partes iguales entre el poste de la escalera y uno junto al muro.
 export function frontRailPosts({ x, right } = FRONT_RAIL) {
-  const posts = []
-  for (let px = x; px < right - 3 - 6; px += RAIL_POST_GAP) posts.push(px)
-  posts.push(right - 3)
-  return posts
+  const last = right - 3
+  const count = Math.max(1, Math.round((last - x) / RAIL_POST_GAP))
+  return Array.from({ length: count + 1 }, (_, k) => Math.round(x + ((last - x) * k) / count))
 }
-// Balaustrada trasera: un poste en la esquina de la escalera y un tramo a la derecha. Entre ambos se deja un hueco
-// al cielo, detrás del telescopio, para que su contorno no se mezcle con los balaustres.
-export const BACK_RAIL = { post: DECK.left + 4, from: TELESCOPE.x + 14 }
+// Balaustrada trasera: un solo tramo continuo de esquina a esquina del entarimado, entre los dos postes altos. El de la
+// izquierda cae en la misma columna que el poste de esquina de la escalera (`NEWEL_X`), así que de frente es una sola pieza
+// de madera de arriba abajo; el de la derecha queda pegado al muro de la casa.
+export const BACK_RAIL = { from: DECK.left - 4, right: DECK.right }
 export const BACK_RAIL_Y = FLOOR_TOP - 11
+// Los postes de las esquinas traseras sostienen la guirnalda: suben hasta `top` y llevan un remate de latón. `x` es la
+// columna de su borde izquierdo (miden tres píxeles).
+export const CORNER_POSTS = { left: BACK_RAIL.from, right: BACK_RAIL.right - 3, top: 42 }
 export const PARASOL = { cx: TABLE.x, top: 62, rx: 18, ry: 13 }
-// Guirnalda: del mástil de la escalera al alero de la casa, por encima del telescopio y de la sombrilla.
-export const STRAND = { from: { x: 38, y: 38 }, to: { x: DECK.right, y: 58 }, sag: 4 }
+// Guirnalda: de un poste de esquina al otro, por encima del telescopio y de la sombrilla, con una caída suave en el centro y
+// `bulbs` bombillas a distancias iguales.
+export const STRAND = {
+  from: { x: CORNER_POSTS.left + 1, y: CORNER_POSTS.top + 4 },
+  to: { x: CORNER_POSTS.right + 1, y: CORNER_POSTS.top + 4 },
+  sag: 8,
+  bulbs: 13,
+}
 
 // Altura del filo de los peldaños: sobre ella están los pies al subir (ver `stairLift`).
 export const noseY = (i, { bottom, rise }) => bottom - rise * (i + 1)
 
-// Posición de cada punto de la guirnalda; las bombillas caen cada siete columnas.
-export function strandPoints({ from, to, sag } = STRAND) {
+// Posición de cada punto de la guirnalda y cuáles llevan bombilla: la columna de la bombilla `k` está a `k / (bulbs + 1)`
+// del recorrido, así que el reparto es uniforme y sin bombilla pegada a los postes.
+export function strandPoints({ from, to, sag, bulbs } = STRAND) {
+  const span = to.x - from.x
+  const lit = new Set(Array.from({ length: bulbs }, (_, k) => from.x + Math.round((span * (k + 1)) / (bulbs + 1))))
   const points = []
   for (let px = from.x; px <= to.x; px++) {
-    const u = (px - from.x) / (to.x - from.x)
-    points.push({ x: px, y: Math.round(from.y + (to.y - from.y) * u + sag * Math.sin(Math.PI * u)), bulb: (px - from.x) % 7 === 3 })
+    const u = (px - from.x) / span
+    points.push({ x: px, y: Math.round(from.y + (to.y - from.y) * u + sag * Math.sin(Math.PI * u)), bulb: lit.has(px) })
   }
   return points
 }
@@ -54,7 +77,7 @@ export function strandPoints({ from, to, sag } = STRAND) {
 // Entarimado: tablas con juntas desfasadas, sombra bajo la balaustrada trasera y el canto delantero.
 export function deckFloor(g) {
   const x = DECK.left - 4
-  const w = DECK.right + 4 - x
+  const w = DECK.right - x
   rect(g, x, FLOOR_TOP, w, FLOOR_DEPTH, WOOD2)
   for (let row = 0; row < FLOOR_DEPTH / 3; row++) {
     for (let px = x + 2 + (row % 2) * 3; px < x + w - 1; px += 7) rect(g, px, FLOOR_TOP + 1 + row * 3, 1, 3, WOOD1)
@@ -79,6 +102,16 @@ export function terraceStairs(g, { x, bottom, steps, run, rise }) {
   for (let i = 0; i < steps; i++) {
     const left = x + i * run
     const top = noseY(i, { bottom, rise })
+    // Huella ancha: la tabla del peldaño corre hacia el fondo, `STAIR_DEPTH` píxeles por detrás del filo, con luz en su canto
+    // izquierdo y sombra en el derecho. Cada peldaño queda `rise` más arriba que el anterior: el borde trasero sube con ellos.
+    // La tabla no pasa de la esquina de la cubierta (`BACK_RAIL.from`): desde ahí el suelo es el entarimado.
+    const reach = Math.max(0, Math.min(run, BACK_RAIL.from - left))
+    if (reach > 0) {
+      rect(g, left, top - STAIR_DEPTH, reach, STAIR_DEPTH - 2, WOOD2)
+      for (let seam = top - STAIR_DEPTH + 9; seam < top - 2; seam += 10) rect(g, left + 1, seam, Math.max(0, reach - 2), 1, WOOD1)
+      rect(g, left, top - STAIR_DEPTH, 1, STAIR_DEPTH - 2, WOOD3)
+      if (reach === run) rect(g, left + run - 1, top - STAIR_DEPTH, 1, STAIR_DEPTH - 2, WOOD1)
+    }
     for (let px = left; px < left + run; px++) {
       const end = lower(px)
       rect(g, px, top, 1, end - top, WOOD1)
@@ -98,48 +131,60 @@ export function terraceStairs(g, { x, bottom, steps, run, rise }) {
     rect(g, px, top, 1, bottom - top, WOOD2)
     rect(g, px - 1, bottom - 2, 5, 2, WOOD0)
   })
-  stairRail(g, { x, bottom, steps, run, rise })
 }
 
-// Pasamanos de la escalera: postes verticales sobre cada segundo peldaño, balaustres finos entre ellos y un
-// pasamanos recto que sigue la pendiente de los peldaños. Empieza y acaba en un poste con remate; el de arriba
-// sigue hasta el mástil de la guirnalda. Entre su final y la barandilla delantera queda libre la entrada.
-export const RAIL_H = 15
-// Altura de la cara superior del pasamanos en la columna `px`.
-export const stairRailTop = (px, { x, bottom, run, rise }) => Math.round(bottom - rise - (rise / run) * (px - x - run / 2)) - RAIL_H
+// Pasamanos de la escalera: un poste al pie, otro arriba (el de esquina, que dibuja la barandilla delantera) y dos
+// intermedios repartidos a partes iguales; entre ellos, un balaustre fino en los peldaños que quedan sin poste, de modo que
+// cada peldaño tiene protección. El pasamanos recto sigue la pendiente y va de un extremo al otro. Se dibuja en la capa
+// que va por encima de quien sube (ver `railLayer` en homes.js): la viajera pasa por detrás de él.
+const STAIR_POSTS = 3
+export const stairRailPosts = ({ x, steps, run } = STAIRS) => {
+  const first = x + 1
+  const last = x + (steps - 1) * run + 1
+  return Array.from({ length: STAIR_POSTS + 1 }, (_, k) => Math.round(first + ((last - first) * k) / STAIR_POSTS))
+}
 
-export function stairRail(g, { x, bottom, steps, run, rise }) {
-  const railAt = (px) => stairRailTop(px, { x, bottom, run, rise })
-  const start = x + run
-  const end = x + steps * run - 2
-  // Balaustres finos, uno por peldaño.
-  for (let i = 1; i < steps; i++) {
+// Maderas de cada pasamanos: el trasero va un tono más oscuro, para que quede al fondo.
+const RAIL_WOOD = { front: { post: WOOD1, light: WOOD3, bar: WOOD2, under: WOOD1 }, back: { post: WOOD0, light: WOOD2, bar: WOOD1, under: WOOD0 } }
+
+// `side` es 'front' (el de la barandilla delantera, por encima de quien sube) o 'back' (el de atrás, `STAIR_DEPTH` más arriba:
+// sigue la misma pendiente y acaba en el poste de la esquina trasera, que dibuja `backRail`).
+export function stairRail(g, { x, bottom, steps, run, rise }, side = 'front') {
+  const wood = RAIL_WOOD[side]
+  const dy = side === 'back' ? -STAIR_DEPTH : 0
+  const railAt = (px) => stairRailTop(px, { x, bottom, run, rise }) + dy
+  const baseAt = (px) => noseY(Math.min(steps - 1, Math.floor((px - x) / run)), { bottom, rise }) + dy
+  const posts = stairRailPosts({ x, steps, run })
+  const start = posts[0]
+  const end = posts[posts.length - 1] + 2
+  // Balaustres finos: uno por peldaño salvo donde ya hay poste.
+  for (let i = 0; i < steps; i++) {
     const px = x + i * run + 2
-    rect(g, px, railAt(px) + 3, 1, noseY(i, { bottom, rise }) - railAt(px) - 3, WOOD2)
+    if (posts.some((p) => px >= p - 1 && px <= p + 3)) continue
+    rect(g, px, railAt(px) + 3, 1, baseAt(px) - railAt(px) - 3, wood.bar)
   }
-  // Postes cada dos peldaños.
-  for (let i = 1; i < steps; i += 2) {
-    const px = x + i * run + 1
-    const top = railAt(px)
-    const base = noseY(i, { bottom, rise })
-    rect(g, px, top, 3, base - top, WOOD1)
-    rect(g, px, top, 1, base - top, WOOD3)
-    if (i === 1 || i === steps - 1) rect(g, px - 1, top - 2, 5, 2, WOOD3)
-  }
+  // Postes; el de arriba lo pone la barandilla delantera o el poste de esquina trasero.
+  posts.slice(0, -1).forEach((px, k) => {
+    const top = railAt(px + 1)
+    const base = baseAt(px + 1)
+    rect(g, px, top, 3, base - top, wood.post)
+    rect(g, px, top, 1, base - top, wood.light)
+    if (k === 0) rect(g, px - 1, top - 2, 5, 2, wood.light)
+  })
   // Pasamanos: una banda de tres píxeles con la cara superior iluminada.
-  line(g, start, railAt(start), end, railAt(end), WOOD2, 3)
-  line(g, start, railAt(start), end, railAt(end), WOOD3, 1)
-  line(g, start, railAt(start) + 2, end, railAt(end) + 2, WOOD1, 1)
+  line(g, start, railAt(start), end, railAt(end), wood.bar, 3)
+  line(g, start, railAt(start), end, railAt(end), wood.light, 1)
+  line(g, start, railAt(start) + 2, end, railAt(end) + 2, wood.under, 1)
 }
 
 // Balaustrada trasera: balaustres, postes con remate (también en cada extremo), barandal y travesaño bajo. Va en
 // maderas un tono más oscuras que la delantera, para que quede al fondo.
-// Posiciones de los postes de un tramo de balaustrada: cada catorce píxeles y uno en el extremo.
+// Posiciones de los postes de un tramo de balaustrada: uno en cada extremo y, entre ellos, repartidos a partes iguales
+// con unos catorce píxeles de separación.
 export function railPosts(x, w) {
-  const posts = []
-  for (let bx = x; bx <= x + w - 3; bx += 14) posts.push(bx)
-  if (posts[posts.length - 1] < x + w - 7) posts.push(x + w - 3)
-  return posts
+  const last = x + w - 3
+  const count = Math.max(1, Math.round((last - x) / 14))
+  return Array.from({ length: count + 1 }, (_, k) => Math.round(x + ((last - x) * k) / count))
 }
 
 export function balustrade(g, x, y, w) {
@@ -154,21 +199,33 @@ export function balustrade(g, x, y, w) {
   rect(g, x, y, w, 1, WOOD2)
 }
 
-// Los dos tramos de la balaustrada trasera: el poste de la esquina de la escalera y el de la derecha, con el hueco
-// del telescopio en medio.
+// Poste alto de una esquina trasera de la cubierta: sostiene la guirnalda, con un remate de latón en lo alto. Nace en el
+// entarimado, donde acaba la balaustrada.
+function cornerPost(g, x) {
+  const { top } = CORNER_POSTS
+  const height = BACK_RAIL_Y + 13 - top
+  rect(g, x, top, 3, height, WOOD0)
+  rect(g, x, top, 1, height, WOOD2)
+  rect(g, x - 1, top - 2, 5, 2, WOOD2)
+  dot(g, x + 1, top - 3, PAL.saffron)
+}
+
+// Balaustrada trasera: el tramo continuo entre las dos esquinas y, encima, los dos postes altos.
 export function backRail(g) {
-  balustrade(g, BACK_RAIL.post, BACK_RAIL_Y, 3)
-  balustrade(g, BACK_RAIL.from, BACK_RAIL_Y, DECK.right + 1 - BACK_RAIL.from)
+  balustrade(g, BACK_RAIL.from, BACK_RAIL_Y, BACK_RAIL.right - BACK_RAIL.from)
+  cornerPost(g, CORNER_POSTS.left)
+  cornerPost(g, CORNER_POSTS.right)
 }
 
 // Barandilla delantera: va en una capa aparte, por encima de la viajera, que pasa por detrás con las piernas
 // medio tapadas. Solo postes, pasamanos y un travesaño bajo: nada de paneles, para que se vea la cubierta a través.
+// Arranca en el poste de esquina de la escalera, que sube hasta el pasamanos y baja hasta el canto de la cubierta.
 // Se dibuja en las coordenadas del dibujo de la casa; quien la usa traslada el lienzo a su esquina.
 export function frontRail(g) {
   const { x, top, bottom, right } = FRONT_RAIL
   const w = right - x
   const posts = frontRailPosts()
-  rect(g, x, top + 9, w, 2, WOOD1)
+  rect(g, x, bottom - 8, w, 2, WOOD1)
   rect(g, x, top + 2, w, 3, WOOD2)
   rect(g, x, top + 2, w, 1, WOOD3)
   posts.forEach((px) => {
@@ -178,59 +235,120 @@ export function frontRail(g) {
   })
 }
 
-// Telescopio de latón sobre un trípode: patas abiertas de metal oscuro, cabeza giratoria, tubo azul inclinado con
-// anillos, ocular a la izquierda, campana y lente a la derecha y un buscador paralelo encima. Tiene sombra propia en
-// el suelo y el hueco de la balaustrada y de la guirnalda a su alrededor para que su contorno se lea entero.
+// Todo lo que va por delante de quien sube o anda por la cubierta: el pasamanos de la escalera y la barandilla delantera.
+export function terraceRail(g) {
+  stairRail(g, STAIRS)
+  frontRail(g)
+}
+
+// Rectángulo del dibujo que ocupa `terraceRail`, con dos píxeles de margen para el contorno.
+export const RAIL_BOX = (() => {
+  const x = STAIRS.x - 2
+  const y = FRONT_RAIL.top - 3
+  return { x, y, w: FRONT_RAIL.right + 2 - x, h: noseY(0, STAIRS) + 3 - y }
+})()
+
+// Celestron AstroMaster 130EQ, el telescopio real de Lupe: tubo azul oscuro metalizado de bordes negros, tendido en diagonal
+// con su boca grande y oscura hacia el cielo (a la izquierda), buscador pequeño sobre el tubo, ocular a un lado, montura
+// ecuatorial con sus acentos naranjas y el contrapeso colgando de su varilla, y un trípode alto de patas plateadas con la
+// bandeja triangular negra. Tiene sombra propia en el suelo y el hueco de la guirnalda a su alrededor para que su contorno
+// se lea entero. Va todo a la izquierda del centro del trípode, así que no llega a la silla.
+const SILVER = ['#8d90a8', '#c9ccd8', '#eceef6']
+const MOUNT = ['#2b2a4a', '#3d3c62', '#5a5886']
+// Bandas del tubo, de arriba abajo: borde negro, brillo metálico, azul medio, azul, sombra y borde negro.
+// El brillo hace de contorno por arriba: sobre el fondo oscuro de detrás un borde negro no se vería.
+const TUBE_BANDS = ['#2d4278', '#8fb0dc', '#5d7fb5', '#41609a', '#2d4278', PAL.ink]
+const TUBE_GLINT = '#d4e2f4'
+// Cuánto sube el eje del tubo por cada columna hacia la izquierda: la diagonal que lo apunta al cielo.
+const TUBE_RISE = 0.36
+
+// Trípode alto: dos patas exteriores que se abren y una trasera más corta entre ellas, con pies negros y la bandeja de las
+// tres. `apexY` es donde se juntan, bajo la montura.
+function tripod(g, cx, base, apexY) {
+  const metal = (fromX, toX, toY) => {
+    line(g, fromX, apexY, toX, toY, SILVER[2], 1)
+    line(g, fromX + 1, apexY, toX + 1, toY, SILVER[0], 1)
+  }
+  // Pata trasera, casi vertical y algo más corta, porque queda más lejos.
+  line(g, cx, apexY, cx - 1, base - 3, SILVER[0], 1)
+  line(g, cx + 1, apexY, cx, base - 3, SILVER[1], 1)
+  rect(g, cx - 2, base - 3, 3, 1, PAL.ink)
+  // Bandeja triangular negra con el filo de arriba más claro.
+  const trayY = base - 7
+  rect(g, cx - 4, trayY, 9, 1, MOUNT[2])
+  rect(g, cx - 4, trayY + 1, 9, 1, PAL.ink)
+  rect(g, cx - 3, trayY + 2, 7, 1, PAL.ink)
+  rect(g, cx - 1, trayY + 3, 3, 1, PAL.ink)
+  ;[cx - 8, cx + 7].forEach((toX) => {
+    metal(cx, toX, base)
+    rect(g, toX - 1, base, 3, 1, PAL.ink)
+  })
+}
+
+// Cabeza de la montura ecuatorial: placa sobre el trípode, cuello plateado con su círculo naranja, cabeza oscura con perillas
+// de latón y la varilla del contrapeso, que baja en diagonal a la izquierda y acaba en la pesa.
+function equatorialMount(g, cx, apexY) {
+  rect(g, cx - 3, apexY - 2, 7, 2, MOUNT[1])
+  rect(g, cx - 3, apexY - 2, 7, 1, MOUNT[2])
+  rect(g, cx - 3, apexY, 7, 1, PAL.ink)
+  rect(g, cx - 1, apexY - 4, 3, 2, SILVER[1])
+  rect(g, cx - 2, apexY - 3, 5, 1, BRASS[2])
+  rect(g, cx - 2, apexY - 8, 5, 4, MOUNT[1])
+  rect(g, cx - 2, apexY - 8, 5, 1, MOUNT[2])
+  rect(g, cx - 2, apexY - 5, 5, 1, MOUNT[0])
+  rect(g, cx + 2, apexY - 7, 1, 2, BRASS[2])
+  rect(g, cx - 2, apexY - 7, 1, 2, BRASS[3])
+  // Contrapeso colgante.
+  line(g, cx - 2, apexY - 4, cx - 8, apexY + 5, SILVER[0], 1)
+  rect(g, cx - 12, apexY + 5, 5, 4, MOUNT[1])
+  rect(g, cx - 12, apexY + 5, 5, 1, MOUNT[2])
+  rect(g, cx - 12, apexY + 8, 5, 1, MOUNT[0])
+  rect(g, cx - 13, apexY + 6, 1, 2, PAL.ink)
+  rect(g, cx - 7, apexY + 6, 1, 2, PAL.ink)
+}
+
+// Tubo óptico: cilindro de seis filas que sube hacia la izquierda, con su boca ovalada, el focalizador con el ocular y el
+// buscador paralelo encima, sujeto con dos soportes. `pivotY` es la fila del eje justo sobre la montura.
+function opticalTube(g, cx, pivotY) {
+  const from = cx - 11
+  const to = cx + 9
+  const axis = (px) => Math.round(pivotY - TUBE_RISE * (cx - px))
+  for (let px = from; px <= to; px++) {
+    const top = axis(px) - 3
+    TUBE_BANDS.forEach((color, i) => rect(g, px, top + i, 1, 1, color))
+  }
+  ;[cx - 8, cx - 7, cx - 6, cx + 3, cx + 4].forEach((px) => dot(g, px, axis(px) - 2, TUBE_GLINT))
+  // Culata trasera, más oscura y con tapa.
+  rect(g, to - 1, axis(to - 1) - 2, 2, 4, TUBE_BANDS[4])
+  rect(g, to + 1, axis(to) - 2, 1, 4, PAL.ink)
+  // Boca grande y oscura, con el aro claro del borde y el espejo al fondo.
+  const mouthY = axis(from) + 0.5
+  ellipse(g, from - 1, mouthY, 2.8, 3.8, '#6f8dbd')
+  ellipse(g, from - 1, mouthY, 2, 3, PAL.ink)
+  dot(g, from - 1, mouthY + 1, '#4a4680')
+  dot(g, from - 2, mouthY - 1, '#2a2456')
+  // Focalizador y ocular: perpendiculares al tubo, hacia arriba.
+  const eyeX = cx - 5
+  rect(g, eyeX, axis(eyeX) - 5, 3, 2, PAL.ink)
+  rect(g, eyeX, axis(eyeX) - 9, 2, 4, SILVER[1])
+  rect(g, eyeX, axis(eyeX) - 9, 1, 4, SILVER[2])
+  rect(g, eyeX, axis(eyeX) - 10, 2, 1, PAL.ink)
+  // Buscador: tubito oscuro paralelo al principal, con su lente y dos soportes plateados.
+  const finderY = axis(cx - 10) - 8
+  rect(g, cx - 12, finderY, 5, 2, MOUNT[1])
+  rect(g, cx - 12, finderY, 5, 1, SILVER[0])
+  dot(g, cx - 13, finderY, '#bfe4f0')
+  rect(g, cx - 11, finderY + 2, 1, 3, SILVER[0])
+  rect(g, cx - 9, finderY + 2, 1, 3, SILVER[0])
+}
+
 export function telescope(g) {
   const { x: cx, base } = TELESCOPE
-  const apexY = base - 14
+  const apexY = base - 12
   ellipse(g, cx + 1, base + 1, 11, 1.8, 'rgba(40,24,50,0.32)')
-  // Trípode: patas de dos píxeles con un filo claro a la izquierda.
-  const leg = (toX) => {
-    line(g, cx, apexY, toX, base, LEG, 1)
-    line(g, cx + 1, apexY, toX + 1, base, LEG, 1)
-    dot(g, toX - 1, base, '#6a5aa0')
-    rect(g, toX, base, 3, 1, PAL.ink)
-  }
-  leg(cx - 8)
-  leg(cx + 7)
-  rect(g, cx - 1, apexY, 3, base + 2 - apexY, '#3b3572')
-  rect(g, cx - 1, apexY, 1, base + 2 - apexY, '#6a5aa0')
-  line(g, cx - 5, base - 5, cx + 5, base - 5, LEG, 1)
-  // Cabeza giratoria.
-  rect(g, cx - 3, apexY - 2, 7, 3, BRASS[1])
-  rect(g, cx - 3, apexY - 2, 7, 1, BRASS[3])
-  rect(g, cx - 1, apexY - 4, 3, 2, BRASS[2])
-  // Tubo: de (cx-1, apexY-3) hacia arriba a la derecha. `axis` da la altura del eje a una columna.
-  const axis = (px) => apexY - 4 - 0.6 * (px - (cx - 1))
-  const from = cx - 1
-  const to = cx + 14
-  line(g, from, axis(from) - 1, to, axis(to) - 1, TUBE[1], 4)
-  line(g, from, axis(from) - 1, to, axis(to) - 1, TUBE[2], 1)
-  line(g, from, axis(from) + 2, to, axis(to) + 2, TUBE[0], 1)
-  // Anillos de latón.
-  ;[from + 3, from + 10].forEach((px) => {
-    rect(g, px, Math.round(axis(px)) - 2, 2, 6, BRASS[2])
-    rect(g, px, Math.round(axis(px)) - 2, 2, 1, BRASS[3])
-  })
-  // Campana del objetivo con su lente.
-  const bellX = to + 1
-  line(g, to, axis(to) - 2, bellX + 3, axis(bellX + 3) - 2, BRASS[1], 6)
-  line(g, to, axis(to) - 2, bellX + 3, axis(bellX + 3) - 2, BRASS[3], 1)
-  ellipse(g, bellX + 4, axis(bellX + 4) + 1, 1.6, 3.2, BRASS[0])
-  ellipse(g, bellX + 4, axis(bellX + 4) + 1, 1, 2.4, '#bfe4f0')
-  dot(g, bellX + 4, axis(bellX + 4), '#ffffff')
-  // Ocular: tubito de latón más largo y claro, con su tapa oscura, bien separado de todo lo demás.
-  line(g, from - 5, axis(from - 5) + 1, from, axis(from) + 1, BRASS[2], 2)
-  line(g, from - 5, axis(from - 5) + 1, from, axis(from) + 1, BRASS[3], 1)
-  rect(g, from - 7, Math.round(axis(from - 5)), 2, 4, PAL.ink)
-  dot(g, from - 7, Math.round(axis(from - 5)), '#6a5aa0')
-  // Buscador encima del tubo, sujeto con dos soportes.
-  const finderFrom = from + 3
-  const finderTo = from + 11
-  line(g, finderFrom, axis(finderFrom) - 5, finderTo, axis(finderTo) - 5, '#b8b4d0', 1)
-  ;[finderFrom + 1, finderTo - 1].forEach((px) => rect(g, px, Math.round(axis(px)) - 5, 1, 4, BRASS[1]))
-  dot(g, finderTo + 1, axis(finderTo + 1) - 5, '#bfe4f0')
+  tripod(g, cx, base, apexY)
+  equatorialMount(g, cx, apexY)
+  opticalTube(g, cx, apexY - 11)
 }
 
 // Cubierta de la sombrilla: cada gajo es un cilindro con luz en su borde izquierdo y sombra en el derecho, y el
@@ -295,4 +413,41 @@ export function parasol(g) {
   canopy(g)
   ellipse(g, cx, top - 1, 1.6, 1.6, BRASS[3])
   rect(g, cx, top + 1, 1, 2, BRASS[1])
+}
+
+// Silla de madera pintada de blanco, para que destaque sobre el entarimado, de frente y con cojín rosa como la sombrilla. Apoya contra el fondo, junto al telescopio.
+// Quien se sienta (ver `seatOnDeck` en ValleScene.js) se dibuja por delante: el respaldo queda detrás y las patas delanteras
+// asoman bajo sus piernas.
+export function deckChair(g) {
+  const { x: cx, base } = CHAIR
+  const left = cx - 9
+  ellipse(g, cx + 2, base + 1, 11, 1.6, 'rgba(40,24,50,0.3)')
+  // Patas traseras, que suben hasta el respaldo, y listones.
+  ;[left, cx + 7].forEach((px) => {
+    rect(g, px, base - 20, 2, 16, CHAIR_WHITE[2])
+    rect(g, px, base - 20, 1, 16, CHAIR_WHITE[1])
+  })
+  rect(g, left, base - 20, 18, 3, CHAIR_WHITE[1])
+  rect(g, left, base - 20, 18, 1, CHAIR_WHITE[0])
+  ;[base - 14, base - 11].forEach((y) => rect(g, left + 2, y, 14, 2, CHAIR_WHITE[1]))
+  // Asiento con su cojín y la cara delantera del bastidor.
+  rect(g, left - 1, base - 7, 20, 3, CHAIR_WHITE[1])
+  rect(g, left - 1, base - 7, 20, 1, CHAIR_WHITE[0])
+  rect(g, left, base - 8, 18, 2, PINK)
+  rect(g, left, base - 8, 18, 1, tint(PINK, 0.35))
+  rect(g, left - 1, base - 4, 20, 1, CHAIR_WHITE[2])
+  // Patas delanteras.
+  ;[left, cx + 7].forEach((px) => {
+    rect(g, px, base - 3, 2, 3, CHAIR_WHITE[2])
+    rect(g, px, base - 3, 1, 3, CHAIR_WHITE[1])
+  })
+}
+
+// Ventanas de la sala baja, bajo la cubierta: repartidas con el mismo margen a los lados y entre ellas sobre el muro visible
+// (de `LOWER_WALL.x` al comienzo de la casa de dos plantas).
+export const LOWER_WALL = { x: 38, right: 106 + DECK_WIDEN }
+export const LOWER_WINDOW = { w: 32, h: 20, y: 128 }
+export const lowerWindowXs = ({ x, right } = LOWER_WALL, { w } = LOWER_WINDOW) => {
+  const gap = Math.round((right - x - 2 * w) / 3)
+  return [x + gap, x + 2 * gap + w]
 }

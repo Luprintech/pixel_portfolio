@@ -5,15 +5,12 @@ import { dot, ellipse, rect } from '../pixelKit.js'
 import { drawText, textWidth } from '../pixelFont.js'
 import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, doorAt } from './shared.js'
 
-const SHADOW = 'rgba(40,24,60,0.22)'
-
-// Alféizar continuo de piedra: una repisa de tres filas (luz arriba, sombra propia abajo) y una sombra suave sobre la
-// pared. `y` es la primera fila bajo el marco y `x`/`w` el ancho que cubre, con voladizo incluido.
+// Alféizar continuo de piedra: una repisa de tres filas (luz arriba, sombra propia abajo), sin nada más debajo: una
+// sombra translúcida aquí se leía como una raya de color sobre la pared. `y` es la primera fila bajo el marco y `x`/`w` el ancho que cubre, con voladizo incluido.
 export function sillLedge(g, x, y, w) {
   rect(g, x, y, w, 1, tint(STONE2, 0.2))
   rect(g, x, y + 1, w, 1, STONE2)
   rect(g, x, y + 2, w, 1, STONE1)
-  rect(g, x + 1, y + 3, w - 2, 1, SHADOW)
   // Los extremos pierden una esquina para que la repisa no sea un bloque recto.
   rect(g, x, y + 2, 1, 1, STONE0)
   rect(g, x + w - 1, y + 2, 1, 1, STONE0)

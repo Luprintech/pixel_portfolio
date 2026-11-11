@@ -108,8 +108,7 @@ export function houseSprite({ roof = PAL.tile, shutter = PAL.teal, chimney = tru
   rect(g, 24, 60, 16, 3, STONE2)
   rect(g, 24, 62, 16, 1, STONE0)
 
-  // Ventanas con postigos y jardinera de flores
-  const bloom = [PAL.rose, '#f6f0e0', PAL.saffron, PAL.rose, '#b8a2e0']
+  // Ventanas con postigos y un alféizar de piedra: sin flores, que dibujaban una raya de colores sobre él
   ;[10, 42].forEach((x) => {
     rect(g, x - 4, 38, 3, 14, s[1])
     rect(g, x - 4, 38, 1, 14, s[2])
@@ -125,13 +124,9 @@ export function houseSprite({ roof = PAL.tile, shutter = PAL.teal, chimney = tru
     rect(g, x, 44, 12, 2, WOOD1)
     dot(g, x + 1, 39, '#ffffff')
     dot(g, x + 2, 40, '#ffffff')
-    rect(g, x - 2, 53, 16, 3, WOOD1)
-    rect(g, x - 2, 53, 16, 1, WOOD2)
-    rect(g, x - 2, 55, 16, 1, WOOD0)
-    ;[0, 3, 6, 9, 12].forEach((o, i) => {
-      dot(g, x - 1 + o, 52, bloom[i])
-      dot(g, x + o, 52, TONE.grass[2])
-    })
+    rect(g, x - 2, 53, 16, 1, STONE2)
+    rect(g, x - 2, 54, 16, 1, STONE1)
+    rect(g, x - 2, 55, 16, 1, STONE0)
   })
   return outline(canvas, 0.5)
 }

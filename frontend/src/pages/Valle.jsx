@@ -333,6 +333,7 @@ export default function Valle() {
     setDialogue(null)
     if (action === 'desktop') setZone('pc')
     else if (action === 'tv') setZone('tv')
+    else if (action === 'sky') setZone('telescope')
     else if (action === 'music') jukebox.toggle()
     else if (action?.startsWith('tour-')) game?.events.emit('npc-action', action)
   }, [game])

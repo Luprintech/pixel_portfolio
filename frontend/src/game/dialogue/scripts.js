@@ -116,6 +116,12 @@ export const SCRIPTS = {
   'hifi.favoritas': { pages: lines('lupe', 'hifi.favoritas', 2), options: HIFI_MENU },
   'hifi.repeticion': { pages: lines('lupe', 'hifi.repeticion', 1), options: HIFI_MENU },
 
+  // Azotea: solo si Lupe está allí (ver `ValleScene.lupeOnDeck`). «Mirar» abre la vista del cielo que ya existía.
+  'cielo.telescopio': {
+    pages: lines('lupe', 'cielo.telescopio', 3),
+    options: [option('mirar', 'cielo.opt.mirar', { action: 'sky' }), option('seguir', 'casa.opt.explorar', { close: true })],
+  },
+
   // Tras la presentación del ordenador se abre el escritorio retro (ver `components/valle/RetroDesktop.jsx`).
   'pc.abrir': { pages: lines('lupe', 'pc.abrir', 2), action: 'desktop' },
 }

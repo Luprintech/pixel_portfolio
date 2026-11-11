@@ -7,14 +7,16 @@
 //  guiding  la lleva a un destino concreto
 //  waiting  se ha parado a esperar a una viajera que se retrasa
 //  routine  hace sus cosas, sin depender de nadie
-export const NPC_STATES = ['idle', 'talking', 'guiding', 'waiting', 'routine']
+//  entering va sola a la puerta de su casa y entra a esperar dentro (no acompaña: la viajera entra cuando quiere)
+export const NPC_STATES = ['idle', 'talking', 'guiding', 'waiting', 'routine', 'entering']
 
 const ALLOWED = {
-  idle: ['talking', 'guiding', 'routine'],
-  routine: ['idle', 'talking', 'guiding'],
-  talking: ['idle', 'guiding', 'routine'],
-  guiding: ['waiting', 'talking', 'idle', 'routine'],
-  waiting: ['guiding', 'talking', 'idle', 'routine'],
+  idle: ['talking', 'guiding', 'routine', 'entering'],
+  routine: ['idle', 'talking', 'guiding', 'entering'],
+  talking: ['idle', 'guiding', 'routine', 'entering'],
+  guiding: ['waiting', 'talking', 'idle', 'routine', 'entering'],
+  waiting: ['guiding', 'talking', 'idle', 'routine', 'entering'],
+  entering: ['idle'],
 }
 
 export const canGo = (from, to) => from === to || Boolean(ALLOWED[from]?.includes(to))
