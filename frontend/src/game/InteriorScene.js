@@ -8,7 +8,8 @@ import { involvesLupe, talkFor } from './dialogue/scripts.js'
 import { loadSeen, markSeen } from './dialogue/seen.js'
 import InteriorLupe from './npc/InteriorLupe.js'
 import { getStory } from './story/storyStore.js'
-import { buildHome, faceTraveller, rethemeFurniture } from './interior/homeBuilder.js'
+import { buildHome, rethemeFurniture } from './interior/homeBuilder.js'
+import { faceTraveller } from './interior/npcSprite.js'
 import { buildGran } from './interior/granBuilder.js'
 import { granInteractionAt } from './interior/granLayout.js'
 import { GAME_THEME_FADE, themeName } from '../lib/gameTheme.js'
@@ -31,6 +32,7 @@ const ENTRANCE = 'casa.entrada'
 const TELEVISION = 'casa.television'
 // Primera conversación del IES Gran Capitán (el tablón del itinerario): al oírla desaparece la exclamación.
 const GRAN_FIRST = 'gran.entrada'
+const YLONEM_FIRST = 'ylonem.presentacion'
 // La interacción con Lupe durante la visita (la misma clave que fuera, en `hud.actions`).
 const LUPE = 'npc:lupe'
 // Lo máximo que se espera a que Lupe llegue antes de abrir su conversación desde donde esté.
@@ -171,9 +173,12 @@ export default class InteriorScene extends Phaser.Scene {
       this.solids.push(body)
     }
     if (this.room.plan) {
-      const { exclamation } = buildGran(this, this.pastel, addSolid)
+      const { exclamation, npcs, ylonemExclamation } = buildGran(this, this.pastel, addSolid)
       this.exclamation = exclamation
+      this.ylonemExclamation = ylonemExclamation
+      this.classmates = Object.values(npcs)
       exclamation.setVisible(!this.seen.has(GRAN_FIRST))
+      ylonemExclamation.setVisible(!this.seen.has(YLONEM_FIRST))
       this.physics.add.collider(this.princess, this.solids)
       return
     }
@@ -395,6 +400,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.visits[interaction] = visits + 1
     this.seen = markSeen(this.seen, script)
     if (script === ENTRANCE || script === GRAN_FIRST) this.exclamation?.setVisible(false)
+    if (script === YLONEM_FIRST) this.ylonemExclamation?.setVisible(false)
     this.game.events.emit('talk', script)
   }
 
@@ -524,6 +530,7 @@ export default class InteriorScene extends Phaser.Scene {
       this.shadow.setPosition(this.princess.x, this.princess.y - 1)
     }
     if (this.atreus) faceTraveller(this.atreus, this.cat?.cat.giving ? this.cat.sprite : this.princess, facingFor)
+    this.classmates?.forEach((npc) => faceTraveller(npc, this.princess, facingFor))
     let id = null
     if (this.leaving) id = null
     else if (this.seat) id = this.seat.use ?? 'standup'

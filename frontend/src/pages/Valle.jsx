@@ -49,6 +49,8 @@ import { useValleCopy } from '../lib/valleCopy'
 
 // Todos los controles de la barra del valle miden lo mismo (36 px) y comparten la tipografía pequeña: iguales
 // en web y en móvil, y más discretos sobre un mapa que se ve poco.
+// Web del estudio de Ylonem ("Ver el estudio" en su conversación); el dominio está autorizado por Lupe.
+const STUDIO_URL = 'https://ahiestalapelicula.com'
 const HUD_SIZE = '2.25rem'
 const HUD_BUTTON = 'px-btn px-btn--bone !min-h-[var(--ctl)] !px-3 !py-0 !text-sm'
 
@@ -386,6 +388,7 @@ export default function Valle() {
     if (action === 'desktop') setZone('pc')
     else if (action === 'tv') setZone('tv')
     else if (action === 'ficha') setZone('dawSheet')
+    else if (action === 'estudio') window.open(STUDIO_URL, '_blank', 'noopener,noreferrer')
     else if (action === 'sky') setZone('telescope')
     else if (action === 'music') jukebox.toggle()
     // Abrir el ordenador desde la visita: Lupe espera (la parada queda contada) mientras se usa.

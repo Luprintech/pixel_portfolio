@@ -1,11 +1,11 @@
 // Monta la casa de Lupe en una escena de Phaser: muebles (con su profundidad, sus colisiones y sus animaciones), a Atreus y a
 // Khalessi. La escena (`InteriorScene.js`) solo le pasa a quien se mueve y recibe los cuerpos sólidos; aquí no hay
 // lógica de movimiento ni de diálogos.
-import { DIRS, POSES, frameName, frameRect } from '../avatar/index.js'
 import { khalessiCanvas, khalessiEatCanvas, khalessiSitCanvas, khalessiSleepCanvas } from '../pets/index.js'
 import { makeCanvas, rect } from '../pixelKit.js'
 import { prefersReducedMotion } from '../../lib/reducedMotion.js'
 import { atreusBlink, atreusSheet } from './atreusSheet.js'
+import { buildNpcSprite } from './npcSprite.js'
 import { buildExclamation } from '../npc/exclaim.js'
 import { FURNITURE, framesOf, furnitureCanvas, solidsOf } from './furniture/index.js'
 import { attachTvArt } from './tvArt.js'
@@ -122,41 +122,9 @@ function modeFor(scene, sprite, kind, still) {
   return api
 }
 
-// Hoja de sprites de Atreus: la misma rejilla que la viajera, con un fotograma por pose y dirección.
-function addAtreusSheet(scene) {
-  if (scene.textures.exists('npc-atreus')) return
-  const texture = scene.textures.addCanvas('npc-atreus', atreusSheet())
-  DIRS.forEach((dir) => {
-    for (let pose = 0; pose < POSES; pose++) {
-      const { x, y, w, h } = frameRect(dir, pose)
-      texture.add(frameName(dir, pose), 0, x, y, w, h)
-    }
-  })
-  scene.textures.addCanvas('npc-atreus-blink', atreusBlink())
-}
-
-// Idle de Atreus: parpadea de vez en cuando y se vuelve hacia quien se acerca. Devuelve lo que la escena necesita para
-// girarlo y para colocarle encima la exclamación de "quiere hablar".
-function buildAtreus(scene, plan, addSolid) {
-  addAtreusSheet(scene)
-  const sprite = scene.add.sprite(plan.x, plan.y, 'npc-atreus', frameName(plan.facing, 0)).setOrigin(0.5, 1).setDepth(plan.y)
-  scene.add.image(plan.x, plan.y - 1, 'shadow').setDepth(2)
-  addSolid({ x: plan.x + ATREUS_BODY.l, y: plan.y + ATREUS_BODY.t, w: ATREUS_BODY.r - ATREUS_BODY.l, h: ATREUS_BODY.b - ATREUS_BODY.t })
-  const atreus = { sprite, facing: plan.facing }
-  if (!prefersReducedMotion()) {
-    const blink = () => {
-      scene.time.delayedCall(2600 + Math.random() * 2600, () => {
-        if (atreus.facing === 'down') sprite.setTexture('npc-atreus-blink')
-        scene.time.delayedCall(140, () => {
-          sprite.setTexture('npc-atreus', frameName(atreus.facing, 0))
-          blink()
-        })
-      })
-    }
-    blink()
-  }
-  return atreus
-}
+// Atreus: su hoja (con cascos y taza) y su cuerpo sólido, sobre el idle común de los personajes quietos (`npcSprite.js`).
+const buildAtreus = (scene, plan, addSolid) =>
+  buildNpcSprite(scene, { key: 'npc-atreus', sheet: atreusSheet, blink: atreusBlink, plan, body: ATREUS_BODY }, addSolid)
 
 // La sardina según lo que haga la gata: en el suelo (con meneo si juega), subiendo a la boca al cogerla con un saltito, en la boca
 // mientras la lleva, o cayendo al suelo al soltarla. La boca está en el lado al que mira.
@@ -276,15 +244,4 @@ export function buildHome(scene, pastel, addSolid, onMeow = () => {}) {
   const atreus = buildAtreus(scene, atreusPlan, addSolid)
   const khalessi = buildKhalessi(scene, onMeow)
   return { atreus, exclamation: buildAtreusExclamation(scene, atreus), switches, khalessi, printMark: buildPrintMark(scene) }
-}
-
-// Hacia dónde mira Atreus según dónde esté la viajera; vuelve a mirar de frente cuando se aleja.
-export function faceTraveller(atreus, from, facingFor) {
-  const { sprite } = atreus
-  const dx = from.x - sprite.x
-  const dy = from.y - sprite.y
-  const next = Math.hypot(dx, dy) < 56 ? facingFor(dx, dy) : 'down'
-  if (next === atreus.facing) return
-  atreus.facing = next
-  sprite.setTexture('npc-atreus', frameName(next, 0))
 }

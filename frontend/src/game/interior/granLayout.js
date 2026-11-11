@@ -30,17 +30,22 @@ export const GRAN_PLAN = [
   { kind: 'tallPlant', x: 318, y: 100 },
 ]
 
-// Puestos preparados para personas que llegarán más adelante. De momento no hay sprite, rutina ni diálogo: solo el sitio, libre y
-// alcanzable (lo comprueba la prueba del plano) para que ponerlas no obligue a recolocar nada. Grace espera retrato y diálogos.
-export const RESERVED_SPOTS = [
+// Las dos personas del aula, en el pasillo entre las filas de mesas (sitio libre y alcanzable: lo comprueba la prueba del plano).
+// Ylonem y Grace se miran de frente a ambos lados de la mesa del centro y se vuelven hacia quien se acerca.
+export const NPC_PLAN = [
   { id: 'ylonem', x: 228, y: 142, facing: 'left' },
   { id: 'grace', x: 124, y: 142, facing: 'right' },
 ]
+
+// Cuerpo sólido de cada una: los pies, como el de Atreus.
+export const NPC_BODY = { l: -5, t: -4, r: 5, b: 0 }
 
 export const GRAN_INTERACTIONS = [
   { id: 'granCartel', anchor: { x: 96, y: 78 }, zones: [{ x: 70, y: 66, w: 52, h: 30 }] },
   { id: 'granPizarra', anchor: { x: 176, y: 80 }, zones: [{ x: 124, y: 66, w: 104, h: 34 }] },
   { id: 'granOrdenador', anchor: { x: 176, y: 130 }, zones: [{ x: 146, y: 122, w: 60, h: 16 }] },
+  { id: 'granYlonem', anchor: { x: 228, y: 152 }, zones: [{ x: 206, y: 126, w: 44, h: 34 }] },
+  { id: 'granGrace', anchor: { x: 124, y: 152 }, zones: [{ x: 102, y: 126, w: 44, h: 34 }] },
 ]
 
 export const granInteractionAt = (x, y) => pickInteraction(GRAN_INTERACTIONS, x, y)
@@ -62,6 +67,6 @@ export function granRoom() {
     spawn: { x: centre + TILE / 2, y: height - TILE * 1.5 },
     exit: { x: centre - 8, y: height - TILE - 4, width: TILE + 16, height: TILE + 4 },
     windows: GRAN_WINDOWS,
-    plan: { furniture: GRAN_PLAN, interactions: GRAN_INTERACTIONS, wall: GRAN_WALL, reserved: RESERVED_SPOTS },
+    plan: { furniture: GRAN_PLAN, interactions: GRAN_INTERACTIONS, wall: GRAN_WALL, npcs: NPC_PLAN },
   }
 }

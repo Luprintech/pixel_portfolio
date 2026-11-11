@@ -3,10 +3,12 @@
 // interfaz las amplía sin suavizar. Sin dependencias de Phaser ni de React.
 import { avatarCanvas } from '../avatar/index.js'
 import { ATREUS_LOOK } from '../atreus.js'
+import { GRACE_LOOK } from '../grace.js'
 import { LUPE_LOOK } from '../lupe.js'
 import { khalessiSitCanvas } from '../pets/index.js'
 import { makeCanvas } from '../pixelKit.js'
 import { paintHeadset } from './atreusSheet.js'
+import { YLONEM_LOOK } from '../ylonem.js'
 
 // Zona de la cabeza dentro del fotograma de 18×34 de una persona: del borde del pelo al cuello.
 const HEAD = { x: 0, y: 1, w: 18, h: 18 }
@@ -26,6 +28,8 @@ function atreusFrame() {
 const PORTRAITS = {
   lupe: () => headOf(avatarCanvas(LUPE_LOOK, 'down', 0)),
   atreus: () => headOf(atreusFrame()),
+  ylonem: () => headOf(avatarCanvas(YLONEM_LOOK, 'down', 0)),
+  grace: () => headOf(avatarCanvas(GRACE_LOOK, 'down', 0)),
   khalessi: () => khalessiSitCanvas(false, 0),
 }
 

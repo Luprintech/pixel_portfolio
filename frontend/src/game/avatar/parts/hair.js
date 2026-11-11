@@ -315,6 +315,47 @@ function lupeMane(kind, B, F, M) {
   rect(B, 2, 5, 13, 17)
 }
 
+// Melena de Grace. De cada fila de frente se da `[columna exterior, columna interior]` del lado izquierdo (el derecho se espeja):
+// el exterior se mueve fila a fila en bultos desiguales (los rizos), y el interior se ensancha sobre los hombros (filas 11 a 14)
+// y se recoge después para dejar ver la manga y la mano, como cae una melena larga a cada lado de la cara.
+const GRACE_FRONT = [[1, 2], [0, 2], [0, 3], [0, 4], [1, 4], [0, 3], [0, 2], [1, 3], [0, 3], [0, 2], [1, 3], [0, 2], [1, 2]]
+const GRACE_FRONT_TOP = 9
+// Perfil: borde de atrás (columna menor) y de delante (columna mayor) de cada fila desde la 11, con los bultos de los rizos
+// restados al borde de atrás.
+const GRACE_SIDE_FRONT = [6, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 4]
+const GRACE_SIDE_BACK = [2, 2, 1, 1, 0, 1, 1, 0, 1, 1, 2, 2]
+// Dónde empieza la melena de perfil a cubrir el torso en vez de quedar detrás de él.
+const GRACE_SIDE_TORSO = 4
+
+function graceSide(B, M, F) {
+  capSide(F)
+  rect(F, 3, 5, 8, 11)
+  rect(F, 3, 12, 6, 12)
+  ;[[9, 5], [10, 5]].forEach(([x, y]) => put(F, x, y))
+  put(F, 9, 6, 'd')
+  GRACE_SIDE_FRONT.forEach((front, i) => {
+    for (let x = GRACE_SIDE_BACK[i]; x <= front; x++) put(x < GRACE_SIDE_TORSO ? B : M, x, 11 + i)
+  })
+}
+
+function graceMane(kind, B, F, _left, M) {
+  if (kind === 'side') return graceSide(B, M, F)
+  rect(F, 5, 0, 10, 0)
+  rect(F, 3, 1, 12, 1)
+  rect(F, 2, 2, 13, 3)
+  if (kind === 'up') {
+    // Por la espalda cae ancha hasta los hombros y baja con el borde en bultos hasta la cintura.
+    rect(F, 1, 4, 14, 11)
+    GRACE_FRONT.slice(3).forEach(([outer], i) => mir(F, outer + 2, 12 + i, 7, 12 + i))
+    return
+  }
+  mir(F, 2, 4, 5, 4)
+  mir(F, 1, 4, 3, 5)
+  mir(F, 1, 6, 2, 8)
+  GRACE_FRONT.forEach(([outer, inner], i) => mir(F, outer, GRACE_FRONT_TOP + i, inner, GRACE_FRONT_TOP + i))
+  rect(B, 2, 5, 13, 19)
+}
+
 const STYLES = {
   // Pixie: muy corto, con mechones sueltos en la frente; orejas y cuello a la vista.
   pixie(kind, B, F) {
@@ -362,6 +403,11 @@ const STYLES = {
     }
     rect(B, 4, 6, 11, 12)
   },
+
+  // Melena de Grace: larga hasta la cintura, con raya al medio y tirabuzones. Solo la lleva ella (no está en las listas del
+  // creador). Dibujo propio, no una variante de otro peinado: el borde exterior sale y entra en bultos desiguales, uno por rizo,
+  // y la textura `ringlets` reparte reflejos y sombras en diagonal para que cada mechón se lea como un tirabuzón.
+  melenaGrace: graceMane,
 
   // Melena de Lupe: larga, abundante y ondulada, con raya al medio y la frente despejada. Solo la
   // lleva ella (no está en las listas del creador). De frente enmarca la cara y cae sobre los hombros
@@ -839,6 +885,7 @@ const TEXTURE = {
   ondulado: 'waves',
   melenaLupe: 'locks',
   rizadoCorto: 'curls',
+  melenaGrace: 'ringlets',
   voluminoso: 'curls',
   afro: 'curls',
 }
@@ -859,7 +906,13 @@ function finish(m, all, texture) {
     else if (texture === 'waves' && y >= 2 && (x + (y >> 1)) % 3 === 0) out = 'd'
     // Mechones largos que serpentean: una línea de sombra cada cuatro columnas que sigue la onda.
     else if (texture === 'locks' && y >= 4 && (x + WAVE[y % 4]) % 4 === 0) out = 'd'
-    else if (texture === 'curls') {
+    // Tirabuzones: bandas diagonales que cambian de sentido a cada lado de la raya, con sombra y brillo alternos, como un
+    // rizo en espiral visto de lado.
+    else if (texture === 'ringlets' && y >= 3) {
+      const band = ((x < 8 ? x : 15 - x) + y) % 4
+      if (band === 0) out = 'd'
+      else if (band === 2 && y % 2 === 0) out = 'h'
+    } else if (texture === 'curls') {
       // Rizos en racimos de cuatro columnas: brillo arriba de cada uno y sombra bajo él.
       const u = (x + (Math.floor(y / 3) % 2) * 2) % 4
       const v = y % 3

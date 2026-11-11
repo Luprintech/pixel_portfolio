@@ -12,6 +12,9 @@ const VOICES = {
   lupe: { type: 'triangle', base: 392, volume: 0.32, length: 0.05 },
   atreus: { type: 'square', base: 196, volume: 0.12, length: 0.05 },
   khalessi: { type: 'square', base: 523, volume: 0.1, length: 0.04 },
+  // Ylonem, de voz grave y suave (triángulo); Grace, clara y alegre entre Lupe y Khalessi.
+  ylonem: { type: 'triangle', base: 175, volume: 0.3, length: 0.05 },
+  grace: { type: 'triangle', base: 440, volume: 0.3, length: 0.05 },
 }
 
 // Maullidos de Khalessi. El 0 es el corto de siempre (el saludo), de 8 bits como el resto del juego. El 1 y el 2 son los de la

@@ -7,7 +7,7 @@ import { TOUR_COPY } from './tourCopy.js'
 
 export const DIALOGUE_COPY = {
   es: {
-    speakers: { atreus: 'Atreus', lupe: 'Lupe', khalessi: 'Khalessi', viajera: 'Viajera' },
+    speakers: { atreus: 'Atreus', lupe: 'Lupe', khalessi: 'Khalessi', ylonem: 'Ylonem', grace: 'Grace', viajera: 'Viajera' },
     ui: {
       label: 'Conversación',
       next: 'Siguiente',
@@ -139,7 +139,7 @@ export const DIALOGUE_COPY = {
     },
   },
   en: {
-    speakers: { atreus: 'Atreus', lupe: 'Lupe', khalessi: 'Khalessi', viajera: 'Traveller' },
+    speakers: { atreus: 'Atreus', lupe: 'Lupe', khalessi: 'Khalessi', ylonem: 'Ylonem', grace: 'Grace', viajera: 'Traveller' },
     ui: {
       label: 'Conversation',
       next: 'Next',

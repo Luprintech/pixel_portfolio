@@ -69,6 +69,18 @@ function triforce(b) {
   else if (b.side) TRIFORCE_SIDE.forEach(([r, dx, ch]) => b.dot(r, b.tr - 1 + dx, ch))
 }
 
+// Motivos de colores sobre la camiseta lisa (la de Grace): confeti de azafrán, rojo, rosa y turquesa, con letras de la paleta fija.
+// De perfil solo asoman tres puntos por delante del brazo; de espaldas no hay.
+const CONFETTI_FRONT = ['Y..P.q', '.q.J..', 'P..Y.J', '.J.q.Y']
+const CONFETTI_SIDE = [[2, 0, 'J'], [3, 0, 'q'], [4, -1, 'Y']]
+
+function confetti(b) {
+  if (b.front) CONFETTI_FRONT.forEach((line, i) => [...line].forEach((ch, dx) => ch !== '.' && b.dot(1 + i, b.c0 - 2 + dx, ch)))
+  else if (b.side) CONFETTI_SIDE.forEach(([r, dx, ch]) => b.dot(r, b.tr - 1 + dx, ch))
+}
+
+const EMBLEMS = { trifuerza: triforce, motivos: confetti }
+
 const GARMENTS = {
   camiseta(b) {
     b.shoulders()
@@ -77,14 +89,14 @@ const GARMENTS = {
     b.row(5, b.tl + 1, b.tr - 1, 'M')
     // La camiseta con emblema es lisa, de cuello redondo: el ribete y el pliegue de luz competirían
     // con el dibujo.
-    if (b.emblem === 'trifuerza') {
+    if (EMBLEMS[b.emblem]) {
       b.row(6, b.tl, b.tr, 'M')
       // El canto de luz del torso se deja del color de la tela para que no compita con el emblema.
       for (let r = 0; r <= 5; r++) b.dot(r, b.tl, 'D')
       // Tampoco lleva la sombra sobre el dobladillo: bajo el emblema ensuciaba la tela clara.
       b.row(5, b.tl + 1, b.tr - 1, 'D')
       b.skinNeck()
-      triforce(b)
+      EMBLEMS[b.emblem](b)
     } else {
       ;[1, 2].forEach((r) => b.dot(r, b.tl + 1, 'L'))
       b.row(6, b.tl, b.tr, 'T')

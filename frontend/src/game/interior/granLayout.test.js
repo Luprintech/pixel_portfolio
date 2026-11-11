@@ -2,13 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { BUILDINGS, TILE, roadTiles } from '../world.js'
 import { EXIT_ID, roomOf } from '../interiors.js'
 import { FURNITURE, solidsOf } from './furniture/index.js'
-import { GRAN_ID, GRAN_INTERACTIONS, GRAN_PLAN, GRAN_WALL, GRAN_WINDOWS, RESERVED_SPOTS, granInteractionAt, granRoom } from './granLayout.js'
+import { GRAN_ID, GRAN_INTERACTIONS, GRAN_PLAN, GRAN_WALL, GRAN_WINDOWS, NPC_BODY, NPC_PLAN, granInteractionAt, granRoom } from './granLayout.js'
 import { SCRIPTS, TALKS, talkFor } from '../dialogue/scripts.js'
 import { DIALOGUE_COPY } from '../../lib/dialogueCopy.js'
 import { COPY } from '../../lib/valleCopy.js'
 
 const room = granRoom()
-const solids = GRAN_PLAN.flatMap(solidsOf)
+// Los cuerpos de Ylonem y Grace cuentan como muebles: se anda alrededor, no a través.
+const npcSolids = NPC_PLAN.map(({ x, y }) => ({ x: x + NPC_BODY.l, y: y + NPC_BODY.t, w: NPC_BODY.r - NPC_BODY.l, h: NPC_BODY.b - NPC_BODY.t }))
+const solids = [...GRAN_PLAN.flatMap(solidsOf), ...npcSolids]
 const overlaps = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
 
 // Los pies de la viajera (cuerpo de 8×4 sobre ellos) caben en (x, y): dentro del suelo y sin tocar ningún mueble.
@@ -94,14 +96,15 @@ describe('IES Gran Capitán: muebles, interacciones y puestos reservados', () =>
     })
   })
 
-  it('los puestos de Ylonem y Grace están libres y se alcanzan, sin personaje ni diálogo todavía', () => {
-    expect(RESERVED_SPOTS.map((spot) => spot.id)).toEqual(['ylonem', 'grace'])
-    RESERVED_SPOTS.forEach((spot) => {
-      expect(standable(spot.x, spot.y), spot.id).toBe(true)
-      expect(reaches(spot.x, spot.y), spot.id).toBe(true)
+  it('Ylonem y Grace tienen su sitio en el pasillo y se puede llegar hasta ellos rodeando sus cuerpos', () => {
+    expect(NPC_PLAN.map((npc) => npc.id)).toEqual(['ylonem', 'grace'])
+    NPC_PLAN.forEach((npc) => {
+      const interaction = GRAN_INTERACTIONS.find((item) => item.id === `gran${npc.id[0].toUpperCase()}${npc.id.slice(1)}`)
+      expect(standable(npc.x, npc.y), `${npc.id} pisa a un mueble: su cuerpo no cabe`).toBe(false)
+      expect(reaches(interaction.anchor.x, interaction.anchor.y), npc.id).toBe(true)
+      expect(Math.abs(interaction.anchor.x - npc.x), npc.id).toBeLessThan(8)
     })
-    Object.keys(SCRIPTS).forEach((id) => expect(id).not.toMatch(/ylonem|grace/))
-    expect(Object.keys(TALKS).some((id) => /ylonem|grace/.test(id))).toBe(false)
+    npcSolids.forEach((body) => GRAN_PLAN.flatMap(solidsOf).forEach((solid) => expect(overlaps(body, solid), 'un NPC pisa un mueble').toBe(false)))
   })
 })
 
@@ -141,5 +144,44 @@ describe('IES Gran Capitán: conversaciones y textos', () => {
     const granLines = (lang) => Object.entries(DIALOGUE_COPY[lang].lines).filter(([key]) => key.startsWith('gran.'))
     const text = JSON.stringify([COPY.es.dawSheet, COPY.en.dawSheet, granLines('es'), granLines('en')])
     expect(text).not.toMatch(/8,4|8\.4|10\/10|90 ?%|Ylonem|Grace/)
+  })
+})
+
+describe('IES Gran Capitán: Ylonem y Grace', () => {
+  const ids = Object.keys(SCRIPTS).filter((id) => /^(ylonem|grace)\./.test(id))
+
+  it('cada uno abre su conversación la primera vez y una repetición después', () => {
+    expect(talkFor('granYlonem', new Set())).toBe('ylonem.presentacion')
+    expect(talkFor('granYlonem', new Set(['ylonem.presentacion']))).toBe('ylonem.repeticion')
+    expect(talkFor('granGrace', new Set())).toBe('grace.presentacion')
+    expect(talkFor('granGrace', new Set(['grace.presentacion']))).toBe('grace.repeticion')
+    expect(Object.keys(TALKS)).toEqual(expect.arrayContaining(['granYlonem', 'granGrace']))
+  })
+
+  it('toda página y toda opción tiene texto en español e inglés, y todo destino existe', () => {
+    ids.forEach((id) => {
+      SCRIPTS[id].pages.forEach((page) => ['es', 'en'].forEach((lang) => {
+        expect(DIALOGUE_COPY[lang].lines[page.text], `${id} ${lang}`).toBeTruthy()
+        expect(DIALOGUE_COPY[lang].speakers[page.who], `${page.who} ${lang}`).toBeTruthy()
+      }))
+      SCRIPTS[id].options.forEach((option) => {
+        ['es', 'en'].forEach((lang) => expect(DIALOGUE_COPY[lang].options[option.label], `${option.label} ${lang}`).toBeTruthy())
+        if (option.to) expect(SCRIPTS[option.to], `${id} -> ${option.to}`).toBeTruthy()
+      })
+    })
+  })
+
+  it('"Ver el estudio" es la única acción externa y solo está en las conversaciones de la aplicación', () => {
+    const withStudy = ids.filter((id) => SCRIPTS[id].options.some((option) => option.action === 'estudio'))
+    expect(withStudy.sort()).toEqual(['ylonem.aplicacion', 'ylonem.gran_estreno'])
+  })
+
+  it('las comillas de los textos son dobles y no hay guillemets', () => {
+    const text = JSON.stringify(ids.flatMap((id) => SCRIPTS[id].pages.map((page) => [DIALOGUE_COPY.es.lines[page.text], DIALOGUE_COPY.en.lines[page.text]])))
+    expect(text).not.toMatch(/[«»]/)
+  })
+
+  it('las etiquetas de acción de los dos NPC existen en los dos idiomas', () => {
+    ;['es', 'en'].forEach((lang) => ['granYlonem', 'granGrace'].forEach((id) => expect(COPY[lang].hud.actions[id], `${id} ${lang}`).toBeTruthy()))
   })
 })

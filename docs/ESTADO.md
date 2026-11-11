@@ -2,9 +2,29 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-11 (Fase D: IES Gran Capitán como primer edificio completo del nuevo mapa, y sincronización de la visita interior). Antes, 2026-11-11 (dos temas del juego, Aventura y Cozy, con selector en Opciones). Antes, 2026-11-11 (C2: visita guiada por dentro de la casa de Lupe). Antes, 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
+Última actualización: 2026-11-11 (Ylonem y Grace como personajes de Gran Capitán). Antes, 2026-11-11 (Fase D: IES Gran Capitán como primer edificio completo del nuevo mapa, y sincronización de la visita interior). Antes, 2026-11-11 (dos temas del juego, Aventura y Cozy, con selector en Opciones). Antes, 2026-11-11 (C2: visita guiada por dentro de la casa de Lupe). Antes, 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
 
 ## Hecho
+
+### Ylonem y Grace en el IES Gran Capitán (2026-11-11)
+
+Avanza la Fase D (Gran Capitán) y la visión (NPC con seudónimo, fase 6). No se tocaron `/clasico`, la casa de Lupe ni su visita guiada.
+
+- **Ylonem:** sprite propio con el generador del avatar (`game/ylonem.js`): calvo, camiseta y pantalón negros, barba corta poco poblada (`barbaCorta` en un castaño claro: con uno oscuro se leía como barba cerrada) y una cámara de fotos en la mano pintada sobre el fotograma (`interior/ylonemSheet.js`, cuerpo gris grafito porque el negro desaparecía sobre la camiseta). Aspecto indicado por Lupe con una foto de referencia, interpretado en píxel sin buscar parecido facial.
+- **Grace:** sprite propio (`game/grace.js`) según la descripción de Lupe: melena larga rubia con tirabuzones, ojos azules, camiseta blanca con motivos de colores, pantalón corto vaquero y zapatillas blancas. Dos piezas nuevas del generador, solo suyas y fuera del creador: el peinado `melenaGrace` (dibujo propio con textura `ringlets`, en `avatar/parts/hair.js`) y el emblema `motivos` de la camiseta (`avatar/parts/body.js`; la camiseta de Lupe sigue con la trifuerza, ahora por una tabla `EMBLEMS`). Un primer intento con peinados existentes salió corto y masculino; Lupe pidió uno nuevo.
+- **Colocación:** `RESERVED_SPOTS` pasa a `NPC_PLAN` en `interior/granLayout.js`, con cuerpo sólido (`NPC_BODY`) y dos interacciones nuevas (`granYlonem`, `granGrace`). Quietos en el pasillo, parpadean y se vuelven hacia la viajera. Ylonem lleva exclamación hasta que se le habla (`ylonem.presentacion` en `seen`); Grace no.
+- **Código común:** el idle de Atreus se extrajo a `interior/npcSprite.js` (`buildNpcSprite`, `faceTraveller`) y lo usan Atreus, Ylonem y Grace. La casa de Lupe no cambia de comportamiento.
+- **Conversaciones:** `ylonem.presentacion/aplicacion/gran_estreno/repeticion` y `grace.presentacion/ciberseguridad/repeticion`, con Lupe como voz en off (su sprite no aparece). Voz propia de cada uno en `lib/dialogueSound.js`, retratos en `interior/portraits.js`, textos es/en en `lib/granCopy.js`. Texto completo en `docs/DIALOGOS.md` (apartado 4d).
+- **Enlace al estudio:** la opción "Ver el estudio (se abre en otra pestaña)" abre `https://ahiestalapelicula.com` con `noopener,noreferrer` (acción `estudio` en `pages/Valle.jsx`). No se muestran clientes, galerías ni capturas.
+- **Contenido de Grace:** solo lo que Lupe contó: la animó en DAW cuando se agobiaba por trabajar y estudiar, le inspiró a seguir estudiando y por ella estudió Ciberseguridad. La réplica de Grace en `grace.ciberseguridad` es redacción nueva; se marca como borrador.
+- **Pruebas** (desde `frontend/`): `npm run lint` sin avisos, `npm test` (837 pruebas, 101 archivos; ampliado `granLayout.test.js`: cuerpos de los NPC sin pisar muebles y accesibles, conversaciones con texto es/en y destinos válidos, "Ver el estudio" solo donde toca, sin «») y `npm run build` correctos. Backend sin cambios, `npm test` del backend no ejecutado.
+- **Comprobado a ojo** (Chrome headless con Playwright sobre el servidor de desarrollo): los dos sprites en las cuatro direcciones y con la marcha; el aula con ambos, la exclamación de Ylonem, el aviso "E · Hablar con Ylonem" y las primeras páginas con su retrato.
+- **No comprobado:** las opciones de las conversaciones y la apertura real de la web del estudio, Grace hablando, de noche/lluvia/nieve, el tema Cozy, móvil real o emulado, lector de pantalla, sonido de las voces, y el inglés en pantalla.
+
+**Pendientes**
+- Que Lupe apruebe el aspecto de Grace (el pelo y el emblema son dibujo propio; las Converse son zapatillas básicas porque la lona se retiró del generador), el texto de las dos conversaciones y la voz en off de Lupe.
+- Retrato propio de Grace más trabajado, rutinas de movimiento de ambos (hoy están quietos) y cuándo aparece cada uno si se quiere variar.
+- Sigue pendiente el resto de la Fase D (Dionisio Ortiz, Ayuntamiento, retirada controlada de Cervantes y Biblioteca/blog).
 
 ### Fase D · IES Gran Capitán, primer edificio completo (2026-11-11)
 
@@ -36,7 +56,7 @@ Avanza la Fase D del plan maestro (mapa y primer edificio completo) y la visión
 - La exclamación solo marca el tablón (la conversación de primera visita); la pizarra y el ordenador son opcionales y no avisan.
 
 **Pendientes**
-- Decidir con Lupe el sprite, la posición exacta y los diálogos de **Ylonem** (el puesto está reservado) y el retrato y los diálogos de **Grace**; si la ficha o Ylonem abren `ahiestalapelicula.com`.
+- (Resuelto en el bloque "Ylonem y Grace en el IES Gran Capitán" de arriba: sprites, puestos y diálogos; Ylonem abre `ahiestalapelicula.com`. Queda la aprobación de Lupe.)
 - Aprobar los textos de Gran Capitán (borrador) y si se publican la media y la nota del proyecto; comprobar en el repositorio el estado real de las funciones de Vocacción antes de una ficha técnica.
 - Resto de la Fase D (Dionisio Ortiz, Ayuntamiento de Córdoba, retirada controlada de Cervantes y Biblioteca/blog, señalización y rutas): no se empezó; "no continuar con otro edificio hasta cerrar este".
 - Visión: avanza la Fase D de `docs/PLAN MAESTRO VALLE.md` y los interiores de `docs/VISION.md`.
@@ -203,7 +223,7 @@ Avanza la visión de producto: objetos con vida propia en la casa de Lupe. La vi
 - La aplicación puede aparecer más adelante como caso profesional en Gran Capitán, el Taller de Proyectos o el PC, pero no se crea todavía un edificio nuevo ni se duplica Ylonem en varias zonas.
 - No se publicarán datos de clientes, galerías reales, URLs privadas, capturas no seleccionadas ni detalles internos no verificados. La mención de SEO y seguridad se mantendrá descriptiva, sin afirmar auditorías o certificaciones.
 - La autorización de uso del seudónimo Ylonem, del estudio, del dominio y del concepto «El Gran Estreno» está confirmada por Lupe el 2026-11-11.
-- **Pendiente:** crear el sprite, decidir su posición exacta en Gran Capitán, implementar sus diálogos, decidir si la ficha abre el dominio externo y revisar el texto final antes de publicar.
+- **Pendiente:** revisar el texto final antes de publicar. (El sprite, su posición, sus diálogos y el enlace al dominio se implementaron después: ver "Ylonem y Grace en el IES Gran Capitán".)
 
 ### Actualización de nombres de amistades y perrita (2026-11-11)
 

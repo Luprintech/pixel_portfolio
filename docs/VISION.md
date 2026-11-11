@@ -202,7 +202,8 @@ Esta sección separa cuatro niveles, para que no se mezclen: (1) lo que existe y
 - **Lupe:** existe en portada, valle y retrato de diálogo. En una partida nueva espera en la entrada; tiene estados `idle`, `talking`, `guiding`, `waiting` y `routine`, pasea por rutas válidas y solo acompaña al aceptarse una visita. No persigue permanentemente a la viajera. La bienvenida y la visita exterior hasta la casa están implementadas; sus textos nuevos siguen siendo borradores editoriales.
 - **Khalessi:** aparece en portada, casa y exterior. En el exterior acompaña a Lupe, no a la viajera; en la casa conserva su comportamiento doméstico independiente.
 - **Atreus:** existe como NPC de la casa con sprite, retrato, conversación e interacción propias.
-- **Ylonem:** definido editorialmente, todavía no implementado. Es el seudónimo autorizado de un antiguo compañero de DAW y buen amigo actual de Lupe. Es fotógrafo y videógrafo profesional de bodas. Su presencia prevista es opcional en Gran Capitán y conecta con el caso profesional de la aplicación creada por Lupe para Ahi Está la Película (`ahiestalapelicula.com`).
+- **Grace:** implementada el 2026-11-11 como NPC opcional de Gran Capitán (sprite propio con melena de tirabuzones, retrato y conversación sobre cómo animó a Lupe durante DAW y la llevó a estudiar Ciberseguridad). Aspecto y texto son borrador pendiente de aprobación.
+- **Ylonem:** implementado el 2026-11-11 como NPC opcional de Gran Capitán (sprite calvo, de negro, con barba corta y cámara de fotos; conversaciones y enlace a su estudio). Es el seudónimo autorizado de un antiguo compañero de DAW y buen amigo actual de Lupe. Es fotógrafo y videógrafo profesional de bodas. Su presencia prevista es opcional en Gran Capitán y conecta con el caso profesional de la aplicación creada por Lupe para Ahi Está la Película (`ahiestalapelicula.com`).
 - **Dexter, Naviky y Tina:** nombres editoriales actuales para la casa de juegos de mesa; sustituyen a los nombres provisionales Link, Zelda, Ana, Paco, Pepe y Vicky. Dexter y Naviky son pareja; Tina es su perrita negra, mezcla de salchicha y schnauzer. Los tres siguen pendientes de sprites y comportamiento.
 - **Memoria narrativa:** el estado de bienvenida, visita, conversaciones escuchadas y preguntas explicadas vive en la partida. Una exclamación indica contenido nuevo; las conversaciones completadas no se repiten íntegramente.
 
@@ -532,7 +533,7 @@ Antes de implementar nuevas funcionalidades extensas, definir:
 3. Estilo final de los edificios.
 4. Diseño definitivo del modo clásico.
 5. Comportamiento de los interiores restantes (la visita guiada interior de la casa, C2, ya está implementada y puede servir de modelo).
-6. Apariencia, privacidad, nombres públicos y rutinas de los futuros NPC. Lupe, Khalessi, Atreus y las mascotas del visitante ya tienen una base implementada; Ylonem está definido editorialmente pero aún no tiene sprite ni comportamiento.
+6. Apariencia, privacidad, nombres públicos y rutinas de los futuros NPC. Lupe, Khalessi, Atreus y las mascotas del visitante ya tienen una base implementada; Ylonem y Grace ya tienen sprite, retrato y conversaciones en Gran Capitán; su rutina de movimiento sigue pendiente (hoy están quietos y se vuelven hacia quien se acerca).
 7. Qué mecánicas entran en la primera versión pública.
 8. ~~Primer edificio completo.~~ Decidido e implementado: casa de Lupe.
 9. Seudónimos definitivos y cuánto detalle de cada profesión se publica.
