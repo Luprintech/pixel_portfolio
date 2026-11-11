@@ -3,6 +3,7 @@
 // monitores de desarrolladora y las pequeñas cosas de su trabajo. `paint(g, frame)` dibuja el fotograma `frame` del ciclo de
 // animación (pantallas y luces); las medidas son del lienzo de cada pieza y el suelo cae en su última fila.
 import { LUPE_TOWER_W } from '../homeLayout.js'
+import { NAS, paintNas } from './nas.js'
 import { INK, WHITE_MONITOR, codeScreen, footballScreen, keyboard, monitor, mouse, pageScreen, rect, slab, streamScreen } from '../draw.js'
 
 const RGB = [INK.lagoonLight, INK.rose, INK.saffronLight, INK.meadow]
@@ -90,6 +91,8 @@ export const lupeDesk = {
   paint(g, frame) {
     // La torre blanca con ventiladores RGB va a la izquierda de la mesa; el resto se dibuja desplazado a su derecha.
     whiteTower(g, 0, 18, frame, RGB)
+    // El NAS de Lupe, de pie sobre la torre.
+    paintNas(g, 2, 18 - NAS.h, frame)
     g.save()
     g.translate(LUPE_TOWER_W, 0)
     paintLupeDesk(g, frame)

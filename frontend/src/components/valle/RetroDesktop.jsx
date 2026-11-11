@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
-import { WALLPAPER, iconCells, iconSize, visibleEntries } from '../../game/desktop'
+import { WALLPAPER, visibleEntries } from '../../game/desktop'
 import { lineText } from '../../lib/dialogueCopy'
 import { playStartupSound } from '../../lib/petSounds'
 import { useValleCopy } from '../../lib/valleCopy'
-import { ProjectsBlock } from './Content'
+import PixelIcon from './PixelIcon'
 import Browser from './xp/Browser'
 import Calculator from './xp/Calculator'
 import Notepad from './xp/Notepad'
 import Paint from './xp/Paint'
+import ProjectsFolder from './xp/ProjectsFolder'
+import RetroTerminal from './xp/RetroTerminal'
 import VsCode from './xp/VsCode'
 import Winamp from './xp/Winamp'
 import XpWindow from './xp/XpWindow'
@@ -17,14 +19,14 @@ import { useWindowManager } from './xp/windows'
 // Programas del escritorio: tamaño con el que se abren y qué dibujan. Los que tienen `padded` llevan margen alrededor del
 // texto; los demás ocupan toda la ventana. `onUnlock` es el sistema de logros del juego.
 const PROGRAMS = {
-  welcome: { size: { w: 340, h: 170 }, padded: true },
-  projects: { size: { w: 580, h: 440 }, padded: true },
+  projects: { size: { w: 600, h: 460 }, padded: true },
   ie: { size: { w: 640, h: 460 }, Component: Browser },
   winamp: { size: { w: 340, h: 340 }, Component: Winamp },
   paint: { size: { w: 440, h: 400 }, Component: Paint },
   calculator: { size: { w: 250, h: 360 }, Component: Calculator },
   notepad: { size: { w: 460, h: 340 }, Component: Notepad },
   vscode: { size: { w: 820, h: 520 }, Component: VsCode },
+  terminal: { size: { w: 620, h: 420 }, Component: RetroTerminal },
 }
 const BOOT_MS = 3800
 const PC_SIZE = { w: 960, h: 640 }
@@ -43,17 +45,6 @@ function useAreaSize() {
     return () => observer.disconnect()
   }, [node])
   return [area, setNode]
-}
-
-function PixelIcon({ id, size = 40 }) {
-  const side = iconSize(id)
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${side} ${side}`} shapeRendering="crispEdges" aria-hidden="true">
-      {iconCells(id).map(({ x, y, color }) => (
-        <rect key={`${x},${y}`} x={x} y={y} width="1" height="1" fill={color} />
-      ))}
-    </svg>
-  )
 }
 
 // Bandera de cuatro colores del botón de inicio, hecha de cuatro cuadrados.
@@ -105,10 +96,7 @@ function Desktop({ active, onExit, unlock }) {
   const { refit, open } = wm
   const labels = { minimize: d.minimize, maximize: d.maximize, restore: d.restore, close: d.closeWindow }
 
-  const finishBoot = useCallback(() => {
-    setBooting(false)
-    open('welcome', PROGRAMS.welcome.size)
-  }, [open])
+  const finishBoot = useCallback(() => setBooting(false), [])
 
   useEffect(() => {
     playStartupSound()
@@ -146,16 +134,15 @@ function Desktop({ active, onExit, unlock }) {
     setMenu(false)
     open(id, PROGRAMS[id].size)
   }
-  const title = (id) => (id === 'welcome' ? d.welcomeTitle : d[id])
+  const title = (id) => d[id]
 
   const bodyOf = (id) => {
     const { Component, padded } = PROGRAMS[id]
-    if (id === 'welcome') return <p className="p-4 text-sm leading-relaxed">{d.welcome}</p>
     if (id === 'projects') {
       return (
-        <div className="p-4 text-sm" style={{ ['--text-primary']: '#000', ['--text-secondary']: '#333', ['--bg-surface']: '#f5f4ea', ['--bg-elevated']: '#f5f4ea', ['--bg-secondary']: '#ece9d8', ['--border-color']: '#7f9db9', ['--px-ink']: '#0a246a', ['--px-ring']: '#7f9db9', ['--accent-primary']: '#0a246a', ['--accent-secondary']: '#0a246a' }}>
-          <p className="mb-4 max-w-[60ch] leading-relaxed">{lineText(lang, 'pc.proyectos.1')}</p>
-          <ProjectsBlock />
+        <div className="flex h-full min-h-[20rem] flex-col">
+          <p className="shrink-0 border-b px-4 py-2 text-xs leading-relaxed" style={{ borderColor: '#aca899', background: '#f5f4ea' }}>{lineText(lang, 'pc.proyectos.1')}</p>
+          <div className="min-h-0 flex-1"><ProjectsFolder /></div>
         </div>
       )
     }
@@ -195,7 +182,7 @@ function Desktop({ active, onExit, unlock }) {
             win={win}
             z={wm.windows.findIndex((candidate) => candidate.id === win.id) + 1}
             title={title(win.id)}
-            icon={win.id === 'welcome' ? null : <PixelIcon id={win.id === 'projects' ? 'projects' : win.id} size={16} />}
+            icon={<PixelIcon id={win.id} size={16} />}
             active={wm.active === win.id}
             labels={labels}
             onFocus={() => wm.focus(win.id)}
@@ -265,7 +252,7 @@ function Desktop({ active, onExit, unlock }) {
               style={{ background: wm.active === win.id ? '#1e52b7' : '#3c81f3', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.3)', opacity: win.minimized ? 0.75 : 1 }}
               onClick={() => wm.taskbar(win.id)}
             >
-              {win.id !== 'welcome' && <PixelIcon id={win.id} size={14} />}
+              <PixelIcon id={win.id} size={14} />
               <span className="truncate">{title(win.id)}</span>
             </button>
           ))}

@@ -259,7 +259,11 @@ describe('guion y textos de la visita', () => {
 
   it('no inventa funciones del ordenador: cita los programas que existen', () => {
     const text = ['es', 'en'].map((lang) => Object.entries(DIALOGUE_COPY[lang].lines).filter(([key]) => key.startsWith('tour.pc_escritorio')).map(([, value]) => value).join(' '))
-    text.forEach((value) => ['Winamp', 'Paint', 'Visual Studio Code', 'YouTube', 'LinkedIn'].forEach((name) => expect(value).toContain(name)))
+    text.forEach((value) => ['Winamp', 'Paint', 'Visual Studio Code', 'Internet Explorer'].forEach((name) => expect(value).toContain(name)))
+    // Habla de los dos retos sin desvelar secretos ni soluciones.
+    expect(text[0]).toContain('ciberseguridad')
+    expect(text[1]).toContain('cybersecurity')
+    text.forEach((value) => expect(value.toLowerCase()).not.toMatch(/secret|bucle-seguro|césar|caesar/))
   })
 
   it('las líneas que piden pulsar la tecla E tienen su variante para pantallas táctiles', () => {

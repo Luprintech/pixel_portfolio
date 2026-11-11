@@ -46,6 +46,18 @@ const WELCOME_MENU = [
   option('explorar', 'inicio.opt.explorar', { to: 'inicio.explorar' }),
 ]
 
+const PC_TALK_MENU = [
+  option('mirar', 'pc.opt.mirar', { action: 'desktop' }),
+  option('proyectos', 'pc.opt.proyectos', { to: 'pc.proyectos_info' }),
+  option('retos', 'pc.opt.retos', { to: 'pc.retos_info' }),
+  option('visita', 'pc.opt.visita', { when: 'offerResume', close: true }),
+]
+
+const NAS_MENU = [
+  option('que_es', 'nas.opt.que_es', { to: 'nas.que_es' }),
+  option('seguir', 'casa.opt.explorar', { close: true }),
+]
+
 export const SCRIPTS = {
   'inicio.bienvenida': {
     pages: [
@@ -122,7 +134,25 @@ export const SCRIPTS = {
   // Tras imprimir el primer Pikachu con Lupe en la sala: explica el sistema de logros (la lanza `InteriorScene`).
   'logros.sistema': { pages: lines('lupe', 'logros.sistema', 4) },
 
-  'pc.abrir': { pages: lines('lupe', 'pc.abrir', 2), action: 'desktop' },
+  // El rincón del ordenador: qué se puede hacer en él. «Continuar la visita» solo sale con una visita a medias.
+  // El NAS de Lupe sobre su torre: la viajera pregunta y Lupe cuenta cómo lo usa (si no está a mano, acude: `involvesLupe`).
+  'nas.presentacion': {
+    pages: [
+      { who: 'viajera', text: 'nas.presentacion.1' },
+      { who: 'lupe', text: 'nas.presentacion.2' },
+      { who: 'viajera', text: 'nas.presentacion.3' },
+      { who: 'lupe', text: 'nas.presentacion.4' },
+      { who: 'lupe', text: 'nas.presentacion.5' },
+      { who: 'lupe', text: 'nas.presentacion.6' },
+    ],
+    options: NAS_MENU,
+  },
+  'nas.que_es': { pages: lines('lupe', 'nas.que_es', 2), options: NAS_MENU },
+  'nas.repeticion': { pages: lines('lupe', 'nas.repeticion', 1), options: NAS_MENU },
+
+  'pc.abrir': { pages: lines('lupe', 'pc.abrir', 4), options: PC_TALK_MENU },
+  'pc.proyectos_info': { pages: lines('lupe', 'pc.proyectos_info', 3), options: PC_TALK_MENU },
+  'pc.retos_info': { pages: lines('lupe', 'pc.retos_info', 3), options: PC_TALK_MENU },
 }
 
 // Si una conversación (o cualquiera a la que lleven sus opciones) tiene alguna línea de Lupe. Dentro de la casa, Lupe acude antes a donde
@@ -143,6 +173,7 @@ export const TALKS = {
   atreus: { first: 'casa.entrada', again: 'casa.atreus_repeticion' },
   television: { first: 'casa.television' },
   pc: { first: 'pc.abrir' },
+  nas: { first: 'nas.presentacion', again: 'nas.repeticion' },
   printer: { first: 'maker.presentacion', again: 'maker.repeticion' },
   hifi: { first: 'hifi.presentacion', again: 'hifi.repeticion' },
   khalessi: { first: 'casa.khalessi', rest: 'casa.khalessi_reposo' },

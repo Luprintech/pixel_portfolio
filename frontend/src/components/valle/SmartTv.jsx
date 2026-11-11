@@ -28,7 +28,12 @@ const BRANDS = {
       </svg>
     </span>
   ),
-  max: <span className="text-4xl font-black lowercase tracking-tight" style={{ color: '#fff', fontFamily: 'Arial, Helvetica, sans-serif' }}>max</span>,
+  max: (
+    <span className="flex flex-col items-center leading-none" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+      <span className="text-2xl font-black tracking-widest" style={{ color: '#fff' }}>HBO</span>
+      <span className="text-3xl font-black lowercase" style={{ color: '#b99cff' }}>max</span>
+    </span>
+  ),
   youtube: (
     <span className="flex items-center gap-2">
       <svg width="40" height="28" viewBox="0 0 20 14" shapeRendering="crispEdges" aria-hidden="true">
@@ -40,7 +45,7 @@ const BRANDS = {
   ),
 }
 
-const TILE_BG = { weather: '#3e9bb0', netflix: '#0b0a14', plex: '#1f2326', max: 'linear-gradient(135deg, #2a1670, #5822b4)', youtube: '#ffffff' }
+const TILE_BG = { weather: '#3e9bb0', netflix: '#0b0a14', plex: '#1f2326', max: 'linear-gradient(180deg, #0c0a1e, #1d1140)', youtube: '#ffffff' }
 
 // Menú de la tele inteligente: el canal del tiempo y las aplicaciones. Elegir uno lo pone en la tele de la sala y cierra el
 // menú; «Apagar» la apaga. Esc cierra sin cambiar nada.

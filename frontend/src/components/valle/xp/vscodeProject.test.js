@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { FILES, HELLO, ORDER, highlight, languageOf, parsePreview, runCommand } from './vscodeProject.js'
 
 describe('proyecto ficticio', () => {
-  it('tiene los cuatro archivos pedidos y todos tienen contenido', () => {
-    expect(ORDER).toEqual(['src/App.jsx', 'src/index.css', 'package.json', 'README.md'])
+  it('tiene sus archivos, incluido el del reto, y todos tienen contenido', () => {
+    expect(ORDER).toEqual(['src/slug.js', 'src/App.jsx', 'src/index.css', 'package.json', 'README.md'])
     ORDER.forEach((path) => expect(FILES[path].length, path).toBeGreaterThan(50))
   })
 
@@ -19,7 +19,7 @@ describe('proyecto ficticio', () => {
   })
 
   it('reconoce el lenguaje de cada archivo', () => {
-    expect(ORDER.map(languageOf)).toEqual(['js', 'css', 'json', 'md'])
+    expect(ORDER.map(languageOf)).toEqual(['js', 'js', 'css', 'json', 'md'])
   })
 })
 

@@ -3,7 +3,8 @@ import useSWR from 'swr'
 import { useProjects } from '../../hooks/useProjects'
 import { LINKS, TECHS, useValleCopy } from '../../lib/valleCopy'
 
-// Bloques de contenido compartidos: el juego y el modo clásico pintan lo mismo.
+// Bloques de contenido compartidos: el juego y el modo clásico pintan lo mismo. Todos los enlaces, también los de otras páginas del
+// sitio, se abren en otra pestaña: el juego no se cierra ni pierde su estado al seguirlos.
 
 export function AboutBlock() {
   const { copy } = useValleCopy()
@@ -14,7 +15,7 @@ export function AboutBlock() {
         <p key={line} className="max-w-[60ch] leading-relaxed">{line}</p>
       ))}
       <p className="flex flex-wrap gap-x-5 gap-y-2 pt-2">
-        <Link className="px-link" to="/cv">{copy.about.cv}</Link>
+        <Link className="px-link" to="/cv" target="_blank" rel="noopener noreferrer">{copy.about.cv}</Link>
         <a className="px-link" href={LINKS.linkedin} target="_blank" rel="noopener noreferrer">{copy.about.linkedin}</a>
         <a className="px-link" href={LINKS.youtube} target="_blank" rel="noopener noreferrer">{copy.about.youtube}</a>
       </p>
@@ -36,7 +37,7 @@ export function StackBlock() {
   )
 }
 
-export function ProjectsBlock({ limit, onNavigate }) {
+export function ProjectsBlock({ limit }) {
   const { copy, lang } = useValleCopy()
   const { projects, loading, error } = useProjects()
   const list = limit ? projects.slice(0, limit) : projects
@@ -69,13 +70,13 @@ export function ProjectsBlock({ limit, onNavigate }) {
         })}
       </ul>
       {limit && (
-        <Link className="px-link inline-block" to="/proyectos" onClick={onNavigate}>{copy.projects.all}</Link>
+        <Link className="px-link inline-block" to="/proyectos" target="_blank" rel="noopener noreferrer">{copy.projects.all}</Link>
       )}
     </div>
   )
 }
 
-export function PostsBlock({ limit = 4, onNavigate }) {
+export function PostsBlock({ limit = 4 }) {
   const { copy } = useValleCopy()
   const { data, isLoading } = useSWR('/api/posts')
   const posts = (Array.isArray(data) ? data : [])
@@ -94,24 +95,24 @@ export function PostsBlock({ limit = 4, onNavigate }) {
         <ul className="space-y-3">
           {posts.map((post) => (
             <li key={post.slug}>
-              <Link className="px-link text-lg" to={`/blog/${post.slug}`} onClick={onNavigate}>{post.title}</Link>
+              <Link className="px-link text-lg" to={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">{post.title}</Link>
               {post.excerpt && <p className="max-w-[62ch] text-[var(--text-secondary)]">{post.excerpt}</p>}
             </li>
           ))}
         </ul>
       )}
-      <Link className="px-btn" to="/blog" onClick={onNavigate}>{copy.blog.all}</Link>
+      <Link className="px-btn" to="/blog" target="_blank" rel="noopener noreferrer">{copy.blog.all}</Link>
     </div>
   )
 }
 
-export function ContactBlock({ onNavigate }) {
+export function ContactBlock() {
   const { copy } = useValleCopy()
   return (
     <div className="px-text space-y-4">
       <p className="max-w-[60ch]">{copy.contact.lead}</p>
       <p className="flex flex-wrap items-center gap-4">
-        <Link className="px-btn" to="/contacto" onClick={onNavigate}>{copy.contact.form}</Link>
+        <Link className="px-btn" to="/contacto" target="_blank" rel="noopener noreferrer">{copy.contact.form}</Link>
         <a className="px-link" href={LINKS.linkedin} target="_blank" rel="noopener noreferrer">{copy.about.linkedin}</a>
       </p>
     </div>

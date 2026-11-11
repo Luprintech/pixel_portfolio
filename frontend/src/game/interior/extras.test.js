@@ -130,7 +130,7 @@ describe('logros', () => {
   })
 
   it('hay siete: la impresora, los tres juegos de la recreativa, el telescopio y los dos secretos del ordenador', () => {
-    expect(ACHIEVEMENT_IDS).toEqual(['maker', 'retro', 'galactic', 'river', 'telescope', 'hola', 'developer'])
+    expect(ACHIEVEMENT_IDS).toEqual(['maker', 'retro', 'galactic', 'river', 'telescope', 'hola', 'developer', 'debugged', 'access'])
     expect(unlockAchievement(new Set(), 'hola').isNew).toBe(true)
   })
 })

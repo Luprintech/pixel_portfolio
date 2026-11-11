@@ -2,9 +2,12 @@
 // coherente con este portfolio), el resaltado de sintaxis, la vista previa de la tarjeta de prueba y los comandos de la
 // terminal. Todo es puro y no ejecuta nada: la vista previa solo lee dos constantes del código y la terminal solo entiende
 // unas pocas órdenes. Sin React.
+import { CHALLENGE_FILE, STARTER } from '../../../game/challenges/codeChallenge'
+
 export const PROJECT = 'luprintech-portfolio'
 
 export const FILES = {
+  [CHALLENGE_FILE]: STARTER,
   'src/App.jsx': `import { useState } from 'react'
 import './index.css'
 
@@ -93,11 +96,12 @@ overworld en pixel art hecho con Phaser, una API en Express y un CMS privado.
 ## Estructura
 
 - \`src/App.jsx\`: la tarjeta de bienvenida.
+- \`src/slug.js\`: el reto del taller (tiene un fallo).
 - \`src/index.css\`: los tokens y la paleta.
 `,
 }
 
-export const ORDER = ['src/App.jsx', 'src/index.css', 'package.json', 'README.md']
+export const ORDER = ['src/slug.js', 'src/App.jsx', 'src/index.css', 'package.json', 'README.md']
 export const languageOf = (path) => ({ jsx: 'js', js: 'js', css: 'css', json: 'json', md: 'md' })[path.split('.').pop()] ?? 'text'
 
 // --- Resaltado ---------------------------------------------------------------------------------------------------------
@@ -178,7 +182,7 @@ export function runCommand(input, files) {
   if (command === 'help') return { lines: ['help  ls  cat <archivo>  clear', 'npm run <script>'] }
   if (command === 'clear') return { lines: [], clear: true }
   if (command === 'ls') {
-    if (args[0] === 'src') return { lines: ['App.jsx  index.css'] }
+    if (args[0] === 'src') return { lines: ['App.jsx  index.css  slug.js'] }
     return args[0] ? { lines: [`ls: no se puede acceder a '${args[0]}'`] } : { lines: ['src  package.json  README.md'] }
   }
   if (command === 'cat') {

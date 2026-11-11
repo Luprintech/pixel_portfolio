@@ -4,7 +4,10 @@
 const KEY = 'valle-del-bucle:achievements'
 
 // En el orden en que se enseñan en Opciones.
-export const ACHIEVEMENT_IDS = ['maker', 'retro', 'galactic', 'river', 'telescope', 'hola', 'developer']
+export const ACHIEVEMENT_IDS = ['maker', 'retro', 'galactic', 'river', 'telescope', 'hola', 'developer', 'debugged', 'access']
+
+// Icono pixel art propio de los logros que lo tienen (ids de `ICONS` en `game/desktop.js`). Los demás se muestran con una estrella.
+export const ACHIEVEMENT_ICONS = { debugged: 'ach-debug', access: 'ach-access' }
 
 export function loadAchievements() {
   try {

@@ -2,7 +2,24 @@ import { useRef } from 'react'
 import { FONT, XP } from './theme'
 import { TITLE_BAR } from './windows'
 
-const CONTROL = 'grid h-[22px] w-[22px] place-items-center rounded-[3px] border border-white text-xs font-bold leading-none text-white'
+const CONTROL = 'grid h-[22px] w-[22px] place-items-center rounded-[3px] border border-white p-0 text-white'
+
+// Dibujos de los botones sobre una cuadrícula de 20x20 (el interior del botón): así quedan centrados con márgenes iguales en cualquier
+// tipografía, que con un carácter de texto dependía de la fuente. Líneas rectas y sin suavizar, como el resto del escritorio.
+const GLYPHS = {
+  minimize: <rect x="4" y="9" width="12" height="2" />,
+  maximize: <path fillRule="evenodd" d="M4 4h12v12H4zM6 7v7h8V7z" />,
+  restore: <path fillRule="evenodd" d="M7 3h10v10h-3v-2h1V5H9v1H7zM3 7h10v10H3zM5 10v5h6v-5z" />,
+  close: <path d="M3 5l2-2 5 5 5-5 2 2-5 5 5 5-2 2-5-5-5 5-2-2 5-5z" />,
+}
+
+function Glyph({ name }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true">
+      {GLYPHS[name]}
+    </svg>
+  )
+}
 
 // Botón de la barra de título (minimizar, maximizar, cerrar). Los pulsa sin iniciar un arrastre: `stop` evita que el clic
 // llegue a la barra.
@@ -63,9 +80,9 @@ export default function XpWindow({ win, z = 1, title, icon = null, active, label
       >
         {icon}
         <h2 className="min-w-0 flex-1 truncate text-sm font-bold" style={{ textShadow: '1px 1px 0 #0a246a' }}>{title}</h2>
-        <Control label={labels.minimize} onClick={onMinimize}>_</Control>
-        <Control label={maximized ? labels.restore : labels.maximize} onClick={onMaximize}>{maximized ? '❐' : '□'}</Control>
-        <Control label={labels.close} onClick={onClose} danger>×</Control>
+        <Control label={labels.minimize} onClick={onMinimize}><Glyph name="minimize" /></Control>
+        <Control label={maximized ? labels.restore : labels.maximize} onClick={onMaximize}><Glyph name={maximized ? 'restore' : 'maximize'} /></Control>
+        <Control label={labels.close} onClick={onClose} danger><Glyph name="close" /></Control>
       </header>
       <div className={`min-h-0 flex-1 ${bodyClass || 'overflow-auto'}`} style={{ background: '#ffffff', color: '#000' }}>{children}</div>
     </section>

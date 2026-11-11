@@ -9,7 +9,9 @@ const SEARCH_BASE = 'http://www.google.com/search?q='
 
 // Webs que no se dejan incrustar en un visor (cabeceras de seguridad que lo prohíben): se avisa en lugar de enseñar un
 // recuadro vacío. Con el resto se intenta el visor.
-export const BLOCKED_HOSTS = ['google.com', 'youtube.com', 'facebook.com', 'instagram.com', 'x.com', 'twitter.com', 'linkedin.com', 'github.com', 'netflix.com', 'tiktok.com', 'reddit.com', 'amazon.com']
+// Incluye `guadalupecano.es` (meter el portfolio dentro de sí mismo no tiene sentido) y `ahiestalapelicula.com` (su cabecera
+// `X-Frame-Options: SAMEORIGIN`, comprobada el 2026-11-11, lo impide).
+export const BLOCKED_HOSTS = ['google.com', 'youtube.com', 'facebook.com', 'instagram.com', 'x.com', 'twitter.com', 'linkedin.com', 'github.com', 'netflix.com', 'tiktok.com', 'reddit.com', 'amazon.com', 'guadalupecano.es', 'ahiestalapelicula.com']
 
 // Secciones del portfolio que se pueden visitar. `keywords` alimenta al buscador; los textos van por idioma.
 export const PORTFOLIO_PAGES = {
@@ -30,11 +32,26 @@ export const PORTFOLIO_PAGES = {
   },
 }
 
-// Webs externas que salen en los resultados (enlaces que ya existen en el portfolio).
-export const EXTERNAL_RESULTS = [
-  { url: 'https://www.youtube.com/@Luprintech', keywords: ['youtube', 'luprintech', 'videos', 'canal', 'channel', '3d', 'impresion', 'printing'], es: { title: 'Luprintech — YouTube', snippet: 'El canal de YouTube de Luprintech.' }, en: { title: 'Luprintech — YouTube', snippet: "Luprintech's YouTube channel." } },
-  { url: 'https://www.linkedin.com/in/guadalupe-cano-moyano/', keywords: ['linkedin', 'guadalupe', 'cano', 'perfil', 'profile', 'cv'], es: { title: 'Guadalupe Cano Moyano — LinkedIn', snippet: 'Perfil profesional en LinkedIn.' }, en: { title: 'Guadalupe Cano Moyano — LinkedIn', snippet: 'Professional profile on LinkedIn.' } },
+// Favoritos del navegador: la barra de debajo de la dirección y, a la vez, los enlaces que salen en los resultados del buscador.
+// Para añadir uno basta una entrada (con su icono en `game/desktop.js`). Un favorito con `url: null` está preparado pero oculto
+// hasta tener el enlace exacto: (ninguno lo espera ahora). `label` es el nombre propio, igual en los
+// dos idiomas. `newTab` (las redes sociales) hace que el favorito se abra en otra pestaña en lugar de en el visor. No incluye la web principal luprintech.com: Lupe prefiere no enseñarla mientras esté pendiente de cambio.
+export const FAVORITES = [
+  { id: 'portfolio', icon: 'portfolio', label: 'Portfolio', url: 'https://guadalupecano.es', keywords: ['portfolio', 'guadalupe', 'cano', 'web', 'lupe', 'desarrolladora', 'developer'], es: { title: 'Guadalupe Cano — Portfolio', snippet: 'La web del portfolio de Lupe.' }, en: { title: 'Guadalupe Cano — Portfolio', snippet: "Lupe's portfolio website." } },
+  { id: 'github', newTab: true, icon: 'github', label: 'GitHub', url: 'https://github.com/Luprintech', keywords: ['github', 'codigo', 'code', 'repositorios', 'repositories', 'git', 'luprintech'], es: { title: 'Luprintech — GitHub', snippet: 'Los repositorios y el código de Lupe.' }, en: { title: 'Luprintech — GitHub', snippet: "Lupe's repositories and code." } },
+  { id: 'linkedin', newTab: true, icon: 'linkedin', label: 'LinkedIn', url: 'https://www.linkedin.com/in/guadalupe-cano-moyano/', keywords: ['linkedin', 'guadalupe', 'cano', 'perfil', 'profile', 'cv', 'profesional'], es: { title: 'Guadalupe Cano Moyano — LinkedIn', snippet: 'Perfil profesional en LinkedIn.' }, en: { title: 'Guadalupe Cano Moyano — LinkedIn', snippet: 'Professional profile on LinkedIn.' } },
+  { id: 'youtube', newTab: true, icon: 'youtube', label: 'YouTube', url: 'https://www.youtube.com/@Luprintech', keywords: ['youtube', 'luprintech', 'videos', 'canal', 'channel', '3d', 'impresion', 'printing'], es: { title: 'Luprintech — YouTube', snippet: 'El canal de YouTube de Luprintech.' }, en: { title: 'Luprintech — YouTube', snippet: "Luprintech's YouTube channel." } },
+  { id: 'instagram', newTab: true, icon: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/luprintech/', keywords: ['instagram', 'luprintech', 'fotos', 'photos'], es: { title: 'Luprintech — Instagram', snippet: 'El perfil de Luprintech en Instagram.' }, en: { title: 'Luprintech — Instagram', snippet: "Luprintech's Instagram profile." } },
+  { id: 'tiktok', newTab: true, icon: 'tiktok', label: 'TikTok', url: 'https://www.tiktok.com/@luprintech', keywords: ['tiktok', 'luprintech', 'videos'], es: { title: 'Luprintech — TikTok', snippet: 'El perfil de Luprintech en TikTok.' }, en: { title: 'Luprintech — TikTok', snippet: "Luprintech's TikTok profile." } },
+  { id: 'ahi', icon: 'ahi', label: 'Ahí Está la Película', url: 'https://ahiestalapelicula.com', keywords: ['ahi', 'pelicula', 'estudio', 'studio', 'audiovisual', 'bodas', 'freelance'], es: { title: 'Ahí Está la Película', snippet: 'El estudio audiovisual para el que Lupe desarrolló su aplicación de gestión.' }, en: { title: 'Ahí Está la Película', snippet: 'The audiovisual studio Lupe built a management application for.' } },
+  { id: 'filamentos', icon: 'filamentos', label: 'FilamentOS', url: 'https://filamentos.luprintech.com/', keywords: ['filamentos', 'filament', 'impresion', 'printing', '3d', 'impresora', 'printer'], es: { title: 'FilamentOS', snippet: 'Una herramienta para el mundo de la impresión 3D.' }, en: { title: 'FilamentOS', snippet: 'A tool for the world of 3D printing.' } },
+  { id: 'filamentos-repo', icon: 'github', label: 'FilamentOS · GitHub', url: 'https://github.com/Luprintech/filamentOS', keywords: ['filamentos', 'filament', 'github', 'codigo', 'code', 'repositorio', 'repository'], es: { title: 'Luprintech/filamentOS — GitHub', snippet: 'El código de FilamentOS.' }, en: { title: 'Luprintech/filamentOS — GitHub', snippet: 'The FilamentOS source code.' } },
 ]
+
+export const visibleFavorites = (favorites = FAVORITES) => favorites.filter((favorite) => favorite.url)
+
+// Webs externas que salen en los resultados: los favoritos con enlace.
+export const EXTERNAL_RESULTS = visibleFavorites()
 
 const normalise = (text) => text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 export const pageUrl = (page) => `luprintech://${page}`

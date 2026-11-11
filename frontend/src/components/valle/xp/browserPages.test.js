@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { HOME_URL, canGoBack, canGoForward, createHistory, currentUrl, goBack, goForward, isBlocked, pageUrl, parseAddress, search, searchUrl, visit } from './browserPages.js'
+import { FAVORITES, HOME_URL, canGoBack, canGoForward, createHistory, currentUrl, goBack, goForward, isBlocked, pageUrl, parseAddress, search, searchUrl, visibleFavorites, visit } from './browserPages.js'
 
 describe('direcciones', () => {
   it('reconoce la página de inicio con o sin protocolo', () => {
@@ -79,5 +79,53 @@ describe('historial', () => {
     h = goBack(h)
     expect(h.index).toBe(0)
     expect(goForward(h).index).toBe(0)
+  })
+})
+
+describe('favoritos', () => {
+  const urls = visibleFavorites().map((favorite) => favorite.url)
+
+  it('incluyen las páginas y redes reales con su enlace exacto', () => {
+    expect(urls).toEqual(expect.arrayContaining([
+      'https://guadalupecano.es',
+      'https://github.com/Luprintech',
+      'https://www.linkedin.com/in/guadalupe-cano-moyano/',
+      'https://www.youtube.com/@Luprintech',
+      'https://ahiestalapelicula.com',
+      'https://filamentos.luprintech.com/',
+      'https://github.com/Luprintech/filamentOS',
+    ]))
+  })
+
+  it('no enseñan luprintech.com y todos son https', () => {
+    urls.forEach((url) => {
+      expect(url.startsWith('https://'), url).toBe(true)
+      expect(new URL(url).hostname.replace(/^www\./, ''), url).not.toBe('luprintech.com')
+    })
+    expect(search('luprintech', 'es').some((result) => new URL(result.url, 'https://x.test').hostname === 'luprintech.com')).toBe(false)
+  })
+
+  it('Instagram y TikTok llevan a los perfiles de Luprintech', () => {
+    expect(FAVORITES.find((favorite) => favorite.id === 'instagram').url).toBe('https://www.instagram.com/luprintech/')
+    expect(FAVORITES.find((favorite) => favorite.id === 'tiktok').url).toBe('https://www.tiktok.com/@luprintech')
+  })
+
+  it('un favorito sin enlace queda oculto', () => {
+    expect(visibleFavorites([{ id: 'x', url: null }, { id: 'y', url: 'https://example.com' }]).map((favorite) => favorite.id)).toEqual(['y'])
+  })
+
+  it('las webs que prohíben incrustarse se avisan para abrirse fuera', () => {
+    ;['guadalupecano.es', 'ahiestalapelicula.com', 'github.com', 'linkedin.com', 'youtube.com'].forEach((host) => expect(isBlocked(host), host).toBe(true))
+  })
+
+  it('se encuentran con el buscador', () => {
+    expect(search('filamentos').some((result) => result.url === 'https://filamentos.luprintech.com/')).toBe(true)
+    expect(search('github').some((result) => result.url === 'https://github.com/Luprintech')).toBe(true)
+  })
+})
+
+describe('favoritos de redes sociales', () => {
+  it('se abren en otra pestaña', () => {
+    ;['github', 'linkedin', 'youtube', 'instagram', 'tiktok'].forEach((id) => expect(FAVORITES.find((favorite) => favorite.id === id).newTab, id).toBe(true))
   })
 })

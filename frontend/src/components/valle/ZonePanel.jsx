@@ -21,9 +21,9 @@ export default function ZonePanel({ zone, onClose }) {
 
   const body = {
     about: <AboutBlock />,
-    projects: <ProjectsBlock limit={3} onNavigate={onClose} />,
-    contact: <ContactBlock onNavigate={onClose} />,
-    blog: <PostsBlock limit={3} onNavigate={onClose} />,
+    projects: <ProjectsBlock limit={3} />,
+    contact: <ContactBlock />,
+    blog: <PostsBlock limit={3} />,
     stack: <StackBlock />,
   }[zone]
 

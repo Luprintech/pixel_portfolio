@@ -45,6 +45,9 @@ export const SPOTS = {
 // centro (el de la tabla, `WALL_X.lupeDesk`) se desplaza media torre.
 export const LUPE_TOWER_W = 14
 
+// Centro de la torre del PC de Lupe (y del NAS que lleva encima): la torre es lo primero de la mesa, de 14 de ancho.
+export const LUPE_TOWER_X = WALL_X.lupeDesk - 45
+
 // La puerta de cristal de la escalera de la azotea: el tamaño del mueble y su cristal, relativo a su esquina.
 export const ROOF_DOOR = { w: 36, h: 62, glass: { x: 7, y: 3, w: 22, h: 24 } }
 
@@ -174,11 +177,18 @@ export const INTERACTIONS = [
     id: 'pc',
     anchor: { x: WALL_X.lupeDesk - 28, y: 96 },
     zones: [
-      { x: WALL_X.lupeDesk - 38, y: 82, w: 26, h: 22 },
-      { x: WALL_X.lupeDesk + 12, y: 82, w: 26, h: 22 },
+      // Los lados llegan hasta unos pasos de la mesa y bajan hasta el borde de la alfombra: basta con acercarse a ella, no hace falta
+      // pegarse a la cajonera ni a la torre.
+      // Ante la torre, pegada a ella, es el NAS (`nas`): más abajo y a sus lados sigue siendo el ordenador.
+      { x: WALL_X.lupeDesk - 76, y: 82, w: 21, h: 44 },
+      { x: LUPE_TOWER_X - 10, y: 98, w: 20, h: 28 },
+      { x: LUPE_TOWER_X + 10, y: 82, w: 23, h: 44 },
+      { x: WALL_X.lupeDesk + 12, y: 82, w: 48, h: 44 },
       { x: WALL_X.lupeDesk - 38, y: 104, w: 76, h: 18 },
     ],
   },
+  // El NAS de Lupe, sobre su torre: se mira desde el suelo de delante de ella, sin pisar la silla ni la zona del ordenador.
+  { id: 'nas', anchor: { x: LUPE_TOWER_X, y: 90 }, zones: [{ x: LUPE_TOWER_X - 10, y: 82, w: 20, h: 16 }] },
   { id: 'printer', anchor: { x: SPOTS.printerA1.x, y: SPOTS.printerA1.y + 10 }, zones: [{ x: 28, y: SPOTS.printerA1.y + 4, w: 62, h: 8 }] },
   { id: 'printerMini', anchor: { x: SPOTS.printerMini.x, y: SPOTS.printerMini.y + 10 }, zones: [{ x: 98, y: SPOTS.printerMini.y + 4, w: 46, h: 8 }] },
   { id: 'figures', anchor: { x: SPOTS.makerShelf.x, y: SPOTS.makerShelf.y + 10 }, zones: [{ x: 152, y: SPOTS.makerShelf.y + 4, w: 48, h: 20 }] },

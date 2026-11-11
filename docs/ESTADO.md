@@ -6,6 +6,29 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### NAS de Lupe y nuevas pantallas de la tele (2026-11-11)
+
+- **NAS Synology DS225+** sobre la torre del ordenador (`furniture/nas.js`): caja negra con dos bahías, LED de actividad que parpadean de forma desigual y un halo tenue (los LED son parte del dibujo, así que se ven igual de día y de noche). Zona de uso propia `nas` delante de la torre (pegada a ella); más abajo y a los lados sigue siendo el ordenador. Conversación `nas.*` con la "Viajera" como interlocutora (ver `docs/DIALOGOS.md`). Es solo un objeto narrativo, sin conexión con ningún NAS.
+- **Tele** (`furniture/tvScreens.js`): Netflix muestra su logo y luego Breaking Bad (Br y Ba en cuadrados verdes, sin números); HBO Max muestra "HBO" arriba y "max" abajo y luego Game of Thrones; Plex tiene una interfaz tipo la aplicación web (barra gris con la palabra y el chevrón, columna de iconos, carátulas con progreso naranja); YouTube enseña el canal de Luprintech. El menú de la tele llama al canal "HBO Max".
+- **Pendiente:** guardar la captura del canal en `frontend/public/images/tv/youtube-luprintech.png`: la tele la usa en cuanto exista (mientras tanto, versión en píxeles). Los LED no cambian de brillo con la hora: no hay iluminación por hora sobre los muebles.
+
+### Ordenador de Lupe: proyectos, navegador con favoritos y dos retos (2026-11-11)
+
+Avanza la visión (ordenador como "rincón de trabajo" que enseña el perfil técnico). Se amplía lo que había, sin quitar nada:
+
+- **Carpeta "Mis proyectos"** (`xp/ProjectsFolder.jsx`, datos en `game/desktopProjects.js`): accesos directos con icono pixel art propio. Un clic selecciona y describe; doble clic o Intro abre en otra pestaña; el panel inferior ofrece botones (táctil). Incluye Ahí Está la Película, FilamentOS (web y GitHub), OpenClaw Docker (GitHub), Vocacción (**en mantenimiento, sin enlace**). Land Gestión Agrícola se quitó por decisión de Lupe: fue un encargo pagado, no un proyecto propio. El listado anterior del portfolio sigue en el navegador (`luprintech://projects`).
+- **Internet Explorer**: barra de favoritos con iconos (`FAVORITES` en `xp/browserPages.js`, también alimenta el buscador). Portfolio, GitHub, LinkedIn, YouTube, Ahí Está la Película, FilamentOS y su repositorio. Sin `luprintech.com`. Las webs que prohíben incrustarse (`BLOCKED_HOSTS`, incluidas `ahiestalapelicula.com` por su `X-Frame-Options` y `guadalupecano.es` por recursión) ofrecen abrirse fuera.
+- **Reto de VS Code** (`src/slug.js`, `game/challenges/codeChallenge.js`): arreglar `crearSlug`; 6 pruebas visibles y 3 ocultas con validación real. El código se ejecuta en un iframe `sandbox` sin same-origin, con CSP `default-src 'none'` y un Worker vaciado de red/almacenamiento, con tiempo máximo de 3 s (`lib/codeSandbox.js`). Logro **Código depurado** (`debugged`).
+- **Terminal de ciberseguridad** (`xp/RetroTerminal.jsx`, `game/challenges/terminalChallenge.js`): sistema de archivos simulado, órdenes `help ls cd pwd cat clear hint unlock`. Cadena de pistas: README, `auth.log`, carpeta oculta `.cache`, `clave.enc` cifrada con César 3. Logro **Primer acceso** (`access`).
+- **Logros**: ids añadidos al sistema existente (`game/achievements.js`) con icono propio en la lista; idempotentes y guardados en `localStorage`.
+- **Diálogo `pc.abrir`** reescrito (4 páginas, opciones y dos respuestas); ver `docs/DIALOGOS.md`.
+
+**Decisiones:** la contraseña nunca aparece en claro; las pruebas ocultas impiden aprobar copiando respuestas; Calculadora 3D y LuprinChef quedan fuera de los accesos porque sus subdominios devolvían error el 2026-11-11 (se añaden con una línea en `PROJECT_SHORTCUTS`).
+
+**Actualizado:** OpenClaw Docker apunta a `Luprintech/openclaw-nas-docker`; Instagram (`instagram.com/luprintech/`) y TikTok (`tiktok.com/@luprintech`) ya están en favoritos y en el escritorio, con URLs dadas por Lupe.
+
+**Pendiente:** descripción real de OpenClaw Docker;
+
 ### Revisión de diálogos, joystick táctil y ventana de consolas (2026-11-11)
 
 - **Bug de movimiento en móvil:** el joystick se desmontaba al abrirse un diálogo con el dedo puesto y el último vector se quedaba en el registro, así que la viajera andaba sola hacia ese lado. Ahora el joystick pone el vector a cero al desmontarse (`components/valle/Joystick.jsx`).
@@ -998,7 +1021,7 @@ Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, aquí la casa) y
 
 ### Casa de Lupe: lo que queda (2026-11-11)
 - **Galería de fotos reales** (`casa.galeria` y «Ver trabajos» de la impresora): sin fotos aprobadas no hay nada que enseñar. El código está preparado: `FEATURES.gallery` en `game/dialogue/scripts.js` (la opción `trabajos` solo sale si es `true`) y falta el panel que muestre las imágenes con su texto alternativo.
-- **Enlaces del escritorio Pradera:** Instagram, TikTok y MakerWorld necesitan sus URL exactas en `DESKTOP_ENTRIES` (`game/desktop.js`). Los diálogos `pc.redes` y `pc.makerworld` no se usan hasta entonces (el primero nombra redes que aún no tienen icono). `pc.salir` tampoco, para no repetir una frase tras cada cierre.
+- **Enlaces del escritorio Pradera:** (Instagram y TikTok siguen sin URL; ver también el bloque del 2026-11-11 sobre favoritos) Instagram, TikTok y MakerWorld necesitan sus URL exactas en `DESKTOP_ENTRIES` (`game/desktop.js`). Los diálogos `pc.redes` y `pc.makerworld` no se usan hasta entonces (el primero nombra redes que aún no tienen icono). `pc.salir` tampoco, para no repetir una frase tras cada cierre.
 - **Escritorio de Windows XP:** imita el sistema real (nombre, tema Luna, sonido y bandera de cuatro colores) por decisión de Lupe, contra la nota de producción de `DIALOGOS.md`, que proponía un sistema inventado. Es una maqueta con elementos de un sistema ajeno: revisar si algún día se publica algo más allá de un portfolio personal.
 - **Marcas de la tele:** Netflix, Plex, Max y YouTube se dibujan como rótulo y colores, sin los logotipos oficiales exactos.
 - **Recreativa:** los tres juegos son cortos. Faltan guardar el progreso de la aventura entre visitas (hoy los puntos de control duran la partida), más objetos (bomba, arco), un modo de dos jugadores y revisar el equilibrio de dificultad tras jugarlos a mano.

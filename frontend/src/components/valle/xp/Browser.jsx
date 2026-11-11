@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useValleCopy } from '../../../lib/valleCopy'
 import { AboutBlock, ProjectsBlock, StackBlock } from '../Content'
-import { HOME_URL, canGoBack, canGoForward, createHistory, currentUrl, goBack, goForward, isBlocked, parseAddress, search, searchUrl, visit } from './browserPages'
+import PixelIcon from '../PixelIcon'
+import { FAVORITES, HOME_URL, canGoBack, canGoForward, createHistory, currentUrl, goBack, goForward, isBlocked, parseAddress, search, searchUrl, visibleFavorites, visit } from './browserPages'
 
 const LETTERS = [['G', '#4285f4'], ['o', '#ea4335'], ['o', '#fbbc05'], ['g', '#4285f4'], ['l', '#34a853'], ['e', '#ea4335']]
 const BUTTON = { borderColor: '#7f9db9', background: 'linear-gradient(#ffffff, #dedbc8)' }
@@ -12,11 +13,11 @@ const PORTFOLIO_BODY = { projects: ProjectsBlock, about: AboutBlock, stack: Stac
 const pageTokens = { ['--text-primary']: '#000', ['--text-secondary']: '#333', ['--bg-surface']: '#f5f4ea', ['--bg-elevated']: '#f5f4ea', ['--bg-secondary']: '#ece9d8', ['--border-color']: '#7f9db9', ['--px-ink']: '#0a246a', ['--px-ring']: '#7f9db9', ['--accent-primary']: '#0a246a', ['--accent-secondary']: '#0a246a' }
 
 // La página de inicio: el nombre en letras de colores, una caja de búsqueda y dos botones, como los buscadores de los primeros.
-function Home({ b, onSearch, onLucky }) {
+function Home({ b, lang, onSearch, onLucky, onVisit }) {
   const [query, setQuery] = useState('')
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-4 px-4 py-8">
-      <h1 aria-label="Google" className="text-6xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+    <div className="flex min-h-full flex-col items-center gap-3 px-4 py-4">
+      <h1 aria-label="Google" className="text-5xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
         {LETTERS.map(([letter, color], i) => (
           <span key={i} aria-hidden="true" style={{ color }}>{letter}</span>
         ))}
@@ -29,7 +30,26 @@ function Home({ b, onSearch, onLucky }) {
         </span>
       </form>
       <p className="text-xs" style={{ color: '#555' }}>{b.tip}</p>
+      <section aria-label={b.featured} className="w-full max-w-xl space-y-3 border-t pt-4 text-sm" style={{ borderColor: '#ddd' }}>
+        <p className="text-xs" style={{ color: '#555' }}>{b.featured}</p>
+        <ResultList results={visibleFavorites().map((favorite) => ({ ...(favorite[lang] ?? favorite.es), url: favorite.url }))} onVisit={onVisit} />
+      </section>
     </div>
+  )
+}
+
+// Lista de resultados con el aspecto de los buscadores de los primeros: título azul subrayado, dirección en verde y un resumen.
+function ResultList({ results, onVisit }) {
+  return (
+    <ul className="space-y-4">
+      {results.map((result) => (
+        <li key={result.url}>
+          <button type="button" className="block text-left text-base font-semibold underline" style={{ color: '#1a0dab' }} onClick={() => onVisit(result.url)}>{result.title}</button>
+          <span className="block text-xs" style={{ color: '#006621' }}>{result.url}</span>
+          <span className="block">{result.snippet}</span>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -41,15 +61,7 @@ function Results({ b, query, lang, onVisit }) {
     <div className="space-y-4 p-4 text-sm">
       <p style={{ color: '#555' }}>{b.resultsFor} «{query}»</p>
       {results.length === 0 && <p>{b.noResults}</p>}
-      <ul className="space-y-4">
-        {results.map((result) => (
-          <li key={result.url}>
-            <button type="button" className="block text-left text-base font-semibold underline" style={{ color: '#1a0dab' }} onClick={() => onVisit(result.url)}>{result.title}</button>
-            <span className="block text-xs" style={{ color: '#006621' }}>{result.url}</span>
-            <span className="block">{result.snippet}</span>
-          </li>
-        ))}
-      </ul>
+      <ResultList results={results} onVisit={onVisit} />
       <p className="border-t pt-3 text-xs" style={{ borderColor: '#ddd' }}>
         {b.outside}{' '}
         <a href={`https://www.google.com/search?q=${encodeURIComponent(query)}`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: '#1a0dab' }}>{b.outsideLink}</a>
@@ -104,11 +116,16 @@ export default function Browser() {
     const [first] = search(query, lang)
     go(first ? first.url : searchUrl(query))
   }
+  // Las redes sociales no se enseñan dentro del navegador: se abren en otra pestaña.
+  const follow = (address) => {
+    if (FAVORITES.find((favorite) => favorite.url === address)?.newTab) window.open(address, '_blank', 'noopener,noreferrer')
+    else go(address)
+  }
   const toolbar = 'rounded border px-2 py-0.5 text-xs disabled:opacity-40'
 
   let content
-  if (page.kind === 'home') content = <Home key={reload} b={b} onSearch={(query) => go(query.trim() ? query : HOME_URL)} onLucky={lucky} />
-  else if (page.kind === 'results') content = <Results b={b} query={page.query} lang={lang} onVisit={go} />
+  if (page.kind === 'home') content = <Home key={reload} b={b} lang={lang} onSearch={(query) => go(query.trim() ? query : HOME_URL)} onLucky={lucky} onVisit={follow} />
+  else if (page.kind === 'results') content = <Results b={b} query={page.query} lang={lang} onVisit={follow} />
   else if (page.kind === 'page') {
     const Body = PORTFOLIO_BODY[page.page]
     content = (
@@ -133,6 +150,16 @@ export default function Browser() {
         <input id="ie-address" value={typed ?? url} onChange={(event) => setTyped(event.target.value)} onFocus={(event) => event.target.select()} spellCheck="false" className="min-w-0 flex-1 border px-1 py-0.5" style={{ borderColor: '#7f9db9', background: '#fff' }} />
         <button type="submit" className={toolbar} style={BUTTON}>{b.goButton}</button>
       </form>
+      <nav aria-label={b.favorites} className="flex shrink-0 items-center gap-1 overflow-x-auto border-b px-2 py-1" style={{ borderColor: '#aca899' }}>
+        <span className="shrink-0 text-xs font-bold">★ {b.favorites}</span>
+        {visibleFavorites().map((favorite) => (
+          <button key={favorite.id} type="button" data-sound="select" title={favorite.url} className="flex shrink-0 items-center gap-1 rounded border px-2 py-0.5 text-xs" style={{ ...BUTTON, outline: url === favorite.url ? '2px solid #316ac5' : undefined }} onClick={() => follow(favorite.url)}>
+            <PixelIcon id={favorite.icon} size={14} />
+            {favorite.label}
+            {favorite.newTab && <span className="sr-only"> {copy.desktop.newTab}</span>}
+          </button>
+        ))}
+      </nav>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto" style={{ background: '#fff' }}>{content}</div>
       <p className="shrink-0 border-t px-2 py-0.5 text-xs" style={{ borderColor: '#aca899' }}>{page.kind === 'external' ? page.url : b.ready}</p>
     </div>

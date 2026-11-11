@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { CHALLENGE_FILE, STARTER } from '../../../game/challenges/codeChallenge'
+import { useCodeChallenge } from '../../../hooks/useCodeChallenge'
 import { useValleCopy } from '../../../lib/valleCopy'
+import TestsPanel from './TestsPanel'
 import { FILES, ORDER, PROJECT, PROMPT, highlight, languageOf, parsePreview, runCommand } from './vscodeProject'
 
 // Colores del tema oscuro de Visual Studio Code para cada tipo de texto.
@@ -55,14 +58,17 @@ function Terminal({ files, onUnlock, onPreview, copy }) {
 
 // Visual Studio Code, en pequeño: explorador del proyecto `luprintech-portfolio`, pestañas, editor con resaltado de sintaxis
 // (el texto es editable: se escribe sobre un cuadro transparente que lleva debajo la capa coloreada), terminal y vista previa.
-// Easter egg: `npm run hello` en la terminal (el script está en package.json y el README lo menciona) da el logro «Hello, Developer!».
+// Reto: `src/slug.js` trae una función con un fallo; «Ejecutar pruebas» la valida de verdad (`useCodeChallenge`, en un entorno aislado)
+// y, si pasa todas, da el logro «Código depurado». Easter egg: `npm run hello` en la terminal (el script está en package.json y el README lo menciona) da el logro «Hello, Developer!».
 export default function VsCode({ onUnlock }) {
   const { copy } = useValleCopy()
   const v = copy.desktop.vscodeUi
+  const c = copy.desktop.codeChallenge
+  const challenge = useCodeChallenge(onUnlock)
   const [files, setFiles] = useState(FILES)
-  const [tabs, setTabs] = useState(['src/App.jsx'])
-  const [active, setActive] = useState('src/App.jsx')
-  const [panel, setPanel] = useState('terminal')
+  const [tabs, setTabs] = useState([CHALLENGE_FILE])
+  const [active, setActive] = useState(CHALLENGE_FILE)
+  const [panel, setPanel] = useState('tests')
   const colorLayer = useRef(null)
 
   const open = (path) => {
@@ -80,6 +86,12 @@ export default function VsCode({ onUnlock }) {
     colorLayer.current.scrollTop = event.target.scrollTop
     colorLayer.current.scrollLeft = event.target.scrollLeft
   }
+
+  const runTests = () => {
+    setPanel('tests')
+    challenge.run(files[CHALLENGE_FILE])
+  }
+  const resetChallenge = () => setFiles((current) => ({ ...current, [CHALLENGE_FILE]: STARTER }))
 
   const lines = highlight(languageOf(active), files[active])
   return (
@@ -104,6 +116,12 @@ export default function VsCode({ onUnlock }) {
               </span>
             ))}
           </div>
+          {active === CHALLENGE_FILE && (
+            <div className="flex shrink-0 items-center gap-2 px-2 py-1" style={{ background: '#2d2d2d' }}>
+              <button type="button" data-sound="select" disabled={challenge.status === 'running'} className="rounded px-3 py-0.5 font-bold disabled:opacity-60" style={{ background: '#0e639c', color: '#fff' }} onClick={runTests}>▶ {c.run}</button>
+              <button type="button" className="rounded px-2 py-0.5" style={{ background: '#3c3c3c', color: '#ccc' }} onClick={resetChallenge}>{c.reset}</button>
+            </div>
+          )}
           <div className="relative min-h-0 flex-1" style={{ background: '#1e1e1e' }}>
             <pre ref={colorLayer} aria-hidden="true" className="pointer-events-none absolute inset-0 m-0 overflow-hidden" style={EDITOR}>
               {lines.map((parts, i) => (
@@ -130,14 +148,16 @@ export default function VsCode({ onUnlock }) {
       </div>
       <div className="flex h-2/5 min-h-[7rem] shrink-0 flex-col border-t" style={{ borderColor: '#3c3c3c' }}>
         <div role="tablist" className="flex shrink-0 gap-1 px-2" style={{ background: '#252526' }}>
-          {['terminal', 'preview'].map((id) => (
+          {['tests', 'terminal', 'preview'].map((id) => (
             <button key={id} type="button" role="tab" aria-selected={panel === id} className="px-3 py-1 uppercase tracking-wide" style={{ borderBottom: panel === id ? '1px solid #007acc' : '1px solid transparent', color: panel === id ? '#fff' : '#9d9d9d' }} onClick={() => setPanel(id)}>
-              {v[id]}
+              {id === 'tests' ? c.tests : v[id]}
             </button>
           ))}
         </div>
         <div className="min-h-0 flex-1">
-          {panel === 'terminal' ? <Terminal files={files} onUnlock={onUnlock} onPreview={() => setPanel('preview')} copy={v} /> : <Preview source={files['src/App.jsx']} copy={v} />}
+          {panel === 'tests' && <TestsPanel challenge={challenge} copy={c} />}
+          {panel === 'terminal' && <Terminal files={files} onUnlock={onUnlock} onPreview={() => setPanel('preview')} copy={v} />}
+          {panel === 'preview' && <Preview source={files['src/App.jsx']} copy={v} />}
         </div>
       </div>
       <p className="flex shrink-0 justify-between px-2 py-0.5 text-[11px]" style={{ background: '#007acc', color: '#fff' }}>

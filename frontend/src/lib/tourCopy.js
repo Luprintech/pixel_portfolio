@@ -41,9 +41,9 @@ export const TOUR_COPY = {
       'tour.pc.3': 'Luego estudié Pedagogía, trabajé en asistencia en carretera y estudié Desarrollo de Aplicaciones Web. En 2024 pasé al desarrollo web a tiempo completo.',
       'tour.pc_escritorio.1': 'Este ordenador es un escritorio retro estilo Windows XP, con sus programas. Al encenderlo hay unos segundos de arranque (puedes saltarlos con E).',
       'tour.pc_escritorio.1.touch': 'Este ordenador es un escritorio retro estilo Windows XP, con sus programas. Al encenderlo hay unos segundos de arranque (puedes saltarlos tocando la pantalla).',
-      'tour.pc_escritorio.2': 'Tienes "Mis proyectos", un Internet Explorer con buscador propio (prueba "proyectos", "Lupe" o "youtube") y accesos a mi YouTube y mi LinkedIn.',
-      'tour.pc_escritorio.3': 'Para trastear: Winamp, Paint, una calculadora, el Bloc de notas y un Visual Studio Code con un proyecto de mentira.',
-      'tour.pc_escritorio.4': 'Y hay un par de secretos escondidos. No te los cuento.',
+      'tour.pc_escritorio.2': 'Tienes "Mis proyectos", con accesos a mis proyectos y repositorios, y un Internet Explorer con mis redes y páginas de mi trabajo.',
+      'tour.pc_escritorio.3': 'Y dos retos: en Visual Studio Code, arreglar una función que convierte el título de un artículo en la dirección de su página; y en la terminal, un reto de ciberseguridad para encontrar una contraseña escondida.',
+      'tour.pc_escritorio.4': 'Cada uno da un logro. Y para trastear hay Winamp, Paint, una calculadora y el Bloc de notas.',
 
       // 5 · Khalessi
       'tour.khalessi.1': 'Y ahora, la verdadera jefa de la casa: el rincón de Khalessi, con su caja, el rascador, el comedero y el arenero.',
@@ -114,9 +114,9 @@ export const TOUR_COPY = {
       'tour.pc.3': 'Then I studied Pedagogy, worked in roadside assistance and studied Web Application Development. In 2024 I went full-time in web development.',
       'tour.pc_escritorio.1': 'This computer is a retro Windows XP-style desktop with its own programs. Switching it on takes a few seconds of start-up (you can skip them with E).',
       'tour.pc_escritorio.1.touch': 'This computer is a retro Windows XP-style desktop with its own programs. Switching it on takes a few seconds of start-up (you can skip them by tapping the screen).',
-      'tour.pc_escritorio.2': 'You will find "My projects", an Internet Explorer with its own search engine (try "projects", "Lupe" or "youtube") and shortcuts to my YouTube and LinkedIn.',
-      'tour.pc_escritorio.3': 'To tinker with: Winamp, Paint, a calculator, Notepad and a Visual Studio Code with a pretend project.',
-      'tour.pc_escritorio.4': 'And there are a couple of hidden secrets. I will not tell you.',
+      'tour.pc_escritorio.2': 'You will find "My projects", with shortcuts to my projects and repositories, and an Internet Explorer with my social networks and pages about my work.',
+      'tour.pc_escritorio.3': 'And two challenges: in Visual Studio Code, fixing a function that turns an article title into its page address; and in the terminal, a cybersecurity challenge to find a hidden password.',
+      'tour.pc_escritorio.4': 'Each one gives an achievement. And to tinker with there are Winamp, Paint, a calculator and Notepad.',
 
       'tour.khalessi.1': 'And now, the real boss of the house: Khalessi\'s corner, with her box, scratching post, food bowls and litter tray.',
       'tour.khalessi.2': 'meaw!',
