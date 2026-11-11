@@ -4,7 +4,7 @@
 // fotograma y `ms` es lo que dura cada uno.
 import { canvasOf, pastelize } from '../draw.js'
 import { atreusDesk, lupeDesk } from './desks.js'
-import { bigPlant, boxBack, boxFront, chairAtreus, chairAtreusFront, chairLupe, chairLupeFront, roofStairs, tallPlant } from './decor.js'
+import { bigPlant, chairAtreus, chairAtreusFront, chairLupe, chairLupeFront, roofStairs, tallPlant } from './decor.js'
 import { arcade } from './arcade.js'
 import { catBowls, litterBox, scratcher } from './catCorner.js'
 import { coffeeTable, floorLamp, sofa, sofaFront, tvUnit } from './living.js'
@@ -14,7 +14,7 @@ import { consoleShelf, makerShelf } from './shelves.js'
 
 export const FURNITURE = {
   atreusDesk, lupeDesk, floorLamp, chairAtreus, chairAtreusFront, chairLupe, chairLupeFront, sofaFront, roofStairs, tvUnit, sofa, coffeeTable, consoleShelf, makerShelf,
-  printerA1, printerMini, hifi, arcade, boxBack, boxFront, bigPlant, tallPlant, scratcher, catBowls, litterBox,
+  printerA1, printerMini, hifi, arcade, bigPlant, tallPlant, scratcher, catBowls, litterBox,
 }
 
 export const framesOf = (kind) => FURNITURE[kind].frames ?? 1

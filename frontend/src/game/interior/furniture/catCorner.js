@@ -1,6 +1,6 @@
-// La zona de Khalessi: un rascador de sisal con su plataforma y un juguete colgando, el comedero con comida y agua, y el
-// arenero. La caja de cartón en la que duerme está en `decor.js`. Todo es bajo y está fuera del recorrido de la gata hasta
-// Atreus (ver `catBrain.js`).
+// La zona de Khalessi, contra la pared derecha: un rascador de sisal con su plataforma (donde se sube a dormir) y un
+// juguete colgando, el comedero con comida y agua, y el arenero. Las alturas y los puntos por los que se acerca la gata
+// (ver `catBrain.js`) salen de estas medidas.
 import { INK, rect, slab } from '../draw.js'
 
 const SISAL = ['#c9a56b', '#a98450']

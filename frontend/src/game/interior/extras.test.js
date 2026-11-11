@@ -20,9 +20,9 @@ const TICK = 50
 const LONG_RUN = 24000
 
 describe('Khalessi', () => {
-  it('empieza dormida en su caja', () => {
+  it('empieza dormida sobre el rascador', () => {
     const cat = createCat(seeded(1))
-    expect(cat.layer).toBe('box')
+    expect(cat.layer).toBe('scratcher')
     expect(cat.pose).toBe('sleep')
   })
 
@@ -38,7 +38,7 @@ describe('Khalessi', () => {
       if (cat.carrying && cat.giving) throw new Error('lleva y entrega a la vez')
     }
     ;['sit', 'walk', 'play', 'grab', 'give', 'eat', 'wash', 'scratch', 'sleep'].forEach((pose) => expect(seen.has(pose), pose).toBe(true))
-    ;['box', 'litter', null].forEach((layer) => expect(layers.has(layer), String(layer)).toBe(true))
+    ;['scratcher', 'litter', null].forEach((layer) => expect(layers.has(layer), String(layer)).toBe(true))
     // Tres maullidos distintos.
     expect(new Set(meows)).toEqual(new Set([0, 1, 2]))
     // Nunca se queda sin camino.
@@ -99,7 +99,7 @@ describe('Khalessi', () => {
     }
   })
 
-  it('nunca pisa un mueble: en cada fotograma está en suelo libre, salvo al saltar a la caja o al arenero', () => {
+  it('nunca pisa un mueble: en cada fotograma está en suelo libre, salvo al saltar al rascador o al arenero', () => {
     const cat = createCat(seeded(13))
     for (let i = 0; i < LONG_RUN; i++) {
       updateCat(cat, TICK)

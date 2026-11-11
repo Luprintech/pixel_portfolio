@@ -109,14 +109,14 @@ describe('plano de la casa de Lupe', () => {
 })
 
 describe('zona de Khalessi', () => {
-  // Los sitios a los que la gata camina (no los saltos: la caja y el arenero son sólidos) tienen que ser suelo libre y
-  // alcanzable desde delante de su caja.
-  const walkSpots = ['scratcherFront', 'boxFront', 'bowls', 'litterFront', 'atreus']
+  // Los sitios a los que la gata camina (no los saltos: el rascador y el arenero son sólidos) tienen que ser suelo libre y
+  // alcanzable desde delante de su rascador.
+  const walkSpots = ['scratcherFront', 'bowls', 'litterFront', 'atreus']
 
-  it('todos los sitios a los que camina son suelo libre y se llega a ellos desde su caja', () => {
+  it('todos los sitios a los que camina son suelo libre y se llega a ellos desde su rascador', () => {
     walkSpots.forEach((name) => {
       expect(NAV.free(CAT_SPOTS[name].x, CAT_SPOTS[name].y), `${name} libre`).toBe(true)
-      expect(NAV.path(CAT_SPOTS.boxFront, CAT_SPOTS[name]), `${name} alcanzable`).not.toBeNull()
+      expect(NAV.path(CAT_SPOTS.scratcherFront, CAT_SPOTS[name]), `${name} alcanzable`).not.toBeNull()
     })
   })
 
@@ -127,8 +127,8 @@ describe('zona de Khalessi', () => {
     })
   })
 
-  it('tiene su rascador, su comida y su arenero, y la caja', () => {
-    ;['scratcher', 'catBowls', 'litterBox', 'boxBack'].forEach((kind) => expect(FURNITURE_PLAN.some((piece) => piece.kind === kind), kind).toBe(true))
+  it('tiene su rascador, su comida y su arenero', () => {
+    ;['scratcher', 'catBowls', 'litterBox'].forEach((kind) => expect(FURNITURE_PLAN.some((piece) => piece.kind === kind), kind).toBe(true))
   })
 })
 

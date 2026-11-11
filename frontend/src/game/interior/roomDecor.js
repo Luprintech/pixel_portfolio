@@ -194,9 +194,24 @@ function makerMat(g, x, y, w, h) {
   rect(g, x + 1, y + h - 3, w - 2, 2, '#00ae42')
 }
 
+// Esterilla del rincón de Khalessi: rosa claro con borde y unas huellitas, bajo el rascador, el comedero y el arenero, para que
+// se lea como su espacio.
+function catMat(g, x, y, w, h) {
+  rect(g, x, y, w, h, INK.rose)
+  rect(g, x + 2, y + 2, w - 4, h - 4, '#fde0e8')
+  for (let py = y + 10; py < y + h - 8; py += 18) {
+    for (let px = x + 8; px < x + w - 8; px += 14) {
+      rect(g, px, py, 2, 2, INK.rose)
+      rect(g, px + 3, py - 1, 2, 2, INK.rose)
+    }
+  }
+}
+
 function floor(g) {
-  rug(g, SPOTS.sofa.x - 62, 108, 124, 96)
-  makerMat(g, 22, 242, 184, 28)
+  // La alfombra queda centrada bajo el sofá: la lámpara a su izquierda y la planta a su derecha también están sobre ella.
+  rug(g, SPOTS.sofa.x - 62, SPOTS.sofa.y - 70, 124, 96)
+  catMat(g, SPOTS.litter.x - 22, SPOTS.scratcher.y - 6, 70, SPOTS.litter.y - SPOTS.scratcher.y + 22)
+  makerMat(g, 22, 246, 184, 26)
   // Pequeños restos de vida: unas zapatillas junto a la puerta.
   ;[[292, 258], [299, 259]].forEach(([x, y]) => {
     rect(g, x, y, 6, 3, INK.rose)

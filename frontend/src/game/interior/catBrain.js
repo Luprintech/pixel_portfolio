@@ -1,20 +1,20 @@
 // Lo que hace Khalessi en casa. No sigue un guion fijo: elige una actividad de una bolsa que se baraja (pasear, comer, usar el
-// arenero, asearse, rascar, dormir en su caja y la de la sardina) y la cumple paso a paso: caminar (por un camino que
-// esquiva los muebles, ver `catNav.js`), esperar en una pose o dar un salto (al arenero, a la caja). Esta parte es pura (sin
+// arenero, asearse, rascar, dormir arriba del rascador y la de la sardina) y la cumple paso a paso: caminar (por un camino que
+// esquiva los muebles, ver `catNav.js`), esperar en una pose o dar un salto (al arenero, al rascador). Esta parte es pura (sin
 // Phaser ni lienzo), así se prueba sin navegador; la escena (`homeBuilder.js`) la dibuja.
-// Los sitios clave salen del plano (`homeLayout.js`): su caja, el rascador, el comedero y el arenero, y Atreus en su mesa.
-import { solidsOf } from './furniture/index.js'
+// Los sitios clave salen del plano (`homeLayout.js`): rascador, comedero y arenero contra la pared derecha, Atreus en su mesa.
+import { FURNITURE, solidsOf } from './furniture/index.js'
 import { ATREUS_BODY, FURNITURE_PLAN, NPC_PLAN, SPOTS, homeRoom } from './homeLayout.js'
 import { createNav } from './catNav.js'
 
 const atreus = NPC_PLAN.find((npc) => npc.id === 'atreus')
 
 export const CAT_SPOTS = {
-  // Ante el rascador, donde se afila las uñas.
-  scratcherFront: { x: SPOTS.scratcher.x, y: SPOTS.scratcher.y + 10 },
-  // Delante de la caja, desde donde salta dentro y fuera; y dentro, con los pies un poco por encima del suelo (`z`).
-  boxFront: { x: SPOTS.box.x, y: SPOTS.box.y + 18 },
-  boxIn: { x: SPOTS.box.x, y: SPOTS.box.y - 4, z: 3 },
+  // Ante el rascador, desde donde salta arriba y baja; y a su lado, donde se afila las uñas.
+  scratcherFront: { x: SPOTS.scratcher.x, y: SPOTS.scratcher.y + 9 },
+  scratcherSide: { x: SPOTS.scratcher.x - 16, y: SPOTS.scratcher.y + 4 },
+  // Sobre la plataforma: sus pies quedan en la fila del rascador y `z` es lo que sube sobre ella.
+  scratcherTop: { x: SPOTS.scratcher.x, y: SPOTS.scratcher.y + 1, z: FURNITURE.scratcher.h - 4 },
   // Ante el cuenco de pienso, con la cabeza (a su derecha) sobre él.
   bowls: { x: SPOTS.bowls.x - 12, y: SPOTS.bowls.y + 6 },
   litterFront: { x: SPOTS.litter.x, y: SPOTS.litter.y + 7 },
@@ -41,7 +41,7 @@ const WANDER_POINTS = NAV.wanderPoints()
 
 // Pasos. `walk` camina hasta `to` (esquivando muebles), `hop` salta a `to` con una `z` de altura y `wait` se queda `ms`. `pose` es
 // lo que se dibuja; `meow` el maullido que suelta al empezar (0 corto, 1 largo e insistente, 2 agudo y contento); `face` hacia
-// dónde se vuelve; `layer` dónde queda al acabar un salto (dentro de la caja o del arenero, para dibujarla entre sus capas).
+// dónde se vuelve; `layer` dónde queda al acabar un salto (sobre el rascador o dentro del arenero, para dibujarla encima).
 // `grab` y `carry` son coger la sardina y llevarla en la boca; `drop` es soltarla y `gift` que es el regalo para Atreus.
 const wait = (ms, pose, extra) => ({ kind: 'wait', ms, pose, ...extra })
 const walk = (to, extra) => ({ kind: 'walk', to, pose: 'walk', ...extra })
@@ -63,13 +63,13 @@ const ACTIVITIES = {
     wait(2600, 'wash'),
   ],
   wash: () => [wait(3800, 'wash')],
-  scratch: () => [walk(CAT_SPOTS.scratcherFront), wait(3200, 'scratch', { face: 'right' })],
+  scratch: () => [walk(CAT_SPOTS.scratcherSide), wait(3200, 'scratch', { face: 'right' })],
   sleep: (cat) => [
-    walk(CAT_SPOTS.boxFront),
-    hop(CAT_SPOTS.boxIn, { layer: 'box', ms: 800 }),
+    walk(CAT_SPOTS.scratcherFront),
+    hop(CAT_SPOTS.scratcherTop, { layer: 'scratcher', ms: 800 }),
     wait(1400, 'sit'),
     wait(between(cat, 14000, 22000), 'sleep'),
-    hop(CAT_SPOTS.boxFront, { layer: null, ms: 800 }),
+    hop(CAT_SPOTS.scratcherFront, { layer: null, ms: 800 }),
   ],
   // Va a por la sardina (donde esté), la lleva en la boca a Atreus y se la da. Si la sardina quedó junto a Atreus de un regalo
   // anterior, antes la lleva a jugar a otro rincón de la sala.
@@ -105,22 +105,22 @@ function chooseActivity(cat) {
   return ACTIVITIES[cat.last](cat)
 }
 
-// `rng` es el generador de azar (de 0 a 1): la escena usa `Math.random` y las pruebas uno con semilla. Empieza dormida en su
-// caja.
+// `rng` es el generador de azar (de 0 a 1): la escena usa `Math.random` y las pruebas uno con semilla. Empieza dormida sobre el
+// rascador.
 export function createCat(rng = Math.random) {
-  const inside = CAT_SPOTS.boxIn
+  const top = CAT_SPOTS.scratcherTop
   return {
-    rng, bag: [], last: null, plan: [wait(6000, 'sleep'), hop(CAT_SPOTS.boxFront, { layer: null, ms: 800 })], step: 0, t: 0, route: [], from: null,
-    x: inside.x, y: inside.y, z: inside.z, layer: 'box', face: 'left', pose: 'sleep', carrying: false, giving: false,
+    rng, bag: [], last: null, plan: [wait(6000, 'sleep'), hop(CAT_SPOTS.scratcherFront, { layer: null, ms: 800 })], step: 0, t: 0, route: [], from: null,
+    x: top.x, y: top.y, z: top.z, layer: 'scratcher', face: 'left', pose: 'sleep', carrying: false, giving: false,
     toy: { x: CAT_SPOTS.atreus.x + 6, y: CAT_SPOTS.atreus.y + 2 }, toyPhase: 'ground', toyT: 0,
     turning: 0, nextFace: 'left', againDone: false, skipped: 0, events: [],
   }
 }
 
-// Dónde se dibuja la gata en orden de profundidad: dentro de la caja va entre sus dos capas, dentro del arenero justo por
-// encima de él y, en el suelo, con la fila de sus pies.
+// Dónde se dibuja la gata en orden de profundidad: sobre el rascador o dentro del arenero va justo por encima de ese mueble y,
+// en el suelo, con la fila de sus pies.
 export function catDepth(cat) {
-  if (cat.layer === 'box') return SPOTS.box.y
+  if (cat.layer === 'scratcher') return SPOTS.scratcher.y + 1
   if (cat.layer === 'litter') return SPOTS.litter.y + 1
   return Math.round(cat.y)
 }
