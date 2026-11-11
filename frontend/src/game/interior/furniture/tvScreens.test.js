@@ -1,5 +1,6 @@
+import { FURNITURE } from './index.js'
 import { describe, expect, it } from 'vitest'
-import { CHANNEL_SCENES, SCREEN, TV_CHANNELS, TV_FRAMES, TV_MODES, paintScreen } from './tvScreens.js'
+import { CHANNEL_SCENES, SCREEN, TV_CHANNELS, TV_FRAMES, TV_MODES, TV_ONCE, paintScreen } from './tvScreens.js'
 
 // Lienzo falso: apunta el color de cada píxel pintado (las pantallas solo usan `fillRect` y `fillStyle`).
 function canvas() {
@@ -61,5 +62,12 @@ describe('pantallas de la tele', () => {
     expect(count(paint(TV_MODES.plex[0]), '#e5a00d')).toBeGreaterThan(15)
     const channel = paint(TV_MODES.youtube[0])
     ;['#7a2fb0', '#1a2a1a', '#1f5fd0'].forEach((color) => expect(count(channel, color), color).toBeGreaterThan(20))
+  })
+
+  it('Netflix y HBO Max van del logo de la aplicación al de la serie y se quedan en él', () => {
+    expect(TV_ONCE).toEqual(['netflix', 'max'])
+    TV_ONCE.forEach((id) => expect(TV_MODES[id].length, id).toBe(3))
+    // La tele declara que esos modos no se repiten: lo lee `homeBuilder.js`.
+    expect(FURNITURE.tvUnit.once).toEqual(TV_ONCE)
   })
 })

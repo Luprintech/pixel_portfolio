@@ -47,4 +47,13 @@ describe('NAS Synology', () => {
     expect(interactionAt(WALL_X.lupeDesk + 30, 90)).toBe('pc')
     expect(interactionAt(WALL_X.lupeDesk, 110, 'down')).not.toBe('nas')
   })
+
+  it('el ordenador se usa a lo largo de toda la mesa blanca y sentada en la silla', () => {
+    for (let x = LUPE_TOWER_X + 22; x <= WALL_X.lupeDesk + 40; x += 6) {
+      expect(interactionAt(x, 90, 'up'), `x=${x}`).toBe('pc')
+      expect(interactionAt(x, 112, 'up'), `x=${x}`).toBe('pc')
+    }
+    // De cara a la silla se ofrece sentarse y, sentada, el asiento lleva al ordenador (`SEATS`).
+    expect(interactionAt(WALL_X.lupeDesk, 93, 'down')).toBe('chairLupe')
+  })
 })

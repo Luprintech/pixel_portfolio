@@ -3,7 +3,7 @@
 // Lo que se ve en pantalla está en `tvScreens.js`: cada canal recorre en bucle sus escenas, un fotograma por escena.
 import { INK, WOOD, rect, slab } from '../draw.js'
 import { ellipse } from '../../pixelKit.js'
-import { TV_CHANNELS, TV_FRAMES, TV_MODES, paintScreen } from './tvScreens.js'
+import { TV_CHANNELS, TV_FRAMES, TV_MODES, TV_ONCE, paintScreen } from './tvScreens.js'
 
 export { TV_CHANNELS, TV_FRAMES, TV_MODES }
 
@@ -13,6 +13,8 @@ export const tvUnit = {
   frames: TV_FRAMES,
   ms: 700,
   modes: TV_MODES,
+  // Modos que se reproducen una vez y se quedan en su último fotograma (logo de la aplicación, luego el de la serie).
+  once: TV_ONCE,
   body: [{ l: -36, t: -14, r: 36, b: 0 }],
   paint(g, frame) {
     const [deep, dark, mid, light] = WOOD

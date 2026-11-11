@@ -1,6 +1,6 @@
 // Lo que sale en la pantalla de la tele de la sala (40×22 píxeles). Cada canal es una secuencia de escenas, cada una un fotograma de la
-// tele: la tele las recorre en bucle (`living.js`). Netflix enseña su logo y después Breaking Bad; HBO Max, su logo y después Game of
-// Thrones; los demás alternan dos fotogramas (un pulso de luz). Todo se dibuja con rectángulos y letras de píxeles: sin imágenes ni
+// tele (`living.js`). Netflix enseña su logo y después Breaking Bad; HBO Max, su logo y después Game of Thrones, y se quedan en el de la
+// serie (`TV_ONCE`); los demás alternan dos fotogramas en bucle (un pulso de luz). Todo se dibuja con rectángulos y letras de píxeles: sin imágenes ni
 // marcas descargadas, solo la silueta y los colores de cada una. Sin Phaser ni React.
 import { drawText, textPixels, textWidth } from '../../pixelFont.js'
 import { INK, rect } from '../draw.js'
@@ -60,13 +60,12 @@ function weather(g, pulse) {
   rect(g, x + 35, y + 13, 1, 2, INK.lagoonLight)
 }
 
-// Netflix, primera escena: su logotipo rojo sobre negro, con un destello que recorre la palabra.
+// Netflix, primera escena: su logotipo rojo sobre negro (la segunda mitad del par solo cambia la sombra, sin línea debajo).
 function netflixLogo(g, pulse) {
   const { x, y, w, h } = SCREEN
   rect(g, x, y, w, h, '#0b0a14')
-  centred(g, 'NETFLIX', y + 8, '#7a1015')
+  centred(g, 'NETFLIX', y + 8, pulse ? '#8a1319' : '#7a1015')
   centred(g, 'NETFLIX', y + 7, '#e5252a')
-  if (pulse) rect(g, x + Math.floor((w - textWidth('NETFLIX')) / 2), y + 14, textWidth('NETFLIX'), 1, '#e5252a')
 }
 
 // Netflix, segunda escena: el rótulo de Breaking Bad, con los símbolos químicos Br y Ba en cuadrados verdes (sin números) y el resto
@@ -140,25 +139,26 @@ function plex(g, pulse) {
 
 // YouTube: la página del canal de Luprintech en píxeles (respaldo de la captura). Cabecera con el avatar (disco negro con el cerebro rosa y el circuito turquesa), el nombre
 // y los botones; pestañas con «Inicio» subrayada; y las tres miniaturas de los vídeos con su barra roja de progreso.
-// Captura del canal de Luprintech que se enseña en la tele de YouTube (pantalla 40×22, su proporción casi igual). Se precarga al cargar el
-// juego; mientras no esté cargada, o si el archivo no existe, se dibuja la versión en píxeles de abajo.
-export const YOUTUBE_ART = '/images/tv/youtube-luprintech.png'
+// Captura del canal de Luprintech que se enseña en la tele de YouTube (pantalla 40×22, su proporción casi igual). No se dibuja dentro de
+// los fotogramas de la tele (saldría pixelada al reducirla a 40×22): `tvArt.js` la pone como imagen encima de la pantalla. Se precarga al
+// cargar el juego; mientras no esté cargada, o si el archivo no existe, se ve la versión en píxeles de abajo.
+export const YOUTUBE_ART = '/images/tv/youtube-luprintech.webp'
 let youtubeArt = null
+const loadedListeners = []
+export const tvArtLoaded = () => Boolean(youtubeArt?.complete && youtubeArt.naturalWidth > 0)
+export const tvArtImage = () => (tvArtLoaded() ? youtubeArt : null)
+// Avisa cuando la captura termina de cargar.
+export const onTvArtLoaded = (listener) => loadedListeners.push(listener)
 export function preloadTvArt() {
   if (youtubeArt || typeof Image === 'undefined') return
   youtubeArt = new Image()
+  youtubeArt.onload = () => loadedListeners.splice(0).forEach((listener) => listener())
   youtubeArt.src = YOUTUBE_ART
 }
 preloadTvArt()
 
 function youtube(g, pulse) {
   const { x, y, w, h } = SCREEN
-  if (youtubeArt?.complete && youtubeArt.naturalWidth > 0 && typeof g.drawImage === 'function') {
-    g.imageSmoothingEnabled = true
-    g.imageSmoothingQuality = 'high'
-    g.drawImage(youtubeArt, x, y, w, h)
-    return
-  }
   rect(g, x, y, w, h, '#0f0f0f')
   const cx = x + 5
   const cy = y + 5
@@ -195,11 +195,14 @@ function youtube(g, pulse) {
 // Escenas de cada canal, en el orden en que se reproducen.
 export const CHANNEL_SCENES = {
   weather: [(g) => weather(g, 0), (g) => weather(g, 1)],
-  netflix: [(g) => netflixLogo(g, 0), (g) => netflixLogo(g, 1), breakingBad, breakingBad],
+  netflix: [(g) => netflixLogo(g, 0), (g) => netflixLogo(g, 1), breakingBad],
   plex: [(g) => plex(g, 0), (g) => plex(g, 1)],
-  max: [(g) => hboMax(g, 0), (g) => hboMax(g, 1), gameOfThrones, gameOfThrones],
+  max: [(g) => hboMax(g, 0), (g) => hboMax(g, 1), gameOfThrones],
   youtube: [(g) => youtube(g, 0), (g) => youtube(g, 1)],
 }
+
+// Canales que se reproducen una sola vez: enseñan el logo de la aplicación, pasan al de la serie y ahí se quedan fijos.
+export const TV_ONCE = ['netflix', 'max']
 
 // Fotogramas de la tele: 0 apagada y, por canal, tantos como escenas tenga, en el orden de `TV_CHANNELS`.
 export const TV_FRAMES = 1 + TV_CHANNELS.reduce((sum, channel) => sum + CHANNEL_SCENES[channel].length, 0)

@@ -182,8 +182,9 @@ export const INTERACTIONS = [
       // Ante la torre, pegada a ella, es el NAS (`nas`): más abajo y a sus lados sigue siendo el ordenador.
       { x: WALL_X.lupeDesk - 76, y: 82, w: 21, h: 44 },
       { x: LUPE_TOWER_X - 10, y: 98, w: 20, h: 28 },
-      { x: LUPE_TOWER_X + 10, y: 82, w: 23, h: 44 },
-      { x: WALL_X.lupeDesk + 12, y: 82, w: 48, h: 44 },
+      // Y a lo largo de toda la mesa blanca, desde la torre hasta la cajonera y un poco más allá. Delante de la silla, mirando a ella, se
+      // ofrece sentarse en su lugar (la silla tiene su propia zona y exige mirarla), y sentada, E enciende el ordenador.
+      { x: LUPE_TOWER_X + 10, y: 82, w: 105, h: 44 },
       { x: WALL_X.lupeDesk - 38, y: 104, w: 76, h: 18 },
     ],
   },

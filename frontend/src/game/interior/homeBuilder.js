@@ -8,6 +8,7 @@ import { prefersReducedMotion } from '../../lib/reducedMotion.js'
 import { atreusBlink, atreusSheet } from './atreusSheet.js'
 import { buildExclamation } from '../npc/exclaim.js'
 import { FURNITURE, framesOf, furnitureCanvas, solidsOf } from './furniture/index.js'
+import { attachTvArt } from './tvArt.js'
 import { catDepth, createCat, updateCat } from './catBrain.js'
 import { ATREUS_BODY, FURNITURE_PLAN, NPC_PLAN } from './homeLayout.js'
 import { sardineCanvas } from './sardine.js'
@@ -103,10 +104,17 @@ function modeFor(scene, sprite, kind, still) {
       timer?.remove()
       timer = null
       const frames = modes[next]
-      show(frames[0])
+      // Un modo `once` recorre sus fotogramas una vez y se queda en el último; con movimiento reducido enseña directamente el último.
+      const once = FURNITURE[kind].once?.includes(next)
+      show(once && still ? frames[frames.length - 1] : frames[0])
       if (frames.length < 2 || still) return
       let i = 0
-      timer = scene.time.addEvent({ delay: ms, loop: true, callback: () => show(frames[(i = (i + 1) % frames.length)]) })
+      timer = scene.time.addEvent({
+        delay: ms,
+        loop: !once,
+        repeat: once ? frames.length - 2 : 0,
+        callback: () => show(frames[once ? ++i : (i = (i + 1) % frames.length)]),
+      })
     },
   }
   show(modes[mode][0])
@@ -262,6 +270,7 @@ function buildPrintMark(scene) {
 // sólido en la escena y `onMeow(variante)` recibe los maullidos de la gata.
 export function buildHome(scene, pastel, addSolid, onMeow = () => {}) {
   const switches = buildFurniture(scene, pastel, addSolid)
+  attachTvArt(scene, switches.tvUnit, FURNITURE_PLAN.find((piece) => piece.kind === 'tvUnit'))
   const atreusPlan = NPC_PLAN.find((npc) => npc.id === 'atreus')
   const atreus = buildAtreus(scene, atreusPlan, addSolid)
   const khalessi = buildKhalessi(scene, onMeow)
