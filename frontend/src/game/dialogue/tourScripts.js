@@ -40,7 +40,7 @@ export const TOUR_SCRIPTS = {
   'tour.impresoras_vitrina': { pages: lines('lupe', 'tour.impresoras_vitrina', 2), options: PRINTERS_MENU },
 
   'tour.atreus': {
-    pages: [page('lupe', 'tour.atreus', 1), page('atreus', 'tour.atreus', 2), page('lupe', 'tour.atreus', 3), page('atreus', 'tour.atreus', 4), page('lupe', 'tour.atreus', 5)],
+    pages: [page('lupe', 'tour.atreus', 1), page('atreus', 'tour.atreus', 2)],
     options: ATREUS_MENU,
   },
   'tour.atreus_consolas': { pages: lines('lupe', 'tour.atreus_consolas', 2), options: ATREUS_MENU },
@@ -49,7 +49,7 @@ export const TOUR_SCRIPTS = {
   'tour.pc_escritorio': { pages: lines('lupe', 'tour.pc_escritorio', 4), options: PC_MENU },
 
   'tour.khalessi': {
-    pages: [page('lupe', 'tour.khalessi', 1), { ...page('khalessi', 'tour.khalessi', 2), sfx: 'meow' }, page('lupe', 'tour.khalessi', 3), page('lupe', 'tour.khalessi', 4), page('lupe', 'tour.khalessi', 5)],
+    pages: [page('lupe', 'tour.khalessi', 1), { ...page('khalessi', 'tour.khalessi', 2), sfx: 'meow' }, page('lupe', 'tour.khalessi', 3)],
     options: exits,
   },
 

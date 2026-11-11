@@ -237,6 +237,7 @@ export default class InteriorScene extends Phaser.Scene {
     else if (this.near === 'printerCollect') this.collectPrint()
     else if (this.near === 'arcade') this.game.events.emit('enter', 'console')
     else if (this.near === 'figures') this.game.events.emit('enter', 'figures')
+    else if (this.near === 'shelf') this.game.events.emit('enter', 'consoles')
     else if (this.near === LUPE) this.lupe.talk(this.princess)
     else this.talk(this.near)
   }

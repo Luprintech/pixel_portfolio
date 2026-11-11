@@ -217,6 +217,10 @@ export const COPY = {
         pokemon: 'Pikachu, impreso por ti',
       },
     },
+    consoles: {
+      title: 'Nuestras consolas',
+      items: { n64: 'Nintendo 64', gbc: 'Game Boy Color', ds3: 'Nintendo 3DS', gamecube: 'GameCube', wii: 'Wii', switch: 'Nintendo Switch', ps1: 'PlayStation', ps2: 'PlayStation 2', ps3: 'PlayStation 3', ps4: 'PlayStation 4', xbox: 'Xbox' },
+    },
     smartTv: {
       title: 'Smart TV',
       off: 'Apagar la tele',
@@ -523,6 +527,10 @@ export const COPY = {
         funko: 'Funko Pop customized by me',
         pokemon: 'Pikachu, printed by you',
       },
+    },
+    consoles: {
+      title: 'Our consoles',
+      items: { n64: 'Nintendo 64', gbc: 'Game Boy Color', ds3: 'Nintendo 3DS', gamecube: 'GameCube', wii: 'Wii', switch: 'Nintendo Switch', ps1: 'PlayStation', ps2: 'PlayStation 2', ps3: 'PlayStation 3', ps4: 'PlayStation 4', xbox: 'Xbox' },
     },
     smartTv: {
       title: 'Smart TV',

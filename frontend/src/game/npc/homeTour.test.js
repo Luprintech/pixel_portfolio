@@ -253,7 +253,7 @@ describe('guion y textos de la visita', () => {
   })
 
   it('la conversación de Atreus mantiene su voz y la de Khalessi lleva su maullido', () => {
-    expect(SCRIPTS['tour.atreus'].pages.map((page) => page.who)).toEqual(['lupe', 'atreus', 'lupe', 'atreus', 'lupe'])
+    expect(SCRIPTS['tour.atreus'].pages.map((page) => page.who)).toEqual(['lupe', 'atreus'])
     expect(SCRIPTS['tour.khalessi'].pages[1]).toMatchObject({ who: 'khalessi', sfx: 'meow' })
   })
 

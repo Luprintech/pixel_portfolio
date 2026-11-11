@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { PAL } from '../../game/palette'
 import { tone } from '../../lib/tone'
 
@@ -26,6 +26,10 @@ export default function Joystick({ game }) {
     const clamped = Math.min(len, RADIUS)
     setVector((dx / len) * (clamped / RADIUS), (dy / len) * (clamped / RADIUS))
   }
+
+  // La página desmonta el joystick al abrir un diálogo o un panel. Si el dedo seguía en él, el `pointerup` se pierde y el último
+  // vector se quedaría en el registro: al cerrar el diálogo la viajera andaría sola hacia ese lado.
+  useEffect(() => () => game?.registry.set('joy', { x: 0, y: 0 }), [game])
 
   const ink = tone('ink', PAL.ink)
   const ring = `0 0 0 3px ${ink}, 0 0 0 6px ${tone('lavender-deep', PAL.saffron)}, 0 0 0 9px ${ink}`

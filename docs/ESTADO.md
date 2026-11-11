@@ -6,6 +6,17 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 
 ## Hecho
 
+### Revisión de diálogos, joystick táctil y ventana de consolas (2026-11-11)
+
+- **Bug de movimiento en móvil:** el joystick se desmontaba al abrirse un diálogo con el dedo puesto y el último vector se quedaba en el registro, así que la viajera andaba sola hacia ese lado. Ahora el joystick pone el vector a cero al desmontarse (`components/valle/Joystick.jsx`).
+- **Impresora en partida nueva:** "Nueva aventura" reiniciaba historia y mundo, pero conservaba logros, conversaciones vistas y puntuaciones, así que el logro "maker" ya estaba dado y la impresora ofrecía "Reimprimir". Ahora entrar al valle en modo nuevo ejecuta `clearSave()` y recarga los logros.
+- **Textos sin teclas en táctil:** la ayuda ("¿Cómo se juega?") tiene variante `.touch` también en su segunda página.
+- **Diálogos más breves:** acortados bienvenida, ayuda, visita guiada, impresión, ordenador, Khalessi y telescopio; Khalessi ya solo se presenta una vez. Atreus se presenta con una frase; se retiran la conversación de teclados y ratones y las referencias a la silla y al setup. Todo en `docs/DIALOGOS.md`, apartado 3b.
+- **Consolas:** la estantería abre una ventana con las once consolas dibujadas y su nombre (`game/interior/consoles.js`, `ConsolesViewer.jsx`) en lugar de una conversación; se retiran los diálogos `consolas.*`.
+- **Recreativa en móvil:** el D-pad pasa a un joystick como el del valle (`TouchPad.jsx`, con la lógica en `game/arcade/touchDirections.js`); Pausa, Reiniciar y Salir del juego van dentro de la franja azul bajo la pantalla; el bocadillo del mago ya no se sale del escenario.
+- **Decisión:** los diálogos son breves, no repiten lo ya dicho y no nombran teclas en táctil; cada cambio de diálogo se anota en `docs/DIALOGOS.md` en el mismo PR (regla añadida a `CLAUDE.md`).
+- **Sin verificar a mano:** los dibujos de las consolas se revisaron en una hoja renderizada, pero no la ventana dentro del juego ni la recreativa en un móvil real; el navegador integrado no pudo abrir la página.
+
 ### Dos temas del juego: Aventura y Cozy (2026-11-11)
 
 - **Decisión:** el juego tiene dos temas visuales, elegibles desde Opciones y aislados del resto del sitio. **Aventura** es el de por defecto; **Cozy** es el pastel que el juego usaba hasta ahora. El tema del juego es un eje nuevo, independiente del modo oscuro global (`ThemeContext`, que no se ha tocado y sigue gobernando blog, CMS y demás páginas). Decidido con Lupe: ambos temas son independientes del modo oscuro global, y Cozy conserva exactamente su comportamiento de día y noche.

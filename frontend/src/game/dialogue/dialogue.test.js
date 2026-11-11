@@ -55,7 +55,7 @@ describe('guiones de la casa', () => {
   const options = Object.entries(SCRIPTS).flatMap(([id, node]) => (node.options ?? []).map((option) => ({ id, ...option })))
 
   it('están los diálogos que pide el guion', () => {
-    ;['casa.entrada', 'casa.atreus_setup', 'casa.atreus_perifericos', 'casa.atreus_repeticion', 'casa.khalessi', 'casa.khalessi_reposo', 'casa.television', 'maker.presentacion', 'consolas.presentacion', 'pc.abrir'].forEach((id) => {
+    ;['casa.entrada', 'casa.atreus_setup', 'casa.atreus_repeticion', 'casa.khalessi', 'casa.khalessi_reposo', 'casa.television', 'maker.presentacion', 'pc.abrir'].forEach((id) => {
       expect(SCRIPTS[id], id).toBeTruthy()
     })
   })
@@ -106,10 +106,6 @@ describe('guiones de la casa', () => {
     expect(lineText('es', 'casa.entrada.1')).toContain('Yo soy Atreus')
     expect(lineText('xx', 'casa.khalessi.1')).toBe('meaw!')
     expect(optionText('en', 'casa.opt.setup')).toBe('The gaming room')
-    expect(DIALOGUE_COPY.es.lines['consolas.nintendo.1']).toContain('Nintendo 64, Game Boy Color, Nintendo 3DS, Wii, GameCube y Nintendo Switch')
-    expect(DIALOGUE_COPY.es.lines['consolas.playstation.1']).toContain('PlayStation 1, 2, 3 y 4')
-    expect(DIALOGUE_COPY.es.lines['consolas.otras.1']).toBe('Y también tenemos una Xbox.')
-    expect(DIALOGUE_COPY.es.lines['consolas.playstation.1']).toContain('PlayStation 1, 2, 3 y 4')
   })
 })
 
@@ -118,13 +114,14 @@ describe('qué conversación abre cada cosa', () => {
     expect(talkFor('atreus', new Set())).toBe('casa.entrada')
     expect(talkFor('atreus', new Set(['casa.entrada']))).toBe('casa.atreus_repeticion')
     const options = view(SCRIPTS, { id: 'casa.atreus_repeticion', index: 0 }).options.map((option) => option.id)
-    expect(options).toEqual(['setup', 'perifericos', 'seguir'])
+    expect(options).toEqual(['setup', 'seguir'])
   })
 
-  it('la impresora y las consolas repiten tras la primera visita', () => {
+  it('la impresora repite tras la primera visita', () => {
     expect(talkFor('printer', new Set())).toBe('maker.presentacion')
     expect(talkFor('printer', new Set(['maker.presentacion']))).toBe('maker.repeticion')
-    expect(talkFor('shelf', new Set(['consolas.presentacion']))).toBe('consolas.repeticion')
+    // La estantería ya no abre conversación: se ve en una ventana con las consolas.
+    expect(talkFor('shelf', new Set())).toBeNull()
   })
 
   it('Khalessi alterna el maullido y el descanso', () => {
@@ -172,23 +169,6 @@ describe('voz', () => {
   })
 })
 
-describe('estantería: primeros recuerdos y recreativa', () => {
-  it('la opción lleva a dos páginas de Lupe con las frases del guion, y no se inventa ningún otro recuerdo', () => {
-    const talk = SCRIPTS['consolas.recuerdos']
-    expect(talk.pages.map((page) => page.who)).toEqual(['lupe', 'lupe'])
-    expect(DIALOGUE_COPY.es.lines['consolas.recuerdos.1']).toBe('La primera consola a la que jugué fue una Atari 2600. Todavía recuerdo juegos como Megamania y River Raid II.')
-    expect(DIALOGUE_COPY.es.lines['consolas.recuerdos.2']).toBe('De hecho, si te apetece probar algo parecido, tenemos una recreativa en casa. Acércate y echa una partida.')
-    expect(DIALOGUE_COPY.en.lines['consolas.recuerdos.1']).toContain('Atari 2600')
-  })
-
-  it('se puede elegir desde todas las páginas de la estantería, que mantienen sus opciones', () => {
-    ;['consolas.presentacion', 'consolas.nintendo', 'consolas.playstation', 'consolas.otras', 'consolas.recuerdos', 'consolas.repeticion'].forEach((id) => {
-      expect(SCRIPTS[id].options.map((option) => option.id), id).toEqual(['nintendo', 'playstation', 'otras', 'recuerdos', 'volver'])
-    })
-    expect(SCRIPTS['consolas.presentacion'].options.find((option) => option.id === 'recuerdos').to).toBe('consolas.recuerdos')
-  })
-})
-
 describe('preguntas que se agotan', () => {
   const MENU = 'tour.impresoras'
   const ids = (answered) => view(SCRIPTS, { id: MENU, index: 3 }, { answered }).options.map((o) => o.id)
@@ -216,7 +196,7 @@ describe('preguntas que se agotan', () => {
 describe('conversaciones en las que habla Lupe', () => {
   it('las de Lupe, y las que acaban llevando a una línea suya, piden que ella esté a mano', async () => {
     const { involvesLupe } = await import('./scripts.js')
-    ;['maker.presentacion', 'consolas.presentacion', 'hifi.presentacion', 'casa.television', 'pc.abrir', 'casa.khalessi_reposo'].forEach((id) => expect(involvesLupe(id), id).toBe(true))
+    ;['maker.presentacion', 'hifi.presentacion', 'casa.television', 'pc.abrir', 'casa.khalessi_reposo'].forEach((id) => expect(involvesLupe(id), id).toBe(true))
     // Atreus habla solo, pero su menú lleva a respuestas donde Lupe interviene.
     expect(involvesLupe('casa.entrada')).toBe(true)
     // Solo el maullido de Khalessi: nadie más.

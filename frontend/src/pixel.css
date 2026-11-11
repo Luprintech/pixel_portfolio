@@ -437,6 +437,9 @@
     line-height: 1.35;
   }
 }
+.px-bubble[data-flat='true']::after {
+  display: none;
+}
 @keyframes px-bubble-in {
   from {
     opacity: 0;

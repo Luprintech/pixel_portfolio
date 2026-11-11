@@ -204,6 +204,26 @@ export default function ArcadeMachine({ unlocked, onClose, onComplete, onTheme }
   // cabe sin desplazar la página.
   const chrome = touch ? '23rem' : '16rem'
 
+  // Pausa, reinicio y salida al menú. En pantalla táctil van dentro de la franja de estado (menos mandos sueltos); en escritorio, en el
+  // panel de mandos junto al joystick de adorno.
+  const compact = touch ? '!min-h-8 !px-2 !text-xs' : '!min-h-10 !px-3 !text-sm'
+  const controls = (
+    <div className={`flex min-w-0 items-center justify-center gap-2 ${touch ? 'w-full' : 'flex-1 flex-wrap'}`}>
+      <button type="button" className={`px-btn px-btn--bone ${compact}`} aria-label={ui.pause} data-sound="select" onClick={() => setPaused((p) => !p)} disabled={Boolean(outcome)}>
+        <span aria-hidden="true">{paused ? '▶' : '❚❚'}</span>
+        <span>{paused ? ui.resume : ui.pause}</span>
+      </button>
+      <button type="button" className={`px-btn px-btn--bone ${compact}`} aria-label={ui.restart} data-sound="select" onClick={restart}>
+        <span aria-hidden="true">↻</span>
+        <span>{ui.restart}</span>
+      </button>
+      <button type="button" data-sound="back" className={`px-btn px-btn--bone ${compact}`} onClick={backToSelector}>
+        <span aria-hidden="true">◀</span>
+        <span>{ui.exitGame}</span>
+      </button>
+    </div>
+  )
+
   return (
     <div ref={rootRef} className="absolute inset-0 z-30 grid place-items-center p-2" style={{ background: 'rgba(15,14,34,0.62)' }}>
       <div
@@ -275,14 +295,16 @@ export default function ArcadeMachine({ unlocked, onClose, onComplete, onTheme }
           </div>
         </div>
 
-        {/* Franja de estado de alto fijo: los avisos y el marcador cambian de texto sin mover ni encoger el monitor. */}
-        <div className="px-text flex h-12 flex-col items-center justify-center overflow-hidden px-2 text-center text-sm leading-tight" style={{ background: PAL.ink, color: PAL.bone, boxShadow: `inset 0 0 0 2px ${PAL.stone}` }}>
+        {/* Franja de estado de alto fijo: los avisos y el marcador cambian de texto sin mover ni encoger el monitor. En táctil lleva además
+            los botones de pausa, reinicio y salida, con el aviso encima. */}
+        <div className={`px-text flex ${touch && screen === 'play' ? 'h-[4.5rem] gap-1' : 'h-12'} flex-col items-center justify-center overflow-hidden px-2 text-center text-sm leading-tight`} style={{ background: PAL.ink, color: PAL.bone, boxShadow: `inset 0 0 0 2px ${PAL.stone}` }}>
           {screen === 'play' ? (
             <>
               <p aria-live="polite" className="line-clamp-1 w-full">
                 {view?.status === 'dead' ? `${ui.dead} ${ui.deadKey}.` : view?.message ? arcadeText(lang, view.message) : ''}
               </p>
               {showHud && <p className="w-full truncate text-xs" style={{ color: PAL.saffronLight }}>{view.hud.map(({ key, value }) => `${ui.hud[key]} ${value}`).join(' · ')}</p>}
+              {touch && controls}
             </>
           ) : (
             !touch && <p className="text-xs" style={{ opacity: 0.8 }}>{ui.hintMenu}</p>
@@ -290,24 +312,11 @@ export default function ArcadeMachine({ unlocked, onClose, onComplete, onTheme }
         </div>
 
         {/* Panel de mandos: los botones de pausa, reinicio y menú son reales; el joystick y los pulsadores grandes, adorno. */}
-        <div className="flex items-center justify-between gap-2" style={{ color: PAL.bone }}>
+        <div className={`${touch && screen === 'play' ? 'hidden' : 'flex'} items-center justify-between gap-2`} style={{ color: PAL.bone }}>
           {screen === 'play' ? (
             <>
               {!touch && <Joystick />}
-              <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2">
-                <button type="button" className="px-btn px-btn--bone !min-h-10 !px-3 !text-sm" aria-label={ui.pause} data-sound="select" onClick={() => setPaused((p) => !p)} disabled={Boolean(outcome)}>
-                  <span aria-hidden="true">{paused ? '▶' : '❚❚'}</span>
-                  <span>{paused ? ui.resume : ui.pause}</span>
-                </button>
-                <button type="button" className="px-btn px-btn--bone !min-h-10 !px-3 !text-sm" aria-label={ui.restart} data-sound="select" onClick={restart}>
-                  <span aria-hidden="true">↻</span>
-                  <span>{ui.restart}</span>
-                </button>
-                <button type="button" data-sound="back" className="px-btn px-btn--bone !min-h-10 !px-3 !text-sm" onClick={backToSelector}>
-                  <span aria-hidden="true">◀</span>
-                  <span>{ui.exitGame}</span>
-                </button>
-              </div>
+              {!touch && controls}
               {!touch && (
                 <div className="flex gap-1">
                   <PushButton color={PAL.tile} shade={PAL.tileDark} />

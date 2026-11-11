@@ -10,7 +10,6 @@ import { TOUR_SCRIPTS } from './tourScripts.js'
 
 const ATREUS_MENU = [
   option('setup', 'casa.opt.setup', { to: 'casa.atreus_setup' }),
-  option('perifericos', 'casa.opt.perifericos', { to: 'casa.atreus_perifericos' }),
   option('seguir', 'casa.opt.seguir', { close: true }),
 ]
 
@@ -20,14 +19,6 @@ const MAKER_MENU = [
   // Solo con una galería aprobada y fotos reales (`FEATURES.gallery`); mientras no las haya, no se ofrece.
   option('trabajos', 'maker.opt.trabajos', { when: 'gallery', action: 'gallery' }),
   option('volver', 'maker.opt.volver', { close: true }),
-]
-
-const CONSOLE_MENU = [
-  option('nintendo', 'consolas.opt.nintendo', { to: 'consolas.nintendo' }),
-  option('playstation', 'consolas.opt.playstation', { to: 'consolas.playstation' }),
-  option('otras', 'consolas.opt.otras', { to: 'consolas.otras' }),
-  option('recuerdos', 'consolas.opt.recuerdos', { to: 'consolas.recuerdos' }),
-  option('volver', 'consolas.opt.volver', { close: true }),
 ]
 
 const HIFI_MENU = [
@@ -104,10 +95,6 @@ export const SCRIPTS = {
     pages: [{ who: 'atreus', text: 'casa.atreus_setup.1' }, { who: 'atreus', text: 'casa.atreus_setup.2' }, { who: 'lupe', text: 'casa.atreus_setup.3' }],
     options: ATREUS_MENU,
   },
-  'casa.atreus_perifericos': {
-    pages: [{ who: 'atreus', text: 'casa.atreus_perifericos.1' }, { who: 'lupe', text: 'casa.atreus_perifericos.2' }, { who: 'atreus', text: 'casa.atreus_perifericos.3' }],
-    options: ATREUS_MENU,
-  },
   'casa.atreus_repeticion': { pages: lines('atreus', 'casa.atreus_repeticion', 1), options: ATREUS_MENU },
 
   'casa.khalessi': { pages: [{ who: 'khalessi', text: 'casa.khalessi.1', sfx: 'meow' }] },
@@ -120,12 +107,6 @@ export const SCRIPTS = {
   'maker.figuras': { pages: lines('lupe', 'maker.figuras', 2), options: MAKER_MENU },
   'maker.repeticion': { pages: lines('lupe', 'maker.repeticion', 2), options: MAKER_MENU },
 
-  'consolas.presentacion': { pages: lines('lupe', 'consolas.presentacion', 2), options: CONSOLE_MENU },
-  'consolas.nintendo': { pages: lines('lupe', 'consolas.nintendo', 2), options: CONSOLE_MENU },
-  'consolas.playstation': { pages: lines('lupe', 'consolas.playstation', 1), options: CONSOLE_MENU },
-  'consolas.otras': { pages: lines('lupe', 'consolas.otras', 1), options: CONSOLE_MENU },
-  'consolas.recuerdos': { pages: lines('lupe', 'consolas.recuerdos', 2), options: CONSOLE_MENU },
-  'consolas.repeticion': { pages: lines('lupe', 'consolas.repeticion', 1), options: CONSOLE_MENU },
 
   'hifi.presentacion': { pages: lines('lupe', 'hifi.presentacion', 2), options: HIFI_MENU },
   'hifi.favoritas': { pages: lines('lupe', 'hifi.favoritas', 2), options: HIFI_MENU },
@@ -163,7 +144,6 @@ export const TALKS = {
   television: { first: 'casa.television' },
   pc: { first: 'pc.abrir' },
   printer: { first: 'maker.presentacion', again: 'maker.repeticion' },
-  shelf: { first: 'consolas.presentacion', again: 'consolas.repeticion' },
   hifi: { first: 'hifi.presentacion', again: 'hifi.repeticion' },
   khalessi: { first: 'casa.khalessi', rest: 'casa.khalessi_reposo' },
 }

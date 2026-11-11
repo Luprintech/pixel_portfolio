@@ -80,7 +80,7 @@ export default function GameStage({ gameId, runKey, paused, input, lang, ui, onV
           className="block [image-rendering:pixelated]"
           style={{ width, height }}
         />
-        {bubble && <StageBubble x={bubble.x * scale} y={bubble.y * scale} width={width} text={arcadeText(lang, bubble.key)} more={bubble.more} fontSize={Math.min(22, Math.max(13, scale * 4.2))} />}
+        {bubble && <StageBubble x={bubble.x * scale} y={bubble.y * scale} width={width} height={height} text={arcadeText(lang, bubble.key)} more={bubble.more} fontSize={Math.min(22, Math.max(13, scale * 4.2))} />}
       </div>
     </div>
   )

@@ -9,6 +9,7 @@ import ArcadeMachine from '../components/valle/arcade/ArcadeMachine'
 import CustomizeButton from '../components/valle/CustomizeButton'
 import DialogueBox from '../components/valle/DialogueBox'
 import FiguresViewer from '../components/valle/FiguresViewer'
+import ConsolesViewer from '../components/valle/ConsolesViewer'
 import OptionsButton from '../components/valle/OptionsButton'
 import OptionsDialog from '../components/valle/OptionsDialog'
 import PrinterPanel from '../components/valle/PrinterPanel'
@@ -24,7 +25,7 @@ import { DEFAULT_PET } from '../game/pet'
 import { isReadyToEnter, playerFeatures } from '../game/player'
 import { PAL } from '../game/palette'
 import { MENU_THEME, gameById } from '../game/arcade/games'
-import { loadSave } from '../game/save'
+import { clearSave, loadSave } from '../game/save'
 import { initialStory, reachNode, storyFeatures } from '../game/story/story'
 import { updateStory } from '../game/story/storyStore'
 import { clockOffset, valleSkyAt } from '../game/valleSky'
@@ -125,10 +126,16 @@ export default function Valle() {
   const enterValley = useCallback(() => {
     // El creador ya avisa de lo que falta; esto evita entrar sin nombre por cualquier otro camino.
     if (!isReadyToEnter({ name, pet, petName })) return
+    // Una aventura nueva empieza de cero también en logros, conversaciones vistas y puntuaciones: si no, la impresora
+    // ofrecería "Reimprimir" y no daría el premio en una partida recién empezada.
+    if (mode === 'nueva' && !started) {
+      clearSave()
+      achievements.reload()
+    }
     saveNow()
     setStarted(true)
     setPhase('play')
-  }, [saveNow, name, pet, petName])
+  }, [saveNow, name, pet, petName, mode, started, achievements])
 
   const selectAvatar = useCallback((body) => {
     if (body === look.body) return
@@ -507,7 +514,8 @@ export default function Valle() {
         {zone === 'tv' && !editing && <SmartTv channel={tvChannel} onSelect={selectChannel} onClose={closeZone} />}
         {zone === 'printer' && !editing && <PrinterPanel job={game?.registry.get('printJob')} claimed={makerRewarded} onStart={startPrint} onClose={closeZone} />}
         {zone === 'figures' && !editing && <FiguresViewer unlocked={achievements.unlocked} onClose={closeZone} />}
-        {zone && zone !== 'telescope' && !['pc', 'console', 'tv', 'printer', 'figures'].includes(zone) && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
+        {zone === 'consoles' && !editing && <ConsolesViewer onClose={closeZone} />}
+        {zone && zone !== 'telescope' && !['pc', 'console', 'tv', 'printer', 'figures', 'consoles'].includes(zone) && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
         {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} features={dialogueFeatures} player={player} onCue={cueDialogue} onReach={reachDialogue} onClose={closeDialogue} />}
 
         <OptionsDialog
