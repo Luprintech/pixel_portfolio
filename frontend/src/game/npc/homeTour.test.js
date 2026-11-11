@@ -4,7 +4,7 @@ import { INTERACTIONS, homeRoom } from '../interior/homeLayout.js'
 import { TOUR_STOPS, completeStop, initialStory, nextStop, setTour } from '../story/story.js'
 import { SCRIPTS } from '../dialogue/scripts.js'
 import { DIALOGUE_COPY } from '../../lib/dialogueCopy.js'
-import { AFTER_TALK, LUPE_MIN_Y, PAUSE_TALK, TOUR, applyTourAction, canTalkTo, closeWithoutChoice, createHomeTour, snapSpots, stopTalk, talkToLupe, updateHomeTour } from './homeTour.js'
+import { AFTER_TALK, LUPE_MIN_Y, OFFER_TALK, PAUSE_TALK, TOUR, applyTourAction, canTalkTo, closeWithoutChoice, createHomeTour, snapSpots, stopTalk, talkToLupe, updateHomeTour } from './homeTour.js'
 
 const nav = homeNav(LUPE_MIN_Y)
 const spots = snapSpots(nav)
@@ -159,13 +159,13 @@ describe('visita por dentro de la casa', () => {
     expect(story.tour).toBe('accepted')
   })
 
-  it('dejar la visita la deja pendiente con lo ya visto, y se retoma por la siguiente parada', () => {
+  it('dejar la visita la deja con lo ya visto y sin insistir, y se retoma por la siguiente parada', () => {
     const tour = createHomeTour({ nav, story: START })
     approach(tour)
     let story = applyTourAction(tour, 'tour-next', START)
     approach(tour)
     story = applyTourAction(tour, 'tour-leave', story)
-    expect(story.tour).toBe('pending')
+    expect(story.tour).toBe('cancelled')
     expect(story.stops).toEqual(['entrada', 'impresoras'])
     talkToLupe(tour, { x: tour.brain.x, y: tour.brain.y })
     story = applyTourAction(tour, 'tour-resume', story)
@@ -272,5 +272,94 @@ describe('guion y textos de la visita', () => {
           expect(lines[`${key}.touch`]).not.toMatch(/\bE\b/)
         })
     })
+  })
+})
+
+describe('Lupe acude a lo que la viajera mira por su cuenta', () => {
+  // Con la entrada ya contada y la viajera junto a Atreus sin que le toque, Lupe va allí y lo presenta.
+  it('si la viajera se acerca a Atreus, Lupe va a su lado y abre su conversación', () => {
+    let story = completeStop(START, 'entrada')
+    const tour = createHomeTour({ nav, story })
+    expect(tour.stop).toBe('impresoras')
+    const atAtreus = { x: spots.atreus.x - 8, y: spots.atreus.y }
+    let event = null
+    for (let t = 0; t < 40000 && !event; t += 50) event = updateHomeTour(tour, 50, atAtreus, false, story)
+    expect(tour.stop).toBe('atreus')
+    expect(event).toEqual({ type: 'talk', id: 'tour.atreus' })
+    expect(Math.hypot(tour.brain.x - spots.atreus.x, tour.brain.y - spots.atreus.y)).toBeLessThan(TOUR.talkRange)
+    story = applyTourAction(tour, 'tour-next', story)
+    expect(story.stops).toEqual(['entrada', 'atreus'])
+    // La visita sigue por lo que falta, empezando por lo que viene detrás de Atreus.
+    expect(tour.stop).toBe('pc')
+  })
+
+  it('lo mismo con el ordenador, también tras dejar la visita para explorar', () => {
+    let story = completeStop(START, 'entrada')
+    const tour = createHomeTour({ nav, story })
+    story = { ...applyTourAction(tour, 'tour-leave', story), tour: 'pending' }
+    // Una visita interrumpida y retomada en la casa: Lupe está quieta y sale al encuentro de lo que se mire.
+    const paused = createHomeTour({ nav, story, resident: true })
+    const atPc = { x: spots.pc.x + 6, y: spots.pc.y }
+    let event = null
+    for (let t = 0; t < 40000 && !event; t += 50) event = updateHomeTour(paused, 50, atPc, false, story)
+    expect(paused.stop).toBe('pc')
+    expect(event).toEqual({ type: 'talk', id: 'tour.pc' })
+  })
+
+  it('no se acerca a nada ya contado ni mientras habla, y no hay vaivén entre dos', () => {
+    const story = { ...completeStop(completeStop(START, 'entrada'), 'atreus') }
+    const tour = createHomeTour({ nav, story })
+    const atAtreus = { x: spots.atreus.x, y: spots.atreus.y }
+    run(tour, atAtreus, 1000)
+    expect(tour.stop).not.toBe('atreus')
+    const picks = new Set()
+    for (let t = 0; t < 4000; t += 50) {
+      updateHomeTour(tour, 50, spots.pc, false, story)
+      picks.add(tour.stop)
+    }
+    expect(picks.size).toBeLessThanOrEqual(2)
+  })
+})
+
+describe('Lupe residente (sin visita en marcha)', () => {
+  const near = (tour) => ({ x: tour.brain.x + 10, y: tour.brain.y + 10 })
+
+  it('está quieta, no abre nada sola ni sale al encuentro de lo que se mira si rechazó la visita', () => {
+    const story = { ...START, tour: 'cancelled' }
+    const tour = createHomeTour({ nav, story, resident: true })
+    expect(tour.phase).toBe('paused')
+    expect(run(tour, near(tour), 3000, false)).toBeNull()
+    const atAtreus = { x: spots.atreus.x, y: spots.atreus.y }
+    for (let t = 0; t < 5000; t += 50) updateHomeTour(tour, 50, atAtreus, false, story)
+    expect(tour.stop).toBe('entrada')
+    expect(tour.phase).toBe('paused')
+  })
+
+  it('al hablarle sin visita empezada la ofrece; con visita empezada pregunta si se sigue', () => {
+    const fresh = createHomeTour({ nav, story: { ...START, tour: 'cancelled' }, resident: true })
+    expect(talkToLupe(fresh, near(fresh))).toEqual({ type: 'talk', id: OFFER_TALK })
+    const started = createHomeTour({ nav, story: { ...completeStop(START, 'entrada'), tour: 'cancelled' }, resident: true })
+    expect(talkToLupe(started, near(started))).toEqual({ type: 'talk', id: PAUSE_TALK })
+  })
+
+  it('aceptar la oferta pone la visita en marcha por la primera parada', () => {
+    const story = { ...START, tour: 'cancelled' }
+    const tour = createHomeTour({ nav, story, resident: true })
+    talkToLupe(tour, near(tour))
+    const next = applyTourAction(tour, 'tour-resume', story)
+    expect(next.tour).toBe('accepted')
+    expect(tour.stop).toBe('entrada')
+    expect(tour.started).toBe(true)
+  })
+
+  it('con la visita completada habla de lo ya visto y no ofrece nada', () => {
+    const tour = createHomeTour({ nav, story: { ...START, tour: 'completed', stops: [...TOUR_STOPS] }, resident: true })
+    expect(tour.phase).toBe('done')
+    expect(talkToLupe(tour, near(tour))).toEqual({ type: 'talk', id: AFTER_TALK })
+  })
+
+  it('la oferta tiene texto en los dos idiomas y opciones válidas', () => {
+    ;['es', 'en'].forEach((lang) => expect(DIALOGUE_COPY[lang].lines['tour.ofrecer.1'], lang).toBeTruthy())
+    expect(SCRIPTS['tour.ofrecer'].options.map((o) => o.action)).toEqual(['tour-resume', 'tour-leave'])
   })
 })

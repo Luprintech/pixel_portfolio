@@ -205,6 +205,15 @@ export const ZELDA_MINI = [
   'llllllll',
 ]
 
+// Vídeos de las impresiones reales: cada figura sin fondo ni marco es un enlace a su vídeo.
+const VIDEOS = {
+  eren: 'https://www.youtube.com/shorts/wyoTy-bfMS4',
+  pokemon: 'https://www.youtube.com/shorts/sfrIugwXaDo',
+  nezuko: 'https://www.youtube.com/shorts/QWgXy04CKP4',
+  zelda: 'https://www.youtube.com/shorts/zPE5h0tc0ls',
+  tanjiro: 'https://www.youtube.com/shorts/CA9kBMEaCeQ',
+}
+
 export const FUNKO_VIDEO = 'https://youtu.be/Ox06KB95vbM?si=V2w8LRSlr8xZOM2e'
 
 // El catálogo de figuras: una sola lista que alimenta el visor «Mis figuras 3D» y la vitrina de la sala. Para añadir una:
@@ -214,12 +223,12 @@ export const FUNKO_VIDEO = 'https://youtu.be/Ox06KB95vbM?si=V2w8LRSlr8xZOM2e'
 // se abre al pulsarla). Hay que añadir también su nombre en `lib/valleCopy.js` (`figures.items`).
 export const FIGURES = [
   { id: 'luprintech', size: [SIGN_W, SIGN_H], dark: true, draw: (g) => drawLuprintechSign(g, 0, 0, true) },
-  { id: 'nezuko', draw: (g) => drawMap(g, 0, 0, NEZUKO), shelf: NEZUKO_MINI },
-  { id: 'eren', draw: (g) => drawMap(g, 0, 0, EREN), shelf: EREN_MINI },
-  { id: 'zelda', draw: (g) => drawMap(g, 0, 0, ZELDA), shelf: ZELDA_MINI },
-  { id: 'tanjiro', draw: (g) => drawMap(g, 0, 0, TANJIRO), shelf: TANJIRO_MINI },
+  { id: 'nezuko', draw: (g) => drawMap(g, 0, 0, NEZUKO), shelf: NEZUKO_MINI, bare: true, href: VIDEOS.nezuko },
+  { id: 'eren', draw: (g) => drawMap(g, 0, 0, EREN), shelf: EREN_MINI, bare: true, href: VIDEOS.eren },
+  { id: 'zelda', draw: (g) => drawMap(g, 0, 0, ZELDA), shelf: ZELDA_MINI, bare: true, href: VIDEOS.zelda },
+  { id: 'tanjiro', draw: (g) => drawMap(g, 0, 0, TANJIRO), shelf: TANJIRO_MINI, bare: true, href: VIDEOS.tanjiro },
   { id: 'funko', draw: (g) => drawMap(g, 0, 0, FUNKO), shelf: FUNKO_MINI, bare: true, href: FUNKO_VIDEO },
-  { id: 'pokemon', draw: (g) => drawPokemon(g, 0, 0), unlock: 'maker' },
+  { id: 'pokemon', draw: (g) => drawPokemon(g, 0, 0), unlock: 'maker', bare: true, href: VIDEOS.pokemon },
 ]
 
 export function figureCanvas(figure) {

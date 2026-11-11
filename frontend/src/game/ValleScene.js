@@ -6,7 +6,8 @@ import { CHAIR, CHAIR_ZONE, DECK, FOOT, LUPE_SPOT, STAIRS, STAIR_PACE, climb, ne
 import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, SHEET_POSES } from './avatar/index.js'
 import { shadowSprite } from './sprites.js'
 import { makeCanvas, wallRows } from './pixelKit.js'
-import { petCanvas } from './pets/index.js'
+import { petCanvas, petRestCanvas } from './pets/index.js'
+import { createIdle, playOffset, takeSound, updateIdle } from './pets/idle.js'
 import { bridgeAssets, buildingAssets, groundBase, groundSeasonJob, propAssets, treeAssets } from './worldAssets.js'
 import SkyLayer from './SkyLayer.js'
 import LitWindows from './litWindows.js'
@@ -15,7 +16,8 @@ import { resumePoint } from './worldSave.js'
 import { characterSheet } from './characters.js'
 import ValleNpcs from './npc/ValleNpcs.js'
 import { createValleNav } from './npc/valleNav.js'
-import { getStory } from './story/storyStore.js'
+import { getStory, updateStory } from './story/storyStore.js'
+import { setTour, tourOnRoofEntry } from './story/story.js'
 import { registerSheet } from './sheetTexture.js'
 import { sitDown, standUp } from './sitting.js'
 
@@ -204,6 +206,14 @@ export default class ValleScene extends Phaser.Scene {
     if (this.pet.kind === 'ninguna') return
     const frames = [0, 1].map((f) => petCanvas(this.pet, f))
     frames.forEach((canvas, f) => this.addCanvas(`pet-${f}`, canvas))
+    // Las posturas de cuando se queda parada: sentada y, en los gatos, aseándose (dos fotogramas cada una).
+    ;['sit', 'wash'].forEach((pose) => {
+      if (pose === 'wash' && this.pet.kind !== 'gato') return
+      ;[0, 1].forEach((step) => this.addCanvas(`pet-${pose}-${step}`, petRestCanvas(this.pet, pose, step)))
+    })
+    this.petIdle = createIdle()
+    this.petStill = 0
+    this.petOffset = { dx: 0, dy: 0 }
     // Cada raza tiene su tamaño: la sombra cubre el cuerpo y se desplaza con él, no con la cabeza.
     this.petWidth = frames[0].width
     this.addCanvas('shadow-pet', shadowSprite(Math.round(this.petWidth * 0.62), 4))
@@ -455,7 +465,7 @@ export default class ValleScene extends Phaser.Scene {
 
     // Lupe y Khalessi tienen vida propia: andan por los mismos caminos libres que la viajera (los cuerpos sólidos del mapa).
     const bodies = this.solids.map((body) => ({ x: body.x - body.width / 2, y: body.y - body.height / 2, w: body.width, h: body.height }))
-    this.npcs = new ValleNpcs(this, createValleNav(bodies), () => ({ x: this.princess.x, y: this.princess.y }))
+    this.npcs = new ValleNpcs(this, createValleNav(bodies), () => ({ x: this.princess.x, y: this.princess.y }), () => this.companion && { x: this.companion.x, y: this.companion.y })
     this.buildPet(x, y)
     this.facing = this.arriving ? 'up' : 'down'
     this.walk = { timer: 0, step: 0 }
@@ -492,8 +502,16 @@ export default class ValleScene extends Phaser.Scene {
     const cam = this.cameras.main
     cam.once('camerafadeoutcomplete', () => {
       // Con una visita guiada en marcha, Lupe ya espera dentro y la lleva de parada en parada (ver `npc/homeTour.js`).
-      const guided = id === 'about' && getStory(this.game).tour === 'accepted'
-      if (guided) this.npcs.goInside()
+      // Por la puerta de la azotea también: si aún no ha hecho ni rechazado la visita, Lupe sale a recibirla dentro.
+      const story = getStory(this.game)
+      const home = id === 'about'
+      const guided = home && (story.tour === 'accepted' || (from === 'deck' && tourOnRoofEntry(story)))
+      if (guided && story.tour !== 'accepted') updateStory(this.game, (current) => setTour(current, 'accepted'))
+      // Lupe vive en la casa: esté la visita en marcha o no, mientras la viajera está dentro no la hay fuera (y su visita al telescopio acaba).
+      if (home) {
+        this.npcs.cancelDeckVisit()
+        this.npcs.goInside()
+      }
       this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel, from, guided })
       this.scene.sleep()
     })
@@ -526,8 +544,8 @@ export default class ValleScene extends Phaser.Scene {
       this.facing = 'down'
       this.princess.setFrame(frameName('down', 0))
     }
-    // Si salió de la casa tras la visita guiada, Lupe se queda en su puerta; la visita queda hecha o pendiente según hasta dónde llegó.
-    if (data?.guided) this.npcs.leaveHome()
+    // Al salir de la casa, Lupe vuelve a su sitio fuera; si había visita en marcha queda hecha o pendiente según hasta dónde llegó.
+    if (data?.home) this.npcs.leaveHome()
     this.fitCamera()
     this.cameras.main.fadeIn(250, 220, 203, 240)
   }
@@ -634,6 +652,10 @@ export default class ValleScene extends Phaser.Scene {
 
   followPet(moving, px, py, delta) {
     const pet = this.companion
+    // Se quita el desplazamiento de los saltitos del fotograma anterior: el seguimiento cuenta con la posición real.
+    pet.x -= this.petOffset.dx
+    pet.y -= this.petOffset.dy
+    this.petOffset = { dx: 0, dy: 0 }
     if (moving) {
       const last = this.trail[this.trail.length - 1]
       if (!last || Math.hypot(last.x - px, last.y - py) > 1.5) this.trail.push({ x: px, y: py })
@@ -650,24 +672,48 @@ export default class ValleScene extends Phaser.Scene {
       pet.y += Math.sin(angle) * step
       if (Math.abs(dx) > 0.4) pet.setFlipX(dx < 0)
       pet.setTexture(`pet-${this.walk.step % 2}`)
+      this.petStill = 0
     } else {
-      pet.setTexture('pet-0')
+      this.petStill = moving ? 0 : this.petStill + delta
+      this.restPet(pet, delta)
     }
     pet.setDepth(Math.round(pet.y))
     const bodyShift = Math.round(this.petWidth * 0.12) * (pet.flipX ? 1 : -1)
-    this.petShadow.setPosition(pet.x + bodyShift, pet.y - 1)
+    this.petShadow.setPosition(pet.x + bodyShift, pet.y - this.petOffset.dy - 1)
+  }
+
+  // La mascota parada hace lo suyo (ver `pets/idle.js`). Ante Khalessi, que se acerca a conocerla, se sienta a mirarla y luego juega.
+  restPet(pet, delta) {
+    const meet = this.npcs.petCue()
+    const forced = meet?.phase === 'sniff' ? 'sit' : meet?.phase === 'play' ? 'play' : null
+    const idle = updateIdle(this.petIdle, delta, { still: this.petStill, kind: this.pet.kind, forced })
+    if (meet) pet.setFlipX(meet.x < pet.x)
+    if (takeSound(idle)) this.game.events.emit('pet-sound', this.pet.kind, this.pet.breed)
+    const beat = Math.floor(idle.t / (idle.pose === 'wash' ? 220 : 480)) % 2
+    if (idle.pose === 'sit' || idle.pose === 'meow') pet.setTexture(`pet-sit-${beat}`)
+    else if (idle.pose === 'wash') pet.setTexture(`pet-wash-${beat}`)
+    else if (idle.pose === 'play') {
+      const { dx, dy, face } = playOffset(idle.t)
+      this.petOffset = { dx, dy }
+      pet.x += dx
+      pet.y += dy
+      if (!meet) pet.setFlipX(face === 'left')
+      pet.setTexture(`pet-${Math.floor(idle.t / 160) % 2}`)
+    } else pet.setTexture('pet-0')
   }
 
   checkDoors(px, py, onGround) {
-    // Lupe, si está al lado, tiene prioridad sobre una puerta cercana: hablar con ella es lo que se espera junto a su casa.
-    if (onGround && this.npcs.canTalk(px, py)) {
+    // Lupe, si está al lado, tiene prioridad sobre una puerta cercana: hablar con ella es lo que se espera junto a su casa. Salvo si
+    // la viajera ya eligió ir por su cuenta: ante la puerta, E entra; para hablar con ella basta apartarse un paso.
+    const hit = this.doors.find((d) => d.rect.contains(px, py))
+    const ownWay = hit && getStory(this.game).tour !== 'accepted'
+    if (onGround && !ownWay && this.npcs.canTalk(px, py)) {
       if (this.near !== 'npc:lupe') {
         this.near = 'npc:lupe'
         this.game.events.emit('near', 'npc:lupe')
       }
       return
     }
-    const hit = this.doors.find((d) => d.rect.contains(px, py))
     // El telescopio se usa con E, no al pisarlo: solo cuenta como "cerca" para ofrecerlo.
     const chair = !hit && this.climbMode === 'deck' && this.benches.find((b) => b.deck && b.zone.contains(this.princess.x, this.princess.y))
     const atScope = !hit && !chair && this.terrace && nearTelescope(this.climbMode, this.princess.x - this.terrace.px, this.princess.y - this.terrace.py)

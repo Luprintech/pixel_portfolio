@@ -18,11 +18,16 @@ export const DIALOGUE_COPY = {
     lines: {
       ...TOUR_COPY.es.lines,
       // Llegada al valle (`docs/DIALOGOS.md`, sección 3). Las líneas 1 y 3 de la bienvenida, el maullido y `inicio.regreso` son del
-      // guion aprobado; el resto son borradores nuevos (`docs/DIALOGOS.md`, «Borradores nuevos de la bienvenida»), pendientes de revisión.
-      'inicio.bienvenida.1': '¡Hola! Soy Lupe. Te doy la bienvenida al Valle del Bucle, mi portfolio con caminos, casas y alguna que otra distracción con bigotes.',
+      // guion aprobado; el resto son borradores nuevos (`docs/DIALOGOS.md`, "Borradores nuevos de la bienvenida"), pendientes de revisión.
+      'inicio.bienvenida.1': '¡Hola, {name}! Soy Lupe. Te doy la bienvenida al Valle del Bucle, mi portfolio con caminos, casas y alguna que otra distracción con bigotes.',
       'inicio.bienvenida.2': 'Cada edificio del valle cuenta una parte de mi vida: mis proyectos, mis estudios, mis trabajos y mis aficiones. Es una forma de conocerme más allá de un CV.',
       'inicio.bienvenida.3': 'Y esta es Khalessi. Comparte casa con nosotros y, desde hoy, también tiene su propio píxel de protagonismo.',
       'inicio.bienvenida.4': 'meaw!',
+      // Solo salen si la viajera trae mascota (ver `game/player.js`); `{pet}` es el nombre que le puso.
+      'inicio.bienvenida.perro.1': '¡Anda, qué compañía traes! ¡Qué perro más bonito! Se llama {pet} y es de raza {breed}, ¿verdad?',
+      'inicio.bienvenida.perro.2': 'Mira, Khalessi se ha acercado a olerlo. Si se llevan bien, acabarán jugando por los caminos.',
+      'inicio.bienvenida.gato.1': '¡Anda, qué compañía traes! ¡Qué gato tan elegante! Se llama {pet} y es de raza {breed}, ¿verdad?',
+      'inicio.bienvenida.gato.2': 'Mira, Khalessi se ha acercado a olerlo. A veces hace como que no le interesa, pero acaba jugando.',
       'inicio.bienvenida.5': 'Las personas que te encuentres por el valle están inspiradas en gente real de mi entorno, con nombres inventados para respetar su privacidad.',
       'inicio.bienvenida.6': 'Te mueves con WASD, las flechas o el joystick, y con E o el botón de acción hablas con la gente y entras en los sitios. El portfolio clásico siempre está en el menú.',
       'inicio.casa.1': '¡Claro! Mi casa está aquí al lado, siguiendo este camino.',
@@ -37,8 +42,8 @@ export const DIALOGUE_COPY = {
       'inicio.ayuda.1.touch': 'El joystick para caminar y el botón de acción para interactuar cuando estés cerca. No hace falta pulsar más fuerte: las puertas no se impresionan.',
       'inicio.ayuda.1': 'WASD o flechas para caminar y E para interactuar cuando estés cerca. No hace falta pulsar más fuerte: las puertas no se impresionan.',
       'inicio.ayuda.2': 'Mientras lees, E completa el texto y después lo avanza. Puedes salir con Esc o usar los botones del panel.',
-      'inicio.explorar.1': '¡Perfecto! El valle es tuyo. Si me necesitas, estaré por aquí.',
-      'inicio.regreso.1': '¡Qué bien verte otra vez! El valle sigue aquí. Khalessi también, aunque no garantiza estar atendiendo visitas.',
+      'inicio.explorar.1': '¡Perfecto, {name}! El valle es tuyo. Si me necesitas, estaré por aquí.',
+      'inicio.regreso.1': '¡Qué bien verte otra vez, {name}! El valle sigue aquí. Khalessi también, aunque no garantiza estar atendiendo visitas.',
       'inicio.regreso.2': '¿Seguimos por donde te lleven los pies, o hay algo que quieras preguntarme?',
       'inicio.guia_pausa.1': '¿Seguimos hacia mi casa o prefieres curiosear por tu cuenta?',
       'inicio.puerta.1': '¡Hemos llegado! Esta es mi casa.',
@@ -84,9 +89,15 @@ export const DIALOGUE_COPY = {
       'hifi.repeticion.1': 'La minicadena sigue a lo suyo. Si quieres, ponemos algo de música mientras miras la casa.',
       'cielo.telescopio.1': '¡Ah, mi telescopio! Es un Celestron AstroMaster 130EQ. Me gusta mucho la astronomía, aunque todavía tengo muchísimo por aprender.',
       'cielo.telescopio.2': 'A veces subo aquí simplemente para desconectar. Me relaja observar la Luna, buscar planetas y quedarme un rato mirando el cielo.',
-      'cielo.telescopio.3': 'Si te apetece, puedes echar un vistazo. Según la hora, podrás ver cosas diferentes.',
-      'pc.abrir.1': 'Bienvenida a mi pequeño escritorio retro. Tiene aire de ordenador de principios de los 2000, con paisaje tranquilo y ganas de abrir ventanas.',
+      'cielo.telescopio.3': 'Si te apetece, {name}, puedes echar un vistazo. Según la hora, podrás ver cosas diferentes.',
+      'pc.abrir.1': 'Este es mi pequeño escritorio retro. Tiene aire de ordenador de principios de los 2000, con paisaje tranquilo y ganas de abrir ventanas.',
       'pc.abrir.2': 'Desde aquí podrás encontrar mis redes y mis creaciones como Luprintech.',
+      // Tras recoger el primer Pikachu en la impresora (ver `InteriorScene.explainAchievements`): Lupe explica los logros.
+      'logros.sistema.1': '¡Ahí lo tienes! Un Pikachu recién impreso y tu primer logro.',
+      'logros.sistema.2': 'Hay más logros repartidos por todo el valle: unos están a la vista y otros tendrás que descubrirlos tú.',
+      'logros.sistema.3': 'Puedes consultarlos en el menú de Opciones, el botón de la esquina. Verás el título de cada uno desde el principio, como pista; cómo se consigue solo lo sabrás al desbloquearlo.',
+      'logros.sistema.4': 'Así que explora, toca cosas y pregunta. El valle tiene más sorpresas de las que aparentan sus caminos.',
+
       'pc.proyectos.1': 'Si quieres ver mi trabajo de desarrollo web, por aquí tienes los proyectos del portfolio, con su descripción y los enlaces disponibles.',
     },
     options: {
@@ -133,10 +144,14 @@ export const DIALOGUE_COPY = {
       ...TOUR_COPY.en.lines,
       // Arriving in the valley (`docs/DIALOGOS.md`, section 3). Welcome lines 1 and 3, the meow and `inicio.regreso` come from the
       // approved script; the rest are new drafts awaiting review.
-      'inicio.bienvenida.1': "Hi! I'm Lupe. Welcome to Valle del Bucle, my portfolio with paths, houses and the odd whiskered distraction.",
+      'inicio.bienvenida.1': "Hi, {name}! I'm Lupe. Welcome to Valle del Bucle, my portfolio with paths, houses and the odd whiskered distraction.",
       'inicio.bienvenida.2': "Every building in the valley tells a part of my life: my projects, my studies, my jobs and my hobbies. It's a way to get to know me beyond a CV.",
       'inicio.bienvenida.3': 'And this is Khalessi. She shares a home with us and, from today, has her own pixel in the spotlight.',
       'inicio.bienvenida.4': 'meaw!',
+      'inicio.bienvenida.perro.1': "Oh, look who you've brought along! What a lovely dog! Its name is {pet} and it's a {breed}, right?",
+      'inicio.bienvenida.perro.2': 'Look, Khalessi has come over to sniff it. If they get along, they will end up playing along the paths.',
+      'inicio.bienvenida.gato.1': "Oh, look who you've brought along! What an elegant cat! Its name is {pet} and it's a {breed}, right?",
+      'inicio.bienvenida.gato.2': 'Look, Khalessi has come over to sniff it. Sometimes she pretends not to be interested, but she ends up playing.',
       'inicio.bienvenida.5': 'The people you meet in the valley are inspired by real people around me, with made-up names to respect their privacy.',
       'inicio.bienvenida.6': 'Move with WASD, the arrow keys or the joystick, and press E or the action button to talk to people and go into places. The classic portfolio is always in the menu.',
       'inicio.casa.1': 'Of course! My house is right here, just along this path.',
@@ -151,8 +166,8 @@ export const DIALOGUE_COPY = {
       'inicio.ayuda.1.touch': "The joystick to walk and the action button to interact when you're close. No need to press harder: doors aren't easily impressed.",
       'inicio.ayuda.1': "WASD or arrow keys to walk and E to interact when you're close. No need to press harder: doors aren't easily impressed.",
       'inicio.ayuda.2': 'While you read, E completes the text and then moves it on. You can leave with Esc or use the panel buttons.',
-      'inicio.explorar.1': "Perfect! The valley is yours. If you need me, I'll be around.",
-      'inicio.regreso.1': "So good to see you again! The valley is still here. So is Khalessi, though she doesn't promise to be seeing visitors.",
+      'inicio.explorar.1': "Perfect, {name}! The valley is yours. If you need me, I'll be around.",
+      'inicio.regreso.1': "So good to see you again, {name}! The valley is still here. So is Khalessi, though she doesn't promise to be seeing visitors.",
       'inicio.regreso.2': 'Shall we carry on wherever your feet take you, or is there something you want to ask me?',
       'inicio.guia_pausa.1': 'Shall we carry on to my house, or would you rather look around on your own?',
       'inicio.puerta.1': "We're here! This is my house.",
@@ -197,9 +212,14 @@ export const DIALOGUE_COPY = {
       'hifi.repeticion.1': 'The hi-fi is doing its own thing. If you like, we can put some music on while you look around.',
       'cielo.telescopio.1': "Ah, my telescope! It's a Celestron AstroMaster 130EQ. I really love astronomy, though I still have so much to learn.",
       'cielo.telescopio.2': 'Sometimes I come up here just to unwind. Watching the Moon, looking for planets and staring at the sky for a while helps me relax.',
-      'cielo.telescopio.3': "If you like, take a look. Depending on the time, you'll see different things.",
-      'pc.abrir.1': 'Welcome to my little retro desktop. It has the air of an early-2000s computer, with a calm landscape and a wish to open windows.',
+      'cielo.telescopio.3': "If you like, {name}, take a look. Depending on the time, you'll see different things.",
+      'pc.abrir.1': 'This is my little retro desktop. It has the air of an early-2000s computer, with a calm landscape and a wish to open windows.',
       'pc.abrir.2': 'From here you can find my social networks and my creations as Luprintech.',
+      'logros.sistema.1': 'There you go! A freshly printed Pikachu and your first achievement.',
+      'logros.sistema.2': 'There are more achievements scattered all over the valley: some are in plain sight and others you will have to discover yourself.',
+      'logros.sistema.3': 'You can check them in the Options menu, the button in the corner. You will see the title of each one from the start, as a hint; how to get it you will only learn once you unlock it.',
+      'logros.sistema.4': 'So explore, touch things and ask around. The valley has more surprises than its paths let on.',
+
       'pc.proyectos.1': 'If you want to see my web development work, here are the portfolio projects, with their description and the links available.',
     },
     options: {
@@ -234,10 +254,18 @@ export const DIALOGUE_COPY = {
   },
 }
 
-// Texto de una página u opción en el idioma dado (con el español de reserva).
+// Texto de una página u opción en el idioma dado (con el español de reserva). `player` ({ name, petName, breed }) rellena los nombres.
 // Con pantalla táctil, una línea puede llevar su variante `<clave>.touch` (los controles sin teclado).
-export function lineText(lang, key, touch = false) {
+export function lineText(lang, key, touch = false, player) {
   const lines = (DIALOGUE_COPY[lang] ?? DIALOGUE_COPY.es).lines
-  return (touch && lines[`${key}.touch`]) || lines[key] || DIALOGUE_COPY.es.lines[key] || ''
+  return fillPlayer((touch && lines[`${key}.touch`]) || lines[key] || DIALOGUE_COPY.es.lines[key] || '', player)
+}
+
+// Sustituye `{name}` (la viajera), `{pet}` (su mascota) y `{breed}` (la raza, ya con su nombre en el idioma). Los textos escriben el nombre siempre tras una coma (`¡Hola, {name}!`)
+// para que, sin nombre (una partida antigua, sin él), se quite con la coma y la frase siga entera. Se sustituye con una función
+// para que ningún `$` del nombre se interprete como patrón de reemplazo.
+export function fillPlayer(text, { name = '', petName = '', breed = '' } = {}) {
+  const withName = name ? text.replace(/\{name\}/g, () => name) : text.replace(/,\s*\{name\}/g, '').replace(/\{name\}/g, '')
+  return withName.replace(/\{pet\}/g, () => petName).replace(/\{breed\}/g, () => breed)
 }
 export const optionText = (lang, key) => (DIALOGUE_COPY[lang] ?? DIALOGUE_COPY.es).options[key] ?? DIALOGUE_COPY.es.options[key] ?? ''

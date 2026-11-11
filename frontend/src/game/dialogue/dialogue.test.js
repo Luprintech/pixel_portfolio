@@ -188,3 +188,39 @@ describe('estantería: primeros recuerdos y recreativa', () => {
     expect(SCRIPTS['consolas.presentacion'].options.find((option) => option.id === 'recuerdos').to).toBe('consolas.recuerdos')
   })
 })
+
+describe('preguntas que se agotan', () => {
+  const MENU = 'tour.impresoras'
+  const ids = (answered) => view(SCRIPTS, { id: MENU, index: 3 }, { answered }).options.map((o) => o.id)
+
+  it('una pregunta ya escuchada entera deja de ofrecerse y las salidas se quedan', () => {
+    expect(ids([])).toEqual(['imprimir', 'vitrina', 'seguir', 'calma', 'cuenta'])
+    expect(ids(['tour.impresoras_imprimir'])).toEqual(['vitrina', 'seguir', 'calma', 'cuenta'])
+    expect(ids(['tour.impresoras_imprimir', 'tour.impresoras_vitrina'])).toEqual(['seguir', 'calma', 'cuenta'])
+  })
+
+  it('elegir una pregunta oculta no hace nada', () => {
+    const state = { id: MENU, index: 3 }
+    expect(choose(SCRIPTS, state, 'imprimir', { answered: ['tour.impresoras_imprimir'] }).state).toBe(state)
+  })
+
+  it('la historia da por contestada la conversación al llegar a su última página, no al abrirla', async () => {
+    const { initialStory, reachNode, storyFeatures } = await import('../story/story.js')
+    const opened = reachNode(initialStory(), 'tour.impresoras_imprimir', false)
+    expect(storyFeatures(opened).answered).not.toContain('tour.impresoras_imprimir')
+    const done = reachNode(opened, 'tour.impresoras_imprimir', true)
+    expect(storyFeatures(done).answered).toContain('tour.impresoras_imprimir')
+  })
+})
+
+describe('conversaciones en las que habla Lupe', () => {
+  it('las de Lupe, y las que acaban llevando a una línea suya, piden que ella esté a mano', async () => {
+    const { involvesLupe } = await import('./scripts.js')
+    ;['maker.presentacion', 'consolas.presentacion', 'hifi.presentacion', 'casa.television', 'pc.abrir', 'casa.khalessi_reposo'].forEach((id) => expect(involvesLupe(id), id).toBe(true))
+    // Atreus habla solo, pero su menú lleva a respuestas donde Lupe interviene.
+    expect(involvesLupe('casa.entrada')).toBe(true)
+    // Solo el maullido de Khalessi: nadie más.
+    expect(involvesLupe('casa.khalessi')).toBe(false)
+    expect(involvesLupe('no.existe')).toBe(false)
+  })
+})

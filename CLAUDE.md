@@ -86,6 +86,7 @@ El detalle de modularización y de comprobación visual está en `AGENTS.md` (bu
 - Cada módulo hace una cosa: la UI no accede a datos directamente (pasa por `lib/` y `hooks/`), y en el backend las rutas solo reciben y responden (la lógica va en `lib/` y `utils/`).
 - Nada de código muerto, duplicado ni `console.log` olvidados.
 - Los textos visibles al usuario van por i18n, no incrustados en los componentes.
+- En las conversaciones del juego (Lupe, Atreus y demás) las citas y los títulos van entre comillas dobles "", nunca entre «». Decidido el 2026-11-11.
 
 ## Antes de cerrar un cambio
 

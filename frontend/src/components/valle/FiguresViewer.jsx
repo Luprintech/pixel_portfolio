@@ -29,6 +29,7 @@ export default function FiguresViewer({ unlocked, onClose }) {
           <h2 id="figures-title" className="px-title text-4xl" style={{ color: tone('ink', PAL.bone) }}>{copy.figures.title}</h2>
           <button ref={closeRef} type="button" data-sound="back" className="px-btn px-btn--bone shrink-0" style={{ color: PAL.ink }} onClick={onClose}>{copy.hud.close}</button>
         </header>
+        <p className="px-text px-5 text-sm" style={{ color: tone('muted', '#5f5a7d') }}>{copy.figures.hint}</p>
         <ul className="grid grid-cols-2 gap-4 overflow-y-auto p-5 pt-3 sm:grid-cols-3">
           {shown.map((figure) => {
             const card = (
@@ -41,7 +42,7 @@ export default function FiguresViewer({ unlocked, onClose }) {
             // Una figura con enlace (el Funko) es toda ella un enlace externo: se abre en otra pestaña sin salir del juego.
             return (
               <li key={figure.id}>
-                {figure.href ? <a href={figure.href} target="_blank" rel="noopener noreferrer" className={`${layout} rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4`}>{card}</a> : <div className={layout}>{card}</div>}
+                {figure.href ? <a href={figure.href} target="_blank" rel="noopener noreferrer" className={`${layout} rounded hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4`}>{card}</a> : <div className={layout}>{card}</div>}
               </li>
             )
           })}

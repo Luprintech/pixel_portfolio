@@ -62,6 +62,12 @@ export const SCRIPTS = {
       { who: 'lupe', text: 'inicio.bienvenida.2' },
       { who: 'lupe', text: 'inicio.bienvenida.3' },
       { who: 'khalessi', text: 'inicio.bienvenida.4', sfx: 'meow' },
+      // Si la viajera trae mascota, Lupe la saluda por su nombre (`game/player.js`, `playerFeatures`). `cue` lanza una acción del juego al
+      // llegar a esa página (aquí, que Khalessi vaya a conocer a la mascota) sin cerrar la conversación.
+      { who: 'lupe', text: 'inicio.bienvenida.perro.1', when: 'petDog', cue: 'meet-pet' },
+      { who: 'lupe', text: 'inicio.bienvenida.perro.2', when: 'petDog' },
+      { who: 'lupe', text: 'inicio.bienvenida.gato.1', when: 'petCat', cue: 'meet-pet' },
+      { who: 'lupe', text: 'inicio.bienvenida.gato.2', when: 'petCat' },
       { who: 'lupe', text: 'inicio.bienvenida.5' },
       { who: 'lupe', text: 'inicio.bienvenida.6' },
     ],
@@ -132,7 +138,19 @@ export const SCRIPTS = {
   },
 
   // Tras la presentación del ordenador se abre el escritorio retro (ver `components/valle/RetroDesktop.jsx`).
+  // Tras imprimir el primer Pikachu con Lupe en la sala: explica el sistema de logros (la lanza `InteriorScene`).
+  'logros.sistema': { pages: lines('lupe', 'logros.sistema', 4) },
+
   'pc.abrir': { pages: lines('lupe', 'pc.abrir', 2), action: 'desktop' },
+}
+
+// Si una conversación (o cualquiera a la que lleven sus opciones) tiene alguna línea de Lupe. Dentro de la casa, Lupe acude antes a donde
+// se abre una conversación así: nadie habla desde el otro lado de la sala.
+export function involvesLupe(id, seen = new Set()) {
+  if (seen.has(id) || !SCRIPTS[id]) return false
+  seen.add(id)
+  const node = SCRIPTS[id]
+  return node.pages.some((page) => page.who === 'lupe') || (node.options ?? []).some((option) => option.to && involvesLupe(option.to, seen))
 }
 
 // Lo que aún no está disponible. Se activa aquí cuando haya fotos aprobadas, y las opciones con `when: 'gallery'` aparecen.

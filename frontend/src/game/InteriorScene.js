@@ -4,9 +4,10 @@ import { EXIT_ID, roomOf } from './interiors.js'
 import { roomCanvas } from './interiorPaint.js'
 import { steppedRoomZoom } from './viewport.js'
 import { advanceWalk, facingFor, inputVector } from './walk.js'
-import { talkFor } from './dialogue/scripts.js'
+import { involvesLupe, talkFor } from './dialogue/scripts.js'
 import { loadSeen, markSeen } from './dialogue/seen.js'
 import InteriorLupe from './npc/InteriorLupe.js'
+import { getStory } from './story/storyStore.js'
 import { buildHome, faceTraveller } from './interior/homeBuilder.js'
 import { ARCADE_FRONT, FACE_TO_SEAT, SEATS, interactionAt } from './interior/homeLayout.js'
 import InteriorSky from './interior/InteriorSky.js'
@@ -28,6 +29,10 @@ const ENTRANCE = 'casa.entrada'
 const TELEVISION = 'casa.television'
 // La interacción con Lupe durante la visita (la misma clave que fuera, en `hud.actions`).
 const LUPE = 'npc:lupe'
+// Lo máximo que se espera a que Lupe llegue antes de abrir su conversación desde donde esté.
+const SUMMON_MAX_MS = 6000
+// La conversación en que Lupe explica los logros (ver `dialogue/scripts.js`).
+const ACHIEVEMENTS_TALK = 'logros.sistema'
 // Por donde se aparece al volver de la azotea: ante la escalera de la casa.
 const ROOF_ARRIVAL = { x: 38, y: 98 }
 const SEAT_IDS = new Set(SEATS.map((seat) => seat.id))
@@ -88,8 +93,11 @@ export default class InteriorScene extends Phaser.Scene {
     this.buildFurniture()
     // Misma hora, estación y tiempo que fuera: el cielo lo lleva el reloj del valle.
     this.sky = new InteriorSky(this, { room, pastel: this.pastel, source: this.scene.get('valle').sky })
-    // Lupe está dentro solo durante la visita guiada: ella es la única que se mueve sola (la viajera mantiene el control).
-    this.lupe = this.guided && room.home ? new InteriorLupe(this) : null
+    // Lupe está en su casa siempre que la viajera entra: guiando si hay visita en marcha y, si no, quieta hasta que se le hable. Ella es la
+    // única que se mueve sola (la viajera mantiene el control).
+    this.lupe = room.home ? new InteriorLupe(this, { roofArrival: this.fromRoof ? ROOF_ARRIVAL : null, guided: this.guided }) : null
+    // Conversación de Lupe que espera a que ella llegue al sitio (ver `talk`).
+    this.pendingTalk = null
     this.exitZone = new Phaser.Geom.Rectangle(room.exit.x, room.exit.y, room.exit.width, room.exit.height)
 
     const kb = this.input.keyboard
@@ -200,7 +208,7 @@ export default class InteriorScene extends Phaser.Scene {
   // E, Espacio o el botón de la pantalla: salir si se está sobre el felpudo, sentarse o levantarse y, si no, usar lo que
   // haya cerca.
   act() {
-    if (this.showing || this.leaving || !this.near || this.game.registry.get('locked')) return
+    if (this.showing || this.leaving || !this.near || this.pendingTalk || this.game.registry.get('locked')) return
     if (performance.now() - this.unlockedAt < REOPEN_GUARD_MS) return
     if (this.near === EXIT_ID) this.leave()
     else if (this.near === 'roof') this.goUpToRoof()
@@ -304,12 +312,53 @@ export default class InteriorScene extends Phaser.Scene {
       glow.destroy()
       this.showing = false
       this.game.events.emit('figure-shown', { reward })
+      if (reward) this.explainAchievements()
+    })
+  }
+
+  // La primera vez que se recoge el Pikachu, si Lupe está en la sala, explica los logros una vez pasado el aviso del logro. Antes no
+  // se habla de ellos: se la anima a imprimir y el sistema se entiende al ganar el primero.
+  explainAchievements() {
+    if (!this.lupe || getStory(this.game).heard.includes(ACHIEVEMENTS_TALK)) return
+    this.time.delayedCall(2400, () => {
+      if (this.game.registry.get('locked') || this.pendingTalk) return
+      // Como en cualquier conversación suya, Lupe acude antes si no está a mano.
+      if (!this.lupe.isNear(this.princess) && this.lupe.summon(this.princess)) this.pendingTalk = { script: ACHIEVEMENTS_TALK, ms: 0 }
+      else this.game.events.emit('talk', ACHIEVEMENTS_TALK)
     })
   }
 
   // Abre la conversación de lo que hay cerca. Primera vez o repetición lo decide `talkFor` según lo ya visto; la página
   // recibe el id del guion y se encarga de mostrarlo.
+  // Si en la conversación habla Lupe y no está a mano, primero acude a donde está la viajera (ver `advancePendingTalk`).
   talk(interaction) {
+    const script = talkFor(interaction, this.seen, this.visits[interaction] ?? 0)
+    if (!script) return
+    if (this.lupe && involvesLupe(script) && !this.lupe.isNear(this.princess) && this.lupe.summon(this.princess)) {
+      this.pendingTalk = { interaction, near: this.near, ms: 0 }
+      return
+    }
+    this.openTalk(interaction)
+  }
+
+  // Espera a que Lupe llegue. Se abre al llegar (o si tarda demasiado) y se cancela si la viajera se aparta de lo que miraba.
+  advancePendingTalk(delta) {
+    const pending = this.pendingTalk
+    pending.ms += delta
+    // Al llegar, Lupe pasa a ser lo más cercano (`near` = ella): eso no es apartarse de lo que se miraba.
+    const gone = (pending.interaction && this.near !== pending.near && this.near !== LUPE) || this.leaving || this.game.registry.get('locked')
+    if (gone) {
+      this.pendingTalk = null
+      this.lupe.release()
+    } else if (this.lupe.isNear(this.princess) || pending.ms > SUMMON_MAX_MS) {
+      this.pendingTalk = null
+      this.lupe.release()
+      if (pending.script) this.game.events.emit('talk', pending.script)
+      else this.openTalk(pending.interaction)
+    }
+  }
+
+  openTalk(interaction) {
     const visits = this.visits[interaction] ?? 0
     const script = talkFor(interaction, this.seen, visits)
     if (!script) return
@@ -341,7 +390,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.game.events.emit('near', null)
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.stop()
-      this.scene.wake('valle', { ...(to && { to }), guided: this.guided })
+      this.scene.wake('valle', { ...(to && { to }), home: !!this.room.home })
     })
     this.cameras.main.fadeOut(220, ...FADE)
   }
@@ -359,6 +408,7 @@ export default class InteriorScene extends Phaser.Scene {
     const body = this.princess.body
     const locked = this.game.registry.get('locked') || this.leaving || this.showing
     this.lupe?.update(delta, this.princess, locked)
+    if (this.pendingTalk) this.advancePendingTalk(delta)
     const { x, y } = locked ? { x: 0, y: 0 } : inputVector(this.cursors, this.keys, this.game.registry.get('joy'))
     const len = Math.hypot(x, y)
     const moving = len > 0.15

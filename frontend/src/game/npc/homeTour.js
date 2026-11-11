@@ -45,6 +45,12 @@ export function snapSpots(nav) {
   return Object.fromEntries(Object.entries(rawSpots()).map(([id, point]) => [id, nav.nearestFree(point.x, point.y)]))
 }
 
+// Paradas que Lupe presenta si la viajera se acerca a ellas por su cuenta, aunque no les toque: la entrada y el cierre son de la
+// visita y no de un sitio. A esta distancia de donde Lupe espera en la parada se entiende que la viajera va hacia allí.
+export const SUBJECT_STOPS = ['impresoras', 'atreus', 'pc', 'khalessi']
+export const SUBJECT_RANGE = 60
+
+export const OFFER_TALK = 'tour.ofrecer'
 export const stopTalk = (stop) => `tour.${stop}`
 export const PAUSE_TALK = 'tour.pausa'
 export const AFTER_TALK = 'tour.despues'
@@ -52,7 +58,7 @@ export const AFTER_TALK = 'tour.despues'
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
 
 // `story` da la parada por la que se sigue: si ya hay avance guardado, Lupe aparece en la entrada y echa a andar hacia ella.
-export function createHomeTour({ nav, story, spots = snapSpots(nav) }) {
+export function createHomeTour({ nav, story, spots = snapSpots(nav), resident = false }) {
   const start = spots.entrada
   const brain = createLupeBrain({ nav, post: start, abandonMs: Infinity })
   brain.arrived = true
@@ -68,15 +74,22 @@ export function createHomeTour({ nav, story, spots = snapSpots(nav) }) {
     kind: null,
     armed: true,
     warmup: TOUR.warmupMs,
+    // Si ya se presentó alguna parada: decide si hablarle ofrece la visita o pregunta si se sigue.
+    started: story.stops.length > 0,
   }
   if (!tour.stop) tour.phase = 'done'
-  else if (tour.stop !== 'entrada') leadToStop(tour)
+  else if (resident) {
+    // Sin visita en marcha (entró sola, la rechazó o la dejó): Lupe está en su casa, quieta, y no abre nada hasta que se le hable.
+    tour.phase = 'paused'
+    tour.armed = false
+    holdPosition(brain)
+  } else if (tour.stop !== 'entrada') leadToStop(tour)
   return tour
 }
 
 // Lupe echa a andar hacia la parada que toca. Sin camino no se teletransporta: se queda donde está y presenta la parada allí.
-function leadToStop(tour) {
-  const ok = startGuide(tour.brain, tour.spots[tour.stop])
+function leadToStop(tour, eager = false) {
+  const ok = startGuide(tour.brain, tour.spots[tour.stop], eager)
   tour.phase = ok ? 'leading' : 'arrived'
   tour.armed = true
   if (!ok) tour.brain.arrived = true
@@ -90,11 +103,33 @@ function openTalk(tour, kind, id, traveller) {
   return { type: 'talk', id }
 }
 
+// Si la viajera se ha acercado a otra parada pendiente (y no está ya junto a la que Lupe tiene entre manos), Lupe va allí a explicarla.
+// Devuelve la parada elegida o null. Con una sola parada a la vista por vez, no hay vaivén: al cambiar, la viajera ya no está junto a la anterior.
+export function pendingStopNear(tour, traveller, story) {
+  if (tour.phase === 'talking' || tour.phase === 'done') return null
+  // Solo con una visita viva: quien la rechazó, o aún no la ha pedido, no recibe explicaciones por sorpresa.
+  if (story.tour !== 'accepted' && story.tour !== 'pending') return null
+  if (tour.stop && distance(traveller, tour.spots[tour.stop]) <= SUBJECT_RANGE) return null
+  let best = null
+  for (const id of SUBJECT_STOPS) {
+    if (id === tour.stop || story.stops.includes(id)) continue
+    const gap = distance(traveller, tour.spots[id])
+    if (gap <= SUBJECT_RANGE && (!best || gap < best.gap)) best = { id, gap }
+  }
+  return best?.id ?? null
+}
+
 // Avanza a Lupe un fotograma. Devuelve `{ type: 'talk', id }` cuando empieza sola una conversación (la viajera se ha acercado
 // a la parada), o null. `locked` es que hay un diálogo o un panel abiertos: entonces no abre nada.
-export function updateHomeTour(tour, dt, traveller, locked) {
+export function updateHomeTour(tour, dt, traveller, locked, story = null) {
   const { brain } = tour
   tour.warmup = Math.max(0, tour.warmup - dt)
+  // Con la visita a medias (o dejada para explorar), Lupe sale al encuentro de lo que la viajera se acerque a mirar.
+  const wanted = story && !locked && tour.warmup === 0 ? pendingStopNear(tour, traveller, story) : null
+  if (wanted) {
+    tour.stop = wanted
+    leadToStop(tour, true)
+  }
   updateLupe(brain, dt, traveller)
   if (tour.phase === 'leading' && brain.arrived) tour.phase = 'arrived'
   if (tour.phase !== 'arrived') return null
@@ -113,6 +148,7 @@ export function talkToLupe(tour, traveller) {
   if (tour.phase === 'talking') return null
   if (tour.phase === 'arrived') return openTalk(tour, 'stop', stopTalk(tour.stop), traveller)
   if (tour.phase === 'done') return openTalk(tour, 'after', AFTER_TALK, traveller)
+  if (tour.phase === 'paused' && !tour.started) return openTalk(tour, 'offer', OFFER_TALK, traveller)
   return openTalk(tour, 'pause', PAUSE_TALK, traveller)
 }
 
@@ -141,9 +177,10 @@ export function applyTourAction(tour, action, story) {
   }
   const presenting = tour.kind === 'stop'
   tour.kind = null
+  if (presenting || action === 'tour-resume') tour.started = true
   if (action === 'tour-next' || action === 'tour-finish') {
     const next = completeStop(story, tour.stop)
-    tour.stop = nextStop(next)
+    tour.stop = nextStop(next, tour.stop)
     if (tour.stop) leadToStop(tour)
     else finish(tour)
     return next
@@ -160,10 +197,10 @@ export function applyTourAction(tour, action, story) {
   // Mirar con calma o dejarla: contar la parada que se estaba presentando ya la da por escuchada; una pausa a mitad de camino
   // no completa nada.
   const next = presenting ? completeStop(story, tour.stop) : story
-  tour.stop = nextStop(next)
+  tour.stop = nextStop(next, presenting ? tour.stop : null)
   tour.phase = 'paused'
   holdPosition(tour.brain)
-  return action === 'tour-leave' && next.tour !== 'completed' ? setTour(next, 'pending') : next
+  return action === 'tour-leave' && next.tour !== 'completed' ? setTour(next, 'cancelled') : next
 }
 
 function finish(tour) {

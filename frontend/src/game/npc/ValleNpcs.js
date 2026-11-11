@@ -8,7 +8,7 @@ import { newTalkFor, setTour, tourStarted } from '../story/story.js'
 import CatActor from './CatActor.js'
 import NpcActor from './NpcActor.js'
 import { buildExclamation } from './exclaim.js'
-import { createCompanion, placeCompanion, updateCompanion } from './catCompanion.js'
+import { createCompanion, meetPhase, placeCompanion, startMeet, updateCompanion } from './catCompanion.js'
 import { HOME_DOOR, TOUR_GOAL, placesFor } from './lupePlaces.js'
 import { createLupeBrain, endTalk, enterHome, placeAt, setAnchor, startGuide, startTalk, stopGuide, updateLupe } from './lupeBrain.js'
 import { go } from './npcStates.js'
@@ -29,8 +29,10 @@ const WAIT_BUBBLE_MS = 14000
 
 export default class ValleNpcs {
   // `travellerAt()` devuelve dónde tiene los pies la viajera ({ x, y }).
-  constructor(scene, nav, travellerAt) {
+  // `petAt()` devuelve dónde está la mascota de la viajera ({ x, y }) o nada si no trae.
+  constructor(scene, nav, travellerAt, petAt = () => null) {
     this.scene = scene
+    this.petAt = petAt
     this.game = scene.game
     this.travellerAt = travellerAt
     const places = placesFor(getStory(this.game))
@@ -64,6 +66,12 @@ export default class ValleNpcs {
     this.cat.destroy()
     this.mark.destroy()
     this.visitor?.destroy()
+  }
+
+  // Mientras Khalessi conoce a la mascota (olfatea o juega), dónde está y en qué fase, para que la mascota la mire y juegue.
+  petCue() {
+    const phase = meetPhase(this.companion)
+    return phase ? { phase, x: this.companion.x, y: this.companion.y } : null
   }
 
   // Mientras va a su puerta o espera dentro no se puede hablar con ella.
@@ -108,6 +116,15 @@ export default class ValleNpcs {
     this.visitSpot = { ...spot, depth }
     this.visitor = new NpcActor(this.scene, 'npc-lupe', spot.x, spot.y)
     this.visitor.setAlpha(0)
+  }
+
+  // La viajera entra a la casa por la azotea con Lupe aún allí: su visita al telescopio se da por terminada, porque dentro ya la espera
+  // la visita guiada.
+  cancelDeckVisit() {
+    if (this.visit.phase === 'away') return
+    this.visit = createVisit()
+    this.visitor?.destroy()
+    this.visitor = null
   }
 
   // Lupe cuenta como presente en la azotea mientras espera o habla allí.
@@ -169,8 +186,14 @@ export default class ValleNpcs {
       setTourTo('cancelled')
       stopGuide(brain)
     } else if (action === 'tour-pause') {
-      setTourTo('pending')
+      // "Sigo explorando": la viajera elige ir por su cuenta, así que Lupe no vuelve a ofrecer ni a insistir (ni a la puerta ni por la
+      // azotea) hasta que ella misma le pida la visita; lo ya visto se conserva en las paradas.
+      setTourTo('cancelled')
       stopGuide(brain)
+    } else if (action === 'meet-pet') {
+      // La bienvenida llega a la página de la mascota: Khalessi va a conocerla.
+      const pet = this.petAt()
+      if (pet && !brain.inside) startMeet(this.companion, pet)
     } else if (action === 'tour-enter') {
       // Lupe pasa primero y espera dentro; la viajera entra después, con E ante la puerta, como a cualquier edificio.
       enterHome(brain, HOME_DOOR)
@@ -235,6 +258,8 @@ export default class ValleNpcs {
     if (gap > REARM_RANGE || story.welcome === 'done') this.armed = story.welcome === 'pending'
     if (!brain.arrived) this.offered = false
 
+    // La mascota se mueve (o la viajera la lleva): Khalessi la busca donde esté ahora.
+    if (this.companion.meet) this.companion.meet.pet = this.petAt() ?? this.companion.meet.pet
     updateCompanion(this.companion, delta, brain, wasWalking || brain.walking)
     this.lupe.render(brain, delta)
     this.cat.render(this.companion)

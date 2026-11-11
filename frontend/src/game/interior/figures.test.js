@@ -28,3 +28,14 @@ describe('figuras de personajes', () => {
     })
   })
 })
+
+describe('vídeos de las figuras', () => {
+  it('cada figura impresa enlaza a su vídeo, sin marco ni fondo; el cartel no', () => {
+    const byId = Object.fromEntries(FIGURES.map((figure) => [figure.id, figure]))
+    ;['eren', 'pokemon', 'nezuko', 'zelda', 'tanjiro', 'funko'].forEach((id) => {
+      expect(byId[id].bare, id).toBe(true)
+      expect(byId[id].href, id).toMatch(/^https:\/\/(www\.youtube\.com\/shorts\/|youtu\.be\/)/)
+    })
+    expect(byId.luprintech.href).toBeUndefined()
+  })
+})

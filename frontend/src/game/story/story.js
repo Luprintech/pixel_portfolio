@@ -12,8 +12,9 @@
 export const TOURS = ['none', 'pending', 'accepted', 'completed', 'cancelled']
 export const WELCOMES = ['pending', 'done']
 
-// Paradas de la visita por dentro de la casa, en orden. `stops` guarda las ya presentadas por completo (siempre un prefijo de
-// esta lista), así que abandonar, pausar o recargar no pierde el avance: la visita se retoma por la siguiente.
+// Paradas de la visita por dentro de la casa, en el orden en que Lupe las lleva. `stops` guarda las ya presentadas por completo (en este
+// orden, pero sin exigir que sean seguidas: si la viajera se acerca por su cuenta a Atreus, Lupe lo presenta ya y la visita sigue por la
+// primera que falte), así que abandonar, pausar o recargar no pierde el avance.
 export const TOUR_STOPS = ['entrada', 'impresoras', 'atreus', 'pc', 'khalessi', 'cierre']
 
 // Lo que se guarda son ids de conversaciones y de preguntas: se acota el tamaño por si el guardado viene manipulado.
@@ -24,17 +25,12 @@ export const initialStory = () => ({ welcome: 'pending', tour: 'none', stops: []
 
 const cleanIds = (raw) => (Array.isArray(raw) ? [...new Set(raw.filter((id) => typeof id === 'string' && ID.test(id)))].slice(0, MAX_IDS) : [])
 
-// Solo vale el tramo inicial de paradas sin saltos: una lista con huecos o desordenada se recorta hasta donde es coherente. Una
-// visita completada tiene todas (también las partidas guardadas antes de que existieran las paradas).
+// Solo valen paradas que existen, sin repetir y en su orden. Una visita completada tiene todas (también las partidas guardadas antes
+// de que existieran las paradas).
 function cleanStops(raw, tour) {
   if (tour === 'completed') return [...TOUR_STOPS]
   const given = new Set(Array.isArray(raw) ? raw : [])
-  const prefix = []
-  for (const id of TOUR_STOPS) {
-    if (!given.has(id)) break
-    prefix.push(id)
-  }
-  return prefix
+  return TOUR_STOPS.filter((id) => given.has(id))
 }
 
 // Lo guardado puede venir de otra versión o estar manipulado: solo se acepta lo que tiene forma de historia.
@@ -58,16 +54,22 @@ export function recoverStory(story) {
 
 export const setTour = (story, tour) => (story.tour === tour ? story : { ...story, tour })
 
-// Siguiente parada por presentar, o null si ya se hicieron todas.
-export const nextStop = (story) => TOUR_STOPS.find((id) => !story.stops.includes(id)) ?? null
+// Siguiente parada por presentar, o null si ya se hicieron todas. Con `after` (la que se acaba de presentar) sigue por la que viene
+// detrás en el recorrido y, si no queda ninguna, vuelve a la primera que falte. El cierre va siempre el último.
+export function nextStop(story, after = null) {
+  const pending = TOUR_STOPS.filter((id) => !story.stops.includes(id))
+  const pool = pending.length > 1 ? pending.filter((id) => id !== 'cierre') : pending
+  const from = after ? TOUR_STOPS.indexOf(after) : -1
+  return pool.find((id) => TOUR_STOPS.indexOf(id) > from) ?? pool[0] ?? null
+}
 
 // Hay avance guardado de una visita que no se terminó: se ofrece retomarla en lugar de empezar otra.
 export const tourStarted = (story) => story.stops.length > 0 && story.tour !== 'completed'
 
-// Da por presentada una parada. Solo vale la siguiente en orden (no se salta ninguna) y la última completa la visita.
+// Da por presentada una parada, sea la siguiente o una que la viajera pidió antes, y la última completa la visita.
 export function completeStop(story, id) {
-  if (id !== nextStop(story)) return story
-  const next = { ...story, stops: [...story.stops, id] }
+  if (!TOUR_STOPS.includes(id) || story.stops.includes(id)) return story
+  const next = { ...story, stops: TOUR_STOPS.filter((stop) => stop === id || story.stops.includes(stop)) }
   return nextStop(next) ? next : { ...next, tour: 'completed' }
 }
 
@@ -84,9 +86,16 @@ const ON_FINISH = {
 
 export function reachNode(story, id, finished = false) {
   let next = story.heard.includes(id) ? story : { ...story, heard: withId(story.heard, id) }
+  // Una conversación escuchada hasta el final queda contestada: las opciones que llevan a ella dejan de ofrecerse (`answered`).
+  // Las preguntas de la bienvenida ya se agotan por su propia regla (`ON_FINISH`).
   if (finished && ON_FINISH[id]) next = ON_FINISH[id](next)
+  else if (finished) next = { ...next, explained: withId(next.explained, id) }
   return next
 }
+
+// Al entrar por la puerta de la azotea sin haber hecho ni rechazado la visita, Lupe sale a recibirla dentro igual que por la puerta
+// de la calle. Quien la rechazó (`cancelled`) o ya la hizo (`completed`) entra sola.
+export const tourOnRoofEntry = (story) => story.tour === 'none' || story.tour === 'pending'
 
 // Se ofrece enseñar la casa mientras no se haya hecho ni esté en marcha.
 export const tourOffered = (story) => ['none', 'pending', 'cancelled'].includes(story.tour)
@@ -107,5 +116,7 @@ export function storyFeatures(story) {
     offerDedicas: !story.explained.includes('dedicas'),
     offerEncontrar: !story.explained.includes('encontrar'),
     offerAyuda: !story.explained.includes('ayuda'),
+    // Ids de los nodos escuchados hasta el final: una opción que lleva a uno de ellos se oculta (ver `dialogue/engine.js`).
+    answered: story.explained,
   }
 }

@@ -2,6 +2,7 @@
 // postura de la cola, y se tiñe con el color principal y el de detalles que elige quien juega.
 import { contrast, lum, noseOn, readable } from './colors.js'
 import { drawPet } from './engine.js'
+import { sitSpec } from './rest.js'
 import { ellipse } from '../pixelKit.js'
 import { tint } from '../palette.js'
 
@@ -221,6 +222,12 @@ export const DOG_BREEDS = {
       belly: marks, muzzle: marks, cheek: marks, bib: marks, sock: marks, ear: coat, nose: noseOn(marks), eye: readable(marks, '#2a1a1a'),
     }),
   },
+}
+
+// Cualquier raza sentada; `step` mueve la cola (el perro la menea mientras espera).
+export function dogRestCanvas(breed, coat, marks, step = 0) {
+  const { spec, colors } = DOG_BREEDS[breed]
+  return drawPet(sitSpec(spec), colors(coat, marks), 0, step)
 }
 
 export function dogCanvas(breed, coat, marks, frame = 0, tail = 0) {

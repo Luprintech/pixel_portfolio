@@ -6,6 +6,7 @@
 import { shade, tint } from '../palette.js'
 import { contrast, lum, readable } from './colors.js'
 import { drawPet } from './engine.js'
+import { sitSpec as sunk } from './rest.js'
 import { OUTLINE } from '../avatar/index.js'
 import { ellipse, rect } from '../pixelKit.js'
 
@@ -274,6 +275,30 @@ export const khalessiSleepCanvas = (step = 0) => drawPet(sleepSpec(step), KHALES
 const eatSpec = { ...SPECS.comun, head: { ...SPECS.comun.head, y: 4 } }
 
 export const khalessiEatCanvas = (step = 0) => drawPet(eatSpec, KHALESSI, 0, step)
+
+// Cualquier raza sentada y, con `wash`, aseándose: los ojos se cierran y una pata sube y baja hasta la cara entre los dos
+// fotogramas (`step`), como la de Khalessi.
+export function catRestCanvas(breed, coat, marks, pose, step = 0) {
+  const { spec, colors } = CAT_BREEDS[breed]
+  const sat = sunk(spec)
+  const washing = pose === 'wash'
+  const { x: hx, y: hy, rows } = spec.head
+  const spec2 = {
+    ...sat,
+    head: washing ? { ...spec.head, rows: rows.map((row) => row.replace(/e/g, 'q')) } : spec.head,
+    post: (g, c, s) => {
+      if (washing) {
+        const top = Math.min(spec.h - 7, hy + rows.length - 1 - (step % 2) * 3)
+        const px = hx + 16
+        rect(g, px, top - 1, 4, 7, OUTLINE)
+        rect(g, px + 1, top, 2, 5, c.base)
+        rect(g, px + 1, top, 2, 1, c.belly)
+      }
+      spec.post?.(g, c, s)
+    },
+  }
+  return drawPet(spec2, colors(coat, marks), 0, step)
+}
 
 export function catCanvas(breed, coat, marks, frame = 0, tail = 0) {
   const { spec, colors } = CAT_BREEDS[breed]

@@ -21,6 +21,7 @@ import ZonePanel from '../components/valle/ZonePanel'
 import ZoomControl from '../components/valle/ZoomControl'
 import { defaultLook, randomLook, selectBody } from '../game/look'
 import { DEFAULT_PET } from '../game/pet'
+import { isReadyToEnter, playerFeatures } from '../game/player'
 import { PAL } from '../game/palette'
 import { MENU_THEME, gameById } from '../game/arcade/games'
 import { loadSave } from '../game/save'
@@ -36,6 +37,7 @@ import { useValleSave } from '../hooks/useValleSave'
 import { acquireAmbience, setAmbienceDuck, setAmbienceScene, thunder } from '../lib/ambience'
 import { getEngine, startEngineIfAllowed } from '../lib/audioEngine'
 import { playMeow } from '../lib/dialogueSound'
+import { playPetSound } from '../lib/petSounds'
 import { jukebox } from '../lib/jukebox'
 import { setActivity, startMusicDirector } from '../lib/musicDirector'
 import { playPrintDone, playPrintStep } from '../lib/printerSound'
@@ -111,7 +113,9 @@ export default function Valle() {
   const [initialStoryValue] = useState(() => (mode === 'nueva' ? initialStory() : existing?.story ?? initialStory()))
   // Copia de la historia que vive en el juego (ver `game/story/storyStore.js`): la página solo la lee para ofrecer las opciones que tocan.
   const [story, setStory] = useState(initialStoryValue)
-  const storyFeaturesNow = useMemo(() => storyFeatures(story), [story])
+  // Lo que la historia permite ofrecer y lo que la mascota de la viajera abre (ver `game/player.js`); el nombre rellena los textos.
+  const dialogueFeatures = useMemo(() => ({ ...storyFeatures(story), ...playerFeatures({ pet, petName }) }), [story, pet, petName])
+  const player = useMemo(() => ({ name, petName: pet.kind === 'ninguna' ? '' : petName, petKind: pet.kind, petBreed: pet.breed }), [name, pet.kind, pet.breed, petName])
 
   // Se declara antes que el efecto del juego: al salir, su limpieza guarda mientras la escena aún existe.
   const { saved, toast, saveNow, eraseSave } = useValleSave({ game, active: phase === 'play', name, look, pet, petName, autosavedText: copy.hud.autosaved })
@@ -119,10 +123,12 @@ export default function Valle() {
   // La partida se escribe al entrar al valle, no mientras se edita: abandonar el creador
   // deja intacta la aventura anterior.
   const enterValley = useCallback(() => {
+    // El creador ya avisa de lo que falta; esto evita entrar sin nombre por cualquier otro camino.
+    if (!isReadyToEnter({ name, pet, petName })) return
     saveNow()
     setStarted(true)
     setPhase('play')
-  }, [saveNow])
+  }, [saveNow, name, pet, petName])
 
   const selectAvatar = useCallback((body) => {
     if (body === look.body) return
@@ -172,6 +178,8 @@ export default function Valle() {
         // Con una actividad abierta (ordenador, recreativa...) la casa calla: ni maullidos ni impresora compiten con ella.
         instance.events.on('meow', (variant) => !activeZone.current && playMeow(getEngine() ?? startEngineIfAllowed(), variant))
         instance.events.on('indoors', setIndoors)
+        // La mascota de la viajera maúlla (o ladra) cuando le toca; con una actividad abierta calla, como la casa.
+        instance.events.on('pet-sound', (kind, breed) => !activeZone.current && playPetSound(kind, breed))
         // El sonido ambiente sigue al cielo del valle, igual que en la portada.
         // También se guarda el último estado: la vista del telescopio lo lee para pintar el mismo cielo.
         instance.events.on('sky', (sky) => {
@@ -263,6 +271,18 @@ export default function Valle() {
     if (zone !== 'pc') setPcMinimized(false)
   }, [zone])
 
+  // Mirar por el telescopio da su logro al cerrar la vista del cielo, no al abrirla: así el aviso y su sonido se ven y se oyen con el valle
+  // delante en lugar de quedar tapados por la vista.
+  const unlockForSky = achievements.unlock
+  const wasLooking = useRef(false)
+  useEffect(() => {
+    if (zone === 'telescope') wasLooking.current = true
+    else if (wasLooking.current) {
+      wasLooking.current = false
+      unlockForSky('telescope')
+    }
+  }, [zone, unlockForSky])
+
   const closeZone = useCallback(() => setZone(null), [])
   // Al salir de la recreativa la viajera reaparece ante ella, mirándola.
   const closeArcade = useCallback(() => {
@@ -342,6 +362,8 @@ export default function Valle() {
       setZone('pc')
     } else if (action?.startsWith('tour-')) game?.events.emit('npc-action', action)
   }, [game])
+  // Una página del diálogo pide algo al juego sin cerrarse (por ejemplo, que Khalessi conozca a la mascota).
+  const cueDialogue = useCallback((cue) => game?.events.emit('npc-action', cue), [game])
   // La historia recuerda lo que Lupe ya ha contado: cada nodo que se abre y cuándo se llega a su última página.
   const reachDialogue = useCallback((id, finished) => game && updateStory(game, (current) => reachNode(current, id, finished)), [game])
   // Si aún no ha llegado ningún estado (se abre nada más entrar), se parte del cielo con que empieza la visita.
@@ -468,7 +490,7 @@ export default function Valle() {
         {zone === 'printer' && !editing && <PrinterPanel job={game?.registry.get('printJob')} claimed={makerRewarded} onStart={startPrint} onClose={closeZone} />}
         {zone === 'figures' && !editing && <FiguresViewer unlocked={achievements.unlocked} onClose={closeZone} />}
         {zone && zone !== 'telescope' && !['pc', 'console', 'tv', 'printer', 'figures'].includes(zone) && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
-        {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} features={storyFeaturesNow} onReach={reachDialogue} onClose={closeDialogue} />}
+        {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} features={dialogueFeatures} player={player} onCue={cueDialogue} onReach={reachDialogue} onClose={closeDialogue} />}
 
         <OptionsDialog
           open={optionsOpen && !editing}

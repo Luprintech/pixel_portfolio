@@ -173,13 +173,14 @@ export const COPY = {
     achievements: {
       title: 'Logros',
       unlocked: '¡Logro completado!',
-      locked: 'Por desbloquear',
-      secret: 'Logro secreto',
+      // Pista de un logro sin conseguir: se ve su título, pero no cómo se consigue.
+      hint: 'Se descubre al desbloquearlo',
       items: {
         maker: { name: 'Primera impresión', desc: 'Imprime a Pikachu en la impresora A1 mini.' },
         retro: { name: 'Aventurera retro', desc: 'Completa «La espada del Bucle» en la recreativa.' },
         galactic: { name: 'Defensora galáctica', desc: 'Derrota al Nodo Maestro en «Invasión Galáctica».' },
         river: { name: 'Piloto del río', desc: 'Aterriza tras el último puente en «Río en Peligro».' },
+        telescope: { name: 'Mirada a las estrellas', desc: 'Mira por el telescopio de la azotea.' },
         hola: { name: 'Hola, mundo', desc: 'Escribe «Hola, mundo» en el Bloc de notas.' },
         developer: { name: 'Hello, Developer!', desc: 'Ejecuta la acción oculta del proyecto en Visual Studio Code.' },
       },
@@ -205,6 +206,7 @@ export const COPY = {
     },
     figures: {
       title: 'Mis figuras 3D',
+      hint: 'Pulsa una figura para ver en vídeo cómo quedó la impresión real.',
       items: {
         luprintech: 'Cartel Luprintech',
         nezuko: 'Nezuko',
@@ -260,7 +262,9 @@ export const COPY = {
       hint: 'Elige cómo eres y, si quieres, quién te acompaña.',
       name: 'Nombre',
       namePlaceholder: 'Cómo te llamas',
-      nameHint: 'Hasta 16 letras. Se queda en tu navegador.',
+      nameHint: 'Obligatorio. Hasta 16 letras. Se queda en tu navegador.',
+      nameRequired: 'Pon un nombre para entrar al valle: es como te llamará Lupe.',
+      petNameRequired: 'Pon un nombre a tu mascota para entrar al valle.',
       preview: 'Vista previa de tu avatar y su mascota',
       avatarTitle: { mujer: 'Viajera', hombre: 'Viajero' },
       avatarPreview: 'Vista previa de tu avatar',
@@ -470,13 +474,13 @@ export const COPY = {
     achievements: {
       title: 'Achievements',
       unlocked: 'Achievement completed!',
-      locked: 'Still locked',
-      secret: 'Secret achievement',
+      hint: 'Revealed once unlocked',
       items: {
         maker: { name: 'First print', desc: 'Print Pikachu on the A1 mini printer.' },
         retro: { name: 'Retro adventurer', desc: 'Complete «The Loop Sword» in the arcade.' },
         galactic: { name: 'Galactic defender', desc: 'Defeat the Master Node in «Galactic Invasion».' },
         river: { name: 'River pilot', desc: 'Land after the last bridge in «River in Danger».' },
+        telescope: { name: 'Gazing at the stars', desc: 'Look through the telescope on the rooftop.' },
         hola: { name: 'Hello, world', desc: 'Type «Hola, mundo» in Notepad.' },
         developer: { name: 'Hello, Developer!', desc: 'Run the hidden action of the project in Visual Studio Code.' },
       },
@@ -502,6 +506,7 @@ export const COPY = {
     },
     figures: {
       title: 'My 3D figures',
+      hint: 'Click a figure to watch the real print in a video.',
       items: {
         luprintech: 'Luprintech sign',
         nezuko: 'Nezuko',
@@ -557,7 +562,9 @@ export const COPY = {
       hint: 'Choose how you look and, if you like, who comes along.',
       name: 'Name',
       namePlaceholder: 'What is your name?',
-      nameHint: 'Up to 16 letters. It stays in your browser.',
+      nameHint: 'Required. Up to 16 letters. It stays in your browser.',
+      nameRequired: "Enter a name to go into the valley: it's what Lupe will call you.",
+      petNameRequired: 'Give your pet a name to go into the valley.',
       preview: 'Preview of your avatar and their pet',
       avatarTitle: { mujer: 'Traveller', hombre: 'Traveller' },
       avatarPreview: 'Preview of your avatar',

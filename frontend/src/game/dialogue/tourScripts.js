@@ -64,5 +64,10 @@ export const TOUR_SCRIPTS = {
       option('dejar', 'tour.opt.dejar', { action: 'tour-leave' }),
     ],
   },
+  // Hablar con Lupe en su casa cuando aún no se ha empezado la visita (entró sola o la rechazó): se la puede pedir.
+  'tour.ofrecer': {
+    pages: lines('lupe', 'tour.ofrecer', 1),
+    options: [option('seguir', 'tour.opt.seguir', { action: 'tour-resume' }), option('cuenta', 'tour.opt.cuenta', { action: 'tour-leave' })],
+  },
   'tour.despues': { pages: lines('lupe', 'tour.despues', 2) },
 }

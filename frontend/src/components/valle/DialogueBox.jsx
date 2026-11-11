@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { advance, choose, openNode, view } from '../../game/dialogue/engine'
 import { FEATURES, SCRIPTS } from '../../game/dialogue/scripts'
+import { PET_NAMES } from '../../game/pet'
 import { portraitUrl } from '../../game/interior/portraits'
 import { PAL } from '../../game/palette'
 import { useTypewriter } from '../../hooks/useTypewriter'
@@ -24,8 +25,8 @@ const engine = () => getEngine() ?? startEngineIfAllowed()
 // guion (`game/dialogue/scripts.js`). Con la caja abierta, E o Enter avanzan (o completan el texto si aún se escribe),
 // Esc cierra, ↑ y ↓ eligen opción y tocar la caja avanza. `onClose` recibe la acción con la que acabó el guion, si la hay.
 // `features` activa las opciones con `when` que dependen de la historia, y `onReach(id, última)` avisa de cada nodo que se abre y
-// de cuándo se llega a su última página (la historia recuerda así lo escuchado).
-export default function DialogueBox({ scriptId, features: extra, onReach, onClose }) {
+// de cuándo se llega a su última página (la historia recuerda así lo escuchado). `player` ({ name, petName, petKind, petBreed }) rellena los nombres de los textos.
+export default function DialogueBox({ scriptId, features: extra, player, onReach, onCue, onClose }) {
   const { lang } = useValleCopy()
   const copy = DIALOGUE_COPY[lang] ?? DIALOGUE_COPY.es
   const [state, setState] = useState(() => openNode(scriptId))
@@ -35,7 +36,9 @@ export default function DialogueBox({ scriptId, features: extra, onReach, onClos
   const features = useMemo(() => ({ ...FEATURES, ...extra }), [extra])
   const { page, last, options } = view(SCRIPTS, state, features)
   const touch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
-  const text = lineText(lang, page.text, touch)
+  // `{breed}` lleva la raza con su nombre en el idioma de la conversación.
+  const filled = useMemo(() => ({ ...player, breed: PET_NAMES[lang]?.[player?.petKind]?.[player?.petBreed] ?? '' }), [player, lang])
+  const text = lineText(lang, page.text, touch, filled)
   // Con movimiento reducido el texto aparece entero y sin pitidos.
   const cps = prefersReducedMotion() ? 0 : TYPE_CPS
   const { shown, done, finish } = useTypewriter(text, cps)
@@ -54,6 +57,11 @@ export default function DialogueBox({ scriptId, features: extra, onReach, onClos
       if (isSpoken(text[i]) && i % BLIP_EVERY === 0) playBlip(engine(), page.who, text[i])
     }
   }, [shown, text, page.who, page.sfx, cps])
+
+  // Una página con `cue` avisa al juego al abrirse (sin cerrar la conversación).
+  useEffect(() => {
+    if (page.cue) onCue?.(page.cue)
+  }, [page.cue, state, onCue])
 
   useEffect(() => {
     onReach?.(state.id, last)

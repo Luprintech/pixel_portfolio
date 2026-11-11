@@ -13,6 +13,7 @@ import {
   visibleBlocks,
 } from '../../game/look'
 import { PAL } from '../../game/palette'
+import { missingNames } from '../../game/player'
 import { NAME_MAX } from '../../game/save'
 import { prefersReducedMotion } from '../../lib/reducedMotion'
 import { playPetSound } from '../../lib/petSounds'
@@ -82,6 +83,18 @@ export default function Editor({ look, pet, name, petName, replacing, returning,
     setStatus(message)
     clearTimeout(timer.current)
     timer.current = setTimeout(() => setStatus(''), 2000)
+  }
+
+  // Sin nombre (ni, con mascota, el de ella) no se entra al valle: Lupe necesita saber cómo llamarla. El aviso sale al intentar
+  // entrar, no antes, y se quita en cuanto el campo se rellena; el foco va al primer campo que falta.
+  const [attempted, setAttempted] = useState(false)
+  const missing = missingNames({ name, pet, petName })
+  const showNameError = attempted && missing.name
+  const showPetNameError = attempted && missing.petName
+  const tryEnter = () => {
+    if (!missing.name && !missing.petName) return onDone()
+    setAttempted(true)
+    document.getElementById(missing.name ? 'traveller-name' : 'pet-name')?.focus()
   }
 
   const pick = (field, value) => onChange({ ...look, [field]: value })
@@ -201,7 +214,9 @@ export default function Editor({ look, pet, name, petName, replacing, returning,
                 spellCheck="false"
                 value={name}
                 placeholder={copy.editor.namePlaceholder}
-                aria-describedby="traveller-name-hint"
+                required
+                aria-invalid={showNameError || undefined}
+                aria-describedby={showNameError ? 'traveller-name-error traveller-name-hint' : 'traveller-name-hint'}
                 onChange={(event) => onName(event.target.value)}
               />
             </div>
@@ -224,10 +239,22 @@ export default function Editor({ look, pet, name, petName, replacing, returning,
                   spellCheck="false"
                   value={petName}
                   placeholder={copy.editor.petNamePlaceholder}
-                  aria-describedby="traveller-name-hint"
+                  required
+                  aria-invalid={showPetNameError || undefined}
+                  aria-describedby={showPetNameError ? 'pet-name-error traveller-name-hint' : 'traveller-name-hint'}
                   onChange={(event) => onPetName(event.target.value)}
                 />
               </div>
+            )}
+            {(showNameError || showPetNameError) && (
+              <p
+                id={showNameError ? 'traveller-name-error' : 'pet-name-error'}
+                className="px-text px-3 py-2 text-sm lg:col-span-2"
+                role="alert"
+                style={{ background: tone('powder', PAL.ink), color: tone('berry-deep', PAL.saffronLight) }}
+              >
+                {showNameError ? copy.editor.nameRequired : copy.editor.petNameRequired}
+              </p>
             )}
             <p id="traveller-name-hint" className="text-sm leading-4 lg:col-span-2" style={{ color: MUTED }}>{copy.editor.nameHint}</p>
           </div>
@@ -245,7 +272,7 @@ export default function Editor({ look, pet, name, petName, replacing, returning,
             className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 gap-3 p-3 lg:static lg:flex lg:flex-wrap lg:p-0 lg:pb-1"
             style={{ background: PAGE_BG, boxShadow: `0 -3px 0 ${RING}` }}
           >
-            <button type="button" className="px-btn whitespace-nowrap !px-2 lg:flex-[1.6]" onClick={onDone}>{returning ? copy.editor.resume : copy.editor.go}</button>
+            <button type="button" className="px-btn whitespace-nowrap !px-2 lg:flex-[1.6]" onClick={tryEnter}>{returning ? copy.editor.resume : copy.editor.go}</button>
             <button type="button" className="px-btn px-btn--bone whitespace-nowrap !px-2 lg:grow" onClick={announce(onRandom, copy.editor.randomDone)}>{copy.editor.random}</button>
             <button type="button" className="px-btn px-btn--bone whitespace-nowrap !px-2 lg:grow" onClick={announce(onReset, copy.editor.resetDone)}>{copy.editor.reset}</button>
             {/* Cuarto hueco de la rejilla de 2×2 en móvil: la barra no crece y el botón queda siempre a mano. */}

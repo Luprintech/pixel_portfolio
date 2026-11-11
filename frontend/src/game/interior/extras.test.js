@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { ACHIEVEMENT_IDS, SECRET_IDS, clearAchievements, loadAchievements, unlockAchievement } from '../achievements.js'
+import { ACHIEVEMENT_IDS, clearAchievements, loadAchievements, unlockAchievement } from '../achievements.js'
 import { CAT_SPOTS, NAV, createCat, updateCat } from './catBrain.js'
 import { FURNITURE } from './furniture/index.js'
 import { FIGURES } from './figures.js'
@@ -129,9 +129,8 @@ describe('logros', () => {
     expect(loadAchievements().size).toBe(0)
   })
 
-  it('hay seis: la impresora, los tres juegos de la recreativa y los dos secretos del ordenador', () => {
-    expect(ACHIEVEMENT_IDS).toEqual(['maker', 'retro', 'galactic', 'river', 'hola', 'developer'])
-    expect(SECRET_IDS).toEqual(['hola', 'developer'])
+  it('hay siete: la impresora, los tres juegos de la recreativa, el telescopio y los dos secretos del ordenador', () => {
+    expect(ACHIEVEMENT_IDS).toEqual(['maker', 'retro', 'galactic', 'river', 'telescope', 'hola', 'developer'])
     expect(unlockAchievement(new Set(), 'hola').isNew).toBe(true)
   })
 })

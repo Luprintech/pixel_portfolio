@@ -62,17 +62,17 @@ describe('memoria de la historia', () => {
   it('las paradas guardadas solo valen en orden y sin huecos; una visita completada las tiene todas', () => {
     expect(sanitizeStory({ stops: ['entrada', 'impresoras'] }).stops).toEqual(['entrada', 'impresoras'])
     expect(sanitizeStory({ stops: ['impresoras', 'entrada'] }).stops).toEqual(['entrada', 'impresoras'])
-    expect(sanitizeStory({ stops: ['entrada', 'pc'] }).stops).toEqual(['entrada'])
-    expect(sanitizeStory({ stops: ['atreus'] }).stops).toEqual([])
+    expect(sanitizeStory({ stops: ['entrada', 'pc'] }).stops).toEqual(['entrada', 'pc'])
+    expect(sanitizeStory({ stops: ['atreus', 'volar', 'atreus'] }).stops).toEqual(['atreus'])
     expect(sanitizeStory({ stops: 'no' }).stops).toEqual([])
     // Las partidas de antes de las paradas ya tenían la visita completada.
     expect(sanitizeStory({ tour: 'completed' }).stops).toEqual(TOUR_STOPS)
   })
 
-  it('completa las paradas una a una y la última completa la visita; saltarse una no hace nada', () => {
+  it('completa las paradas una a una y la última completa la visita; una repetida o desconocida no hace nada', () => {
     let story = { ...initialStory(), tour: 'accepted' }
     expect(nextStop(story)).toBe('entrada')
-    expect(completeStop(story, 'pc')).toBe(story)
+    expect(completeStop(story, 'volar')).toBe(story)
     TOUR_STOPS.slice(0, -1).forEach((id) => {
       story = completeStop(story, id)
       expect(story.tour).toBe('accepted')
@@ -84,11 +84,43 @@ describe('memoria de la historia', () => {
     expect(completeStop(story, 'cierre')).toBe(story)
   })
 
+  it('una parada pedida antes de tiempo cuenta y la visita sigue por la primera que falta', () => {
+    let story = { ...initialStory(), tour: 'accepted' }
+    story = completeStop(story, 'atreus')
+    expect(story.stops).toEqual(['atreus'])
+    expect(nextStop(story)).toBe('entrada')
+    story = completeStop(completeStop(story, 'entrada'), 'impresoras')
+    expect(story.stops).toEqual(['entrada', 'impresoras', 'atreus'])
+    expect(nextStop(story)).toBe('pc')
+    expect(completeStop(story, 'atreus')).toBe(story)
+  })
+
   it('con paradas hechas y la visita sin terminar se ofrece retomarla, no empezar otra', () => {
     const partial = completeStop({ ...initialStory(), tour: 'pending' }, 'entrada')
     expect(tourStarted(partial)).toBe(true)
     expect(storyFeatures(partial)).toMatchObject({ offerTour: false, offerResume: true })
     expect(storyFeatures(initialStory())).toMatchObject({ offerTour: true, offerResume: false })
     expect(storyFeatures({ ...partial, tour: 'completed' })).toMatchObject({ offerTour: false, offerResume: false })
+  })
+})
+
+describe('entrar por la azotea', () => {
+  it('Lupe recibe a quien no ha hecho ni rechazado la visita', async () => {
+    const { tourOnRoofEntry } = await import('./story.js')
+    expect(tourOnRoofEntry({ tour: 'none' })).toBe(true)
+    expect(tourOnRoofEntry({ tour: 'pending' })).toBe(true)
+    expect(tourOnRoofEntry({ tour: 'cancelled' })).toBe(false)
+    expect(tourOnRoofEntry({ tour: 'completed' })).toBe(false)
+  })
+})
+
+describe('siguiente parada tras una pedida antes de tiempo', () => {
+  it('sigue por la que viene detrás y deja el cierre para el final', () => {
+    const base = { ...initialStory(), tour: 'accepted' }
+    const atreus = completeStop(base, 'atreus')
+    expect(nextStop(atreus, 'atreus')).toBe('pc')
+    const late = completeStop(completeStop(completeStop(atreus, 'pc'), 'khalessi'), 'impresoras')
+    expect(nextStop(late, 'impresoras')).toBe('entrada')
+    expect(nextStop(completeStop(late, 'entrada'), 'entrada')).toBe('cierre')
   })
 })

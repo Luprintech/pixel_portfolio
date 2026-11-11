@@ -119,8 +119,9 @@ export function endTalk(brain) {
   brain.state = go(brain.state, brain.resume)
 }
 
-// Visita guiada: Lupe echa a andar hacia `goal` por el camino. Devuelve false si no hay camino (no se mueve).
-export function startGuide(brain, goal) {
+// Visita guiada: Lupe echa a andar hacia `goal` por el camino. Devuelve false si no hay camino (no se mueve). Con `eager` la
+// viajera ya está en el destino (se adelantó por su cuenta): Lupe va igual, sin esperar a que se acerque a ella.
+export function startGuide(brain, goal, eager = false) {
   const path = brain.nav.path({ x: brain.x, y: brain.y }, goal)
   if (!path) return false
   brain.path = path
@@ -128,6 +129,7 @@ export function startGuide(brain, goal) {
   brain.arrived = false
   brain.far = 0
   brain.abandoned = false
+  brain.eager = eager
   brain.speed = TUNING.guideSpeed
   brain.state = go(brain.state, 'guiding')
   return true
@@ -203,7 +205,7 @@ export function updateLupe(brain, dt, traveller) {
       break
     case 'guiding':
       if (checkAbandon(brain, gap, dt)) break
-      if (gap > TUNING.waitGap) {
+      if (gap > TUNING.waitGap && !brain.eager) {
         brain.state = go(brain.state, 'waiting')
         brain.walking = false
         faceTowards(brain, traveller)
@@ -221,7 +223,7 @@ export function updateLupe(brain, dt, traveller) {
       brain.walking = false
       faceTowards(brain, traveller)
       if (checkAbandon(brain, gap, dt)) break
-      if (gap < TUNING.resumeGap) brain.state = go(brain.state, 'guiding')
+      if (gap < TUNING.resumeGap || brain.eager) brain.state = go(brain.state, 'guiding')
       break
     case 'routine':
       brain.walking = advancePath(brain, dt)

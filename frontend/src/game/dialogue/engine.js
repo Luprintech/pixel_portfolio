@@ -7,6 +7,10 @@
 // que se pasa en `features` no la active: así lo que aún no tiene recursos (una galería sin fotos) queda preparado
 // sin enseñar un botón que no hace nada.
 
+// Páginas de un nodo que se leen ahora: una página con `when` solo sale si esa función está activa (la mascota de la viajera,
+// por ejemplo). Se filtra al leer, no al escribir el guion, porque lo que hay activo se sabe al abrir la conversación.
+const pagesOf = (node, features) => node.pages.filter((page) => !page.when || features[page.when])
+
 // Estado de una conversación abierta: el nodo y la página que se lee.
 export const openNode = (id) => ({ id, index: 0 })
 
@@ -16,20 +20,24 @@ export function nodeOf(scripts, id) {
   return node
 }
 
-const visibleOptions = (node, features) => (node.options ?? []).filter((option) => !option.when || features[option.when])
+// Una opción se ve si su función está activa y, si lleva a otra conversación, esa aún no se ha escuchado entera (`features.answered`):
+// así las preguntas se van agotando y el menú se acorta a medida que la viajera avanza. Las salidas (`close`, `action`) no se agotan.
+const visibleOptions = (node, features) =>
+  (node.options ?? []).filter((option) => (!option.when || features[option.when]) && !(option.to && features.answered?.includes(option.to)))
 
 // Lo que se muestra ahora: la página actual, si es la última y las opciones que se pueden elegir (solo en la última).
 export function view(scripts, state, features = {}) {
   const node = nodeOf(scripts, state.id)
-  const last = state.index >= node.pages.length - 1
-  return { page: node.pages[state.index], last, options: last ? visibleOptions(node, features) : [] }
+  const pages = pagesOf(node, features)
+  const last = state.index >= pages.length - 1
+  return { page: pages[state.index], last, options: last ? visibleOptions(node, features) : [] }
 }
 
 // Pasa de página. En la última sin opciones la conversación acaba: devuelve `done` con la acción del nodo, si la tiene.
 // Con opciones no hace nada: hay que elegir una.
 export function advance(scripts, state, features = {}) {
   const node = nodeOf(scripts, state.id)
-  if (state.index < node.pages.length - 1) return { state: { ...state, index: state.index + 1 } }
+  if (state.index < pagesOf(node, features).length - 1) return { state: { ...state, index: state.index + 1 } }
   if (visibleOptions(node, features).length) return { state }
   return { state: null, done: true, action: node.action }
 }
@@ -38,7 +46,7 @@ export function advance(scripts, state, features = {}) {
 export function choose(scripts, state, optionId, features = {}) {
   const node = nodeOf(scripts, state.id)
   const option = visibleOptions(node, features).find((candidate) => candidate.id === optionId)
-  if (!option || state.index < node.pages.length - 1) return { state }
+  if (!option || state.index < pagesOf(node, features).length - 1) return { state }
   if (option.to) return { state: openNode(option.to) }
   return { state: null, done: true, action: option.action }
 }
