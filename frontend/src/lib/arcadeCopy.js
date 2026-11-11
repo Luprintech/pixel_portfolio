@@ -45,7 +45,7 @@ export const ARCADE_COPY = {
         title: 'La espada del Bucle',
         tag: 'Aventura de mazmorras',
         desc: 'Un mago pide ayuda: los limos invaden el valle. Encuentra tu espada, cruza el bosque, abre la cueva, resuelve el acertijo y vence al Rey Limo.',
-        controls: 'Flechas o WASD: moverte · E o Espacio: espada, abrir y hablar · Esc: pausa',
+        controls: 'Flechas o WASD: moverte · E, Espacio o Intro: espada, abrir y hablar · Esc: pausa',
       },
       galactic: {
         title: 'Invasión Galáctica',
@@ -143,7 +143,7 @@ export const ARCADE_COPY = {
         title: 'The Loop Sword',
         tag: 'Dungeon adventure',
         desc: 'A wizard asks for help: slimes are invading the valley. Find your sword, cross the forest, open the cave, solve the puzzle and beat the Slime King.',
-        controls: 'Arrows or WASD: move · E or Space: sword, open and talk · Esc: pause',
+        controls: 'Arrows or WASD: move · E, Space or Enter: sword, open and talk · Esc: pause',
       },
       galactic: {
         title: 'Galactic Invasion',

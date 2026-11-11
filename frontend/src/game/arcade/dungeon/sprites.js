@@ -166,7 +166,7 @@ function chest(open) {
 
 // Aventurero (16×16): gorro verde, túnica con cinturón, escudo con el bucle y espada. Se dibuja mirando a izquierda, arriba y
 // abajo; la derecha es el espejo de la izquierda. `swinging` quita la espada de la mano (la hoja en el aire la pone el
-// renderizador). `step` 0 es de pie y 1 y 2 son los pasos.
+// renderizador); sin espada conseguida se dibuja igual, con la mano vacía. `step` 0 es de pie y 1 y 2 son los pasos.
 function hero(dir, step, swinging) {
   const lift = step === 0 ? 0 : 1
   const left = step === 1 ? 1 : 0
@@ -179,10 +179,13 @@ function hero(dir, step, swinging) {
       rect(g, 4, 8 + lift, 8, 1, HAT_LIGHT)
       rect(g, 4, 12 + lift, 8, 1, TUNIC_DARK)
       rect(g, 4, 11 + lift, 8, 1, BELT)
-      rect(g, 4, 2 + lift, 7, 6, SKIN)
-      rect(g, 3, 0 + lift, 9, 4, HAT)
-      rect(g, 4, 0 + lift, 4, 1, HAT_LIGHT)
-      rect(g, 10, 2 + lift, 3, 2, HAT)
+      rect(g, 4, 3 + lift, 7, 5, SKIN)
+      // Gorro redondeado (la cima no toca el borde del lienzo) con la punta caída hacia atrás.
+      rect(g, 5, 1 + lift, 6, 1, HAT)
+      rect(g, 4, 2 + lift, 8, 1, HAT)
+      rect(g, 3, 3 + lift, 9, 1, HAT)
+      rect(g, 6, 1 + lift, 3, 1, HAT_LIGHT)
+      rect(g, 11, 3 + lift, 2, 3, HAT)
       rect(g, 9, 4 + lift, 2, 3, HAIR)
       rect(g, 5, 5 + lift, 1, 2, INK)
       // Escudo delante, con el bucle; la espada, al costado de atrás.
@@ -198,7 +201,8 @@ function hero(dir, step, swinging) {
       rect(g, 4, 8 + lift, 8, 5, TUNIC)
       rect(g, 4, 12 + lift, 8, 1, TUNIC_DARK)
       rect(g, 4, 11 + lift, 8, 1, BELT)
-      rect(g, 4, 1 + lift, 8, 7, HAT)
+      rect(g, 4, 2 + lift, 8, 6, HAT)
+      rect(g, 5, 1 + lift, 6, 1, HAT)
       rect(g, 3, 3 + lift, 1, 3, HAIR)
       rect(g, 12, 3 + lift, 1, 3, HAIR)
       rect(g, 5, 1 + lift, 4, 1, HAT_LIGHT)
@@ -216,9 +220,11 @@ function hero(dir, step, swinging) {
       rect(g, 4, 12 + lift, 8, 1, TUNIC_DARK)
       rect(g, 4, 11 + lift, 8, 1, BELT)
       rect(g, 7, 11 + lift, 2, 1, PAL.saffron)
-      rect(g, 4, 2 + lift, 8, 6, SKIN)
-      rect(g, 3, 0 + lift, 10, 4, HAT)
-      rect(g, 4, 0 + lift, 5, 1, HAT_LIGHT)
+      rect(g, 4, 3 + lift, 8, 5, SKIN)
+      rect(g, 5, 1 + lift, 6, 1, HAT)
+      rect(g, 4, 2 + lift, 8, 1, HAT)
+      rect(g, 3, 3 + lift, 10, 1, HAT)
+      rect(g, 6, 1 + lift, 3, 1, HAT_LIGHT)
       rect(g, 3, 4 + lift, 1, 2, HAIR)
       rect(g, 12, 4 + lift, 1, 2, HAIR)
       rect(g, 6, 5 + lift, 1, 2, INK)

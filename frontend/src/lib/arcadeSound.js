@@ -20,6 +20,7 @@ export const ARCADE_SOUNDS = {
   locked: [square(150, 0, 0.1), square(150, 0.14, 0.1)],
   stairs: [square(392, 0, 0.07), square(330, 0.07, 0.07), square(262, 0.14, 0.1)],
   room: [square(660, 0, 0.04, 0.06)],
+  quest: [square(784, 0, 0.09, 0.1), square(1175, 0.09, 0.22, 0.1)],
   dialog: [triangle(660, 0, 0.06, 0.25)],
   dead: [square(392, 0, 0.14), square(330, 0.14, 0.14), square(262, 0.28, 0.14), square(196, 0.42, 0.4)],
   block: [square(330, 0, 0.05, 0.1), square(660, 0.05, 0.06, 0.08)],
@@ -36,6 +37,7 @@ export const ARCADE_SOUNDS = {
   // Invasión Galáctica y Río en Peligro.
   shoot: [square(900, 0, 0.08, 0.07, 280)],
   boom: [saw(200, 50, 0, 0.2, 0.12), square(140, 0, 0.1, 0.08, 60)],
+  fuelBlast: [saw(260, 90, 0, 0.26, 0.11), square(520, 0, 0.08, 0.07, 220)],
   bigBoom: [saw(170, 30, 0, 0.9, 0.16), square(120, 0, 0.5, 0.1, 40)],
   bonus: [square(659, 0, 0.07), square(784, 0.07, 0.07), square(988, 0.14, 0.07), square(1319, 0.21, 0.16)],
   extra: [square(784, 0, 0.08), square(988, 0.08, 0.08), square(1175, 0.16, 0.08), square(1568, 0.24, 0.08), square(1175, 0.32, 0.08), square(1568, 0.4, 0.3)],

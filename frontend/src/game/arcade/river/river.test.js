@@ -295,6 +295,141 @@ describe('disparos y puentes', () => {
   })
 })
 
+describe('colisiones: cada cosa con su efecto', () => {
+  // Una avioneta en vuelo recto con una lista de objetos a mano.
+  function scene(objects) {
+    const state = flying()
+    state.dist = 800
+    centred(state)
+    state.objects = objects.map((o, i) => ({ id: 100 + i, alive: true, x: state.plane.x, vx: 0, ...o }))
+    return state
+  }
+  const ahead = (state, distance) => state.dist + distance
+  const FIRE = { ...IDLE, action: true }
+
+  it('disparar a un helicóptero solo lo destruye a él: suma sus puntos y todo lo demás sigue igual', () => {
+    const state = scene([{ type: 'heli', wy: 800 + 90 }, { type: 'ship', wy: 800 + 160, x: 50 }])
+    const lives = state.lives
+    let last = state.dist
+    const events = []
+    for (let i = 0; i < 60; i++) {
+      events.push(...step(state, i === 0 ? FIRE : IDLE, 16))
+      // El mundo avanza siempre hacia delante, sin saltos ni vueltas atrás.
+      expect(state.dist).toBeGreaterThan(last)
+      expect(state.dist - last).toBeLessThan(2)
+      last = state.dist
+    }
+    expect(types(events)).toContain('boom')
+    expect(types(events)).not.toContain('crash')
+    expect(state.objects[0].alive).toBe(false)
+    expect(state.objects[1].alive).toBe(true)
+    expect(state.objects).toHaveLength(2)
+    expect(state.score).toBe(KINDS.heli.score)
+    expect(state.lives).toBe(lives)
+    expect(state.phase).toBe('fly')
+    expect(state.speed).toBeGreaterThan(40)
+  })
+
+  it('varios helicópteros seguidos caen uno a uno sin tocar vidas, posición ni avance', () => {
+    // Junto al puente el río es recto y ancho: lo único que puede pasar aquí son los disparos.
+    const state = flying()
+    state.dist = 2490
+    state.plane.x = W / 2
+    state.objects = [40, 75, 110, 145].map((d, i) => ({ id: 100 + i, type: 'heli', alive: true, x: W / 2, vx: 0, wy: 2490 + d }))
+    const events = run(state, { ...IDLE, hold: true }, 110)
+    expect(events.filter((e) => e.type === 'boom')).toHaveLength(4)
+    expect(types(events)).not.toContain('crash')
+    expect(state.objects.every((o) => !o.alive)).toBe(true)
+    expect(state.score).toBe(4 * KINDS.heli.score)
+    expect(state.kills).toBe(4)
+    expect(state.lives).toBe(3)
+    expect(state.plane.x).toBe(W / 2)
+    expect(state.dist).toBeGreaterThan(2490 + 80)
+  })
+
+  it('una explosión no se cuenta dos veces aunque dos balas le den en el mismo paso', () => {
+    const state = scene([{ type: 'heli', wy: 800 + 40 }])
+    const box = boxOf(state.objects[0])
+    const y = (box.y0 + box.y1) / 2 - 4
+    state.bullets = [{ x: state.objects[0].x, wy: y, ms: 500 }, { x: state.objects[0].x, wy: y, ms: 500 }]
+    const events = run(state, IDLE)
+    expect(events.filter((e) => e.type === 'boom')).toHaveLength(1)
+    expect(state.score).toBe(KINDS.heli.score)
+    expect(state.kills).toBe(1)
+  })
+
+  it('la llamarada es un efecto aparte: aparece, se apaga sola y no cambia el estado de la avioneta', () => {
+    const state = scene([{ type: 'heli', wy: 800 + 40 }])
+    run(state, FIRE, 1)
+    run(state, IDLE, 12)
+    expect(state.blasts).toHaveLength(1)
+    expect(state.plane.invul).toBe(0)
+    run(state, IDLE, 40)
+    expect(state.blasts).toHaveLength(0)
+    expect(state.lives).toBe(3)
+  })
+
+  it('sobrevolar un depósito de combustible reposta y no daña ni quita vidas', () => {
+    const state = scene([{ type: 'tank', wy: 800 }])
+    state.fuel = 40
+    const events = run(state, IDLE, 30)
+    expect(state.fuel).toBeGreaterThan(55)
+    expect(state.objects[0].alive).toBe(true)
+    expect(types(events)).toContain('fuel')
+    expect(types(events)).not.toContain('crash')
+    expect(state.lives).toBe(3)
+    expect(state.dist).toBeGreaterThan(800)
+  })
+
+  it('disparar a un depósito lo destruye, da puntos, no reposta y no es un choque', () => {
+    const state = scene([{ type: 'tank', wy: ahead({ dist: 800 }, 80) }])
+    state.fuel = 40
+    const events = run(state, FIRE, 50)
+    expect(types(events)).toContain('fuelBlast')
+    expect(types(events)).not.toContain('crash')
+    expect(types(events)).not.toContain('fuel')
+    expect(state.objects[0].alive).toBe(false)
+    expect(state.score).toBe(KINDS.tank.score)
+    expect(state.fuel).toBeLessThan(40)
+    expect(state.lives).toBe(3)
+    expect(state.plane.invul).toBe(0)
+  })
+
+  it('un depósito ya destruido no reposta aunque se sobrevuele', () => {
+    const state = scene([{ type: 'tank', wy: 800, alive: false }])
+    state.fuel = 40
+    run(state, IDLE, 30)
+    expect(state.fuel).toBeLessThan(40)
+  })
+
+  it('un depósito que se destruye con la avioneta encima no la daña', () => {
+    const state = scene([{ type: 'tank', wy: 800 + 4 }])
+    const events = run(state, FIRE, 10)
+    expect(types(events)).not.toContain('crash')
+    expect(state.lives).toBe(3)
+  })
+
+  it('chocar con un enemigo de verdad cuesta una vida; con invulnerabilidad se atraviesa', () => {
+    const state = scene([{ type: 'heli', wy: 800 }])
+    expect(types(run(state, IDLE))).toContain('crash')
+    expect(state.lives).toBe(2)
+    const ghost = scene([{ type: 'heli', wy: 800 }])
+    ghost.plane.invul = 1000
+    run(ghost, IDLE, 5)
+    expect(ghost.lives).toBe(3)
+    expect(ghost.objects[0].alive).toBe(true)
+  })
+
+  it('disparar a cualquier enemigo no altera la avioneta ni el desplazamiento', () => {
+    const state = scene([{ type: 'jet', wy: 800 + 60, active: true, x: 120, side: 1 }])
+    const before = { lives: state.lives, fuel: state.fuel }
+    run(state, FIRE, 1)
+    expect(state.lives).toBe(before.lives)
+    expect(state.fuel).toBeLessThanOrEqual(before.fuel)
+    expect(state.phase).toBe('fly')
+  })
+})
+
 describe('aterrizaje', () => {
   function approach() {
     const state = flying()

@@ -22,6 +22,8 @@ const BULLET_SPEED = 280
 const BULLET_LIFE_MS = 720
 const FIRE_COOLDOWN_MS = 260
 const BANNER_MS = 2600
+// Cuánto dura la llamarada de un objetivo destruido. Es un efecto del mundo y no toca el estado de la avioneta.
+const BLAST_MS = 360
 const EXTRA_LIFE_AT = [3000, 8000]
 // Un tramo más difícil: todo va un poco más deprisa.
 const sectionFactor = (wy) => 1 + 0.07 * Math.min(SECTIONS - 1, Math.floor(wy / SECTION_LEN))
@@ -45,6 +47,7 @@ export function createGame(seed = 5) {
     bullets: [],
     objects: buildObjects(seed),
     fx: [],
+    blasts: [],
     banner: null,
     over: null,
     checkpoint: 0,
@@ -106,14 +109,16 @@ function respawn(state, reason) {
   state.lowWarned = false
   state.phase = 'fly'
   state.landMsg = false
-  // Lo que había por delante del punto de control se reconstruye: se repite el tramo tal cual salió, con todo en su sitio.
-  state.objects = buildObjects(state.seed).filter((o) => o.wy > state.checkpoint - 180)
+  state.blasts = []
+  // Lo que había por delante del punto de control se reconstruye: se repite el tramo tal cual salió, con todo en su sitio. Lo que
+  // queda detrás (el puente ya volado, por ejemplo) no vuelve a aparecer.
+  state.objects = buildObjects(state.seed).filter((o) => o.wy > state.checkpoint)
   say(state, reason === 'fuel' ? 'rNoFuel' : 'rCrash')
 }
 
-function fire(state, input, events) {
+function fire(state, input, dt, events) {
   const { plane } = state
-  plane.cooldown = Math.max(0, plane.cooldown - 16)
+  plane.cooldown = Math.max(0, plane.cooldown - dt)
   if ((input.action || input.hold) && plane.cooldown <= 0 && state.bullets.length < 3 && state.phase !== 'ready' && state.phase !== 'takeoff' && state.phase !== 'landed') {
     plane.cooldown = FIRE_COOLDOWN_MS
     state.bullets.push({ x: plane.x, wy: state.dist + 8, ms: BULLET_LIFE_MS })
@@ -121,12 +126,21 @@ function fire(state, input, events) {
   }
 }
 
+// Qué ocurre cuando la avioneta toca un objeto: el depósito de combustible reposta y no daña, las casitas de la orilla son
+// decorado y todo lo demás (enemigos, islas, puentes) es un choque.
+const planeEffect = (object) => (object.type === 'tank' ? 'refuel' : object.type === 'house' ? 'none' : 'crash')
+
+// Destruye un objetivo: lo da por muerto de inmediato (así ninguna otra bala ni choque lo cuenta dos veces), suma sus puntos y
+// deja una llamarada. No toca vidas, combustible, posición ni desplazamiento: eso solo lo cambian `crash` y `stepFuel`.
 function destroy(state, object, events) {
+  if (!object.alive) return
   object.alive = false
   state.kills += 1
-  burst(state, object.x, PLANE_Y - (object.wy - state.dist), ['#f2b134', '#d4503a', '#f1e6cf'], object.type === 'bridge' ? 24 : 10, object.type === 'bridge' ? 100 : 65)
-  addScore(state, object.type === 'bridge' ? 500 : KINDS[object.type].score, events)
-  events.push({ type: object.type === 'bridge' ? 'bridge' : 'boom' })
+  const bridge = object.type === 'bridge'
+  state.blasts.push({ x: object.x, wy: object.wy, ms: BLAST_MS, big: bridge })
+  burst(state, object.x, PLANE_Y - (object.wy - state.dist), ['#f2b134', '#d4503a', '#f1e6cf'], bridge ? 24 : 10, bridge ? 100 : 65)
+  addScore(state, bridge ? 500 : KINDS[object.type].score, events)
+  events.push({ type: bridge ? 'bridge' : object.type === 'tank' ? 'fuelBlast' : 'boom' })
 }
 
 function stepBullets(state, dt, events) {
@@ -220,7 +234,7 @@ function stepFuel(state, dt, events) {
   if (state.phase !== 'fly' && state.phase !== 'landing') return
   state.fuel = Math.max(0, state.fuel - (FUEL_DRAIN * dt) / 1000)
   const box = planeBox(state)
-  const over = state.objects.some((o) => o.alive && o.type === 'tank' && overlaps(box, boxOf(o)))
+  const over = state.objects.some((o) => o.alive && planeEffect(o) === 'refuel' && overlaps(box, boxOf(o)))
   if (over) {
     state.fuel = Math.min(FUEL_MAX, state.fuel + (FUEL_REFILL * dt) / 1000)
     // Suena al tocar el depósito y, si se queda encima, cada poco.
@@ -246,10 +260,11 @@ function stepFuel(state, dt, events) {
 
 function stepCollisions(state, events) {
   if (state.phase !== 'fly' && state.phase !== 'landing') return
+  // Con la invulnerabilidad del despegue y del reaparecer la avioneta atraviesa todo, para que un choque no encadene otro.
+  if (state.plane.invul > 0) return
   const box = planeBox(state)
   for (const o of state.objects) {
-    if (!o.alive || o.type === 'tank' || !onScreen(state, o)) continue
-    if (o.type === 'house') continue
+    if (!o.alive || !onScreen(state, o) || planeEffect(o) !== 'crash') continue
     if (overlaps(box, boxOf(o))) {
       if (o.type !== 'island' && o.type !== 'bridge') destroy(state, o, events)
       crash(state, events, 'crash')
@@ -290,6 +305,10 @@ export function step(state, input, dt) {
     // Las partículas nacen en la altura de la avioneta o del objetivo; se corrigen con el avance del mundo.
     p.y += (state.speed * dt) / 1000
   })
+  state.blasts.forEach((b) => {
+    b.ms -= dt
+  })
+  state.blasts = state.blasts.filter((b) => b.ms > 0)
   if (state.banner) {
     state.banner.ms -= dt
     if (state.banner.ms <= 0) state.banner = null
@@ -320,7 +339,7 @@ export function step(state, input, dt) {
     }
     return events
   }
-  fire(state, input, events)
+  fire(state, input, dt, events)
   stepBullets(state, dt, events)
   stepFoes(state, dt)
   stepFuel(state, dt, events)

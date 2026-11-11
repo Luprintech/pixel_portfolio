@@ -13,10 +13,10 @@ function run(state, input, frames = 1) {
   return events
 }
 
-// Un juego ya sin el diálogo de bienvenida, para probar el resto.
+// Un juego con la presentación del mago ya hecha, para probar el resto.
 function fresh() {
   const state = createGame()
-  state.dialog = null
+  state.intro = 'done'
   return state
 }
 
@@ -123,16 +123,30 @@ describe('mundo', () => {
 })
 
 describe('el mago', () => {
-  it('abre la aventura hablando y E avanza sus páginas, con el bocadillo junto a él', () => {
+  it('no habla hasta que la viajera se acerca: primero le sale la exclamación de misión y luego habla', () => {
     const state = createGame()
+    expect(state.dialog).toBeNull()
+    expect(view(state).bubble).toBeNull()
+    expect(view(state).quest).toBe(false)
+    // Lejos de él, la viajera anda con libertad y el mago calla.
+    run(state, { dx: 1, dy: 0, action: false }, 10)
+    expect(state.player.x).toBeGreaterThan(centre(7))
+    expect(state.dialog).toBeNull()
+    place(state, 5, 3)
+    const events = run(state, IDLE, 2)
+    expect(events.map((e) => e.type)).toContain('quest')
+    expect(view(state).quest).toBe(true)
+    expect(view(state).bubble).toBeNull()
+    // Mientras sale la exclamación no se mueve, y al acabar empieza a hablar.
+    const x = state.player.x
+    run(state, { dx: 1, dy: 0, action: false }, 10)
+    expect(state.player.x).toBe(x)
+    run(state, IDLE, 60)
+    expect(view(state).quest).toBe(false)
     expect(view(state).bubble).toMatchObject({ key: 'wizIntro1', more: true })
     const { bubble } = view(state)
     expect(bubble.x).toBe(centre(3))
     expect(bubble.y).toBeLessThan(16 + 2 * TILE)
-    // Mientras habla, el mundo no avanza ni se puede mover.
-    const before = state.player.x
-    run(state, { dx: 1, dy: 0, action: false }, 10)
-    expect(state.player.x).toBe(before)
     run(state, { ...IDLE, action: true })
     expect(view(state).bubble.key).toBe('wizIntro2')
     run(state, { ...IDLE, action: true }, 1)
@@ -140,7 +154,28 @@ describe('el mago', () => {
     expect(view(state).bubble).toMatchObject({ key: 'wizIntro4', more: false })
     run(state, { ...IDLE, action: true })
     expect(state.dialog).toBeNull()
-    expect(view(state).bubble).toBeNull()
+    expect(state.intro).toBe('done')
+  })
+
+  it('si intenta salir de la sala sin haber hablado con él, la llevan hasta el mago', () => {
+    const state = createGame()
+    place(state, 13, 5)
+    state.player.x = FIELD.width - 1
+    run(state, { dx: 1, dy: 0, action: false }, 1)
+    expect(state.room).toBe('bosque')
+    expect(state.intro).toBe('escort')
+    const events = []
+    for (let i = 0; i < 400 && state.intro !== 'done'; i++) events.push(...step(state, IDLE, 16))
+    expect(events.map((e) => e.type)).toContain('quest')
+    expect(state.room).toBe('bosque')
+    expect(state.player.x).toBe(centre(3))
+    expect(state.player.y).toBe(centre(3))
+    expect(state.dialog?.lines[0]).toBe('wizIntro1')
+  })
+
+  it('el aviso de misión suena y tiene su sonido', async () => {
+    const { ARCADE_SOUNDS } = await import('../../../lib/arcadeSound.js')
+    expect(ARCADE_SOUNDS.quest.length).toBeGreaterThan(1)
   })
 
   it('habla de la espada hasta que se tiene y, después, de lo que sigue', () => {

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { FRAME } from '../../../game/arcade/shared'
 import { MODULES } from '../../../game/arcade/modules'
-import { PAL } from '../../../game/palette'
 import { arcadeText } from '../../../lib/arcadeCopy'
 import StageBubble from './StageBubble'
 import { useStageScale } from './useStageScale'
@@ -70,7 +69,7 @@ export default function GameStage({ gameId, runKey, paused, input, lang, ui, onV
   const bubble = view?.bubble
 
   return (
-    <div ref={boxRef} className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden px-2">
+    <div ref={boxRef} className="absolute inset-0 flex items-center justify-center overflow-hidden">
       <div className="relative shrink-0" style={{ width, height }}>
         <canvas
           ref={canvasRef}
@@ -79,7 +78,7 @@ export default function GameStage({ gameId, runKey, paused, input, lang, ui, onV
           role="img"
           aria-label={ui.canvas}
           className="block [image-rendering:pixelated]"
-          style={{ width, height, boxShadow: `0 0 0 4px ${PAL.stone}, 0 0 0 8px ${PAL.ink2}` }}
+          style={{ width, height }}
         />
         {bubble && <StageBubble x={bubble.x * scale} y={bubble.y * scale} width={width} text={arcadeText(lang, bubble.key)} more={bubble.more} fontSize={Math.min(22, Math.max(13, scale * 4.2))} />}
       </div>

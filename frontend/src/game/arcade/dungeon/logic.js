@@ -13,6 +13,9 @@ const HURT_MS = 1200
 const SWING_MS = 220
 const SWING_COOLDOWN_MS = 360
 const MESSAGE_MS = 2600
+// El mago repara en la viajera cuando la tiene a menos de 3,5 baldosas; antes de hablar le sale la exclamación de misión.
+const NOTICE_RADIUS = TILE * 3.5
+const NOTICE_MS = 850
 const KNOCK = 10
 const REACH = HALF + 6
 const PUSH_MS = 280
@@ -75,6 +78,10 @@ export function createGame(seed = 7) {
     fx: [],
     message: null,
     dialog: null,
+    // 'wait' (el mago aún no ha reparado en la viajera), 'escort' (intentó irse y la llevan hasta él), 'notice' (la exclamación) y
+    // 'done' (ya habló). La aventura no empieza con él hablando: habla cuando ella se acerca.
+    intro: 'wait',
+    noticeMs: 0,
     victory: null,
     over: null,
     checkpoint: { room: START.room, x: centre(START.x), y: centre(START.y) },
@@ -84,10 +91,62 @@ export function createGame(seed = 7) {
     hitThisSwing: new Set(),
   }
   loadRoom(state, START.room)
-  // La aventura empieza con el mago hablando.
-  state.dialog = { lines: ['wizIntro1', 'wizIntro2', 'wizIntro3', 'wizIntro4'], index: 0 }
   return state
 }
+
+// El mago llama la atención de la viajera: la exclamación amarilla de misión, con su sonido, y enseguida habla.
+function beginNotice(state, events) {
+  state.intro = 'notice'
+  state.noticeMs = NOTICE_MS
+  state.player.moving = false
+  state.player.dir = 'up'
+  events.push({ type: 'quest' })
+}
+
+// Antes de que hable, el mago espera a que la viajera se acerque; si intenta salir de la sala, se la lleva hasta él andando.
+// Devuelve si este paso lo ha ocupado la presentación (y por tanto no se juega nada más).
+function stepIntro(state, dt, events) {
+  const { player } = state
+  const wizard = wizardTile(state.room)
+  if (!wizard) {
+    state.intro = 'done'
+    return false
+  }
+  if (state.intro === 'notice') {
+    state.noticeMs -= dt
+    if (state.noticeMs <= 0) {
+      state.intro = 'done'
+      startDialog(state, ['wizIntro1', 'wizIntro2', 'wizIntro3', 'wizIntro4'], events)
+    }
+    return true
+  }
+  const goal = { x: centre(wizard.col), y: centre(wizard.row + 1) }
+  if (state.intro === 'escort') {
+    const dx = goal.x - player.x
+    const dy = goal.y - player.y
+    const left = Math.hypot(dx, dy)
+    const stride = (SPEED * dt) / 1000
+    if (left <= stride) {
+      player.x = goal.x
+      player.y = goal.y
+      beginNotice(state, events)
+      return true
+    }
+    player.x += (dx / left) * stride
+    player.y += (dy / left) * stride
+    player.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down'
+    player.moving = true
+    player.walk += dt
+    return true
+  }
+  if (Math.hypot(player.x - centre(wizard.col), player.y - centre(wizard.row)) <= NOTICE_RADIUS) {
+    beginNotice(state, events)
+    return true
+  }
+  return false
+}
+
+const outsideField = ({ x, y }) => x < 0 || x >= FIELD.width || y < 0 || y >= FIELD.height
 
 export function loadRoom(state, room) {
   const spec = ROOMS[room]
@@ -622,6 +681,8 @@ export function step(state, input, dt) {
     return events
   }
 
+  if (state.intro !== 'done' && stepIntro(state, dt, events)) return events
+
   player.hurt = Math.max(0, player.hurt - dt)
   player.swing = Math.max(0, player.swing - dt)
   player.cooldown = Math.max(0, player.cooldown - dt)
@@ -640,6 +701,13 @@ export function step(state, input, dt) {
       pushBlock(state, dx, dy, dt, events)
     }
   } else player.push = 0
+  // Sin haber hablado con el mago no se sale de la sala: el primer intento la lleva hasta él.
+  if (state.intro === 'wait' && outsideField(player)) {
+    player.x = Math.min(FIELD.width - 1, Math.max(1, player.x))
+    player.y = Math.min(FIELD.height - 1, Math.max(1, player.y))
+    state.intro = 'escort'
+    return events
+  }
   if (input.action) performAction(state, events)
   hitEnemies(state, events)
   checkStairs(state, events)
@@ -661,6 +729,7 @@ export function view(state) {
   const wizard = wizardTile(state.room)
   const talking = state.dialog && wizard
   return {
+    quest: state.intro === 'notice',
     status: state.over === 'won' ? 'won' : state.over === 'dead' ? 'dead' : 'playing',
     message: state.message?.key ?? null,
     bubble: talking

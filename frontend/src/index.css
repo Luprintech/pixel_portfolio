@@ -782,3 +782,22 @@ article tbody tr td:first-child,
   font-weight: 500;
   color: var(--text-primary, #f1f5f9);
 }
+
+/* Recreativa de la casa de Lupe: luces del marco y efecto de monitor CRT. El brillo y las líneas son muy suaves y solo se pintan
+   encima de la pantalla (no la tocan ni reciben clics), así que no estorban a la lectura ni al rendimiento. */
+.arcade-led {
+  animation: arcade-led 1.6s steps(2, jump-none) infinite;
+}
+@keyframes arcade-led {
+  0% { opacity: 1; }
+  50% { opacity: 0.35; }
+  100% { opacity: 1; }
+}
+.arcade-crt {
+  pointer-events: none;
+  background-image: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.16) 0, rgba(0, 0, 0, 0.16) 1px, transparent 1px, transparent 3px);
+  box-shadow: inset 0 0 28px 2px rgba(0, 0, 0, 0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+  .arcade-led { animation: none; }
+}

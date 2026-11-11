@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GAMES, MENU_THEME, gameById } from '../../../game/arcade/games'
+import { FRAME } from '../../../game/arcade/shared'
 import { loadScores, recordResult } from '../../../game/arcade/scores'
 import { PAL } from '../../../game/palette'
 import { arcadeGame, arcadeText, arcadeUi } from '../../../lib/arcadeCopy'
@@ -7,6 +8,7 @@ import { playArcadeSound } from '../../../lib/arcadeSound'
 import { getEngine, startEngineIfAllowed } from '../../../lib/audioEngine'
 import { useValleCopy } from '../../../lib/valleCopy'
 import GameSelect from './GameSelect'
+import { CoinSlot, Joystick, Led, PushButton } from './CabinetDecor'
 import GameStage from './GameStage'
 import TouchPad from './TouchPad'
 
@@ -23,18 +25,20 @@ const clock = (seconds) => `${Math.floor(seconds / 60)}:${String(seconds % 60).p
 // Texto de una estadística de la pantalla de resultados.
 const statValue = (key, value) => (key === 'time' ? clock(value) : value)
 
+// Panel dentro del monitor (pausa y resultados): cubre solo la pantalla de la máquina y, si no cupiera, se desplaza por dentro.
 function Overlay({ children, label }) {
   return (
-    <div className="absolute inset-0 z-20 grid place-items-center overflow-y-auto p-3" style={{ background: 'rgba(15,14,34,0.78)' }}>
-      <section role="dialog" aria-modal="true" aria-label={label} className="w-full max-w-sm p-4 text-center" style={{ background: PAL.ink2, color: PAL.bone, boxShadow: `0 0 0 3px ${PAL.stone}, 0 0 0 6px ${PAL.ink}` }}>
+    <div className="absolute inset-0 z-20 grid place-items-center overflow-y-auto p-[2cqw]" style={{ background: 'rgba(15,14,34,0.82)', fontSize: 'max(12px, 2.4cqw)' }}>
+      <section role="dialog" aria-modal="true" aria-label={label} className="w-full max-w-[26em] p-[2.4cqw] text-center" style={{ background: PAL.ink2, color: PAL.bone, boxShadow: `0 0 0 3px ${PAL.stone}, 0 0 0 6px ${PAL.ink}` }}>
         {children}
       </section>
     </div>
   )
 }
 
-// La recreativa de la casa de Lupe: un selector con tres juegos y, al elegir uno, su pantalla con pausa, reinicio, salida al
-// selector y controles visibles (teclado o cruceta táctil), más la pantalla de resultados con récord. Gestiona el teclado de
+// La recreativa de la casa de Lupe: una ventana centrada con el frontal de una máquina de los 80 (marquesina, monitor y panel de
+// mandos) sobre el valle oscurecido. Dentro del monitor van el menú de tres juegos y, al elegir uno, el juego mismo, con pausa,
+// reinicio, salida al menú y controles (teclado o cruceta táctil), más la pantalla de resultados con récord. Gestiona el teclado de
 // todo el panel (captura las teclas antes de que lleguen al valle, que está parado detrás) y avisa de lo que pasa fuera: la
 // canción que toca (`onTheme`), el logro de un juego completado (`onComplete`) y la salida (`onClose`). Los juegos están en
 // `game/arcade/` y esta pieza no sabe cómo son por dentro.
@@ -196,101 +200,146 @@ export default function ArcadeMachine({ unlocked, onClose, onComplete, onTheme }
   const title = screen === 'play' && game ? games[gameId].title : ui.title
   const achievement = game ? copy.achievements.items[game.achievement] : null
   const showHud = view?.hud?.length > 0
+  // Alto que ocupan marquesina, marco y panel: el monitor nunca es más alto que lo que queda de pantalla, y así la máquina entera
+  // cabe sin desplazar la página.
+  const chrome = touch ? '23rem' : '16rem'
 
   return (
-    <div ref={rootRef} role="dialog" aria-modal="true" aria-label={ui.title} className="absolute inset-0 z-30 flex flex-col" style={{ background: PAL.ink }}>
-      <header className="flex flex-wrap items-center gap-2 px-3 pb-2 pt-3" style={{ color: PAL.bone }}>
-        <h2 className="px-text min-w-0 flex-1 truncate text-lg font-semibold sm:text-xl" style={{ color: PAL.saffronLight }}>
-          {title}
-        </h2>
-        {screen === 'play' && (
-          <>
-            <button type="button" className="px-btn px-btn--bone !min-h-11 !px-3 !text-sm" aria-label={ui.pause} data-sound="select" onClick={() => setPaused((p) => !p)} disabled={Boolean(outcome)}>
-              <span aria-hidden="true">{paused ? '▶' : '❚❚'}</span>
-              <span className="hidden sm:inline">{paused ? ui.resume : ui.pause}</span>
-            </button>
-            <button type="button" className="px-btn px-btn--bone !min-h-11 !px-3 !text-sm" aria-label={ui.restart} data-sound="select" onClick={restart}>
-              <span aria-hidden="true">↻</span>
-              <span className="hidden sm:inline">{ui.restart}</span>
-            </button>
-          </>
-        )}
-        <button type="button" data-sound="back" className="px-btn !min-h-11 !px-3 !text-sm" onClick={screen === 'play' ? backToSelector : onClose}>
-          <span aria-hidden="true">✕</span>
-          <span>{screen === 'play' ? ui.exitGame : ui.exitMachine}</span>
-        </button>
-      </header>
+    <div ref={rootRef} className="absolute inset-0 z-30 grid place-items-center p-2" style={{ background: 'rgba(15,14,34,0.62)' }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={ui.title}
+        className="flex max-h-full min-h-0 flex-col gap-2 overflow-y-auto p-3"
+        style={{ width: `min(100%, 64rem, calc((100dvh - ${chrome}) * 1.25 + 1.5rem))`, minWidth: 'min(100%, 18rem)', background: PAL.ink2, boxShadow: `0 0 0 3px ${PAL.stone}, 0 0 0 7px ${PAL.ink}, 8px 8px 0 7px ${PAL.ink}` }}
+      >
+        <header className="flex items-center gap-2" style={{ color: PAL.bone }}>
+          <Led color={PAL.tile} />
+          <Led color={PAL.saffron} delay={400} />
+          <h2 className="px-text min-w-0 flex-1 truncate px-2 py-1 text-center text-sm font-semibold uppercase tracking-wider sm:text-base" style={{ background: PAL.ink, color: PAL.saffronLight, boxShadow: `inset 0 0 0 2px ${PAL.stone}` }}>
+            {title}
+          </h2>
+          <Led color={PAL.lagoonLight} delay={800} />
+          <button type="button" data-sound="back" aria-label={ui.exitMachine} className="px-btn !min-h-10 !px-3 !text-sm" onClick={onClose}>
+            <span aria-hidden="true">✕</span>
+            <span className="hidden sm:inline">{ui.exitMachine}</span>
+          </button>
+        </header>
 
-      {screen === 'select' && <GameSelect ui={ui} games={games} scores={scores} unlocked={unlocked} selected={selected} onSelect={setSelected} onPlay={startGame} />}
-
-      {screen === 'play' && (
-        <div className="relative flex min-h-0 flex-1 flex-col items-center gap-2 pb-2">
-          <GameStage key={`${gameId}:${runKey}`} gameId={gameId} runKey={runKey} paused={paused || Boolean(outcome)} input={input} lang={lang} ui={ui} onView={setView} onEvents={playEvents} onFinish={finish} />
-
-          <div className="flex min-h-[3.25rem] w-full max-w-xl flex-col items-center justify-center gap-1 px-3 text-center" style={{ color: PAL.bone }}>
-            <p className="px-text text-base" aria-live="polite">
-              {view?.status === 'dead' ? `${ui.dead} ${ui.deadKey}.` : view?.message ? arcadeText(lang, view.message) : ''}
-            </p>
-            {showHud && (
-              <p className="px-text text-sm" style={{ color: PAL.saffronLight }}>
-                {view.hud.map(({ key, value }) => `${ui.hud[key]} ${value}`).join(' · ')}
-              </p>
+        <div className="p-2" style={{ background: PAL.ink, boxShadow: `inset 0 0 0 2px ${PAL.stone}` }}>
+          <div className="relative w-full overflow-hidden" style={{ aspectRatio: `${FRAME.width} / ${FRAME.height}`, background: '#000', containerType: 'inline-size', boxShadow: `0 0 0 3px ${PAL.stone}` }}>
+            {screen === 'select' && <GameSelect ui={ui} games={games} scores={scores} unlocked={unlocked} selected={selected} onSelect={setSelected} onPlay={startGame} />}
+            {screen === 'play' && (
+              <>
+                <GameStage key={`${gameId}:${runKey}`} gameId={gameId} runKey={runKey} paused={paused || Boolean(outcome)} input={input} lang={lang} ui={ui} onView={setView} onEvents={playEvents} onFinish={finish} />
+                {paused && !outcome && (
+                  <div data-overlay className="contents">
+                    <Overlay label={ui.paused}>
+                      <h3 className="px-text mb-[1.5cqw] text-[1.6em] font-semibold" style={{ color: PAL.saffronLight }}>{ui.paused}</h3>
+                      <p className="px-text mb-[2cqw]">{games[gameId].controls}</p>
+                      <div className="flex flex-col gap-2">
+                        <button type="button" data-arcade data-sound="confirm" className="px-btn !min-h-10" onClick={resume}>{ui.resume}</button>
+                        <button type="button" data-arcade data-sound="select" className="px-btn px-btn--bone !min-h-10" onClick={restart}>{ui.restart}</button>
+                        <button type="button" data-arcade data-sound="back" className="px-btn px-btn--bone !min-h-10" onClick={backToSelector}>{ui.toSelector}</button>
+                      </div>
+                    </Overlay>
+                  </div>
+                )}
+                {outcome && (
+                  <div data-overlay className="contents">
+                    <Overlay label={outcome.won ? ui.won : ui.lost}>
+                      <h3 className="px-text text-[1.6em] font-semibold" style={{ color: outcome.won ? PAL.saffronLight : PAL.rose }}>{outcome.won ? ui.won : ui.lost}</h3>
+                      <p className="px-text mb-1" style={{ opacity: 0.8 }}>{games[gameId].title}</p>
+                      <p className="px-text text-[2em] font-semibold leading-none" style={{ color: PAL.saffronLight }}>{outcome.score}</p>
+                      <p className="px-text mb-2">{ui.score}{outcome.record && <strong style={{ color: PAL.meadow }}> · {ui.record}</strong>}</p>
+                      <dl className="mb-2 grid grid-cols-2 gap-x-3 gap-y-0.5 text-left">
+                        {outcome.stats.map(({ key, value }) => (
+                          <div key={key} className="contents">
+                            <dt style={{ opacity: 0.8 }}>{ui.stats[key]}</dt>
+                            <dd className="text-right font-semibold">{statValue(key, value)}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      {outcome.reward && <p className="px-text mb-1" style={{ color: PAL.lagoonLight }}>{ui.reward}: {ui.rewards[outcome.reward]}</p>}
+                      {outcome.won && achievement && <p className="px-text mb-2" style={{ color: PAL.meadow }}>★ {ui.achievement}: {achievement.name}</p>}
+                      <div className="flex flex-col gap-2">
+                        <button type="button" data-arcade data-sound="confirm" className="px-btn !min-h-10" onClick={restart}>{ui.again}</button>
+                        <button type="button" data-arcade data-sound="back" className="px-btn px-btn--bone !min-h-10" onClick={backToSelector}>{ui.toSelector}</button>
+                      </div>
+                    </Overlay>
+                  </div>
+                )}
+              </>
             )}
+            <div aria-hidden="true" className="arcade-crt absolute inset-0 z-30" />
           </div>
+        </div>
 
-          {view?.status === 'dead' && touch && (
-            <button type="button" className="px-btn" onClick={continueDead}>
-              {ui.deadKey}
-            </button>
+        {/* Franja de estado de alto fijo: los avisos y el marcador cambian de texto sin mover ni encoger el monitor. */}
+        <div className="px-text flex h-12 flex-col items-center justify-center overflow-hidden px-2 text-center text-sm leading-tight" style={{ background: PAL.ink, color: PAL.bone, boxShadow: `inset 0 0 0 2px ${PAL.stone}` }}>
+          {screen === 'play' ? (
+            <>
+              <p aria-live="polite" className="line-clamp-1 w-full">
+                {view?.status === 'dead' ? `${ui.dead} ${ui.deadKey}.` : view?.message ? arcadeText(lang, view.message) : ''}
+              </p>
+              {showHud && <p className="w-full truncate text-xs" style={{ color: PAL.saffronLight }}>{view.hud.map(({ key, value }) => `${ui.hud[key]} ${value}`).join(' · ')}</p>}
+            </>
+          ) : (
+            !touch && <p className="text-xs" style={{ opacity: 0.8 }}>{ui.hintMenu}</p>
           )}
-          {touch ? <TouchPad labels={ui.pad} action={ui.actionLabel} horizontal={game.pad === 'horizontal'} onDirection={direction} onAction={action} /> : <p className="px-text px-3 text-center text-xs" style={{ color: PAL.bone, opacity: 0.75 }}>{games[gameId].controls}</p>}
+        </div>
 
-          {paused && !outcome && (
-            <div data-overlay className="contents">
-              <Overlay label={ui.paused}>
-                <h3 className="px-text mb-3 text-2xl font-semibold" style={{ color: PAL.saffronLight }}>{ui.paused}</h3>
-                <p className="px-text mb-4 text-sm">{games[gameId].controls}</p>
-                <div className="flex flex-col gap-3">
-                  <button type="button" data-arcade data-sound="confirm" className="px-btn" onClick={resume}>{ui.resume}</button>
-                  <button type="button" data-arcade data-sound="select" className="px-btn px-btn--bone" onClick={restart}>{ui.restart}</button>
-                  <button type="button" data-arcade data-sound="back" className="px-btn px-btn--bone" onClick={backToSelector}>{ui.toSelector}</button>
+        {/* Panel de mandos: los botones de pausa, reinicio y menú son reales; el joystick y los pulsadores grandes, adorno. */}
+        <div className="flex items-center justify-between gap-2" style={{ color: PAL.bone }}>
+          {screen === 'play' ? (
+            <>
+              {!touch && <Joystick />}
+              <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2">
+                <button type="button" className="px-btn px-btn--bone !min-h-10 !px-3 !text-sm" aria-label={ui.pause} data-sound="select" onClick={() => setPaused((p) => !p)} disabled={Boolean(outcome)}>
+                  <span aria-hidden="true">{paused ? '▶' : '❚❚'}</span>
+                  <span>{paused ? ui.resume : ui.pause}</span>
+                </button>
+                <button type="button" className="px-btn px-btn--bone !min-h-10 !px-3 !text-sm" aria-label={ui.restart} data-sound="select" onClick={restart}>
+                  <span aria-hidden="true">↻</span>
+                  <span>{ui.restart}</span>
+                </button>
+                <button type="button" data-sound="back" className="px-btn px-btn--bone !min-h-10 !px-3 !text-sm" onClick={backToSelector}>
+                  <span aria-hidden="true">◀</span>
+                  <span>{ui.exitGame}</span>
+                </button>
+              </div>
+              {!touch && (
+                <div className="flex gap-1">
+                  <PushButton color={PAL.tile} shade={PAL.tileDark} />
+                  <PushButton color={PAL.saffron} shade={PAL.tileDark} />
                 </div>
-              </Overlay>
-            </div>
-          )}
-
-          {outcome && (
-            <div data-overlay className="contents">
-              <Overlay label={outcome.won ? ui.won : ui.lost}>
-                <h3 className="px-text text-2xl font-semibold" style={{ color: outcome.won ? PAL.saffronLight : PAL.rose }}>{outcome.won ? ui.won : ui.lost}</h3>
-                <p className="px-text mb-3 text-sm" style={{ opacity: 0.8 }}>{games[gameId].title}</p>
-                <p className="px-text text-3xl font-semibold" style={{ color: PAL.saffronLight }}>{outcome.score}</p>
-                <p className="px-text mb-3 text-sm">{ui.score}{outcome.record && <strong style={{ color: PAL.meadow }}> · {ui.record}</strong>}</p>
-                <dl className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1 text-left text-sm">
-                  {outcome.stats.map(({ key, value }) => (
-                    <div key={key} className="contents">
-                      <dt style={{ opacity: 0.8 }}>{ui.stats[key]}</dt>
-                      <dd className="text-right font-semibold">{statValue(key, value)}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {outcome.reward && <p className="px-text mb-2 text-sm" style={{ color: PAL.lagoonLight }}>{ui.reward}: {ui.rewards[outcome.reward]}</p>}
-                {outcome.won && achievement && <p className="px-text mb-3 text-sm" style={{ color: PAL.meadow }}>★ {ui.achievement}: {achievement.name}</p>}
-                <div className="flex flex-col gap-3">
-                  <button type="button" data-arcade data-sound="confirm" className="px-btn" onClick={restart}>{ui.again}</button>
-                  <button type="button" data-arcade data-sound="back" className="px-btn px-btn--bone" onClick={backToSelector}>{ui.toSelector}</button>
-                </div>
-              </Overlay>
+              )}
+            </>
+          ) : (
+            <div className="flex w-full items-center justify-between gap-2">
+              <Joystick />
+              <CoinSlot />
+              <div className="flex gap-1">
+                <PushButton color={PAL.tile} shade={PAL.tileDark} />
+                <PushButton color={PAL.saffron} shade={PAL.tileDark} />
+                <PushButton color={PAL.lagoonLight} shade={PAL.lagoon} />
+              </div>
             </div>
           )}
         </div>
-      )}
 
-      {screen === 'select' && !touch && (
-        <p className="px-text px-3 pb-3 text-center text-xs" style={{ color: PAL.bone, opacity: 0.75 }}>
-          {ui.hintMenu}
-        </p>
-      )}
+        {screen === 'play' && touch && (
+          <>
+            {view?.status === 'dead' && (
+              <button type="button" className="px-btn mx-auto !min-h-10" onClick={continueDead}>
+                {ui.deadKey}
+              </button>
+            )}
+            <TouchPad labels={ui.pad} action={ui.actionLabel} horizontal={game.pad === 'horizontal'} onDirection={direction} onAction={action} />
+          </>
+        )}
+        {screen === 'play' && !touch && <p className="px-text text-center text-xs" style={{ color: PAL.bone, opacity: 0.75 }}>{games[gameId].controls}</p>}
+      </div>
     </div>
   )
 }

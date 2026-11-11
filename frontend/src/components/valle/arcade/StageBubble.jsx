@@ -12,6 +12,15 @@ export default function StageBubble({ x, y, width, text, more, fontSize }) {
   useLayoutEffect(() => {
     const bubble = ref.current
     if (!bubble) return
+    // El texto se reparte en líneas hasta el ancho máximo y la caja se queda tan ancha como ese máximo aunque la línea más larga
+    // sea más corta (queda un hueco a la derecha): se mide el texto real y la caja se ajusta a él.
+    const paragraph = bubble.firstElementChild
+    bubble.style.width = ''
+    const range = document.createRange()
+    range.selectNodeContents(paragraph)
+    const style = getComputedStyle(paragraph)
+    const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+    bubble.style.width = `${Math.ceil(range.getBoundingClientRect().width + padding) + 1}px`
     const own = bubble.offsetWidth
     const left = Math.min(Math.max(x - own / 2, MARGIN), Math.max(MARGIN, width - own - MARGIN))
     bubble.style.transform = `translate(${left}px, ${y - bubble.offsetHeight - TAIL}px)`

@@ -82,6 +82,7 @@ export function drawGame(g, state, time) {
   ].sort((a, b) => a.y - b.y)
   actors.forEach((actor) => actor.draw())
 
+  drawQuestMark(g, state, time)
   state.shots.forEach((shot) => g.drawImage(sprites.ball, px(shot.x - 4), HUD + px(shot.y - 4)))
   drawVictory(g, sprites, state, time)
   state.fx.forEach((p) => {
@@ -110,13 +111,26 @@ function drawPlayer(g, sprites, state, time) {
   const { player } = state
   if (player.hurt > 0 && Math.floor(time / 80) % 2) return
   const step = player.moving ? WALK_CYCLE[Math.floor(player.walk / WALK_MS) % WALK_CYCLE.length] : 0
-  const set = player.swing > 0 ? sprites.heroSwing : sprites.hero
+  // Sin espada conseguida (o con ella en el aire) la viajera va con las manos libres: `heroSwing` es el dibujo sin hoja.
+  const set = player.swing > 0 || !player.sword ? sprites.heroSwing : sprites.hero
   g.drawImage(set[player.dir][step], px(player.x - 8), HUD + px(player.y - 11))
   if (player.swing > 0) {
     const box = swordBox(player)
     const blade = sprites.blade[player.dir]
     g.drawImage(blade, px((box.x0 + box.x1) / 2 - blade.width / 2), HUD + px((box.y0 + box.y1) / 2 - blade.height / 2))
   }
+}
+
+// Exclamación amarilla de misión sobre la cabeza del mago, con un saltito, justo antes de que hable.
+function drawQuestMark(g, state, time) {
+  const wizard = wizardTile(state.room)
+  if (state.intro !== 'notice' || !wizard) return
+  const x = wizard.col * TILE + 6
+  const y = HUD + wizard.row * TILE - 14 - Math.round(Math.abs(Math.sin(time / 120)) * 3)
+  rect(g, x - 1, y - 1, 6, 12, PAL.ink)
+  rect(g, x, y, 4, 7, PAL.saffron)
+  rect(g, x, y + 8, 4, 3, PAL.saffron)
+  rect(g, x + 1, y + 1, 1, 5, PAL.saffronLight)
 }
 
 // Escena de victoria: el Cristal del Bucle aparece en el centro de la sala y sube despacio, con destellos alrededor.

@@ -102,6 +102,24 @@ function drawObject(g, sprites, state, o, time) {
   return g.drawImage(sprite, px(o.x - sprite.width / 2), px(y - sprite.height / 2))
 }
 
+// Llamarada de un objetivo destruido: un destello que se encoge y un anillo de chispas que se abre. Va fijada al mundo, así que se
+// queda donde estaba el objetivo y baja con el río; no tiene nada que ver con el choque de la avioneta.
+function drawBlasts(g, state) {
+  state.blasts.forEach((b) => {
+    const t = 1 - b.ms / 360
+    const x = px(b.x)
+    const y = px(screenY(state, b.wy))
+    const reach = (b.big ? 14 : 7) + t * (b.big ? 22 : 11)
+    const spark = b.big ? 3 : 2
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2 + t
+      rect(g, px(x + Math.cos(angle) * reach) - 1, px(y + Math.sin(angle) * reach) - 1, spark, spark, i % 2 ? PAL.saffron : PAL.tile)
+    }
+    const core = Math.max(0, (b.big ? 9 : 5) * (1 - t))
+    if (core >= 1) rect(g, x - px(core / 2), y - px(core / 2), px(core), px(core), t < 0.45 ? PAL.bone : PAL.saffron)
+  })
+}
+
 function drawPlane(g, sprites, state, time) {
   const { plane } = state
   if (state.over === 'lost') return
@@ -142,6 +160,7 @@ export function drawGame(g, state, time) {
   const objects = state.objects
   objects.forEach((o) => drawObject(g, sprites, state, o, time))
   state.bullets.forEach((b) => g.drawImage(sprites.bullet, px(b.x - 1), px(screenY(state, b.wy) - 3)))
+  drawBlasts(g, state)
   drawPlane(g, sprites, state, time)
   state.fx.forEach((p) => {
     g.globalAlpha = Math.min(1, p.ms / 260)
