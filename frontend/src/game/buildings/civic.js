@@ -1,8 +1,9 @@
 // Edificios de formación y lectura: colegio con torre del reloj, galería de artes con mural, universidad
-// con arcadas y cúpula, y biblioteca con el libro abierto sobre la puerta.
+// con arcadas y cúpula, instituto de DAW (IES Gran Capitán) con pórtico y parabólica, y biblioteca con el libro abierto sobre la puerta.
 import { PAL, TONE } from '../palette.js'
 import { dot, ellipse, hash2, rect } from '../pixelKit.js'
-import { WALL0, WALL1, WALL2, WOOD0, WOOD1, WOOD2, arcade, doorAt, finish, hipRoof, newSprite, signBoard, wall, windowAt } from './shared.js'
+import { drawText, textWidth } from '../pixelFont.js'
+import { STONE0, STONE1, STONE2, WALL0, WALL1, WALL2, WOOD0, WOOD1, WOOD2, arcade, doorAt, finish, hipRoof, iconAt, newSprite, signBoard, wall, windowAt } from './shared.js'
 
 const SLATE = '#6b5b95'
 
@@ -95,6 +96,78 @@ export function universitySprite() {
     const y = 62 + Math.round(Math.sin(x / 9) * 1.4)
     rect(g, x, y, 1, 2, ['#e07a9c', '#f2b134', '#b8a2e0', '#6fb3c6'][Math.floor(x / 7) % 4])
   }
+  return finish(s)
+}
+
+// IES Gran Capitán: instituto de dos plantas con tejado plano y pórtico con frontón sobre la puerta, el rótulo con el nombre
+// (la fuente de píxeles no tiene tildes: la del último "A" se dibuja a mano), una parabólica y una bandera con el icono de código
+// en el tejado, pantallas encendidas en las ventanas de arriba y el rótulo "DAW" en el ala izquierda. El dibujo mide lo mismo que
+// el edificio (10×5 teselas) y su puerta cae en la columna 88, que es el centro de la tesela de puerta.
+const INSTITUTE_TEAL = '#2f8f8b'
+
+function schoolSign(g, x, y, w) {
+  const name = 'GRAN CAPITAN'
+  signBoard(g, x, y, w, 13, { color: '#2e2d5a', ink: '#f8d77a' })
+  const left = x + Math.floor((w - textWidth(name)) / 2)
+  drawText(g, left, y + 4, name, '#f8d77a')
+  // Tilde del último "A" (CAPITÁN).
+  const accent = left + 10 * 4 + 1
+  dot(g, accent + 1, y + 2, '#f8d77a')
+  dot(g, accent, y + 3, '#f8d77a')
+}
+
+function satelliteDish(g, x, y) {
+  rect(g, x + 4, y + 8, 1, 6, STONE1)
+  rect(g, x + 1, y + 13, 7, 2, STONE0)
+  ellipse(g, x + 5, y + 4, 6, 5, STONE2)
+  ellipse(g, x + 5, y + 4, 4.5, 3.5, '#f1e6cf')
+  rect(g, x + 5, y + 1, 1, 4, STONE0)
+  dot(g, x + 5, y, PAL.tile)
+}
+
+// Una ventana de arriba con una pantalla de código: tres líneas de colores sobre azul oscuro.
+function codeWindow(s, x, y) {
+  windowAt(s, x, y, 12, 12, { screen: '#1f3f78', muntins: false })
+  rect(s.g, x + 2, y + 3, 6, 1, '#8fd3dd')
+  rect(s.g, x + 2, y + 6, 8, 1, '#f8d77a')
+  rect(s.g, x + 2, y + 9, 5, 1, '#8fd3dd')
+}
+
+export function instituteSprite() {
+  const s = newSprite(160, 80)
+  const { g } = s
+  // Cuerpo bajo y largo, con el tejado plano y su antepecho.
+  wall(g, { x: 4, y: 28, w: 152, h: 52 })
+  rect(g, 0, 22, 160, 7, '#5c5a7a')
+  rect(g, 0, 22, 160, 1, '#7a789a')
+  rect(g, 0, 28, 160, 1, '#3b3957')
+  for (let x = 6; x < 154; x += 8) rect(g, x, 24, 4, 1, '#7a789a')
+  satelliteDish(g, 14, 7)
+  rect(g, 40, 10, 1, 12, STONE1)
+  rect(g, 37, 14, 7, 1, STONE2)
+  // Pórtico central: frontón verde azulado, pared más clara y dos columnas a los lados de la puerta.
+  hipRoof(g, { x: 54, y: 8, w: 68, rows: 3, color: INSTITUTE_TEAL, inset: 5 })
+  wall(g, { x: 56, y: 20, w: 64, h: 60, base: WALL2, post: false })
+  ;[62, 109].forEach((x) => {
+    rect(g, x, 40, 6, 36, '#f1e6cf')
+    rect(g, x, 40, 1, 36, '#ffffff')
+    rect(g, x + 5, 40, 1, 36, '#c9b994')
+    rect(g, x - 1, 38, 8, 3, '#e8d3a8')
+    rect(g, x - 1, 75, 8, 2, '#c9b994')
+  })
+  schoolSign(g, 61, 28, 54)
+  // Bandera con el icono de código sobre el frontón.
+  rect(g, 88, 1, 1, 9, WOOD0)
+  rect(g, 89, 2, 15, 9, INSTITUTE_TEAL)
+  rect(g, 89, 2, 15, 1, '#5cc6bf')
+  iconAt(g, 93, 3, 'code', '#f1e6cf')
+  // Alas: arriba pantallas de código, en medio el rótulo DAW y abajo ventanas normales con jardinera.
+  ;[10, 34, 126, 142].forEach((x) => codeWindow(s, x, 34))
+  ;[10, 34].forEach((x) => windowAt(s, x, 60, 12, 12, { flowers: true }))
+  ;[126, 142].forEach((x) => windowAt(s, x, 60, 12, 12, { flowers: true }))
+  signBoard(g, 16, 49, 24, 8, { color: INSTITUTE_TEAL })
+  drawText(g, 22, 51, 'DAW', '#f1e6cf')
+  doorAt(s, 80, 77, { w: 16, h: 22 })
   return finish(s)
 }
 

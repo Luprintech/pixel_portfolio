@@ -306,7 +306,7 @@ Los edificios deberían tener interiores propios.
 
 **Propuesta técnica:** plantilla reutilizable de escenas interiores con punto de entrada y de salida, colisiones, objetos interactivos, eventos de interacción, cámara y límites, e integración con paneles React. Cada interior tiene decoración y contenido propios, pero comparte los mecanismos de navegación.
 
-**Estado y prioridad:** la casa de Lupe es el primer edificio completo y reutilizable; incluye interior recorrible, cuarto gaming, impresoras, telescopio, PC, Atreus, Khalessi y diálogos. El resto de interiores sigue pendiente. La visita guiada exterior hasta la casa y la presentación guiada de impresoras, Atreus, el ordenador y Khalessi dentro de ella (C2) están implementadas.
+**Estado y prioridad:** la casa de Lupe es el primer edificio completo y reutilizable; incluye interior recorrible, cuarto gaming, impresoras, telescopio, PC, Atreus, Khalessi y diálogos. El IES Gran Capitán (nodo de DAW, antes el laboratorio `daw`) es el segundo interior propio (Fase D, 2026-11-11); el resto sigue pendiente. La visita guiada exterior hasta la casa y la presentación guiada de impresoras, Atreus, el ordenador y Khalessi dentro de ella (C2) están implementadas.
 
 La casa es una habitación compacta y recorrible: dos escritorios (el de Atreus con dos pantallas, cascos y torre blanca), cama doble, TV, estantería de consolas, rincón de impresión 3D y acceso a la azotea.
 

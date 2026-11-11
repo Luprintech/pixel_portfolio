@@ -44,9 +44,14 @@ describe('look', () => {
     expect(visible(DEFAULT_LOOK)).not.toContain('bottom')
     expect(visible({ ...DEFAULT_LOOK, trait: 'barba', top: 'camiseta' })).toEqual(expect.arrayContaining(['beardColor', 'bottom', 'bottomColor']))
     expect(visible({ ...DEFAULT_LOOK, hairStyle: 'calvo' })).not.toContain('hair')
-    // Con peto no hay prenda de abajo, pero su color sigue pudiéndose elegir.
+    // Con peto no hay prenda de abajo, pero su color (el de su tela) se elige justo bajo el selector de la prenda, y no se ofrece el color
+    // de arriba, que no tiñe nada (la camiseta es blanca).
     expect(visible({ ...DEFAULT_LOOK, top: 'peto' })).toEqual(expect.arrayContaining(['bottomColor']))
     expect(visible({ ...DEFAULT_LOOK, top: 'peto' })).not.toContain('bottom')
+    expect(visible({ ...DEFAULT_LOOK, top: 'peto' })).not.toContain('topColor')
+    const clothes = LOOK_SECTIONS.find((section) => section.id === 'clothes')
+    expect(visibleBlocks(clothes, { ...DEFAULT_LOOK, top: 'peto' })[0]).toMatchObject({ key: 'top', colors: ['bottomColor'] })
+    expect(visibleBlocks(clothes, { ...DEFAULT_LOOK, top: 'camiseta' })[0]).toMatchObject({ key: 'top', colors: ['topColor'] })
   })
 
   it('las partidas de antes de las láminas de referencia pasan a los estilos nuevos', () => {

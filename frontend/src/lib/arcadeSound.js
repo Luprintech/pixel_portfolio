@@ -12,7 +12,7 @@ export const ARCADE_SOUNDS = {
   // Aventura de mazmorras.
   swing: [square(520, 0, 0.12, 0.1, 180)],
   hit: [square(180, 0, 0.06, 0.14), square(120, 0.05, 0.08, 0.14)],
-  kill: [square(300, 0, 0.07), square(200, 0.07, 0.07), square(120, 0.14, 0.12)],
+  // `kill` no suena a propósito: el golpe que mata ya suena con `hit` y un segundo pitido más agudo encima resultaba cargante.
   hurt: [saw(220, 70, 0, 0.25, 0.14)],
   chest: [square(523, 0, 0.08), square(659, 0.08, 0.08), square(784, 0.16, 0.08), square(1047, 0.24, 0.2)],
   pickup: [square(880, 0, 0.05), square(1175, 0.05, 0.08)],

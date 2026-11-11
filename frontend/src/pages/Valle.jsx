@@ -385,6 +385,7 @@ export default function Valle() {
     setDialogue(null)
     if (action === 'desktop') setZone('pc')
     else if (action === 'tv') setZone('tv')
+    else if (action === 'ficha') setZone('dawSheet')
     else if (action === 'sky') setZone('telescope')
     else if (action === 'music') jukebox.toggle()
     // Abrir el ordenador desde la visita: Lupe espera (la parada queda contada) mientras se usa.

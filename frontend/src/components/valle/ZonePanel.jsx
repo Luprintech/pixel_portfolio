@@ -3,6 +3,7 @@ import { PAL } from '../../game/palette'
 import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
 import { panelStyle } from './panelStyle'
+import DawSheet from './DawSheet'
 import { AboutBlock, ContactBlock, PostsBlock, ProjectsBlock, StackBlock } from './Content'
 
 // Panel con el contenido de cada zona. Mismo contenido que el modo clásico.
@@ -25,6 +26,7 @@ export default function ZonePanel({ zone, onClose }) {
     contact: <ContactBlock />,
     blog: <PostsBlock limit={3} />,
     stack: <StackBlock />,
+    dawSheet: <DawSheet />,
   }[zone]
 
   return (

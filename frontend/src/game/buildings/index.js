@@ -1,15 +1,15 @@
 // Un generador por tipo de edificio. Cada uno devuelve `{ canvas, doorCol, windows }`; los dibujos son
 // funciones puras de su tipo y variante, así que se pueden pintar una vez por visita y reutilizar.
-import { gallerySprite, librarySprite, schoolSprite, universitySprite } from './civic.js'
+import { gallerySprite, instituteSprite, librarySprite, schoolSprite, universitySprite } from './civic.js'
 import { cottageSprite, friendsSprite, homeSprite, kioskSprite, musicSprite } from './homes.js'
-import { barSprite, garageSprite, labSprite, shopSprite, workshopSprite } from './work.js'
+import { barSprite, garageSprite, shopSprite, workshopSprite } from './work.js'
 
 const BUILDERS = {
   school: schoolSprite,
   gallery: gallerySprite,
   university: universitySprite,
   library: librarySprite,
-  lab: labSprite,
+  institute: instituteSprite,
   workshop: workshopSprite,
   garage: garageSprite,
   shop: shopSprite,

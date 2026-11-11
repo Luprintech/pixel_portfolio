@@ -9,7 +9,6 @@
 import { prefersReducedMotion } from '../../lib/reducedMotion.js'
 import { tintLayers } from '../titleSkyPaint.js'
 import { valleLightningAt, valleSkyAt } from '../valleSky.js'
-import { WINDOWS } from './homeLayout.js'
 import { duskGlow, lightsOn, roomFlash } from './interiorLight.js'
 import { LED_DEPTH, LED_LAYERS, LED_PALETTES, bulbGlowCanvas, ledCanvas } from './ledLights.js'
 import { windowOverlayCanvas } from './roomDecor.js'
@@ -45,16 +44,14 @@ export default class InteriorSky {
     )
     this.warm = scene.add.rectangle(width / 2, height / 2, width, height, WARM_COLOR).setDepth(DEPTH.warm).setAlpha(0)
     this.flash = scene.add.rectangle(width / 2, height / 2, width, height, 0xffffff).setDepth(DEPTH.flash).setAlpha(0)
-    if (room.home) {
-      this.buildWindows()
-      this.buildLights()
-    }
+    if (room.windows?.length) this.buildWindows()
+    if (room.home) this.buildLights()
   }
 
   // Un lienzo vivo por cristal, detrás de la imagen de la sala, y los travesaños y cortinas por delante.
   buildWindows() {
     const { scene } = this
-    WINDOWS.forEach((window) => {
+    this.room.windows.forEach((window) => {
       const key = `window-view:${window.id}`
       // El lienzo de cada cristal se conserva entre visitas: solo se vuelve a pintar.
       const texture = scene.textures.exists(key) ? scene.textures.get(key) : scene.textures.createCanvas(key, window.w, window.h)

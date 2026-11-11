@@ -58,6 +58,10 @@ const NAS_MENU = [
   option('seguir', 'casa.opt.explorar', { close: true }),
 ]
 
+// IES Gran Capitán (`docs/DIALOGOS.md`, `desarrollo.daw` y `desarrollo.vocaccion`): el tablón del itinerario y la pizarra del proyecto
+// final. Las dos ofrecen la ficha de DAW; ninguna obliga a nada. Sin Ylonem ni Grace: aún no tienen diálogos aprobados.
+const GRAN_MENU = [option('ficha', 'gran.opt.ficha', { action: 'ficha' }), option('seguir', 'casa.opt.explorar', { close: true })]
+
 export const SCRIPTS = {
   'inicio.bienvenida': {
     pages: [
@@ -150,6 +154,10 @@ export const SCRIPTS = {
   'nas.que_es': { pages: lines('lupe', 'nas.que_es', 2), options: NAS_MENU },
   'nas.repeticion': { pages: lines('lupe', 'nas.repeticion', 1), options: NAS_MENU },
 
+  'gran.entrada': { pages: lines('lupe', 'gran.entrada', 2), options: GRAN_MENU },
+  'gran.repeticion': { pages: lines('lupe', 'gran.repeticion', 1), options: GRAN_MENU },
+  'gran.pizarra': { pages: lines('lupe', 'gran.pizarra', 3), options: GRAN_MENU },
+
   'pc.abrir': { pages: lines('lupe', 'pc.abrir', 4), options: PC_TALK_MENU },
   'pc.proyectos_info': { pages: lines('lupe', 'pc.proyectos_info', 3), options: PC_TALK_MENU },
   'pc.retos_info': { pages: lines('lupe', 'pc.retos_info', 3), options: PC_TALK_MENU },
@@ -177,6 +185,8 @@ export const TALKS = {
   printer: { first: 'maker.presentacion', again: 'maker.repeticion' },
   hifi: { first: 'hifi.presentacion', again: 'hifi.repeticion' },
   khalessi: { first: 'casa.khalessi', rest: 'casa.khalessi_reposo' },
+  granCartel: { first: 'gran.entrada', again: 'gran.repeticion' },
+  granPizarra: { first: 'gran.pizarra' },
 }
 
 // Conversación de una interacción según lo ya visto: `seen` es el conjunto de ids de conversaciones abiertas

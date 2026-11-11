@@ -98,10 +98,10 @@ export const LOOK_SECTIONS = [
     id: 'clothes',
     tab: 'clothes',
     fields: [
-      { key: 'top', view: 'torso', colors: [{ key: 'topColor' }] },
+      // El peto lleva camiseta blanca fija: el color que se ve es el de su tela (`bottomColor`), así que se elige justo bajo el
+      // selector de prenda y no se ofrece un color de arriba que no tiñe nada.
+      { key: 'top', view: 'torso', colors: [{ key: 'topColor', when: (look) => look.top !== 'peto' }, { key: 'bottomColor', when: (look) => look.top === 'peto' }] },
       { key: 'bottom', view: 'legs', when: showsBottom, colors: [{ key: 'bottomColor', when: showsBottomColor }] },
-      // Con peto no hay prenda de abajo que elegir, pero su tela sigue teniendo color.
-      { key: 'bottomColor', when: (look) => !showsBottom(look) && showsBottomColor(look) },
       { key: 'shoes', view: 'feet', colors: [{ key: 'shoesColor' }] },
       { key: 'trim' },
     ],

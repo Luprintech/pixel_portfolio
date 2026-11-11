@@ -3,7 +3,7 @@
 import { PAL, TONE, tint } from './palette.js'
 import { hash2, makeCanvas, rect } from './pixelKit.js'
 import { TILE } from './world.js'
-import { WINDOWS } from './interior/homeLayout.js'
+import { granDecorCanvas } from './interior/granDecor.js'
 import { homeDecorCanvas } from './interior/roomDecor.js'
 
 const PLANK_H = 8
@@ -53,9 +53,8 @@ export function roomCanvas(room, pastel = false) {
   rect(g, mat.x + 3, mat.y + 3, mat.width - 6, 1, c(PAL.saffronLight))
   // La casa de Lupe suma marcos de ventana, cuadros, alfombras y luces encima de la sala vacía, y deja huecos los cristales:
   // por ellos se ve el cielo vivo del valle, que la escena pone detrás de esta imagen.
-  if (room.home) {
-    g.drawImage(homeDecorCanvas(room, pastel), 0, 0)
-    WINDOWS.forEach(({ x, y, w, h }) => g.clearRect(x, y, w, h))
-  }
+  if (room.home) g.drawImage(homeDecorCanvas(room, pastel), 0, 0)
+  else if (room.plan) g.drawImage(granDecorCanvas(room, pastel), 0, 0)
+  room.windows?.forEach(({ x, y, w, h }) => g.clearRect(x, y, w, h))
   return canvas
 }

@@ -71,7 +71,8 @@ export const COPY = {
       contact: 'Buzón de Contacto',
       blog: 'Biblioteca de los Logs',
       stack: 'Laboratorio de DAW y Ciber',
-      daw: 'Laboratorio de DAW y Ciber',
+      daw: 'IES Gran Capitán',
+      dawSheet: 'Ficha de DAW',
       cervantes: 'Cervantes',
       artes: 'Escuela de Artes',
       universidad: 'Universidad',
@@ -116,6 +117,18 @@ export const COPY = {
     blog: { lead: 'Notas de lo que voy aprendiendo y construyendo.', all: 'Ver todos los posts', open: 'Bajar a la mazmorra', empty: 'Aún no hay posts publicados.' },
     projects: { all: 'Ver todos los proyectos', demo: 'Ver demo', code: 'Ver código', empty: 'Aún no hay proyectos publicados.', loading: 'Cargando proyectos…' },
     stackLead: 'Las herramientas que uso a diario.',
+    // Ficha profesional del IES Gran Capitán (`components/valle/DawSheet.jsx`). Solo hechos ya documentados; sin notas ni terceros.
+    dawSheet: {
+      lead: 'Desarrollo de Aplicaciones Web (DAW).',
+      items: [
+        { title: 'Itinerario', text: 'Empecé a distancia en el IES Trassierra, mientras trabajaba. Al desaparecer esa modalidad, terminé de forma presencial en el IES Gran Capitán.' },
+        { title: 'Proyecto final', text: 'Vocacción, una aplicación de orientación académica y profesional. Proyecto de cuatro personas: la idea la propuse yo y se eligió por votación; lideré y coordiné el trabajo.' },
+        { title: 'Versión presentada', text: 'Un test interactivo cuyas respuestas analizaba una IA.' },
+        { title: 'Después', text: 'Seguí desarrollándola durante meses: añadí el test RIASEC y otras funciones. Sigue en mantenimiento y no está terminada.' },
+        { title: 'Lo que aprendí', text: 'A coordinar un proyecto compartido y a trabajar con Git y ramas.' },
+      ],
+      note: 'Vocacción no tiene enlace porque está en mantenimiento.',
+    },
     // Bocadillos que salen junto a un personaje de la casa sin abrir un diálogo (ver `components/valle/WorldBubble.jsx`).
     bubbles: {
       // Lupe durante la visita guiada: al echar a andar, al esperar a la viajera y al quedarse sola.
@@ -164,6 +177,9 @@ export const COPY = {
         bench: 'Sentarse en el banco',
         standup: 'Levantarse',
         rooftopDoor: 'Entrar en la casa',
+        granCartel: 'Leer el tablón del itinerario',
+        granPizarra: 'Mirar la pizarra del proyecto',
+        granOrdenador: 'Ver la ficha de DAW',
       },
       autosaved: 'Guardado automático',
       classic: 'Modo clásico',
@@ -413,7 +429,8 @@ export const COPY = {
       contact: 'Contact postbox',
       blog: 'Library of Logs',
       stack: 'DAW and Cyber lab',
-      daw: 'DAW and Cyber lab',
+      daw: 'IES Gran Capitán',
+      dawSheet: 'DAW sheet',
       cervantes: 'Cervantes',
       artes: 'Arts school',
       universidad: 'University',
@@ -458,6 +475,18 @@ export const COPY = {
     blog: { lead: "Notes on what I'm learning and building.", all: 'See all posts', open: 'Go down the dungeon', empty: 'No posts published yet.' },
     projects: { all: 'See all projects', demo: 'View demo', code: 'View code', empty: 'No projects published yet.', loading: 'Loading projects…' },
     stackLead: 'The tools I use every day.',
+    // Professional sheet of IES Gran Capitán (`components/valle/DawSheet.jsx`). Documented facts only; no grades or third parties.
+    dawSheet: {
+      lead: 'Web Application Development (DAW).',
+      items: [
+        { title: 'Route', text: 'I started by distance learning at IES Trassierra, while working. When that option disappeared, I finished in person at IES Gran Capitán.' },
+        { title: 'Final project', text: 'Vocacción, an academic and career guidance application. A four-person project: the idea was mine and was chosen by vote; I led and coordinated the work.' },
+        { title: 'Submitted version', text: 'An interactive test whose answers were analysed by an AI.' },
+        { title: 'Afterwards', text: 'I kept developing it for months: I added the RIASEC test and other features. It is still under maintenance and is not finished.' },
+        { title: 'What I learned', text: 'Coordinating a shared project and working with Git and branches.' },
+      ],
+      note: 'Vocacción has no link because it is under maintenance.',
+    },
     bubbles: {
       lupeGuide: ['This way!', "Follow me, it's not far."],
       lupeWait: ["No rush, I'll wait for you.", 'Take your time.'],
@@ -503,6 +532,9 @@ export const COPY = {
         bench: 'Sit on the bench',
         standup: 'Stand up',
         rooftopDoor: 'Go back inside',
+        granCartel: 'Read the route board',
+        granPizarra: 'Look at the project whiteboard',
+        granOrdenador: 'See the DAW sheet',
       },
       autosaved: 'Autosaved',
       classic: 'Classic mode',

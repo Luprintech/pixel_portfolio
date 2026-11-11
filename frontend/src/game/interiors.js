@@ -1,6 +1,7 @@
 // Plano de las salas interiores, en teselas de 16 px. Sin dependencias de Phaser.
-// Las casas sin interior propio son una sala vacía que sigue al tamaño del edificio de fuera; la casa de Lupe tiene el suyo
-// (`interior/homeLayout.js`).
+// Las casas sin interior propio son una sala vacía que sigue al tamaño del edificio de fuera; la casa de Lupe
+// (`interior/homeLayout.js`) y el IES Gran Capitán (`interior/granLayout.js`) tienen el suyo.
+import { GRAN_ID, granRoom } from './interior/granLayout.js'
 import { HOME_ID, homeRoom } from './interior/homeLayout.js'
 import { TILE } from './world.js'
 
@@ -15,6 +16,7 @@ const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
 // (la pared del fondo y las laterales quedan fuera) y `exit` la zona del felpudo, centrada abajo.
 export function roomOf(building) {
   if (building.id === HOME_ID) return homeRoom()
+  if (building.id === GRAN_ID) return granRoom()
   const cols = clamp(building.w, 8, 14)
   const rows = clamp(building.h + 1, 7, 10)
   const width = cols * TILE

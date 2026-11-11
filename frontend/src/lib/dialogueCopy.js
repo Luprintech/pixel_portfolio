@@ -2,6 +2,7 @@
 // idioma. Las claves son las que lleva cada página en `game/dialogue/scripts.js`. Los hablantes y los textos fijos de
 // la caja de diálogo también están aquí.
 
+import { GRAN_COPY } from './granCopy.js'
 import { TOUR_COPY } from './tourCopy.js'
 
 export const DIALOGUE_COPY = {
@@ -17,6 +18,7 @@ export const DIALOGUE_COPY = {
     },
     lines: {
       ...TOUR_COPY.es.lines,
+      ...GRAN_COPY.es.lines,
       // Llegada al valle (`docs/DIALOGOS.md`, sección 3). Las líneas 1 y 3 de la bienvenida, el maullido y `inicio.regreso` son del
       // guion aprobado; el resto son borradores nuevos (`docs/DIALOGOS.md`, "Borradores nuevos de la bienvenida"), pendientes de revisión.
       'inicio.bienvenida.1': '¡Hola, {name}! Soy Lupe, te doy la bienvenida al Valle del Bucle: mi portfolio con caminos, casas y alguna distracción con bigotes.',
@@ -108,6 +110,7 @@ export const DIALOGUE_COPY = {
     },
     options: {
       ...TOUR_COPY.es.options,
+      ...GRAN_COPY.es.options,
       'nas.opt.que_es': '¿Qué es un NAS?',
       'pc.opt.mirar': 'Voy a echar un vistazo',
       'pc.opt.proyectos': '¿Qué proyectos puedo abrir?',
@@ -147,6 +150,7 @@ export const DIALOGUE_COPY = {
     },
     lines: {
       ...TOUR_COPY.en.lines,
+      ...GRAN_COPY.en.lines,
       // Arriving in the valley (`docs/DIALOGOS.md`, section 3). Welcome lines 1 and 3, the meow and `inicio.regreso` come from the
       // approved script; the rest are new drafts awaiting review.
       'inicio.bienvenida.1': 'Hi, {name}! I\'m Lupe, welcome to Valle del Bucle: my portfolio with paths, houses and the odd whiskered distraction.',
@@ -235,6 +239,7 @@ export const DIALOGUE_COPY = {
     },
     options: {
       ...TOUR_COPY.en.options,
+      ...GRAN_COPY.en.options,
       'nas.opt.que_es': 'What is a NAS?',
       'pc.opt.mirar': "I'll take a look",
       'pc.opt.proyectos': 'Which projects can I open?',

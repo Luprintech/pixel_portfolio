@@ -72,11 +72,13 @@ describe('sonidos de la casa', () => {
 
   it('cada suceso de los juegos de la recreativa tiene su sonido', () => {
     const events = [
-      'swing', 'hit', 'kill', 'hurt', 'chest', 'pickup', 'door', 'locked', 'stairs', 'room', 'dialog', 'dead', 'win', 'block', 'push', 'plate', 'gate', 'checkpoint', 'phase', 'slam', 'spit', 'crystal', 'bossDown',
+      'swing', 'hit', 'hurt', 'chest', 'pickup', 'door', 'locked', 'stairs', 'room', 'dialog', 'dead', 'win', 'block', 'push', 'plate', 'gate', 'checkpoint', 'phase', 'slam', 'spit', 'crystal', 'bossDown',
       'shoot', 'boom', 'bigBoom', 'bonus', 'extra', 'shield', 'fuel', 'lowFuel', 'takeoff', 'land', 'bridge', 'crash', 'lose',
     ]
     events.forEach((type) => {
       expect(ARCADE_SOUNDS[type], type).toBeTruthy()
     })
+    // Al matar un limo suena solo el golpe, el grave: el pitido agudo de `kill` se quitó por cargante.
+    expect(ARCADE_SOUNDS.kill).toBeUndefined()
   })
 })

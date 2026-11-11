@@ -21,7 +21,8 @@ export const BUILDINGS = [
   { id: 'cervantes', kind: 'school', x: 18, y: 4, w: 12, h: 8, door: { x: 23 } },
   { id: 'artes', kind: 'gallery', x: 31, y: 6, w: 10, h: 6, door: { x: 36 } },
   { id: 'universidad', kind: 'university', x: 42, y: 3, w: 15, h: 8, door: { x: 49 } },
-  { id: 'daw', kind: 'lab', x: 20, y: 14, w: 10, h: 5, door: { x: 25 }, zone: 'stack' },
+  // IES Gran Capitán, nodo de la formación en DAW. Conserva el id `daw` (puerta, interior, guardado y textos) del antiguo laboratorio.
+  { id: 'daw', kind: 'institute', x: 20, y: 14, w: 10, h: 5, door: { x: 25 } },
   // Noreste: proyectos y lectura.
   { id: 'projects', kind: 'workshop', x: 60, y: 8, w: 9, h: 7, door: { x: 64 }, zone: 'projects' },
   { id: 'blog', kind: 'library', x: 69, y: 7, w: 9, h: 8, door: { x: 73 }, zone: 'blog' },

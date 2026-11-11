@@ -1,33 +1,7 @@
-// Lugares de trabajo: laboratorio de DAW y ciberseguridad, taller de proyectos, asistencia en carretera,
-// tienda (Copos) y el bar Mihrab.
+// Lugares de trabajo: taller de proyectos, asistencia en carretera, tienda (Copos) y el bar Mihrab.
 import { PAL } from '../palette.js'
 import { dot, hash2, rect } from '../pixelKit.js'
 import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, chimney, doorAt, finish, hipRoof, iconAt, newSprite, signBoard, wall, windowAt } from './shared.js'
-
-// DAW y ciberseguridad: casa baja con una pantalla enorme en la ventana y antena en el tejado.
-export function labSprite() {
-  const s = newSprite(160, 80)
-  const { g } = s
-  chimney(g, 128, 6, 22)
-  wall(g, { x: 4, y: 36, w: 152, h: 44 })
-  hipRoof(g, { x: 0, y: 18, w: 160, rows: 4, color: '#5c5a7a', inset: 4 })
-  // Antena con dos varillas.
-  rect(g, 96, 0, 1, 20, STONE1)
-  rect(g, 92, 4, 9, 1, STONE2)
-  rect(g, 94, 9, 5, 1, STONE2)
-  // Ventana-pantalla con código.
-  windowAt(s, 68, 46, 36, 22, { screen: '#1f3f78' })
-  iconAt(g, 74, 50, 'code', '#8fd3dd', 2)
-  rect(g, 90, 52, 10, 1, '#8fd3dd')
-  rect(g, 90, 56, 7, 1, '#f8d77a')
-  rect(g, 90, 60, 9, 1, '#8fd3dd')
-  windowAt(s, 118, 48, 16, 20, { shutters: PAL.teal, flowers: true })
-  doorAt(s, 28, 77, { w: 12, h: 21 })
-  signBoard(g, 22, 40, 24, 7, { color: '#2e2d5a', ink: '#8fd3dd', icon: null })
-  rect(g, 26, 43, 3, 1, '#8fd3dd')
-  rect(g, 31, 43, 6, 1, '#f8d77a')
-  return finish(s)
-}
 
 // Taller de proyectos: un gran engranaje sobre el tejado y una ventana de banco de trabajo encendida.
 export function workshopSprite() {

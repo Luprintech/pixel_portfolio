@@ -10,7 +10,7 @@ import { SPOTS, WALL_X, WINDOWS } from './homeLayout.js'
 import { STRING_SAG, STRING_SPAN, stringLightBulbs } from './interiorLight.js'
 
 // Marco de madera y repisa de una ventana de la pared; el cristal queda hueco (se ve el cielo que hay detrás).
-function windowFrame(g, { x, y, w, h }) {
+export function windowFrame(g, { x, y, w, h }) {
   const [deep, dark, mid, light] = WOOD
   rect(g, x - 2, y - 2, w + 4, h + 4, dark)
   rect(g, x - 2, y - 2, w + 4, 1, mid)
@@ -19,7 +19,7 @@ function windowFrame(g, { x, y, w, h }) {
 }
 
 // Lo que va por delante del cristal: travesaños en cruz, un reflejo y, si la ventana lleva, cortinas.
-function windowBars(g, { x, y, w, h, curtains }) {
+export function windowBars(g, { x, y, w, h, curtains }) {
   const dark = WOOD[1]
   rect(g, x + Math.floor(w / 2) - 1, y, 2, h, dark)
   rect(g, x, y + Math.floor(h / 2), w, 1, dark)
@@ -248,7 +248,7 @@ function floor(g) {
 // Travesaños y cortinas de las ventanas, como una capa transparente del tamaño de la sala que va por delante del cristal.
 export function windowOverlayCanvas(room, pastel) {
   const { canvas, g } = canvasOf(room.width, room.height)
-  WINDOWS.filter((window) => window.frame).forEach((window) => windowBars(g, window))
+  room.windows.filter((window) => window.frame).forEach((window) => windowBars(g, window))
   return pastelize(canvas, pastel)
 }
 

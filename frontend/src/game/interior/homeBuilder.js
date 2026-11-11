@@ -22,8 +22,8 @@ const furnitureKey = (kind, frame, pastel) => `furn:${kind}:${frame}:${pastel}`
 // Muebles: una imagen por pieza, con la base como origen y esa fila como profundidad (quien pase por delante, tapa; por
 // detrás, queda tapado). Los que tienen fotogramas cambian de textura con su propio temporizador, salvo con movimiento reducido.
 // Registra los fotogramas de todos los muebles para un tema (si ya están, no se repiten).
-function registerFurniture(scene, pastel) {
-  FURNITURE_PLAN.forEach((piece) => {
+function registerFurniture(scene, pastel, plan = FURNITURE_PLAN) {
+  plan.forEach((piece) => {
     for (let f = 0; f < framesOf(piece.kind); f++) addCanvas(scene, furnitureKey(piece.kind, f, pastel), furnitureCanvas(piece.kind, f, pastel))
   })
 }
@@ -31,19 +31,20 @@ function registerFurniture(scene, pastel) {
 // Con la viajera dentro, el tema cambia sin reiniciar la sala: los muebles pasan a las texturas del tema nuevo en el
 // fotograma en que estaban. Las animaciones leen `scene.pastel` en cada cambio, así que siguen sin cortarse.
 export function rethemeFurniture(scene) {
-  registerFurniture(scene, scene.pastel)
+  registerFurniture(scene, scene.pastel, scene.room.plan?.furniture ?? FURNITURE_PLAN)
   scene.children.list.forEach((child) => {
     const match = child.texture?.key.match(/^furn:(.+):(\d+):(?:true|false)$/)
     if (match) child.setTexture(furnitureKey(match[1], Number(match[2]), scene.pastel))
   })
 }
 
-function buildFurniture(scene, pastel, addSolid) {
+// Coloca los muebles de un plano (el de la casa o el de otra sala con plano propio) y devuelve los que tienen modos.
+export function placeFurniture(scene, plan, pastel, addSolid) {
   const still = prefersReducedMotion()
-  registerFurniture(scene, pastel)
+  registerFurniture(scene, pastel, plan)
   // Muebles con modos (la tele, la minicadena, la impresora pequeña): se devuelven para que la sala los cambie.
   const switches = {}
-  FURNITURE_PLAN.forEach((piece) => {
+  plan.forEach((piece) => {
     const frames = framesOf(piece.kind)
     const sprite = scene.add.image(piece.x, piece.y, furnitureKey(piece.kind, 0, pastel)).setOrigin(0.5, 1).setDepth(piece.y + (piece.dz ?? 0))
     if (FURNITURE[piece.kind].modes) {
@@ -269,7 +270,7 @@ function buildPrintMark(scene) {
 // Monta todo y devuelve a Atreus y la exclamación para que la escena los gobierne. `addSolid(rect)` registra un cuerpo
 // sólido en la escena y `onMeow(variante)` recibe los maullidos de la gata.
 export function buildHome(scene, pastel, addSolid, onMeow = () => {}) {
-  const switches = buildFurniture(scene, pastel, addSolid)
+  const switches = placeFurniture(scene, FURNITURE_PLAN, pastel, addSolid)
   attachTvArt(scene, switches.tvUnit, FURNITURE_PLAN.find((piece) => piece.kind === 'tvUnit'))
   const atreusPlan = NPC_PLAN.find((npc) => npc.id === 'atreus')
   const atreus = buildAtreus(scene, atreusPlan, addSolid)

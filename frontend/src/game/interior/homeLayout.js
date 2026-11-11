@@ -11,6 +11,7 @@
 //      adelantadas unos píxeles respecto a la vitrina, sin llegar a la zona gaming de Atreus.
 //   6. Khalessi (caja, rascador, comedero y arenero), pegada a la pared derecha, bajo la zona de Lupe.
 import { TILE } from '../world.js'
+import { pickInteraction } from './interactions.js'
 
 export const HOME_ID = 'about'
 
@@ -200,13 +201,7 @@ export const INTERACTIONS = [
 // Interacción cuya zona contiene los pies en (x, y), o null. Si hay dos a la vez gana la de ancla más cercana. Con `facing`
 // (hacia dónde mira la viajera) se descartan las que exigen mirar a otro lado: la silla y el sofá solo se ofrecen de cara.
 // Sin `facing` no se filtra por orientación.
-export function interactionAt(x, y, facing = null) {
-  const inside = INTERACTIONS.filter(
-    ({ zones, faces }) => (!faces || !facing || faces === facing) && zones.some((z) => x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h),
-  )
-  const distance = ({ anchor }) => Math.hypot(anchor.x - x, anchor.y - y)
-  return inside.sort((a, b) => distance(a) - distance(b))[0]?.id ?? null
-}
+export const interactionAt = (x, y, facing = null) => pickInteraction(INTERACTIONS, x, y, facing)
 
 // Datos de la sala para la escena y el plano de salas (`interiors.js`): mismas claves que una sala genérica.
 export function homeRoom() {
@@ -224,5 +219,6 @@ export function homeRoom() {
     spawn: { x: centre + TILE / 2, y: height - TILE * 1.5 },
     exit: { x: centre - 8, y: height - TILE - 4, width: TILE + 16, height: TILE + 4 },
     home: true,
+    windows: WINDOWS,
   }
 }

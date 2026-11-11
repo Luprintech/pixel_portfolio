@@ -9,6 +9,8 @@ import { loadSeen, markSeen } from './dialogue/seen.js'
 import InteriorLupe from './npc/InteriorLupe.js'
 import { getStory } from './story/storyStore.js'
 import { buildHome, faceTraveller, rethemeFurniture } from './interior/homeBuilder.js'
+import { buildGran } from './interior/granBuilder.js'
+import { granInteractionAt } from './interior/granLayout.js'
 import { GAME_THEME_FADE, themeName } from '../lib/gameTheme.js'
 import { ARCADE_FRONT, FACE_TO_SEAT, SEATS, interactionAt } from './interior/homeLayout.js'
 import InteriorSky from './interior/InteriorSky.js'
@@ -27,6 +29,8 @@ const FEET_BODY = 4
 const REOPEN_GUARD_MS = 250
 const ENTRANCE = 'casa.entrada'
 const TELEVISION = 'casa.television'
+// Primera conversación del IES Gran Capitán (el tablón del itinerario): al oírla desaparece la exclamación.
+const GRAN_FIRST = 'gran.entrada'
 // La interacción con Lupe durante la visita (la misma clave que fuera, en `hud.actions`).
 const LUPE = 'npc:lupe'
 // Lo máximo que se espera a que Lupe llegue antes de abrir su conversación desde donde esté.
@@ -40,7 +44,7 @@ const SEAT_IDS = new Set(SEATS.map((seat) => seat.id))
 const BUBBLE_ABOVE = 40
 
 // Sala interior de un edificio. La mayoría están vacías; la casa de Lupe tiene su plano (`interior/homeLayout.js`) con
-// muebles, personajes, asientos e interacciones. El valle se duerme al entrar y despierta al salir, con la viajera donde
+// muebles, personajes, asientos e interacciones, y el IES Gran Capitán el suyo (`interior/granLayout.js`) con muebles e interacciones. El valle se duerme al entrar y despierta al salir, con la viajera donde
 // la dejó. La textura de la viajera y su aspecto los pone el valle (`travellerKey` del registro), y la hora y el tiempo
 // también: `InteriorSky` lee el reloj del valle, que sigue corriendo mientras la viajera está dentro.
 export default class InteriorScene extends Phaser.Scene {
@@ -152,7 +156,7 @@ export default class InteriorScene extends Phaser.Scene {
     if (!!pastel === this.pastel) return
     this.pastel = !!pastel
     this.roomImage.setTexture(this.roomTexture())
-    if (this.room.home) rethemeFurniture(this)
+    if (this.room.home || this.room.plan) rethemeFurniture(this)
     this.sky.setPastel(this.pastel)
   }
 
@@ -160,11 +164,18 @@ export default class InteriorScene extends Phaser.Scene {
   buildFurniture() {
     this.solids = []
     this.switches = {}
-    if (!this.room.home) return
+    if (!this.room.home && !this.room.plan) return
     const addSolid = ({ x, y, w, h }) => {
       const body = this.add.rectangle(x + w / 2, y + h / 2, w, h, 0x000000, 0)
       this.physics.add.existing(body, true)
       this.solids.push(body)
+    }
+    if (this.room.plan) {
+      const { exclamation } = buildGran(this, this.pastel, addSolid)
+      this.exclamation = exclamation
+      exclamation.setVisible(!this.seen.has(GRAN_FIRST))
+      this.physics.add.collider(this.princess, this.solids)
+      return
     }
     const { atreus, exclamation, switches, khalessi, printMark } = buildHome(this, this.pastel, addSolid, (variant) => this.game.events.emit('meow', variant))
     this.atreus = atreus
@@ -237,6 +248,7 @@ export default class InteriorScene extends Phaser.Scene {
     else if (this.near === 'printerCollect') this.collectPrint()
     else if (this.near === 'arcade') this.game.events.emit('enter', 'console')
     else if (this.near === 'figures') this.game.events.emit('enter', 'figures')
+    else if (this.near === 'granOrdenador') this.game.events.emit('enter', 'dawSheet')
     else if (this.near === 'shelf') this.game.events.emit('enter', 'consoles')
     else if (this.near === LUPE) this.lupe.talk(this.princess)
     else this.talk(this.near)
@@ -382,7 +394,7 @@ export default class InteriorScene extends Phaser.Scene {
     if (!script) return
     this.visits[interaction] = visits + 1
     this.seen = markSeen(this.seen, script)
-    if (script === ENTRANCE) this.exclamation?.setVisible(false)
+    if (script === ENTRANCE || script === GRAN_FIRST) this.exclamation?.setVisible(false)
     this.game.events.emit('talk', script)
   }
 
@@ -516,6 +528,7 @@ export default class InteriorScene extends Phaser.Scene {
     if (this.leaving) id = null
     else if (this.seat) id = this.seat.use ?? 'standup'
     else if (this.exitZone.contains(px, py)) id = EXIT_ID
+    else if (this.room.plan) id = granInteractionAt(px, py)
     else if (this.room.home) id = this.lupe?.canTalk(px, py) ? LUPE : this.catNear(px, py) ? 'khalessi' : this.switchAction(interactionAt(px, py, this.facing))
     if (id !== this.near) {
       this.near = id
