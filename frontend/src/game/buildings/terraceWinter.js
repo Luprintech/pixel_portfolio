@@ -14,6 +14,7 @@ import {
   FLOOR_TOP,
   FRONT_RAIL,
   PARASOL,
+  frontRailPosts,
   noseY,
   railPosts,
   stairRailTop,
@@ -104,5 +105,5 @@ export function terraceSnow(g) {
 export function frontRailSnow(g) {
   const { x, top, right } = FRONT_RAIL
   mantle(g, x, top + 1, right - x, 61)
-  ;[x, x + 18, x + 36, right - 3].forEach((px) => rect(g, px - 1, top - 1, 5, 1, SNOW))
+  frontRailPosts().forEach((px) => rect(g, px - 1, top - 1, 5, 1, SNOW))
 }

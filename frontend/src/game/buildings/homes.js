@@ -2,8 +2,8 @@
 // la música, las casitas de la familia y el quiosco de helados de la piscina.
 import { PAL, TONE, shade, tint } from '../palette.js'
 import { dot, ellipse, makeCanvas, rect } from '../pixelKit.js'
-import { DECK, STAIRS } from '../terrace.js'
-import { deckDoor, flowerPot, houseDoor, lupePlaque, sillLedge, starMobile, tallPlant, vine } from './homeFacade.js'
+import { DECK_WIDEN, STAIRS } from '../terrace.js'
+import { flowerPot, houseDoor, lupePlaque, sillLedge, starMobile, tallPlant, vine } from './homeFacade.js'
 import { houseGlow } from './homeLight.js'
 import { litPane } from './litPane.js'
 import { FRONT_RAIL, STRAND, backRail, deckFloor, frontRail, parasol, strandPoints, telescope, terraceStairs } from './terraceProps.js'
@@ -11,10 +11,6 @@ import { frontRailSnow, terraceSnow } from './terraceWinter.js'
 import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, chimney, doorAt, finish, hipRoof, iconAt, leanRoof, newSprite, signBoard, wall, windowAt } from './shared.js'
 
 const SLATE = '#6b5b95'
-
-function heart(g, x, y, color) {
-  ;[[0, 0], [1, 0], [3, 0], [4, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [1, 2], [2, 2], [3, 2], [2, 3]].forEach(([dx, dy]) => dot(g, x + dx, y + dy, color))
-}
 
 // Guirnalda de bombillas entre el mástil de la cubierta y la pared. Las bombillas se encienden de noche.
 function stringLights(s) {
@@ -31,83 +27,69 @@ function stringLights(s) {
   })
 }
 
-// Cortinas de las ventanas grandes: se pintan después del interior para quedar por encima. Van recogidas a los
-// lados y no cruzan el cristal, así que el monitor y la impresora se ven enteros.
-function windowCurtains(g, x, y, w, h, curtain) {
-  const fold = shade(curtain, 0.78)
-  rect(g, x, y, 4, h - 6, curtain)
-  rect(g, x + 3, y, 1, h - 6, fold)
-  rect(g, x + w - 4, y, 4, h - 6, curtain)
-  rect(g, x + w - 4, y, 1, h - 6, fold)
-  rect(g, x, y, w, 2, tint(curtain, 0.2))
+// Cortinas recogidas a los lados de una ventana grande: tela con pliegues desde la barra casi hasta el alféizar, con su lazo.
+// `reach` es lo que cubre cada una. Se pintan después del interior para quedar por encima.
+function drapes(g, x, y, w, h, color, reach) {
+  const fold = shade(color, 0.78)
+  const light = tint(color, 0.22)
+  ;[x, x + w - reach].forEach((cx) => {
+    rect(g, cx, y, reach, h - 6, color)
+    for (let i = 1; i < reach; i += 3) rect(g, cx + i, y, 1, h - 6, i % 2 ? fold : light)
+    rect(g, cx, y + Math.floor(h * 0.55), reach, 2, fold)
+  })
+  rect(g, x - 1, y, w + 2, 3, tint(color, 0.25))
+  rect(g, x - 1, y + 3, w + 2, 1, fold)
 }
 
-// Zonas de la ventana grande que no se encienden de noche: las cortinas y el valance, para que el cristal quede
-// entre dos bandas con fondo, y los objetos del interior, que se leen como silueta contra la luz.
-const CURTAIN_HOLES = (w, h) => [{ x: 0, y: 0, w: 4, h: h - 6 }, { x: w - 4, y: 0, w: 4, h: h - 6 }, { x: 0, y: 0, w, h: 2 }]
-const COMPUTER_HOLES = [
-  { x: 8, y: 5, w: 20, h: 15 },
-  { x: 17, y: 20, w: 2, h: 4 },
-  { x: 10, y: 23, w: 16, h: 2 },
-  { x: 0, y: 24, w: 36, h: 6 },
-  { x: 30, y: 19, w: 3, h: 5 },
-  { x: 31, y: 17, w: 2, h: 2 },
-]
-const PRINTER_HOLES = [
-  { x: 7, y: 5, w: 2, h: 19 },
-  { x: 27, y: 5, w: 2, h: 19 },
-  { x: 7, y: 5, w: 22, h: 4 },
-  { x: 15, y: 9, w: 5, h: 4 },
-  { x: 17, y: 13, w: 1, h: 3 },
-  { x: 13, y: 20, w: 12, h: 4 },
-  { x: 15, y: 16, w: 8, h: 4 },
-  { x: 17, y: 14, w: 4, h: 2 },
-  { x: 6, y: 24, w: 24, h: 3 },
-  { x: 2, y: 17, w: 5, h: 5 },
-]
+// Zonas de la ventana grande que no se encienden de noche: las cortinas y la cenefa, para que el cristal quede entre dos
+// bandas con fondo, y lo que se ve dentro, que se lee como silueta contra la luz.
+const DRAPE_HOLES = (w, h, reach) => [{ x: 0, y: 0, w: reach, h: h - 6 }, { x: w - reach, y: 0, w: reach, h: h - 6 }, { x: 0, y: 0, w, h: 4 }]
+const SILL = { x: 0, y: 24, w: 36, h: 6 }
+const SHELF_HOLES = [{ x: 10, y: 6, w: 17, h: 9 }, { x: 22, y: 4, w: 6, h: 10 }]
+const LAMP_HOLES = [{ x: 17, y: 16, w: 2, h: 8 }]
 
-// Ventana del ordenador: monitor con un corazón sobre la mesa y cortinas rosas.
-function computerWindow(s, x, y) {
+// Ventana de la izquierda de la planta alta, vista desde la calle: dentro se ve una pared cálida con una estantería de libros y
+// una planta colgante (como la del cuarto de Lupe), entre cortinas rosas. Nada que no exista en la sala.
+function shelfWindow(s, x, y) {
   const { g } = s
-  windowAt(s, x, y, 36, 30, { screen: '#2a2250', shutters: '#b8a2e0', muntins: false, lit: false })
+  windowAt(s, x, y, 36, 30, { screen: '#e9cfa8', shutters: '#b8a2e0', muntins: false, lit: false })
+  rect(g, x, y + 17, 36, 7, '#dcb98c')
+  rect(g, x + 10, y + 14, 17, 2, WOOD2)
+  rect(g, x + 10, y + 16, 17, 1, WOOD0)
+  ;[[11, 8, 2, '#c4577f'], [14, 9, 2, '#3f5f9e'], [17, 7, 3, PAL.saffron], [21, 10, 2, '#6b8f4e']].forEach(([dx, top, bw, color]) => rect(g, x + dx, y + top, bw, 14 - top, color))
+  rect(g, x + 23, y + 4, 4, 3, '#f6f0e0')
+  for (let i = 0; i < 3; i++) rect(g, x + 23 + i, y + 7, 1, 3 + i * 2, TONE.grass[2])
   rect(g, x, y + 24, 36, 6, WOOD2)
   rect(g, x, y + 24, 36, 1, WOOD3)
-  rect(g, x + 8, y + 5, 20, 15, '#1c1b3a')
-  rect(g, x + 9, y + 6, 18, 12, '#c46aa0')
-  rect(g, x + 9, y + 6, 18, 1, '#e08ac0')
-  heart(g, x + 15, y + 9, '#ffd0e4')
-  rect(g, x + 17, y + 20, 2, 4, STONE1)
-  rect(g, x + 10, y + 23, 16, 2, '#cfc2e8')
-  rect(g, x + 30, y + 19, 3, 5, '#f4b8cc')
-  dot(g, x + 31, y + 17, TONE.grass[2])
-  dot(g, x + 32, y + 18, TONE.grass[2])
-  rect(g, x + 5, y + 21, 3, 3, PAL.saffron)
-  windowCurtains(g, x, y, 36, 30, '#e8a8c8')
+  rect(g, x + 28, y + 19, 4, 5, '#f4b8cc')
+  dot(g, x + 29, y + 17, TONE.grass[2])
+  dot(g, x + 30, y + 18, TONE.grass[2])
+  drapes(g, x, y, 36, 30, '#e8a8c8', 9)
   sillLedge(g, x - 3, y + 31, 42)
-  s.windows.push(...litPane(x, y, 36, 30, [...CURTAIN_HOLES(36, 30), ...COMPUTER_HOLES]))
+  s.windows.push(...litPane(x, y, 36, 30, [...DRAPE_HOLES(36, 30, 9), ...SHELF_HOLES, SILL]))
 }
 
-// Ventana de la impresora 3D: bastidor, cabezal sobre el pórtico y la pieza morada a medio imprimir.
-function printerWindow(s, x, y) {
+// Ventana de la derecha de la planta alta: un visillo cerrado con una lámpara encendida detrás y la guirnalda de bombillas
+// que cuelga dentro de la sala, entre cortinas verdes. Se adivina la luz, no una máquina.
+function lampWindow(s, x, y) {
   const { g } = s
-  windowAt(s, x, y, 36, 30, { screen: '#2a2250', shutters: '#b8a2e0', muntins: false, lit: false })
-  rect(g, x + 6, y + 24, 24, 3, STONE1)
-  rect(g, x + 6, y + 24, 24, 1, STONE2)
-  rect(g, x + 7, y + 5, 2, 19, STONE1)
-  rect(g, x + 27, y + 5, 2, 19, STONE1)
-  rect(g, x + 7, y + 5, 22, 2, STONE2)
-  rect(g, x + 7, y + 8, 22, 1, STONE0)
-  rect(g, x + 15, y + 9, 5, 4, '#cfc2e8')
-  rect(g, x + 17, y + 13, 1, 3, PAL.saffronLight)
-  rect(g, x + 13, y + 20, 12, 4, '#9a5ab8')
-  rect(g, x + 15, y + 16, 8, 4, '#b88ad8')
-  rect(g, x + 17, y + 14, 4, 2, '#d8b8f0')
-  rect(g, x + 2, y + 17, 5, 5, '#f4b8cc')
-  rect(g, x + 3, y + 18, 3, 3, '#2a2250')
-  dot(g, x + 29, y + 3, '#7ae0a0')
-  windowCurtains(g, x, y, 36, 30, '#b8e0c8')
+  windowAt(s, x, y, 36, 30, { screen: '#c8bcd8', shutters: '#b8a2e0', muntins: false, lit: false })
+  for (let i = 0; i < 36; i += 3) rect(g, x + i, y + 4, 1, 20, i % 2 ? '#e6dcef' : '#d4c7e2')
+  rect(g, x, y + 4, 36, 20, 'rgba(244,233,247,0.35)')
+  for (let bx = 6; bx < 32; bx += 6) {
+    rect(g, x + bx, y + 6 + Math.round(Math.sin(bx / 5) * 1.5), 2, 2, PAL.saffronLight)
+  }
+  rect(g, x + 14, y + 11, 8, 6, '#ffe9a6')
+  rect(g, x + 15, y + 10, 6, 1, '#ffe9a6')
+  rect(g, x + 14, y + 11, 8, 1, '#fff6cf')
+  rect(g, x + 17, y + 17, 2, 7, '#7a6a96')
+  rect(g, x, y + 24, 36, 6, WOOD2)
+  rect(g, x, y + 24, 36, 1, WOOD3)
+  rect(g, x + 4, y + 20, 4, 4, '#f6f0e0')
+  rect(g, x + 5, y + 17, 2, 3, TONE.grass[2])
+  drapes(g, x, y, 36, 30, '#b8e0c8', 5)
   sillLedge(g, x - 3, y + 31, 42)
-  s.windows.push(...litPane(x, y, 36, 30, [...CURTAIN_HOLES(36, 30), ...PRINTER_HOLES]))
+  s.windows.push(...litPane(x, y, 36, 30, [...DRAPE_HOLES(36, 30, 5), ...LAMP_HOLES, SILL, { x: 4, y: 17, w: 4, h: 7 }]))
 }
 
 // Ventana pequeña de la planta alta: cristal con cruceta y un alféizar continuo.
@@ -137,48 +119,50 @@ function dormer(s, cx, top) {
 }
 
 // Casa de Lupe, de izquierda a derecha: la escalera de madera, la sala baja con la cubierta (balaustrada,
-// sombrilla, mesa, telescopio y guirnalda) y la casa de dos plantas con buhardilla, ventana del ordenador,
-// ventana de la impresora 3D y la puerta con su marquesina.
+// sombrilla, mesa, telescopio y guirnalda) y la casa de dos plantas con buhardilla, dos ventanas grandes (estantería y
+// lámpara con visillo) y la puerta con su marquesina.
 export function homeSprite() {
-  const s = newSprite(256, 160)
+  // La casa de dos plantas se dibuja `DX` píxeles más a la derecha que la sala baja y la cubierta: así la azotea es ancha.
+  const DX = DECK_WIDEN
+  const s = newSprite(256 + DX, 160)
   const { g } = s
-  chimney(g, 222, 34, 40)
-  wall(g, { x: 106, y: 74, w: 146, h: 86 })
-  hipRoof(g, { x: 100, y: 48, w: 154, rows: 6, color: SLATE, inset: 4 })
-  dormer(s, 179, 50)
-  quoins(g, 109, 80, 72, 'left')
-  quoins(g, 249, 80, 72, 'right')
-  vine(g, 246, 108, 44)
+  chimney(g, 222 + DX, 34, 40)
+  wall(g, { x: 106 + DX, y: 74, w: 146, h: 86 })
+  hipRoof(g, { x: 100 + DX, y: 48, w: 154, rows: 6, color: SLATE, inset: 4 })
+  dormer(s, 179 + DX, 50)
+  quoins(g, 109 + DX, 80, 72, 'left')
+  quoins(g, 249 + DX, 80, 72, 'right')
+  vine(g, 246 + DX, 108, 44)
   // Sala baja y cubierta. De atrás adelante: suelo, guirnalda, balaustrada trasera, telescopio, mesa con sombrilla
-  // y escalera. La barandilla delantera va aparte (`overlay`): se dibuja por encima de la viajera.
-  wall(g, { x: 38, y: 118, w: 70, h: 42, post: false })
+  // y escalera. La barandilla delantera va aparte (`overlay`): se dibuja por encima de la viajera. La cubierta no lleva
+  // puerta dibujada: se entra a la casa desde su zona junto al muro (`nearRoofDoor`).
+  wall(g, { x: 38, y: 118, w: 70 + DX, h: 42, post: false })
   deckFloor(g)
   stringLights(s)
   backRail(g)
   telescope(g)
   parasol(g)
   terraceStairs(g, STAIRS)
-  deckDoor(g, 108, DECK.feet, { w: 12, h: 24 })
-  windowAt(s, 58, 128, 32, 20, { flowers: true, sill: true, curtains: '#e8a8c8', glint: true })
+  ;[54, 104 + DX / 2].forEach((wx, i) => windowAt(s, wx, 128, 32, 20, { flowers: true, sill: true, curtains: i ? '#b8e0c8' : '#e8a8c8', glint: true }))
   // Casa de dos plantas. Entre las ventanas pequeñas y las grandes queda una franja libre de pared (cinco filas).
-  computerWindow(s, 120, 102)
-  printerWindow(s, 202, 102)
-  smallWindow(s, 132, 83)
-  smallWindow(s, 214, 83)
+  shelfWindow(s, 120 + DX, 102)
+  lampWindow(s, 202 + DX, 102)
+  smallWindow(s, 132 + DX, 83)
+  smallWindow(s, 214 + DX, 83)
   // Entrada: tejadillo alto con el móvil de luna y estrella, puerta con marco y escalón, farol, macetas y placa.
-  leanRoof(g, { x: 166, y: 114, w: 26, rows: 2, color: SLATE })
-  rect(g, 168, 122, 2, 9, WOOD1)
-  rect(g, 188, 122, 2, 9, WOOD1)
-  starMobile(g, 179, 122)
-  houseDoor(s, 172, 157, { w: 14, h: 26 })
-  rect(g, 160, 131, 4, 1, WOOD0)
-  rect(g, 161, 132, 3, 6, WOOD0)
-  rect(g, 162, 133, 1, 4, PAL.saffronLight)
-  s.windows.push({ x: 162, y: 133, w: 1, h: 4 })
-  tallPlant(g, 158, 147)
-  flowerPot(g, 192, 148)
-  lupePlaque(g, 190, 138)
-  return { ...finish(s), overlay: frontRailLayer(), glow: houseGlow(), snow: snowLayer(256, 160, terraceSnow) }
+  leanRoof(g, { x: 166 + DX, y: 114, w: 26, rows: 2, color: SLATE })
+  rect(g, 168 + DX, 122, 2, 9, WOOD1)
+  rect(g, 188 + DX, 122, 2, 9, WOOD1)
+  starMobile(g, 179 + DX, 122)
+  houseDoor(s, 172 + DX, 157, { w: 14, h: 26 })
+  rect(g, 160 + DX, 131, 4, 1, WOOD0)
+  rect(g, 161 + DX, 132, 3, 6, WOOD0)
+  rect(g, 162 + DX, 133, 1, 4, PAL.saffronLight)
+  s.windows.push({ x: 162 + DX, y: 133, w: 1, h: 4 })
+  tallPlant(g, 158 + DX, 147)
+  flowerPot(g, 192 + DX, 148)
+  lupePlaque(g, 190 + DX, 138)
+  return { ...finish(s), overlay: frontRailLayer(), glow: houseGlow(), snow: snowLayer(256 + DX, 160, terraceSnow) }
 }
 
 // Capa de nieve de un dibujo: se pinta aparte y la escena la funde sobre la versión de invierno (ver worldAssets).

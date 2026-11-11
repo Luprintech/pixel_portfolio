@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DECK, FOOT, STAIRS, STAIR_PACE, TELESCOPE, climb, nearTelescope, stairLift } from './terrace.js'
+import { DECK, DECK_WIDEN, FOOT, ROOF_ENTRY, STAIRS, STAIR_PACE, TABLE, TELESCOPE, climb, nearRoofDoor, nearTelescope, stairLift } from './terrace.js'
 
 describe('escalera y cubierta de la casa de Lupe', () => {
   it('el telescopio está dentro de la cubierta y se alcanza desde cualquier lado', () => {
@@ -17,6 +17,36 @@ describe('escalera y cubierta de la casa de Lupe', () => {
     expect(nearTelescope('stairs', TELESCOPE.x, TELESCOPE.base)).toBe(false)
     expect(nearTelescope('deck', DECK.left + 1, DECK.feet)).toBe(false)
     expect(nearTelescope('deck', DECK.right, DECK.feet)).toBe(false)
+  })
+
+  it('la azotea es ancha y honda: una terraza con sitio para andar, no una pasarela', () => {
+    expect(DECK.right - DECK.left).toBeGreaterThanOrEqual(100)
+    expect(DECK.right - DECK.left).toBeGreaterThan(66 + DECK_WIDEN - 1)
+    expect(DECK.feet - DECK.top).toBeGreaterThanOrEqual(16)
+  })
+
+  it('el telescopio y la mesa caben en la cubierta y no se pisan', () => {
+    expect(TABLE.x - 11).toBeGreaterThan(TELESCOPE.x + 10)
+    expect(TABLE.x + 11).toBeLessThan(DECK.right - ROOF_ENTRY)
+    expect(TABLE.base).toBeGreaterThanOrEqual(DECK.top)
+  })
+
+  it('no se atraviesan el telescopio ni la mesa, y se rodean por delante', () => {
+    ;[[TELESCOPE.x, TELESCOPE.base], [TABLE.x, TABLE.base]].forEach(([x, base]) => {
+      const spot = climb('deck', x, base - 1)
+      expect(Math.hypot(spot.x - x, spot.y - base), `en (${x}, ${base})`).toBeGreaterThanOrEqual(3)
+      // Desde delante se llega a su altura y se pasa de largo sin quedarse encajonado.
+      expect(climb('deck', x, DECK.feet)).toEqual({ mode: 'deck', x, y: DECK.feet })
+    })
+  })
+
+  it('al lado del muro de la casa hay una zona de entrada, sin puerta dibujada, a todo lo hondo de la cubierta', () => {
+    ;[DECK.top, (DECK.top + DECK.feet) / 2, DECK.feet].forEach((y) => expect(nearRoofDoor('deck', DECK.right, y), `y ${y}`).toBe(true))
+    expect(nearRoofDoor('deck', DECK.right - ROOF_ENTRY - 1, DECK.feet)).toBe(false)
+    expect(nearRoofDoor('ground', DECK.right, DECK.feet)).toBe(false)
+    expect(nearRoofDoor('stairs', DECK.right, DECK.feet)).toBe(false)
+    // Donde aparece la viajera al volver de la casa (ver `placeOnDeck`) no se ofrece entrar otra vez.
+    expect(nearRoofDoor('deck', DECK.right - 18, DECK.feet)).toBe(false)
   })
 
   it('la escalera se sube más despacio que el suelo, pero se sube', () => {
@@ -56,7 +86,7 @@ describe('escalera y cubierta de la casa de Lupe', () => {
 
   it('en la cubierta no se sale de su franja y por la izquierda se vuelve a la escalera', () => {
     expect(climb('deck', 500, 0)).toEqual({ mode: 'deck', x: DECK.right, y: DECK.top })
-    expect(climb('deck', 70, 200)).toEqual({ mode: 'deck', x: 70, y: DECK.feet })
+    expect(climb('deck', 90, 200)).toEqual({ mode: 'deck', x: 90, y: DECK.feet })
     const down = climb('deck', DECK.left - 1, DECK.feet)
     expect(down.mode).toBe('stairs')
     expect(Math.abs(down.y - DECK.feet)).toBeLessThan(1)

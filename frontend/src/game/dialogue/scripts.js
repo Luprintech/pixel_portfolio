@@ -26,7 +26,6 @@ const CONSOLE_MENU = [
   option('nintendo', 'consolas.opt.nintendo', { to: 'consolas.nintendo' }),
   option('playstation', 'consolas.opt.playstation', { to: 'consolas.playstation' }),
   option('otras', 'consolas.opt.otras', { to: 'consolas.otras' }),
-  option('jugar', 'consolas.opt.jugar', { action: 'game' }),
   option('volver', 'consolas.opt.volver', { close: true }),
 ]
 

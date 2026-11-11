@@ -5,14 +5,16 @@
 import { canvasOf, pastelize } from '../draw.js'
 import { atreusDesk, lupeDesk } from './desks.js'
 import { bigPlant, boxBack, boxFront, chairAtreus, chairAtreusFront, chairLupe, chairLupeFront, roofStairs, tallPlant } from './decor.js'
-import { coffeeTable, floorLamp, sofa, sofaFront, tvUnit } from './living.js'
+import { arcade } from './arcade.js'
+import { catBowls, litterBox, scratcher } from './catCorner.js'
+import { coffeeTable, sofa, sofaFront, tvUnit } from './living.js'
 import { hifi } from './audio.js'
 import { printerA1, printerMini } from './maker.js'
 import { consoleShelf, makerShelf } from './shelves.js'
 
 export const FURNITURE = {
-  atreusDesk, lupeDesk, chairAtreus, chairAtreusFront, chairLupe, chairLupeFront, sofaFront, roofStairs, tvUnit, sofa, coffeeTable, floorLamp, consoleShelf, makerShelf,
-  printerA1, printerMini, hifi, boxBack, boxFront, bigPlant, tallPlant,
+  atreusDesk, lupeDesk, chairAtreus, chairAtreusFront, chairLupe, chairLupeFront, sofaFront, roofStairs, tvUnit, sofa, coffeeTable, consoleShelf, makerShelf,
+  printerA1, printerMini, hifi, arcade, boxBack, boxFront, bigPlant, tallPlant, scratcher, catBowls, litterBox,
 }
 
 export const framesOf = (kind) => FURNITURE[kind].frames ?? 1

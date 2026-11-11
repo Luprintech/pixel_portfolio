@@ -1,56 +1,78 @@
 // Plano de la casa de Lupe: tamaño de la sala, dónde va cada mueble, quién vive en ella y qué se puede usar y desde dónde.
 // Son solo datos y cuentas (sin Phaser ni lienzo), así se comprueba con pruebas que nada se pisa y que todo se alcanza.
 // Las coordenadas son píxeles de la sala; un mueble o un personaje se coloca por el centro de su base.
+//
+// La sala se lee por zonas, con su suelo despejado entre ellas:
+//   1. Atreus (setup gaming), arriba a la izquierda, junto a la escalera de la azotea.
+//   2. Estantería de videoconsolas y recreativa arcade, en medio de la pared del fondo.
+//   3. Relax (tele, minicadena, sofá y alfombra), a la derecha del centro.
+//   4. Lupe (setup de trabajo), en la esquina derecha del fondo.
+//   5. Impresión 3D (dos Bambu Lab y la vitrina de piezas), abajo a la izquierda y por delante.
+//   6. Khalessi (caja, rascador, comida y arenero), en el centro, con el recorrido hasta Atreus libre.
 import { TILE } from '../world.js'
 
 export const HOME_ID = 'about'
 
-// Más grande que las demás salas (que siguen al tamaño del edificio): hace falta sitio para dos mesas de trabajo, la zona
-// de ocio, la estantería, el rincón maker y la escalera sin amontonarlo. Pared del fondo de cuatro teselas, para que los
-// monitores y los cuadros respiren sobre los muebles.
-export const HOME_SIZE = { cols: 24, rows: 14, wallRows: 4 }
+// Más grande que las demás salas (que siguen al tamaño del edificio): hace falta sitio para dos mesas de trabajo, la
+// recreativa, la zona de ocio, el rincón maker y la zona de la gata sin amontonarlo. Pared del fondo de cuatro teselas.
+export const HOME_SIZE = { cols: 33, rows: 17, wallRows: 4 }
 
 // Fila de la pared del fondo contra la que se apoyan los muebles de pared (su base, el suelo que pisan).
-const WALL_BASE = 80
+export const WALL_BASE = 80
+
+// Columna central de cada mueble de la pared del fondo, de izquierda a derecha. La decoración de la pared y las luces
+// led leen estas cifras para quedar siempre sobre su mueble.
+export const WALL_X = { stairs: 38, atreusDesk: 116, consoleShelf: 204, arcade: 266, tv: 338, hifi: 402, lupeDesk: 474 }
+
+// Sitios de los muebles del suelo que otras piezas (zonas, cámara, decoración) necesitan conocer.
+export const SPOTS = {
+  sofa: { x: WALL_X.tv, y: 190 },
+  coffeeTable: { x: WALL_X.tv, y: 140 },
+  box: { x: 236, y: 176 },
+  printerA1: { x: 58, y: 248 },
+  printerMini: { x: 122, y: 248 },
+  makerShelf: { x: 176, y: 248 },
+}
 
 // `dz` ajusta el orden de dibujo respecto a otros elementos de la misma base (la caja de Khalessi va en dos capas).
 export const FURNITURE_PLAN = [
   // Pared del fondo, de izquierda a derecha: escalera a la azotea (como la escalera exterior), mesa de Atreus, estantería de
-  // consolas, tele y mesa de Lupe.
-  { kind: 'roofStairs', x: 38, y: WALL_BASE },
-  { kind: 'atreusDesk', x: 100, y: WALL_BASE },
-  { kind: 'consoleShelf', x: 176, y: WALL_BASE },
-  { kind: 'tvUnit', x: 248, y: WALL_BASE },
-  { kind: 'lupeDesk', x: 326, y: WALL_BASE },
+  // consolas, recreativa, tele, minicadena y mesa de Lupe.
+  { kind: 'roofStairs', x: WALL_X.stairs, y: WALL_BASE },
+  { kind: 'atreusDesk', x: WALL_X.atreusDesk, y: WALL_BASE },
+  { kind: 'consoleShelf', x: WALL_X.consoleShelf, y: WALL_BASE },
+  { kind: 'arcade', x: WALL_X.arcade, y: WALL_BASE },
+  { kind: 'tvUnit', x: WALL_X.tv, y: WALL_BASE },
+  { kind: 'hifi', x: WALL_X.hifi, y: WALL_BASE },
+  { kind: 'lupeDesk', x: WALL_X.lupeDesk, y: WALL_BASE },
   // Cada silla va en dos capas (`dz`): persona sentada entre ellas.
-  { kind: 'chairAtreus', x: 92, y: 108, dz: -0.5 },
-  { kind: 'chairAtreusFront', x: 92, y: 108, dz: 0.5 },
-  { kind: 'chairLupe', x: 326, y: 108, dz: -0.5 },
-  { kind: 'chairLupeFront', x: 326, y: 108, dz: 0.5 },
-  // Zona de ocio: la mesita entre la tele y el sofá, y el sofá de espaldas a la sala, mirando a la tele.
-  { kind: 'coffeeTable', x: 248, y: 124 },
-  { kind: 'sofa', x: 248, y: 170, dz: -0.5 },
-  { kind: 'sofaFront', x: 248, y: 170, dz: 0.5 },
-  // La planta, a la derecha del sofá: a su izquierda tapaba a Khalessi al coger la sardina.
-  { kind: 'tallPlant', x: 296, y: 156 },
-  // Rincón maker, a la izquierda: dos impresoras Bambu Lab, la A1 (con el AMS arriba) y la A1 mini, y la lámpara de pie.
-  { kind: 'printerA1', x: 52, y: 164 },
-  { kind: 'printerMini', x: 112, y: 164 },
-  { kind: 'floorLamp', x: 156, y: 196 },
-  { kind: 'hifi', x: 292, y: 198 },
-  { kind: 'bigPlant', x: 34, y: 210 },
-  // Vitrina de piezas impresas en la zona derecha, bajo la mesa de Lupe, y una planta en la esquina.
-  { kind: 'makerShelf', x: 344, y: 162 },
-  { kind: 'bigPlant', x: 352, y: 214 },
-  // La caja de cartón de Khalessi, con ella dentro: la capa de atrás, la gata y la capa de delante.
-  { kind: 'boxBack', x: 172, y: 118, dz: -0.5 },
-  { kind: 'boxFront', x: 172, y: 118, dz: 0.5 },
+  { kind: 'chairAtreus', x: 108, y: 108, dz: -0.5 },
+  { kind: 'chairAtreusFront', x: 108, y: 108, dz: 0.5 },
+  { kind: 'chairLupe', x: WALL_X.lupeDesk, y: 108, dz: -0.5 },
+  { kind: 'chairLupeFront', x: WALL_X.lupeDesk, y: 108, dz: 0.5 },
+  // Zona relax: la mesita entre la tele y el sofá, el sofá de espaldas a la sala mirando a la tele, y una planta a su lado.
+  { kind: 'coffeeTable', ...SPOTS.coffeeTable },
+  { kind: 'sofa', ...SPOTS.sofa, dz: -0.5 },
+  { kind: 'sofaFront', ...SPOTS.sofa, dz: 0.5 },
+  { kind: 'tallPlant', x: 418, y: 184 },
+  // Rincón maker, abajo a la izquierda y por delante: dos impresoras Bambu Lab, la A1 (con el AMS arriba) y la A1 mini, y la
+  // vitrina de las piezas ya impresas.
+  { kind: 'printerA1', ...SPOTS.printerA1 },
+  { kind: 'printerMini', ...SPOTS.printerMini },
+  { kind: 'makerShelf', ...SPOTS.makerShelf },
+  { kind: 'bigPlant', x: 496, y: 258 },
+  // Zona de Khalessi: la caja de cartón (la capa de atrás, la gata y la capa de delante), el rascador, la comida y el arenero.
+  { kind: 'boxBack', ...SPOTS.box, dz: -0.5 },
+  { kind: 'boxFront', ...SPOTS.box, dz: 0.5 },
+  { kind: 'scratcher', x: 262, y: 172 },
+  { kind: 'catBowls', x: 262, y: 210 },
+  { kind: 'litterBox', x: 222, y: 238 },
 ]
 
 // Personajes de la sala. `facing` es hacia donde miran en reposo.
 export const NPC_PLAN = [
-  { id: 'atreus', x: 132, y: 106, facing: 'down' },
-  { id: 'khalessi', x: 172, y: 117 },
+  { id: 'atreus', x: 148, y: 106, facing: 'down' },
+  { id: 'khalessi', x: SPOTS.box.x, y: SPOTS.box.y - 1 },
 ]
 
 // Cuerpo sólido de Atreus, para que no se le atraviese. Khalessi no lo necesita: la caja en la que está ya es sólida.
@@ -59,28 +81,33 @@ export const ATREUS_BODY = { l: -5, t: -4, r: 5, b: 0 }
 // Asientos de la casa. `x, y` es el sitio de los pies al sentarse (la viajera se queda en él, con las piernas tapadas),
 // `depth` el orden de dibujo (un poco por delante del mueble), `zone` el suelo desde el que se ofrece sentarse y `use` lo
 // que se hace con E estando sentada: abrir el ordenador o encender la tele. Sin `use`, E levanta.
+const SOFA = SPOTS.sofa
 export const SEATS = [
   // Solo se ofrece sentarse desde delante: las zonas están ante la silla o el sofá, a su ancho y nunca a los lados ni detrás.
-  { id: 'chairAtreus', x: 92, y: 106, facing: 'up', depth: 108, zone: { x: 82, y: 113, w: 20, h: 11 }, anchor: { x: 92, y: 118 } },
-  { id: 'chairLupe', x: 326, y: 106, facing: 'up', depth: 108, zone: { x: 316, y: 113, w: 20, h: 11 }, anchor: { x: 326, y: 118 }, use: 'pc' },
-  { id: 'sofaLeft', x: 236, y: 148, facing: 'up', depth: 170, zone: { x: 220, y: 175, w: 24, h: 11 }, anchor: { x: 232, y: 181 }, use: 'television' },
-  { id: 'sofaRight', x: 262, y: 148, facing: 'up', depth: 170, zone: { x: 252, y: 175, w: 24, h: 11 }, anchor: { x: 264, y: 181 }, use: 'television' },
+  { id: 'chairAtreus', x: 108, y: 106, facing: 'up', depth: 108, zone: { x: 98, y: 113, w: 20, h: 11 }, anchor: { x: 108, y: 118 } },
+  { id: 'chairLupe', x: WALL_X.lupeDesk, y: 106, facing: 'up', depth: 108, zone: { x: WALL_X.lupeDesk - 10, y: 113, w: 20, h: 11 }, anchor: { x: WALL_X.lupeDesk, y: 118 }, use: 'pc' },
+  { id: 'sofaLeft', x: SOFA.x - 12, y: SOFA.y - 22, facing: 'up', depth: SOFA.y, zone: { x: SOFA.x - 28, y: SOFA.y + 5, w: 24, h: 11 }, anchor: { x: SOFA.x - 16, y: SOFA.y + 11 }, use: 'television' },
+  { id: 'sofaRight', x: SOFA.x + 14, y: SOFA.y - 22, facing: 'up', depth: SOFA.y, zone: { x: SOFA.x + 4, y: SOFA.y + 5, w: 24, h: 11 }, anchor: { x: SOFA.x + 16, y: SOFA.y + 11 }, use: 'television' },
 ]
+
+// Desde dónde se juega a la recreativa y a dónde vuelve la viajera al salir del juego: ante la máquina, mirándola.
+export const ARCADE_FRONT = { x: WALL_X.arcade, y: 96, facing: 'up' }
 
 // Lo que se puede usar con E. Cada zona es el suelo desde el que se alcanza (los pies de la viajera dentro del rectángulo).
 // Una interacción con varias zonas se alcanza desde cualquiera de ellas. `anchor` desempata cuando hay dos a la vez:
 // gana la que tenga su ancla más cerca.
 export const INTERACTIONS = [
-  { id: 'atreus', anchor: { x: 132, y: 106 }, zones: [{ x: 108, y: 92, w: 52, h: 34 }] },
-  { id: 'khalessi', anchor: { x: 172, y: 117 }, zones: [{ x: 150, y: 106, w: 46, h: 28 }] },
-  { id: 'shelf', anchor: { x: 176, y: 90 }, zones: [{ x: 148, y: 82, w: 56, h: 16 }] },
-  { id: 'television', anchor: { x: 248, y: 92 }, zones: [{ x: 212, y: 82, w: 72, h: 18 }] },
-  { id: 'roof', anchor: { x: 38, y: 92 }, zones: [{ x: 16, y: 82, w: 44, h: 24 }] },
-  { id: 'pc', anchor: { x: 326, y: 96 }, zones: [{ x: 290, y: 82, w: 76, h: 40 }] },
-  { id: 'printer', anchor: { x: 52, y: 172 }, zones: [{ x: 22, y: 168, w: 62, h: 20 }] },
-  { id: 'printerMini', anchor: { x: 112, y: 172 }, zones: [{ x: 90, y: 168, w: 46, h: 20 }] },
-  { id: 'figures', anchor: { x: 344, y: 176 }, zones: [{ x: 322, y: 168, w: 44, h: 18 }] },
-  { id: 'hifi', anchor: { x: 292, y: 208 }, zones: [{ x: 272, y: 202, w: 40, h: 14 }] },
+  { id: 'atreus', anchor: { x: 148, y: 106 }, zones: [{ x: 124, y: 92, w: 50, h: 34 }] },
+  { id: 'khalessi', anchor: { x: SPOTS.box.x, y: SPOTS.box.y + 10 }, zones: [{ x: 212, y: 164, w: 48, h: 30 }] },
+  { id: 'shelf', anchor: { x: WALL_X.consoleShelf, y: 90 }, zones: [{ x: 178, y: 82, w: 54, h: 16 }] },
+  { id: 'arcade', anchor: { x: ARCADE_FRONT.x, y: ARCADE_FRONT.y }, zones: [{ x: 250, y: 82, w: 32, h: 26 }] },
+  { id: 'television', anchor: { x: WALL_X.tv, y: 92 }, zones: [{ x: 302, y: 82, w: 72, h: 18 }] },
+  { id: 'hifi', anchor: { x: WALL_X.hifi, y: 92 }, zones: [{ x: 384, y: 82, w: 36, h: 18 }] },
+  { id: 'roof', anchor: { x: WALL_X.stairs, y: 92 }, zones: [{ x: 16, y: 82, w: 44, h: 24 }] },
+  { id: 'pc', anchor: { x: WALL_X.lupeDesk, y: 96 }, zones: [{ x: 436, y: 82, w: 76, h: 40 }] },
+  { id: 'printer', anchor: { x: SPOTS.printerA1.x, y: 258 }, zones: [{ x: 28, y: 252, w: 62, h: 20 }] },
+  { id: 'printerMini', anchor: { x: SPOTS.printerMini.x, y: 258 }, zones: [{ x: 98, y: 252, w: 46, h: 20 }] },
+  { id: 'figures', anchor: { x: SPOTS.makerShelf.x, y: 258 }, zones: [{ x: 152, y: 252, w: 48, h: 20 }] },
   ...SEATS.map(({ id, anchor, zone }) => ({ id, anchor, zones: [zone] })),
 ]
 

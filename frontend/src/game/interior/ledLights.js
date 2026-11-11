@@ -2,20 +2,34 @@
 // estanterías, con su halo, sobre un oscurecimiento de la sala. Los colores cambian entre tres paletas cada par de
 // segundos (quietos con «reducir movimiento»). Sin Phaser: aquí solo se dibuja; `InteriorScene` coloca las capas.
 import { INK, canvasOf, rect } from './draw.js'
+import { SPOTS, WALL_X } from './homeLayout.js'
 
-// Tiras: rectángulos en píxeles de la sala. Siguen el plano de `homeLayout.js`.
-export const LED_STRIPS = [
-  { x: 16, y: 3, w: 352, h: 1 },
-  { x: 61, y: 70, w: 62, h: 1 },
-  { x: 289, y: 69, w: 74, h: 1 },
-  { x: 145, y: 26, w: 1, h: 52 },
-  { x: 206, y: 26, w: 1, h: 52 },
-  { x: 224, y: 33, w: 48, h: 1 },
-  { x: 213, y: 36, w: 1, h: 40 },
-  { x: 283, y: 36, w: 1, h: 40 },
-  { x: 25, y: 52, w: 28, h: 1 },
-  { x: 327, y: 118, w: 1, h: 40 },
-  { x: 361, y: 118, w: 1, h: 40 },
+// Tiras: rectángulos en píxeles de la sala. Salen de las posiciones del plano (`homeLayout.js`), así que siguen a su mueble.
+export const ledStrips = (room) => [
+  { x: 16, y: 3, w: room.width - 32, h: 1 },
+  // Bajo el tablero de cada mesa.
+  { x: WALL_X.atreusDesk - 39, y: 70, w: 62, h: 1 },
+  { x: WALL_X.lupeDesk - 37, y: 69, w: 74, h: 1 },
+  // A los lados de la estantería de consolas, de la recreativa y de la tele, y tras ella.
+  { x: WALL_X.consoleShelf - 31, y: 26, w: 1, h: 52 },
+  { x: WALL_X.consoleShelf + 30, y: 26, w: 1, h: 52 },
+  { x: WALL_X.arcade - 18, y: 22, w: 1, h: 56 },
+  { x: WALL_X.arcade + 17, y: 22, w: 1, h: 56 },
+  { x: WALL_X.tv - 24, y: 33, w: 48, h: 1 },
+  { x: WALL_X.tv - 35, y: 36, w: 1, h: 40 },
+  { x: WALL_X.tv + 35, y: 36, w: 1, h: 40 },
+  // Sobre la escalera y a los lados de la vitrina de piezas impresas.
+  { x: WALL_X.stairs - 13, y: 52, w: 28, h: 1 },
+  { x: SPOTS.makerShelf.x - 19, y: SPOTS.makerShelf.y - 46, w: 1, h: 40 },
+  { x: SPOTS.makerShelf.x + 18, y: SPOTS.makerShelf.y - 46, w: 1, h: 40 },
+]
+
+// Pantallas que siguen luciendo bajo la penumbra: x, y, ancho y alto de un velo claro sobre cada una.
+const screenVeils = () => [
+  [WALL_X.atreusDesk - 34, 37, 54, 16],
+  [WALL_X.lupeDesk - 34, 36, 70, 18],
+  [WALL_X.tv - 20, 37, 40, 22],
+  [WALL_X.arcade - 11, 12, 22, 17],
 ]
 
 export const LED_PALETTES = [
@@ -27,7 +41,7 @@ export const LED_PALETTES = [
 // Capa de leds para una paleta: cada tira con su núcleo y dos halos más anchos y transparentes.
 export function ledCanvas(room, palette) {
   const { canvas, g } = canvasOf(room.width, room.height)
-  LED_STRIPS.forEach((strip, i) => {
+  ledStrips(room).forEach((strip, i) => {
     const color = palette[i % palette.length]
     g.globalAlpha = 0.12
     rect(g, strip.x - 4, strip.y - 4, strip.w + 8, strip.h + 8, color)
@@ -38,7 +52,7 @@ export function ledCanvas(room, palette) {
   })
   // Las pantallas siguen luciendo bajo la penumbra: un velo claro sobre cada una.
   g.globalAlpha = 0.2
-  ;[[66, 37, 54, 16], [292, 36, 70, 18], [228, 37, 40, 22]].forEach(([x, y, w, h]) => rect(g, x, y, w, h, INK.white))
+  screenVeils().forEach(([x, y, w, h]) => rect(g, x, y, w, h, INK.white))
   g.globalAlpha = 1
   return canvas
 }

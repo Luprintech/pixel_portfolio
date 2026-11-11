@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { BUILDINGS, TILE } from '../world.js'
 import { roomOf } from '../interiors.js'
+import { CAT_SEQUENCE, CAT_SPOTS } from './catBrain.js'
 import { FURNITURE, solidsOf } from './furniture/index.js'
-import { ATREUS_BODY, FURNITURE_PLAN, HOME_ID, INTERACTIONS, NPC_PLAN, homeRoom, interactionAt } from './homeLayout.js'
+import { ARCADE_FRONT, ATREUS_BODY, FURNITURE_PLAN, HOME_ID, INTERACTIONS, NPC_PLAN, homeRoom, interactionAt } from './homeLayout.js'
 
 const room = homeRoom()
 const atreus = NPC_PLAN.find((npc) => npc.id === 'atreus')
@@ -104,6 +105,49 @@ describe('plano de la casa de Lupe', () => {
 
   it('cada interacción se reconoce desde su ancla', () => {
     INTERACTIONS.forEach(({ id, anchor }) => expect(interactionAt(anchor.x, anchor.y), id).toBe(id))
+  })
+})
+
+describe('zona de Khalessi', () => {
+  // Los puntos por los que pasa la gata, en orden, empezando por la caja. Ella (un punto) no atraviesa ningún mueble salvo
+  // la caja, de la que sale por delante: se comprueba con dos píxeles de margen.
+  const route = [CAT_SPOTS.box, ...CAT_SEQUENCE.filter((step) => step.kind === 'walk').map((step) => step.to)]
+  const props = FURNITURE_PLAN.filter((piece) => !piece.kind.startsWith('box')).flatMap(solidsOf).concat(solids.slice(-1))
+  const inside = (x, y, margin) => props.some((s) => x > s.x - margin && x < s.x + s.w + margin && y > s.y - margin && y < s.y + s.h + margin)
+
+  it('el recorrido de la gata hasta Atreus y de vuelta no cruza ningún mueble', () => {
+    route.slice(1).forEach((to, i) => {
+      const from = route[i]
+      for (let t = 0; t <= 1; t += 0.02) {
+        const x = from.x + (to.x - from.x) * t
+        const y = from.y + (to.y - from.y) * t
+        expect(inside(x, y, 2), `paso ${i + 1} en (${Math.round(x)}, ${Math.round(y)})`).toBe(false)
+      }
+    })
+  })
+
+  it('la sardina cae a los pies de Atreus, fuera de la caja y de los muebles', () => {
+    const toy = CAT_SPOTS.toy
+    expect(inside(toy.x, toy.y, 2)).toBe(false)
+    const atreusSpot = CAT_SPOTS.atreus
+    expect(inside(atreusSpot.x + 6, atreusSpot.y + 2, 0)).toBe(false)
+  })
+
+  it('tiene su rascador, su comida y su arenero, y la caja', () => {
+    ;['scratcher', 'catBowls', 'litterBox', 'boxBack'].forEach((kind) => expect(FURNITURE_PLAN.some((piece) => piece.kind === kind), kind).toBe(true))
+  })
+})
+
+describe('recreativa', () => {
+  it('está en la pared del fondo junto a la estantería de consolas, y se juega desde delante', () => {
+    const arcade = FURNITURE_PLAN.find((piece) => piece.kind === 'arcade')
+    const shelf = FURNITURE_PLAN.find((piece) => piece.kind === 'consoleShelf')
+    expect(arcade.y).toBe(shelf.y)
+    expect(arcade.x - shelf.x).toBeLessThan(80)
+    const zone = INTERACTIONS.find((interaction) => interaction.id === 'arcade')
+    expect(zone).toBeTruthy()
+    expect(interactionAt(ARCADE_FRONT.x, ARCADE_FRONT.y)).toBe('arcade')
+    expect(standable(ARCADE_FRONT.x, ARCADE_FRONT.y)).toBe(true)
   })
 })
 

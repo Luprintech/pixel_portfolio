@@ -1,31 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { FIGURES, figureCanvas } from '../../game/interior/figures'
+import { PREPARE_MS, PRINT_MS, idleJob, jobAt, progressOf } from '../../game/interior/printJob'
 import { PAL } from '../../game/palette'
-import { playPrintDone, startPrinterSound } from '../../lib/printerSound'
 import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
 
-// Lo que dura la impresión de la figura (la real tardaría horas; esto es un juego).
-const PRINT_MS = 9000
 const LAYERS = 120
 const BAMBU = '#00ae42'
 const FIGURE = FIGURES.find((figure) => figure.id === 'pokemon')
 
 // Pantalla táctil de la impresora Bambu Lab A1 mini: oscura, con acentos verdes, el archivo, las temperaturas y el avance de
-// la impresión. `initial` es 'done' si ya había una figura sin recoger; `onMode` avisa a la sala (la impresora de verdad
-// cambia de animación) y `onClaim` entrega la figura. Esc cierra: si se está imprimiendo, se cancela.
-export default function PrinterPanel({ initial, claimed, onMode, onProgress, onClaim, onClose }) {
+// la impresión. Solo lanza el trabajo: al pulsar Imprimir enseña «Preparando impresión…» un momento, avisa a la sala (`onStart`)
+// y se cierra; la impresión se ve después en la propia máquina y se recoge allí (ver `game/interior/printJob.js`). Si se abre
+// con una impresión en marcha, enseña su avance sin poder pararla. `job` es el trabajo de la sala al abrir. Esc cierra.
+export default function PrinterPanel({ job, claimed, onStart, onClose }) {
   const { copy } = useValleCopy()
   const p = copy.printer
-  const [phase, setPhase] = useState(initial === 'done' ? 'done' : 'ready')
-  const [progress, setProgress] = useState(0)
+  const [now, setNow] = useState(() => performance.now())
+  const [preparing, setPreparing] = useState(false)
   const closeRef = useRef(null)
   const figure = useRef(figureCanvas(FIGURE).toDataURL()).current
+  const current = jobAt(job ?? idleJob(), now)
+  const phase = preparing ? 'preparing' : current.state === 'printing' ? 'printing' : current.state === 'done' ? 'done' : 'ready'
+  const progress = progressOf(current, now)
 
-  const close = useCallback(() => {
-    if (phase === 'printing') onMode('idle')
-    onClose()
-  }, [phase, onMode, onClose])
+  const close = useCallback(() => onClose(), [onClose])
 
   useEffect(() => {
     closeRef.current?.focus()
@@ -36,43 +35,24 @@ export default function PrinterPanel({ initial, claimed, onMode, onProgress, onC
     return () => window.removeEventListener('keydown', onKey)
   }, [close])
 
-  // Imprimiendo: avanza el progreso, suena la impresora y, al llegar al final, el pitido de terminado.
+  // Preparando: un instante de «calentando» y se lanza la impresión (cerrar antes, con Esc, la cancela).
+  useEffect(() => {
+    if (!preparing) return undefined
+    const timer = setTimeout(onStart, PREPARE_MS)
+    return () => clearTimeout(timer)
+  }, [preparing, onStart])
+
+  // Con una impresión en marcha el avance se refresca solo.
   useEffect(() => {
     if (phase !== 'printing') return undefined
-    const stopSound = startPrinterSound()
-    const start = performance.now()
-    const timer = setInterval(() => {
-      const fraction = Math.min(1, (performance.now() - start) / PRINT_MS)
-      setProgress(fraction)
-      onProgress(fraction)
-      if (fraction >= 1) {
-        clearInterval(timer)
-        stopSound()
-        playPrintDone()
-        onMode('done')
-        setPhase('done')
-      }
-    }, 120)
-    return () => {
-      clearInterval(timer)
-      stopSound()
-    }
-  }, [phase, onMode, onProgress])
+    const timer = setInterval(() => setNow(performance.now()), 250)
+    return () => clearInterval(timer)
+  }, [phase])
 
-  const start = () => {
-    setProgress(0)
-    onMode('printing')
-    setPhase('printing')
-  }
-  const claim = () => {
-    onMode('idle')
-    onClaim()
-    onClose()
-  }
-
+  const STATUS = { ready: claimed ? p.claimed : p.ready, preparing: p.heating, printing: p.printing, done: p.waiting }
   const percent = Math.round(progress * 100)
   const left = Math.max(0, Math.ceil((PRINT_MS * (1 - progress)) / 1000))
-  const hot = phase === 'printing'
+  const hot = phase === 'printing' || phase === 'preparing'
   return (
     <div className="absolute inset-0 z-30 grid place-items-center p-3" style={{ background: tone('scrim', 'rgba(15,14,34,0.7)') }}>
       <section role="dialog" aria-modal="true" aria-label={p.title} className="w-full max-w-md overflow-hidden rounded-xl text-sm" style={{ background: '#1b1c20', color: '#e8e8ea', boxShadow: `0 0 0 3px #3a3b42, 0 0 0 6px ${PAL.ink}` }}>
@@ -89,7 +69,7 @@ export default function PrinterPanel({ initial, claimed, onMode, onProgress, onC
             <img src={figure} alt="" className="h-20 w-20 shrink-0 rounded [image-rendering:pixelated]" style={{ background: '#33343b', opacity: phase === 'printing' ? 0.55 : 1 }} />
             <div className="min-w-0">
               <p className="truncate font-semibold">{p.file}</p>
-              <p className="text-xs" style={{ color: '#9a9ba3' }}>{phase === 'ready' ? (claimed ? p.claimed : p.ready) : phase === 'printing' ? p.printing : p.done}</p>
+              <p className="text-xs" style={{ color: '#9a9ba3' }}>{STATUS[phase]}</p>
               <p className="mt-2 flex gap-4 text-xs" style={{ color: '#9a9ba3' }}>
                 <span>{p.nozzle} {hot ? 220 : 25}°C</span>
                 <span>{p.bed} {hot ? 60 : 25}°C</span>
@@ -97,7 +77,14 @@ export default function PrinterPanel({ initial, claimed, onMode, onProgress, onC
             </div>
           </div>
 
-          {phase !== 'ready' && (
+          {phase === 'preparing' && (
+            <p className="flex items-center gap-3 text-sm font-semibold" role="status">
+              <span aria-hidden="true" className="h-3 w-3 shrink-0 rounded-full motion-safe:animate-pulse" style={{ background: BAMBU }} />
+              {p.preparing}
+            </p>
+          )}
+
+          {(phase === 'printing' || phase === 'done') && (
             <div>
               <div className="h-3 overflow-hidden rounded-full" style={{ background: '#33343b' }} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={phase === 'done' ? 100 : percent} aria-label={p.progress}>
                 <div className="h-full" style={{ width: `${phase === 'done' ? 100 : percent}%`, background: BAMBU }} />
@@ -111,11 +98,9 @@ export default function PrinterPanel({ initial, claimed, onMode, onProgress, onC
           )}
 
           {phase === 'ready' && !claimed && (
-            <button type="button" className="w-full rounded-lg py-3 text-base font-bold text-white" style={{ background: BAMBU }} onClick={start}>{p.print}</button>
+            <button type="button" className="w-full rounded-lg py-3 text-base font-bold text-white" style={{ background: BAMBU }} onClick={() => setPreparing(true)}>{p.print}</button>
           )}
-          {phase === 'done' && (
-            <button type="button" className="w-full rounded-lg py-3 text-base font-bold text-white" style={{ background: BAMBU }} onClick={claim}>{p.take}</button>
-          )}
+          {phase === 'done' && <p className="text-xs" style={{ color: '#9a9ba3' }}>{p.pickUp}</p>}
         </div>
       </section>
     </div>

@@ -238,10 +238,11 @@ export function treePositions() {
   return trees.filter((t) => !inStairsApproach(t.x, t.y))
 }
 
-// Acceso a la escalera de la casa: cuatro teselas a su izquierda y las últimas filas de la fachada. Un árbol aquí
-// tapa los peldaños o deja a la viajera encajonada al pie de la escalera.
+// Acceso a la escalera de la casa y ala de la cubierta: la escalera y la azotea, ensanchada, se dibujan hacia la izquierda
+// del edificio (ver `DECK_WIDEN` en terrace.js), así que se despeja ese lado entero, hasta la calle. Un árbol aquí tapa los
+// peldaños o deja a la viajera encajonada al pie de la escalera.
 const STAIRS_APPROACH = (() => {
   const home = BUILDINGS.find((b) => b.terrace)
-  return home && { x: home.x - 4, y: home.y + home.h - 4, w: 7, h: 6 }
+  return home && { x: home.x - 7, y: home.y, w: 10, h: home.h + 2 }
 })()
 const inStairsApproach = (x, y) => Boolean(STAIRS_APPROACH) && inside(STAIRS_APPROACH, x, y)

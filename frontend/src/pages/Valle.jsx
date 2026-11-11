@@ -32,7 +32,7 @@ import { acquireAmbience, setAmbienceScene, thunder } from '../lib/ambience'
 import { getEngine, startEngineIfAllowed } from '../lib/audioEngine'
 import { playMeow } from '../lib/dialogueSound'
 import { jukebox } from '../lib/jukebox'
-import { startPrinterSound } from '../lib/printerSound'
+import { playPrintDone, startPrinterSound } from '../lib/printerSound'
 import { tone } from '../lib/tone'
 import { useValleCopy } from '../lib/valleCopy'
 
@@ -80,9 +80,9 @@ export default function Valle() {
   // Guion de la conversación abierta (ver `game/dialogue/scripts.js`) o null.
   const [dialogue, setDialogue] = useState(null)
   const achievements = useAchievements()
-  // Estado de la impresora pequeña: 'idle' o 'done' (figura impresa pero sin recoger). Y el canal de la tele, o null.
-  const printState = useRef('idle')
+  // Canal de la tele, o null si está apagada. Y si la impresora pequeña está imprimiendo (para que suene su trabajo).
   const [tvChannel, setTvChannel] = useState(null)
+  const [printing, setPrinting] = useState(false)
   // El ordenador de Lupe minimizado deja de bloquear el juego.
   const [pcMinimized, setPcMinimized] = useState(false)
   // Límites del zoom que publica la escena; hasta que existe, ambos botones valen.
@@ -219,6 +219,11 @@ export default function Valle() {
   }, [zone])
 
   const closeZone = useCallback(() => setZone(null), [])
+  // Al salir de la recreativa la viajera reaparece ante ella, mirándola.
+  const closeArcade = useCallback(() => {
+    setZone(null)
+    game?.events.emit('interior-action', { type: 'arcade-exit' })
+  }, [game])
   // La minicadena de la sala enseña si suena la música (la ponga ella o el Winamp del escritorio).
   useEffect(() => {
     if (!game) return undefined
@@ -231,29 +236,36 @@ export default function Valle() {
     game?.events.emit('interior-action', { type: 'tv', channel })
     setZone(null)
   }, [game])
-  const setPrinterMode = useCallback((mode) => {
-    printState.current = mode === 'done' ? 'done' : 'idle'
-    game?.events.emit('interior-action', { type: 'printer', mode })
+  // La impresión corre en la sala, no en el panel: el panel solo la lanza (la sala la ve crecer capa a capa) y se cierra. La
+  // sala avisa de cuándo suena la impresora y de cuándo termina; la figura se recoge allí, y el logro se da al recogerla.
+  const startPrint = useCallback(() => {
+    game?.events.emit('interior-action', { type: 'print-start' })
+    setZone(null)
   }, [game])
-  // El avance de la impresión se refleja en la impresora de la sala, capa a capa.
-  const printProgress = useCallback((progress) => game?.events.emit('interior-action', { type: 'printer', mode: 'printing', progress }), [game])
-  // Entregar la figura: la sala hace que la viajera la enseñe y, al acabar, avisa para dar el logro.
-  const claimFigure = useCallback(() => game?.events.emit('interior-action', { type: 'show-figure' }), [game])
   const { unlock } = achievements
   useEffect(() => {
     if (!game) return undefined
     const done = () => unlock('maker')
+    const sound = setPrinting
+    const finished = () => playPrintDone()
     game.events.on('figure-shown', done)
-    return () => game.events.off('figure-shown', done)
+    game.events.on('print-sound', sound)
+    game.events.on('print-done', finished)
+    return () => {
+      game.events.off('figure-shown', done)
+      game.events.off('print-sound', sound)
+      game.events.off('print-done', finished)
+    }
   }, [game, unlock])
-  // Junto a la impresora 3D suena su trabajo, mientras no haya un diálogo o un panel delante.
+  // Mientras se imprime en la sala suena la impresora.
+  useEffect(() => (printing ? startPrinterSound() : undefined), [printing])
+  // Junto a la impresora grande suena su trabajo, mientras no haya un diálogo o un panel delante.
   const nearPrinter = near === 'printer' && !zone && !dialogue
   useEffect(() => (nearPrinter ? startPrinterSound() : undefined), [nearPrinter])
   // Un guion puede acabar abriendo algo (el ordenador de Lupe abre su escritorio retro).
   const closeDialogue = useCallback((action) => {
     setDialogue(null)
     if (action === 'desktop') setZone('pc')
-    else if (action === 'game') setZone('console')
     else if (action === 'tv') setZone('tv')
     else if (action === 'music') jukebox.toggle()
   }, [])
@@ -369,9 +381,9 @@ export default function Valle() {
         {touch && status === 'ready' && !zone && !dialogue && !optionsOpen && !editing && <Joystick game={game} />}
         {zone === 'telescope' && !editing && <SkyView getSky={getSky} pastel={pastel} onClose={closeZone} />}
         {zone === 'pc' && !editing && <RetroDesktop onClose={closeZone} unlock={achievements.unlock} onMinimizedChange={setPcMinimized} />}
-        {zone === 'console' && !editing && <ConsoleGame onClose={closeZone} onWin={() => achievements.unlock('retro')} />}
+        {zone === 'console' && !editing && <ConsoleGame onClose={closeArcade} onWin={() => achievements.unlock('retro')} />}
         {zone === 'tv' && !editing && <SmartTv channel={tvChannel} onSelect={selectChannel} onClose={closeZone} />}
-        {zone === 'printer' && !editing && <PrinterPanel initial={printState.current} claimed={achievements.unlocked.has('maker')} onMode={setPrinterMode} onProgress={printProgress} onClaim={claimFigure} onClose={closeZone} />}
+        {zone === 'printer' && !editing && <PrinterPanel job={game?.registry.get('printJob')} claimed={achievements.unlocked.has('maker')} onStart={startPrint} onClose={closeZone} />}
         {zone === 'figures' && !editing && <FiguresViewer unlocked={achievements.unlocked} onClose={closeZone} />}
         {zone && zone !== 'telescope' && !['pc', 'console', 'tv', 'printer', 'figures'].includes(zone) && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
         {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} onClose={closeDialogue} />}

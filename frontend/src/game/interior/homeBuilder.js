@@ -202,6 +202,25 @@ function buildExclamation(scene, atreus) {
   return mark
 }
 
+// Aviso sobre la impresora pequeña cuando la figura está lista: una exclamación verde (el color de la marca) que sube y baja
+// sobre la máquina. Empieza oculta; la escena la enseña mientras haya algo que recoger.
+function buildPrintMark(scene) {
+  if (!scene.textures.exists('print-exclaim')) {
+    const canvas = makeCanvas(9, 14)
+    const g = canvas.getContext('2d')
+    rect(g, 1, 0, 7, 10, '#1c1b3a')
+    rect(g, 2, 1, 5, 8, '#00ae42')
+    rect(g, 3, 2, 1, 5, '#b8f5c8')
+    rect(g, 1, 11, 7, 3, '#1c1b3a')
+    rect(g, 3, 11, 3, 2, '#00ae42')
+    scene.textures.addCanvas('print-exclaim', canvas)
+  }
+  const printer = FURNITURE_PLAN.find((piece) => piece.kind === 'printerMini')
+  const mark = scene.add.image(printer.x, printer.y - FURNITURE.printerMini.h - 10, 'print-exclaim').setDepth(9999).setVisible(false)
+  if (!prefersReducedMotion()) scene.tweens.add({ targets: mark, y: mark.y - 3, duration: 450, yoyo: true, repeat: -1 })
+  return mark
+}
+
 // Monta todo y devuelve a Atreus y la exclamación para que la escena los gobierne. `addSolid(rect)` registra un cuerpo
 // sólido en la escena.
 export function buildHome(scene, pastel, addSolid, onMeow = () => {}) {
@@ -210,7 +229,7 @@ export function buildHome(scene, pastel, addSolid, onMeow = () => {}) {
   const khalessiPlan = NPC_PLAN.find((npc) => npc.id === 'khalessi')
   const atreus = buildAtreus(scene, atreusPlan, addSolid)
   const khalessi = buildKhalessi(scene, khalessiPlan, onMeow)
-  return { atreus, exclamation: buildExclamation(scene, atreus), switches, khalessi }
+  return { atreus, exclamation: buildExclamation(scene, atreus), switches, khalessi, printMark: buildPrintMark(scene) }
 }
 
 // Hacia dónde mira Atreus según dónde esté la viajera; vuelve a mirar de frente cuando se aleja.

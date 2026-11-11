@@ -1,11 +1,14 @@
 // Lo que hace Khalessi en casa: descansa en su caja, sale, juega con su sardina de peluche, se la lleva en la boca a
 // Atreus y se la da maullando, y vuelve a la caja. Es una secuencia de pasos (esperar o caminar) que se repite; esta
 // parte es pura (sin Phaser ni lienzo), así se prueba sin navegador. La escena (`homeBuilder.js`) la dibuja.
+// Los puntos están pensados para que el recorrido no cruce ningún mueble: sale de la caja hacia delante (el sur), cruza el
+// suelo libre hasta la sardina, sube hasta Atreus y vuelve a la caja por delante, dejando la caja a su derecha. Las
+// posiciones salen del plano (`homeLayout.js`): la caja está en (236, 176).
 export const CAT_SPOTS = {
-  box: { x: 172, y: 114 },
-  doorstep: { x: 184, y: 128 },
-  toy: { x: 200, y: 136 },
-  atreus: { x: 150, y: 116 },
+  box: { x: 236, y: 172 },
+  doorstep: { x: 236, y: 194 },
+  toy: { x: 192, y: 164 },
+  atreus: { x: 166, y: 116 },
 }
 
 const SPEED = 24

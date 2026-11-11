@@ -1,7 +1,8 @@
 // Estantería de consolas (la colección documentada en `docs/DIALOGOS.md`, sección 8) y la vitrina de piezas impresas del
 // rincón maker. Cada consola es reconocible por su silueta y su color, sin copiar logotipos: Nintendo 64, Game Boy
-// Color, Nintendo 3DS y Wii arriba; PlayStation 1, 2, 3 y 4 en medio; una Xbox y juegos abajo. El borde de cada balda
-// lleva el color de su familia (rojo, azul, verde) para que se lea la clasificación.
+// Color, Nintendo 3DS y Wii arriba; PlayStation 1, 2, 3 y 4 en medio; una Xbox, una Switch, una GameCube y mandos abajo.
+// El borde de cada balda lleva el color de su familia (rojo, azul, verde) para que se lea la clasificación. Cada pieza se
+// coloca por su base (`SHELF` es la fila de la balda): apoya sobre la madera, nunca queda en el aire.
 import { INK, WOOD, rect, slab } from '../draw.js'
 
 const SHELF_RED = INK.tile
@@ -76,13 +77,34 @@ function xbox(g, x, y) {
   rect(g, x + 1, y + 7, 3, 1, INK.slate)
 }
 
-function games(g, x, y, count, offset) {
-  const tones = [INK.tile, INK.saffronLight, INK.lagoon, INK.plum, INK.meadow, INK.rose, INK.blue]
-  for (let i = 0; i < count; i++) {
-    const color = tones[(i + offset) % tones.length]
-    rect(g, x + i * 3, y + (i % 3 === 0 ? 1 : 0), 2, 11 - (i % 3 === 0 ? 1 : 0), color)
-    rect(g, x + i * 3, y + (i % 3 === 0 ? 1 : 0), 1, 11, INK.whiteShade)
-  }
+// Nintendo Switch con sus mandos acoplados: pantalla en medio, uno azul a la izquierda y otro rojo a la derecha.
+function switchConsole(g, x, y) {
+  rect(g, x, y, 14, 8, INK.night)
+  rect(g, x, y, 3, 8, INK.lagoonLight)
+  rect(g, x + 11, y, 3, 8, INK.tile)
+  rect(g, x + 4, y + 1, 6, 5, INK.night2)
+  rect(g, x + 5, y + 2, 4, 3, INK.lagoon)
+  rect(g, x + 1, y + 2, 1, 1, INK.white)
+  rect(g, x + 12, y + 5, 1, 1, INK.white)
+}
+
+// GameCube: un cubo violeta con el asa arriba y la tapa del disco.
+function gameCube(g, x, y) {
+  slab(g, x, y, 11, 9, INK.plum, '#a05fb5', '#4f2a60')
+  rect(g, x + 4, y - 1, 3, 1, '#4f2a60')
+  rect(g, x + 3, y + 2, 5, 4, INK.night)
+  rect(g, x + 4, y + 3, 3, 2, INK.slate)
+  rect(g, x + 8, y + 7, 2, 1, INK.saffronLight)
+}
+
+// Mando apoyado de lado: cuerpo con dos empuñaduras y botones de colores.
+function pad(g, x, y, color) {
+  rect(g, x + 1, y, 6, 3, color)
+  rect(g, x, y + 2, 2, 2, color)
+  rect(g, x + 6, y + 2, 2, 2, color)
+  rect(g, x + 2, y + 1, 1, 1, INK.night)
+  rect(g, x + 5, y + 1, 1, 1, INK.saffronLight)
+  rect(g, x + 4, y, 1, 1, INK.tile)
 }
 
 export const consoleShelf = {
@@ -108,21 +130,20 @@ export const consoleShelf = {
       rect(g, 2, y, 60, 1, color)
     })
     rect(g, 2, 53, 60, 3, deep)
-    n64(g, 6, 6)
+    // Cada pieza se coloca por su base: la altura de la balda menos lo que mide.
+    n64(g, 6, 10)
     gameBoy(g, 23, 6)
     threeDS(g, 33, 10)
     wii(g, 49, 6)
-    psOne(g, 5, 28)
-    psTwo(g, 21, 24)
+    pad(g, 54, 13, INK.white)
+    psOne(g, 5, 29)
+    psTwo(g, 21, 25)
     psThree(g, 35, 26)
     psFour(g, 48, 27)
-    xbox(g, 5, 43)
-    games(g, 25, 41, 9, 0)
-    // Un mando apoyado y una maceta pequeña cierran la fila de abajo.
-    rect(g, 52, 47, 8, 3, INK.night2)
-    rect(g, 51, 48, 2, 3, INK.night2)
-    rect(g, 59, 48, 2, 3, INK.night2)
-    rect(g, 54, 48, 1, 1, INK.meadow)
+    xbox(g, 5, 44)
+    switchConsole(g, 22, 45)
+    gameCube(g, 38, 44)
+    pad(g, 51, 49, INK.night2)
   },
 }
 
@@ -147,26 +168,26 @@ export const makerShelf = {
     })
     rect(g, 2, 43, 32, 3, deep)
     // Cartel luminoso: placa oscura con un corazón encendido.
-    rect(g, 8, 4, 20, 9, INK.night2)
-    ;[[11, 6, 2], [14, 6, 2], [18, 6, 2], [21, 6, 2]].forEach(([x, y, w]) => rect(g, x, y, w, 2, INK.rose))
-    rect(g, 11, 8, 12, 1, INK.rose)
-    rect(g, 12, 9, 10, 1, INK.rose)
-    rect(g, 14, 10, 6, 1, INK.rose)
-    rect(g, 16, 11, 2, 1, INK.rose)
-    rect(g, 12, 6, 1, 1, '#fde0e8')
+    rect(g, 8, 5, 20, 9, INK.night2)
+    ;[[11, 7, 2], [14, 7, 2], [18, 7, 2], [21, 7, 2]].forEach(([x, y, w]) => rect(g, x, y, w, 2, INK.rose))
+    rect(g, 11, 9, 12, 1, INK.rose)
+    rect(g, 12, 10, 10, 1, INK.rose)
+    rect(g, 14, 11, 6, 1, INK.rose)
+    rect(g, 16, 12, 2, 1, INK.rose)
+    rect(g, 12, 7, 1, 1, '#fde0e8')
     // Figuritas pintadas: una redonda con orejas y otra con alas, sobre su balda.
-    rect(g, 6, 21, 7, 7, INK.saffronLight)
-    rect(g, 7, 19, 2, 2, INK.saffronLight)
-    rect(g, 10, 19, 2, 2, INK.saffronLight)
-    rect(g, 8, 23, 1, 1, INK.night)
-    rect(g, 11, 23, 1, 1, INK.night)
-    rect(g, 9, 25, 1, 1, INK.tile)
-    rect(g, 18, 22, 6, 6, INK.lagoonLight)
-    rect(g, 16, 23, 2, 3, INK.lagoon)
-    rect(g, 24, 23, 2, 3, INK.lagoon)
-    rect(g, 19, 24, 1, 1, INK.night)
-    rect(g, 22, 24, 1, 1, INK.night)
-    rect(g, 27, 24, 4, 4, INK.plum)
+    rect(g, 6, 22, 7, 7, INK.saffronLight)
+    rect(g, 7, 20, 2, 2, INK.saffronLight)
+    rect(g, 10, 20, 2, 2, INK.saffronLight)
+    rect(g, 8, 24, 1, 1, INK.night)
+    rect(g, 11, 24, 1, 1, INK.night)
+    rect(g, 9, 26, 1, 1, INK.tile)
+    rect(g, 18, 23, 6, 6, INK.lagoonLight)
+    rect(g, 16, 24, 2, 3, INK.lagoon)
+    rect(g, 24, 24, 2, 3, INK.lagoon)
+    rect(g, 19, 25, 1, 1, INK.night)
+    rect(g, 22, 25, 1, 1, INK.night)
+    rect(g, 27, 25, 4, 4, INK.plum)
     // Jarrón de líneas y llaveros colgados de ganchos.
     rect(g, 6, 38, 6, 5, INK.teal)
     rect(g, 7, 36, 4, 2, INK.teal)

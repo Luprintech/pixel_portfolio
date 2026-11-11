@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { ACHIEVEMENT_IDS, SECRET_IDS } from '../../game/achievements'
+import { ACHIEVEMENT_IDS } from '../../game/achievements'
 import { PAL } from '../../game/palette'
 import { useInstallPrompt } from '../../hooks/useInstallPrompt'
 import { useSoundPrefs } from '../../hooks/useSoundPrefs'
 import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
+import AchievementsList from './AchievementsList'
 import VolumeSlider from './VolumeSlider'
 
 // Todos los botones del diálogo miden lo mismo (`--ctl`, definido en el marco) y usan el mismo texto: antes cada
@@ -22,6 +23,8 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
   const [asking, setAsking] = useState(false)
   const [erased, setErased] = useState(false)
   const [justSaved, setJustSaved] = useState(false)
+  // 'main' (los ajustes) o 'achievements' (la lista de logros, que se abre con su botón).
+  const [view, setView] = useState('main')
 
   useEffect(() => {
     const dialog = ref.current
@@ -30,6 +33,7 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
       setAsking(false)
       setErased(false)
       setJustSaved(false)
+      setView('main')
       dialog.showModal ? dialog.showModal() : dialog.setAttribute('open', '')
       // El foco empieza en el título y no en "Cerrar": así, al abrir con un toque, el botón no sale con el aro de foco.
       dialog.querySelector('#options-title')?.focus()
@@ -76,6 +80,15 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
           <button type="button" data-sound="back" className={`${asking ? 'px-btn px-btn--bone' : 'px-btn'} ${BTN}`} onClick={onClose}>{copy.options.close}</button>
         </div>
 
+        {view === 'achievements' && achievements ? (
+          <div className="px-text mt-4">
+            <h3 className="text-sm" style={muted}>{copy.achievements.title} ({achievements.size}/{ACHIEVEMENT_IDS.length})</h3>
+            <div className="mt-3 max-h-[60svh] overflow-y-auto pr-1">
+              <AchievementsList unlocked={achievements} />
+            </div>
+            <button type="button" data-sound="back" className={`px-btn px-btn--bone mt-4 w-full sm:w-auto ${BTN}`} onClick={() => setView('main')}>{copy.options.back}</button>
+          </div>
+        ) : (
         <div className="px-text mt-4 grid gap-x-8 gap-y-4 sm:mt-4 sm:gap-y-6 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_1fr] [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
           {/* El sonido ocupa todas las filas de su columna; la última (1fr) absorbe la altura que sobra,
               así los ajustes de la izquierda quedan pegados entre sí en vez de estirarse. */}
@@ -122,23 +135,9 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
 
           {achievements && (
             <section className="sm:col-start-1">
-              <h3 className="text-sm" style={muted}>{copy.achievements.title} ({achievements.size}/{ACHIEVEMENT_IDS.length})</h3>
-              <ul className="mt-2 space-y-1">
-                {ACHIEVEMENT_IDS.map((id) => {
-                  const done = achievements.has(id)
-                  const item = copy.achievements.items[id]
-                  const hidden = !done && SECRET_IDS.includes(id)
-                  return (
-                    <li key={id} className="flex items-start gap-2 text-sm" style={{ opacity: done ? 1 : 0.6 }}>
-                      <span aria-hidden="true">{done ? '★' : '☆'}</span>
-                      <span>
-                        <strong>{hidden ? '???' : item.name}</strong>
-                        <span className="block text-xs">{hidden ? copy.achievements.secret : done ? item.desc : `${copy.achievements.locked}: ${item.desc}`}</span>
-                      </span>
-                    </li>
-                  )
-                })}
-              </ul>
+              <button type="button" className={`px-btn px-btn--bone w-full ${BTN}`} onClick={() => setView('achievements')}>
+                {copy.achievements.title} ({achievements.size}/{ACHIEVEMENT_IDS.length})
+              </button>
             </section>
           )}
 
@@ -158,6 +157,7 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
             </section>
           )}
         </div>
+        )}
       </div>
     </dialog>
   )

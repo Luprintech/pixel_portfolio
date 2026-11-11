@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DECK, STAIRS, TELESCOPE, stairLift } from '../terrace.js'
-import { BACK_RAIL, FLOOR_TOP, FRONT_RAIL, STRAND, noseY, railPosts, strandPoints } from './terraceProps.js'
+import { BACK_RAIL, FLOOR_DEPTH, FLOOR_TOP, FRONT_RAIL, PARASOL, STRAND, frontRailPosts, noseY, railPosts, strandPoints } from './terraceProps.js'
 
 describe('composición de la cubierta de la casa de Lupe', () => {
   it('el telescopio queda en el hueco de la balaustrada trasera y con la guirnalda por encima', () => {
@@ -20,7 +20,20 @@ describe('composición de la cubierta de la casa de Lupe', () => {
 
   it('el suelo de la cubierta cubre las filas donde se pisa', () => {
     expect(FLOOR_TOP).toBeLessThanOrEqual(DECK.top)
-    expect(FLOOR_TOP + 13).toBeGreaterThanOrEqual(DECK.feet)
+    expect(FLOOR_TOP + FLOOR_DEPTH).toBeGreaterThanOrEqual(DECK.feet)
+  })
+
+  it('la barandilla delantera tiene un poste cada pocos píxeles y uno en cada extremo', () => {
+    const posts = frontRailPosts()
+    expect(posts[0]).toBe(FRONT_RAIL.x)
+    expect(posts[posts.length - 1]).toBe(FRONT_RAIL.right - 3)
+    posts.slice(1).forEach((px, i) => expect(px - posts[i]).toBeLessThanOrEqual(18))
+  })
+
+  it('la guirnalda pasa por encima de la sombrilla, sin cruzar su cubierta', () => {
+    strandPoints()
+      .filter((p) => p.x >= PARASOL.cx - PARASOL.rx && p.x <= PARASOL.cx + PARASOL.rx)
+      .forEach((p) => expect(p.y + 3, `columna ${p.x}`).toBeLessThan(PARASOL.top))
   })
 
   it('los pies de la viajera apoyan en la huella de cada peldaño', () => {

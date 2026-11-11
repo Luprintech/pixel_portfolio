@@ -4,7 +4,7 @@
 // necesitan la nieve (terraceWinter.js) y la luz (homeLight.js) se exportan desde aquí.
 import { PAL, shade, tint } from '../palette.js'
 import { dot, ellipse, line, rect } from '../pixelKit.js'
-import { DECK, TELESCOPE } from '../terrace.js'
+import { DECK, TABLE, TELESCOPE } from '../terrace.js'
 import { WOOD0, WOOD1, WOOD2, WOOD3 } from './shared.js'
 
 export const BRASS = [shade(PAL.saffron, 0.55), shade(PAL.saffron, 0.78), PAL.saffron, PAL.saffronLight]
@@ -15,19 +15,28 @@ const CREAM = '#f6f0e0'
 const RIM = '#8a3a5c'
 
 // Fondo del entarimado: del pie de la balaustrada trasera (`FLOOR_TOP`) al canto delantero. Los muebles apoyan en
-// `FLOOR_Y`, a media profundidad, para que la barandilla delantera no los tape.
-export const FLOOR_TOP = 101
-export const FLOOR_DEPTH = 13
-export const FLOOR_Y = 105
+// `FLOOR_Y`, contra el fondo, y delante queda el suelo libre por el que se anda (ver `DECK.top` en terrace.js).
+export const FLOOR_TOP = 84
+export const FLOOR_DEPTH = 30
+export const FLOOR_Y = TABLE.base
 // Barandilla delantera: la viajera queda detrás. Entre la escalera (x < 40) y su primer poste queda libre la entrada.
 export const FRONT_RAIL = { x: 52, top: 106, bottom: 119, right: DECK.right + 1 }
+const RAIL_POST_GAP = 18
+
+// Postes de la barandilla delantera: uno cada `RAIL_POST_GAP` píxeles y siempre uno en el extremo derecho.
+export function frontRailPosts({ x, right } = FRONT_RAIL) {
+  const posts = []
+  for (let px = x; px < right - 3 - 6; px += RAIL_POST_GAP) posts.push(px)
+  posts.push(right - 3)
+  return posts
+}
 // Balaustrada trasera: un poste en la esquina de la escalera y un tramo a la derecha. Entre ambos se deja un hueco
 // al cielo, detrás del telescopio, para que su contorno no se mezcle con los balaustres.
-export const BACK_RAIL = { post: DECK.left + 4, from: 70 }
+export const BACK_RAIL = { post: DECK.left + 4, from: TELESCOPE.x + 14 }
 export const BACK_RAIL_Y = FLOOR_TOP - 11
-export const PARASOL = { cx: 88, top: 55, rx: 18, ry: 13 }
-// Guirnalda: pasa por encima del telescopio y por debajo del borde de la sombrilla.
-export const STRAND = { from: { x: 38, y: 54 }, to: { x: 106, y: 72 }, sag: 7 }
+export const PARASOL = { cx: TABLE.x, top: 62, rx: 18, ry: 13 }
+// Guirnalda: del mástil de la escalera al alero de la casa, por encima del telescopio y de la sombrilla.
+export const STRAND = { from: { x: 38, y: 38 }, to: { x: DECK.right, y: 58 }, sag: 4 }
 
 // Altura del filo de los peldaños: sobre ella están los pies al subir (ver `stairLift`).
 export const noseY = (i, { bottom, rise }) => bottom - rise * (i + 1)
@@ -47,7 +56,7 @@ export function deckFloor(g) {
   const x = DECK.left - 4
   const w = DECK.right + 4 - x
   rect(g, x, FLOOR_TOP, w, FLOOR_DEPTH, WOOD2)
-  for (let row = 0; row < 4; row++) {
+  for (let row = 0; row < FLOOR_DEPTH / 3; row++) {
     for (let px = x + 2 + (row % 2) * 3; px < x + w - 1; px += 7) rect(g, px, FLOOR_TOP + 1 + row * 3, 1, 3, WOOD1)
     if (row > 0) rect(g, x, FLOOR_TOP + row * 3, w, 1, WOOD1)
   }
@@ -158,7 +167,7 @@ export function backRail(g) {
 export function frontRail(g) {
   const { x, top, bottom, right } = FRONT_RAIL
   const w = right - x
-  const posts = [x, x + 18, x + 36, right - 3]
+  const posts = frontRailPosts()
   rect(g, x, top + 9, w, 2, WOOD1)
   rect(g, x, top + 2, w, 3, WOOD2)
   rect(g, x, top + 2, w, 1, WOOD3)

@@ -8,12 +8,13 @@ import { talkFor } from './dialogue/scripts.js'
 import { loadSeen, markSeen } from './dialogue/seen.js'
 import Follower from './follower.js'
 import { buildHome, faceTraveller } from './interior/homeBuilder.js'
-import { SEATS, interactionAt } from './interior/homeLayout.js'
+import { ARCADE_FRONT, SEATS, interactionAt } from './interior/homeLayout.js'
 import { LED_PALETTES, ledCanvas } from './interior/ledLights.js'
 import { jukebox } from '../lib/jukebox.js'
 import { prefersReducedMotion } from '../lib/reducedMotion.js'
 import { figureCanvas, FIGURES } from './interior/figures.js'
 import { MINI_STAGES } from './interior/furniture/maker.js'
+import { idleJob, jobAt, printView, startJob } from './interior/printJob.js'
 import { sitDown, standUp } from './sitting.js'
 
 const SPEED = 90
@@ -54,6 +55,8 @@ export default class InteriorScene extends Phaser.Scene {
     this.zoomSteps = 0
     this.lastWheel = 0
     this.showing = false
+    this.printKind = 'idle'
+    this.printStage = -1
   }
 
   create() {
@@ -99,6 +102,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.game.registry.events.on('changedata-locked', this.onLock, this)
     this.events.on('postupdate', this.settle, this)
     this.events.once('shutdown', () => {
+      this.game.events.emit('print-sound', false)
       this.events.off('postupdate', this.settle, this)
       this.scale.off('resize', this.fit, this)
       this.game.events.off('action', this.act, this)
@@ -120,15 +124,15 @@ export default class InteriorScene extends Phaser.Scene {
       this.physics.add.existing(body, true)
       this.solids.push(body)
     }
-    const { atreus, exclamation, switches, khalessi } = buildHome(this, this.pastel, addSolid, (variant) => this.game.events.emit('meow', variant))
+    const { atreus, exclamation, switches, khalessi, printMark } = buildHome(this, this.pastel, addSolid, (variant) => this.game.events.emit('meow', variant))
     this.atreus = atreus
     this.exclamation = exclamation
     this.switches = switches
     this.cat = khalessi
+    this.printMark = printMark
     // Lo que se dejó puesto al salir (canal de la tele, impresora, música) se ve igual al volver a entrar.
     const { registry } = this.game
     this.switches.tvUnit?.set(registry.get('tvChannel') ?? 'off')
-    this.switches.printerMini?.set(registry.get('printerMode') ?? 'idle')
     this.switches.hifi?.set(jukebox.snapshot().playing ? 'on' : 'off')
     exclamation.setVisible(!this.seen.has(ENTRANCE))
     this.physics.add.collider(this.princess, this.solids)
@@ -200,7 +204,9 @@ export default class InteriorScene extends Phaser.Scene {
     else if (SEAT_IDS.has(this.near)) this.sit(SEATS.find((seat) => seat.id === this.near))
     else if (this.near === 'standup') this.stand()
     else if (this.near === 'television') this.useTelevision()
-    else if (this.near === 'printerMini') this.game.events.emit('enter', 'printer')
+    else if (this.near === 'printerMini' || this.near === 'printerBusy') this.game.events.emit('enter', 'printer')
+    else if (this.near === 'printerCollect') this.collectPrint()
+    else if (this.near === 'arcade') this.game.events.emit('enter', 'console')
     else if (this.near === 'figures') this.game.events.emit('enter', 'figures')
     else this.talk(this.near)
   }
@@ -211,26 +217,53 @@ export default class InteriorScene extends Phaser.Scene {
     else this.talk('television')
   }
 
-  // Lo que la página le pide a la sala: cambiar el canal de la tele (`null` la apaga), el modo de la impresora pequeña o
-  // encender y apagar la minicadena.
+  // Lo que la página le pide a la sala: cambiar el canal de la tele (`null` la apaga), lanzar la impresión, encender y apagar la
+  // minicadena o devolver a la viajera ante la recreativa al cerrar el juego.
   onDialogueAction(action) {
     if (action.type === 'tv') {
       this.game.registry.set('tvChannel', action.channel)
       this.switches.tvUnit?.set(action.channel ?? 'off')
-    } else if (action.type === 'show-figure') this.showFigure()
-    else if (action.type === 'printer') {
-      this.game.registry.set('printerMode', action.mode)
-      // Imprimiendo, la pantalla manda: la tanda sale del avance (0 a 1) y no de un reloj, para que coincidan.
-      if (action.mode === 'printing' && action.progress !== undefined) this.switches.printerMini?.showFrame(1 + Math.min(MINI_STAGES - 1, Math.floor(action.progress * MINI_STAGES)))
-      else this.switches.printerMini?.set(action.mode)
-    } else if (action.type === 'music') this.switches.hifi?.set(action.on ? 'on' : 'off')
+    } else if (action.type === 'print-start') this.game.registry.set('printJob', startJob(performance.now()))
+    else if (action.type === 'music') this.switches.hifi?.set(action.on ? 'on' : 'off')
+    else if (action.type === 'arcade-exit') this.returnToArcade()
   }
 
-  // Entrega de la figura: la viajera, de frente, levanta el Pikachu acabado por encima de la cabeza, con un destello, y lo
-  // enseña un momento antes de recibirlo (después se da el logro). Durante la escena no se anda ni se usa nada.
-  showFigure() {
-    if (this.showing) return
+  // Al cerrar la recreativa la viajera reaparece ante ella, mirándola, aunque antes de abrirla estuviera algo más lejos.
+  returnToArcade() {
+    this.facing = ARCADE_FRONT.facing
+    this.princess.body.reset(ARCADE_FRONT.x, ARCADE_FRONT.y)
+    this.princess.setFrame(frameName(this.facing, 0))
+  }
+
+  // La impresión corre por reloj (ver `printJob.js`) y se ve en la propia impresora: la figura crece capa a capa y, al acabar,
+  // un aviso sobre la máquina pide recogerla. El trabajo vive en el registro del juego, así sigue aunque la viajera salga.
+  updatePrint() {
+    const { registry } = this.game
+    const stored = registry.get('printJob') ?? idleJob()
+    const now = performance.now()
+    const job = jobAt(stored, now)
+    if (job !== stored) registry.set('printJob', job)
+    const { kind, stage } = printView(job, now, MINI_STAGES)
+    if (kind === this.printKind && stage === this.printStage) return
+    const printer = this.switches.printerMini
+    if (kind === 'printing') printer?.showFrame(1 + stage)
+    else printer?.set(kind)
+    this.printMark?.setVisible(kind === 'done')
+    if (kind !== this.printKind) {
+      this.game.events.emit('print-sound', kind === 'printing')
+      if (kind === 'done' && this.printKind === 'printing') this.game.events.emit('print-done')
+    }
+    this.printKind = kind
+    this.printStage = stage
+  }
+
+  // Recoger la impresión terminada: la figura sale de la placa, la viajera, de frente, levanta el Pikachu por encima de la
+  // cabeza, con un destello, y lo enseña un momento antes de recibirlo (después se da el logro). Durante la escena no se anda
+  // ni se usa nada. Con la impresión sin terminar no hay nada que recoger.
+  collectPrint() {
+    if (this.showing || this.printKind !== 'done') return
     this.showing = true
+    this.game.registry.set('printJob', idleJob())
     if (this.seat) this.stand()
     this.princess.body.setVelocity(0, 0)
     this.facing = 'down'
@@ -298,6 +331,7 @@ export default class InteriorScene extends Phaser.Scene {
   }
 
   update(_time, delta) {
+    if (this.room.home) this.updatePrint()
     const body = this.princess.body
     const locked = this.game.registry.get('locked') || this.leaving || this.showing
     const { x, y } = locked ? { x: 0, y: 0 } : inputVector(this.cursors, this.keys, this.game.registry.get('joy'))
@@ -323,6 +357,12 @@ export default class InteriorScene extends Phaser.Scene {
     this.frame = { moving, delta }
   }
 
+  // La impresora pequeña ofrece una cosa u otra según el trabajo: usarla, ver cómo va o recoger la figura terminada.
+  printerAction(id) {
+    if (id !== 'printerMini') return id
+    return this.printKind === 'done' ? 'printerCollect' : this.printKind === 'printing' ? 'printerBusy' : id
+  }
+
   // Khalessi fuera de la caja se puede saludar donde esté: cerca de ella, y no solo ante la caja.
   catNear(px, py) {
     const cat = this.cat?.cat
@@ -344,7 +384,7 @@ export default class InteriorScene extends Phaser.Scene {
     if (this.leaving) id = null
     else if (this.seat) id = this.seat.use ?? 'standup'
     else if (this.exitZone.contains(px, py)) id = EXIT_ID
-    else if (this.room.home) id = this.catNear(px, py) ? 'khalessi' : interactionAt(px, py)
+    else if (this.room.home) id = this.catNear(px, py) ? 'khalessi' : this.printerAction(interactionAt(px, py))
     if (id !== this.near) {
       this.near = id
       this.game.events.emit('near', id)

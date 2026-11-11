@@ -4,7 +4,7 @@
 // que el centro se acumula y el borde se funde por pasos, como las farolas. La escena la enciende con las mismas
 // curvas que las ventanas (`sky.addWindows`). El lienzo es más alto que el dibujo de la casa para alcanzar el suelo.
 import { ellipse, makeCanvas } from '../pixelKit.js'
-import { DECK } from '../terrace.js'
+import { DECK, DECK_WIDEN, TABLE } from '../terrace.js'
 import { STRAND, strandPoints } from './terraceProps.js'
 
 export const GLOW_H = 190
@@ -26,21 +26,23 @@ function windowLight(g, { x, y, w, h }) {
 }
 
 export function houseGlow() {
-  const canvas = makeCanvas(256, GLOW_H)
+  const DX = DECK_WIDEN
+  const canvas = makeCanvas(256 + DX, GLOW_H)
   const g = canvas.getContext('2d')
-  // Ventanas del ordenador y de la impresora, y la de la sala baja.
-  windowLight(g, { x: 120, y: 102, w: 36, h: 30 })
-  windowLight(g, { x: 202, y: 102, w: 36, h: 30 })
-  windowLight(g, { x: 58, y: 128, w: 32, h: 20 })
+  // Las dos ventanas grandes y las dos de la sala baja.
+  windowLight(g, { x: 120 + DX, y: 102, w: 36, h: 30 })
+  windowLight(g, { x: 202 + DX, y: 102, w: 36, h: 30 })
+  windowLight(g, { x: 54, y: 128, w: 32, h: 20 })
+  windowLight(g, { x: 104 + DX / 2, y: 128, w: 32, h: 20 })
   // Puerta y farol.
-  pool(g, 179, 165, 22, 8, { rings: 3, alpha: 0.08 })
-  pool(g, 162, 138, 11, 9, { rings: 2, alpha: 0.09 })
+  pool(g, 179 + DX, 165, 22, 8, { rings: 3, alpha: 0.08 })
+  pool(g, 162 + DX, 138, 11, 9, { rings: 2, alpha: 0.09 })
   // Guirnalda: un charquito bajo cada bombilla, el suelo de la cubierta y la parte baja de la sombrilla.
   strandPoints(STRAND)
     .filter((p) => p.bulb)
     .forEach((p) => pool(g, p.x + 1, p.y + 2, 6, 5, { rings: 2, alpha: 0.08 }))
-  pool(g, 74, 108, 34, 7, { rings: 3, alpha: 0.07 })
-  pool(g, 88, 76, 17, 8, { rings: 2, alpha: 0.07 })
+  pool(g, (DECK.left + DECK.right) / 2, 100, 52, 9, { rings: 3, alpha: 0.07 })
+  pool(g, TABLE.x, 79, 17, 8, { rings: 2, alpha: 0.07 })
   pool(g, DECK.left - 2, 110, 10, 6, { rings: 2, alpha: 0.07 })
   return canvas
 }

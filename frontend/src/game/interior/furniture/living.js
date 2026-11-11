@@ -1,7 +1,7 @@
-// Zona de ocio: la televisión inteligente sobre su mueble, el sofá (visto desde atrás, mirando a la tele), la mesita y la
-// lámpara de pie. La tele tiene un modo por canal: apagada, el tiempo con su presentadora y las aplicaciones (Netflix,
+// Zona de ocio: la televisión inteligente sobre su mueble, el sofá (visto desde atrás, mirando a la tele) y la mesita.
+// La tele tiene un modo por canal: apagada, el tiempo con su presentadora y las aplicaciones (Netflix,
 // Plex, Max y YouTube), cada una con su rótulo y colores de marca en píxeles; cada modo alterna dos fotogramas (un pulso
-// de luz). La lámpara no se anima: su charco de luz se pinta en el suelo (`roomDecor.js`).
+// de luz).
 import { drawText, textWidth } from '../../pixelFont.js'
 import { INK, WOOD, rect, slab } from '../draw.js'
 
@@ -181,24 +181,5 @@ export const coffeeTable = {
     rect(g, 22, 1, 5, 4, INK.white)
     rect(g, 27, 2, 1, 2, INK.white)
     rect(g, 23, 1, 3, 1, INK.tileDark)
-  },
-}
-
-// Lámpara de pie con pantalla de tela cálida. Su luz es el charco que `roomDecor.js` pinta en el suelo.
-export const floorLamp = {
-  w: 14,
-  h: 46,
-  body: [{ l: -3, t: -3, r: 3, b: 0 }],
-  paint(g) {
-    rect(g, 2, 44, 10, 2, INK.slate)
-    rect(g, 6, 14, 2, 30, INK.steel)
-    rect(g, 7, 14, 1, 30, INK.slateLight)
-    rect(g, 1, 3, 12, 11, INK.saffronLight)
-    rect(g, 1, 3, 12, 1, '#fff3c4')
-    rect(g, 2, 4, 2, 9, '#fff3c4')
-    rect(g, 10, 4, 3, 9, INK.saffron)
-    rect(g, 1, 13, 12, 1, INK.saffron)
-    rect(g, 0, 5, 1, 7, INK.saffron)
-    rect(g, 13, 5, 1, 7, INK.saffron)
   },
 }
