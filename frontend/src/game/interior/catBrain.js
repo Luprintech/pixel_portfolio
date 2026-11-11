@@ -43,7 +43,7 @@ export const NAV = createNav({
 const WANDER_POINTS = NAV.wanderPoints()
 
 // Pasos. `walk` camina hasta `to` (esquivando muebles), `hop` salta a `to` con una `z` de altura y `wait` se queda `ms`. `pose` es
-// lo que se dibuja; `meow` el maullido que suelta al empezar (0 corto, 1 largo e insistente, 2 agudo y contento); `face` hacia
+// lo que se dibuja; `meow` el maullido que suelta al empezar (0 corto de 8 bits, 1 largo e insistente, 2 agudo y contento, 3 curioso, 4 ronroneo con trino); `face` hacia
 // dónde se vuelve; `layer` dónde queda al acabar un salto (sobre el rascador, dentro de la caja o dentro del arenero, para dibujarla en su sitio).
 // `grab` y `carry` son coger la sardina y llevarla en la boca; `drop` es soltarla y `gift` que es el regalo para Atreus.
 const wait = (ms, pose, extra) => ({ kind: 'wait', ms, pose, ...extra })
@@ -87,12 +87,12 @@ const ACTIVITIES = {
   // anterior, antes la lleva a jugar a otro rincón de la sala.
   sardine: (cat) => {
     const { toy } = cat
-    const steps = [walk({ x: toy.x - 9, y: toy.y - 1 }, { meow: 0 }), wait(900, 'grab', { grab: true, face: 'right' })]
+    const steps = [walk({ x: toy.x - 9, y: toy.y - 1 }, { meow: 3 }), wait(900, 'grab', { grab: true, face: 'right' })]
     if (Math.hypot(toy.x - CAT_SPOTS.atreus.x, toy.y - CAT_SPOTS.atreus.y) < 40) {
       const centre = WANDER_POINTS.filter((p) => p.x > 200 && p.x < 440)
       steps.push(walk(pick(cat, centre), { carry: true }), wait(600, 'drop', { drop: true }), wait(3600, 'play'), wait(900, 'grab', { grab: true }))
     }
-    steps.push(walk(CAT_SPOTS.atreus, { carry: true, meow: 1 }), wait(2400, 'give', { drop: true, gift: true, meow: 2, again: { at: 1200, meow: 0 } }))
+    steps.push(walk(CAT_SPOTS.atreus, { carry: true, meow: 1 }), wait(2400, 'give', { drop: true, gift: true, meow: 2, again: { at: 1200, meow: 4 } }))
     return steps
   },
 }

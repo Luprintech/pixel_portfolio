@@ -5,7 +5,7 @@ import Editor from '../components/valle/Editor'
 import Joystick from '../components/valle/Joystick'
 import MusicControl from '../components/valle/MusicControl'
 import AchievementToast from '../components/valle/AchievementToast'
-import ConsoleGame from '../components/valle/ConsoleGame'
+import ArcadeMachine from '../components/valle/arcade/ArcadeMachine'
 import CustomizeButton from '../components/valle/CustomizeButton'
 import DialogueBox from '../components/valle/DialogueBox'
 import FiguresViewer from '../components/valle/FiguresViewer'
@@ -22,6 +22,7 @@ import ZoomControl from '../components/valle/ZoomControl'
 import { defaultLook, randomLook, selectBody } from '../game/look'
 import { DEFAULT_PET } from '../game/pet'
 import { PAL } from '../game/palette'
+import { MENU_THEME, gameById } from '../game/arcade/games'
 import { loadSave } from '../game/save'
 import { clockOffset, valleSkyAt } from '../game/valleSky'
 import { useThemeContext } from '../context/ThemeContext'
@@ -54,8 +55,6 @@ function nearLabel(near, copy) {
   return `${copy.hud.enter}: ${copy.zones[near]}`
 }
 
-// Lo que suena a la vez que cada actividad (ver `lib/chiptuneSongs.js`). Hoy la recreativa tiene un solo minijuego.
-const ARCADE_THEME = 'adventure'
 // El exterior (viento, lluvia, pájaros) llega más suave a través de las paredes, y casi nada con la minicadena sonando.
 const INDOOR_AMBIENCE = 0.35
 const MUSIC_AMBIENCE = 0.12
@@ -230,7 +229,9 @@ export default function Valle() {
   // Música de la casa: el director (`lib/musicDirector.js`) calla la pista de fondo cuando una actividad tiene la suya, para que
   // no haya dos a la vez, y la devuelve al salir. El ordenador cuenta mientras no esté minimizado: minimizado se vuelve a la casa.
   useEffect(() => startMusicDirector(), [])
-  const activity = zone === 'pc' && !pcMinimized ? 'pc' : zone === 'console' ? ARCADE_THEME : null
+  // La recreativa avisa de qué suena en cada momento (el selector o el juego en marcha; ver `lib/chiptuneSongs.js`).
+  const [arcadeTheme, setArcadeTheme] = useState(MENU_THEME)
+  const activity = zone === 'pc' && !pcMinimized ? 'pc' : zone === 'console' ? arcadeTheme : null
   useEffect(() => {
     setActivity(activity)
     return () => setActivity(null)
@@ -260,6 +261,9 @@ export default function Valle() {
     setZone(null)
     game?.events.emit('interior-action', { type: 'arcade-exit' })
   }, [game])
+  // Cada juego de la recreativa completado da su propio logro (el de la aventura es el de siempre, «retro»).
+  const unlockAchievement = achievements.unlock
+  const completeArcadeGame = useCallback((id) => unlockAchievement(gameById(id).achievement), [unlockAchievement])
   // La minicadena de la sala enseña si suena la música (la ponga ella o el Winamp del escritorio).
   useEffect(() => {
     if (!game) return undefined
@@ -439,7 +443,7 @@ export default function Valle() {
         {touch && status === 'ready' && !zone && !dialogue && !optionsOpen && !editing && <Joystick game={game} />}
         {zone === 'telescope' && !editing && <SkyView getSky={getSky} pastel={pastel} onClose={closeZone} />}
         {zone === 'pc' && !editing && <RetroDesktop onClose={closeZone} unlock={achievements.unlock} onMinimizedChange={setPcMinimized} />}
-        {zone === 'console' && !editing && <ConsoleGame onClose={closeArcade} onWin={() => achievements.unlock('retro')} />}
+        {zone === 'console' && !editing && <ArcadeMachine unlocked={achievements.unlocked} onClose={closeArcade} onComplete={completeArcadeGame} onTheme={setArcadeTheme} />}
         {zone === 'tv' && !editing && <SmartTv channel={tvChannel} onSelect={selectChannel} onClose={closeZone} />}
         {zone === 'printer' && !editing && <PrinterPanel job={game?.registry.get('printJob')} claimed={makerRewarded} onStart={startPrint} onClose={closeZone} />}
         {zone === 'figures' && !editing && <FiguresViewer unlocked={achievements.unlocked} onClose={closeZone} />}

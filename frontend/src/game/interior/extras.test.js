@@ -39,8 +39,8 @@ describe('Khalessi', () => {
     }
     ;['sit', 'walk', 'play', 'grab', 'give', 'eat', 'wash', 'scratch', 'sleep'].forEach((pose) => expect(seen.has(pose), pose).toBe(true))
     ;['scratcher', 'litter', 'box', null].forEach((layer) => expect(layers.has(layer), String(layer)).toBe(true))
-    // Tres maullidos distintos.
-    expect(new Set(meows)).toEqual(new Set([0, 1, 2]))
+    // Cuatro maullidos distintos, todos de gato (nunca el pitido de 8 bits mientras juega con la sardina).
+    expect(new Set(meows)).toEqual(new Set([1, 2, 3, 4]))
     // Nunca se queda sin camino.
     expect(cat.skipped).toBe(0)
   })
@@ -129,8 +129,8 @@ describe('logros', () => {
     expect(loadAchievements().size).toBe(0)
   })
 
-  it('hay cuatro: la impresora, la consola retro y los dos secretos del ordenador', () => {
-    expect(ACHIEVEMENT_IDS).toEqual(['maker', 'retro', 'hola', 'developer'])
+  it('hay seis: la impresora, los tres juegos de la recreativa y los dos secretos del ordenador', () => {
+    expect(ACHIEVEMENT_IDS).toEqual(['maker', 'retro', 'galactic', 'river', 'hola', 'developer'])
     expect(SECRET_IDS).toEqual(['hola', 'developer'])
     expect(unlockAchievement(new Set(), 'hola').isNew).toBe(true)
   })

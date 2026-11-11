@@ -116,6 +116,21 @@ describe('director de la música de la casa', () => {
     expect(start).toHaveBeenCalledTimes(2)
   })
 
+  it('en la recreativa, pasar del selector a un juego y volver cambia de canción sin devolver nunca la pista de fondo', () => {
+    setActivity('arcade')
+    quiet()
+    expect(live()).toEqual(['arcade'])
+    ;['galactic', 'arcade', 'river', 'arcade', 'adventure'].forEach((id) => {
+      setActivity(id)
+      expect(live()).toEqual([id])
+      expect(mocks.releases).toBe(0)
+    })
+    setActivity(null)
+    vi.advanceTimersByTime(200)
+    expect(live()).toEqual([])
+    expect(mocks.releases).toBe(1)
+  })
+
   it('cambiar de una actividad a otra deja una sola canción', () => {
     setActivity('pc')
     quiet()

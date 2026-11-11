@@ -17,7 +17,8 @@ const VOICES = {
 // Maullidos de Khalessi. El 0 es el corto de siempre (el saludo), de 8 bits como el resto del juego. El 1 y el 2 son los de la
 // sardina, un gato de verdad jugando: una voz de diente de sierra con vibrato, filtrada por un formante que se abre en mitad
 // del maullido (la "i" que se abre en "a" del "miau"). El 1 es el "miau" juguetón al llevársela; el 2, un "mrrp" más breve y
-// agudo al dejársela a Atreus. Todo con Web Audio, sin archivos.
+// agudo al dejársela a Atreus. El 3 es un "mrrp" curioso al ir a por ella y el 4 un ronroneo con trino mientras se la deja: con
+// la sardina nunca suena el pitido de 8 bits (variante 0), que queda para el saludo. Todo con Web Audio, sin archivos.
 const MEOW_SHORT = [
   { type: 'square', freq: 640, to: 1180, at: 0, length: 0.13, volume: 0.13 },
   { type: 'square', freq: 1180, to: 560, at: 0.13, length: 0.22, volume: 0.13 },
@@ -27,6 +28,8 @@ const MEOW_SHORT = [
 const NATURAL_MEOWS = {
   1: { from: 520, peak: 930, to: 600, length: 0.4, formant: [800, 1900, 1100], volume: 0.3 },
   2: { from: 700, peak: 1150, to: 880, length: 0.24, formant: [1000, 2000, 1500], volume: 0.26 },
+  3: { from: 560, peak: 980, to: 900, length: 0.2, formant: [900, 1800, 1400], volume: 0.24 },
+  4: { from: 300, peak: 380, to: 320, length: 0.55, formant: [600, 900, 700], volume: 0.22, vibrato: { rate: 30, depth: 55 } },
 }
 
 function playNaturalMeow(engine, spec) {
@@ -41,9 +44,9 @@ function playNaturalMeow(engine, spec) {
   voice.frequency.linearRampToValueAtTime(spec.to, end)
   // Vibrato: un temblor rápido y fino sobre el tono, que es lo que hace "viva" la voz.
   const vibrato = ctx.createOscillator()
-  vibrato.frequency.value = 26
+  vibrato.frequency.value = spec.vibrato?.rate ?? 26
   const depth = ctx.createGain()
-  depth.gain.value = 9
+  depth.gain.value = spec.vibrato?.depth ?? 9
   vibrato.connect(depth)
   depth.connect(voice.frequency)
   const formant = ctx.createBiquadFilter()
@@ -84,7 +87,7 @@ export function playBlip(engine, voice, char) {
   return true
 }
 
-// Maullido de Khalessi: `variant` elige entre el corto de siempre (0) y los dos de la sardina (1 y 2).
+// Maullido de Khalessi: `variant` elige entre el corto de siempre (0) y los cuatro de la sardina (1 a 4).
 export function playMeow(engine, variant = 0) {
   if (!engine) return false
   const natural = NATURAL_MEOWS[variant]

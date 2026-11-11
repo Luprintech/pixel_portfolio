@@ -106,7 +106,9 @@ describe('guiones de la casa', () => {
     expect(lineText('es', 'casa.entrada.1')).toContain('Yo soy Atreus')
     expect(lineText('xx', 'casa.khalessi.1')).toBe('meaw!')
     expect(optionText('en', 'casa.opt.setup')).toBe('The gaming room')
-    expect(DIALOGUE_COPY.es.lines['consolas.nintendo.1']).toContain('Nintendo 64, Game Boy Color, Nintendo 3DS y Wii')
+    expect(DIALOGUE_COPY.es.lines['consolas.nintendo.1']).toContain('Nintendo 64, Game Boy Color, Nintendo 3DS, Wii, GameCube y Nintendo Switch')
+    expect(DIALOGUE_COPY.es.lines['consolas.playstation.1']).toContain('PlayStation 1, 2, 3 y 4')
+    expect(DIALOGUE_COPY.es.lines['consolas.otras.1']).toBe('Y también tenemos una Xbox.')
     expect(DIALOGUE_COPY.es.lines['consolas.playstation.1']).toContain('PlayStation 1, 2, 3 y 4')
   })
 })
@@ -150,5 +152,22 @@ describe('voz', () => {
 
   it('la voz de Lupe es más aguda que la de Atreus', () => {
     expect(blipFrequency('lupe', 'a')).toBeGreaterThan(blipFrequency('atreus', 'a'))
+  })
+})
+
+describe('estantería: primeros recuerdos y recreativa', () => {
+  it('la opción lleva a dos páginas de Lupe con las frases del guion, y no se inventa ningún otro recuerdo', () => {
+    const talk = SCRIPTS['consolas.recuerdos']
+    expect(talk.pages.map((page) => page.who)).toEqual(['lupe', 'lupe'])
+    expect(DIALOGUE_COPY.es.lines['consolas.recuerdos.1']).toBe('La primera consola a la que jugué fue una Atari 2600. Todavía recuerdo juegos como Megamania y River Raid II.')
+    expect(DIALOGUE_COPY.es.lines['consolas.recuerdos.2']).toBe('De hecho, si te apetece probar algo parecido, tenemos una recreativa en casa. Acércate y echa una partida.')
+    expect(DIALOGUE_COPY.en.lines['consolas.recuerdos.1']).toContain('Atari 2600')
+  })
+
+  it('se puede elegir desde todas las páginas de la estantería, que mantienen sus opciones', () => {
+    ;['consolas.presentacion', 'consolas.nintendo', 'consolas.playstation', 'consolas.otras', 'consolas.recuerdos', 'consolas.repeticion'].forEach((id) => {
+      expect(SCRIPTS[id].options.map((option) => option.id), id).toEqual(['nintendo', 'playstation', 'otras', 'recuerdos', 'volver'])
+    })
+    expect(SCRIPTS['consolas.presentacion'].options.find((option) => option.id === 'recuerdos').to).toBe('consolas.recuerdos')
   })
 })

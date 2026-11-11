@@ -2,6 +2,7 @@
 // se sube `version` y se migra aquí, sin que el resto del código se entere.
 import { upgradeLook } from './look.js'
 import { DEFAULT_PET, upgradePet } from './pet.js'
+import { clearScores } from './arcade/scores.js'
 import { clearAchievements } from './achievements.js'
 import { clearSeen } from './dialogue/seen.js'
 import { sanitizeWorld } from './worldSave.js'
@@ -77,4 +78,6 @@ export function clearSave() {
   // Las conversaciones ya vistas son parte de la partida: borrarla vuelve a presentar a cada personaje.
   clearSeen()
   clearAchievements()
+  // Las mejores puntuaciones de la recreativa también son de la partida.
+  clearScores()
 }

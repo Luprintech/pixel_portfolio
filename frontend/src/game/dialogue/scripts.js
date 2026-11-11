@@ -26,6 +26,7 @@ const CONSOLE_MENU = [
   option('nintendo', 'consolas.opt.nintendo', { to: 'consolas.nintendo' }),
   option('playstation', 'consolas.opt.playstation', { to: 'consolas.playstation' }),
   option('otras', 'consolas.opt.otras', { to: 'consolas.otras' }),
+  option('recuerdos', 'consolas.opt.recuerdos', { to: 'consolas.recuerdos' }),
   option('volver', 'consolas.opt.volver', { close: true }),
 ]
 
@@ -61,6 +62,7 @@ export const SCRIPTS = {
   'consolas.nintendo': { pages: lines('lupe', 'consolas.nintendo', 2), options: CONSOLE_MENU },
   'consolas.playstation': { pages: lines('lupe', 'consolas.playstation', 1), options: CONSOLE_MENU },
   'consolas.otras': { pages: lines('lupe', 'consolas.otras', 1), options: CONSOLE_MENU },
+  'consolas.recuerdos': { pages: lines('lupe', 'consolas.recuerdos', 2), options: CONSOLE_MENU },
   'consolas.repeticion': { pages: lines('lupe', 'consolas.repeticion', 1), options: CONSOLE_MENU },
 
   'hifi.presentacion': { pages: lines('lupe', 'hifi.presentacion', 2), options: HIFI_MENU },

@@ -170,7 +170,9 @@ export const COPY = {
       secret: 'Logro secreto',
       items: {
         maker: { name: 'Primera impresión', desc: 'Imprime a Pikachu en la impresora A1 mini.' },
-        retro: { name: 'Aventurera retro', desc: 'Completa la aventura de la consola retro.' },
+        retro: { name: 'Aventurera retro', desc: 'Completa «La espada del Bucle» en la recreativa.' },
+        galactic: { name: 'Defensora galáctica', desc: 'Derrota al Nodo Maestro en «Invasión Galáctica».' },
+        river: { name: 'Piloto del río', desc: 'Aterriza tras el último puente en «Río en Peligro».' },
         hola: { name: 'Hola, mundo', desc: 'Escribe «Hola, mundo» en el Bloc de notas.' },
         developer: { name: 'Hello, Developer!', desc: 'Ejecuta la acción oculta del proyecto en Visual Studio Code.' },
       },
@@ -459,7 +461,9 @@ export const COPY = {
       secret: 'Secret achievement',
       items: {
         maker: { name: 'First print', desc: 'Print Pikachu on the A1 mini printer.' },
-        retro: { name: 'Retro adventurer', desc: 'Complete the retro console adventure.' },
+        retro: { name: 'Retro adventurer', desc: 'Complete «The Loop Sword» in the arcade.' },
+        galactic: { name: 'Galactic defender', desc: 'Defeat the Master Node in «Galactic Invasion».' },
+        river: { name: 'River pilot', desc: 'Land after the last bridge in «River in Danger».' },
         hola: { name: 'Hello, world', desc: 'Type «Hola, mundo» in Notepad.' },
         developer: { name: 'Hello, Developer!', desc: 'Run the hidden action of the project in Visual Studio Code.' },
       },

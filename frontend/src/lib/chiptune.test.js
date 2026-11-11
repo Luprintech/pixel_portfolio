@@ -1,12 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import { songEvents, voiceBeats } from './chiptune'
+import { GAMES, MENU_THEME } from '../game/arcade/games'
 import { THEMES } from './chiptuneSongs'
 
 describe('música retro de las actividades', () => {
-  it('hay una canción para el ordenador y otra para la aventura de la recreativa, distintas entre sí', () => {
-    expect(Object.keys(THEMES).sort()).toEqual(['adventure', 'pc'])
-    expect(THEMES.pc).not.toBe(THEMES.adventure)
-    expect(THEMES.pc.bpm).not.toBe(THEMES.adventure.bpm)
+  it('hay una canción para el ordenador, otra para el selector de la recreativa y una para cada juego, todas distintas', () => {
+    expect(Object.keys(THEMES).sort()).toEqual(['adventure', 'arcade', 'galactic', 'pc', 'river'])
+    const songs = Object.values(THEMES)
+    expect(new Set(songs).size).toBe(songs.length)
+    // Ninguna repite el mismo tempo con las mismas notas de melodía.
+    const tunes = songs.map((song) => JSON.stringify(song.voices[0].notes))
+    expect(new Set(tunes).size).toBe(tunes.length)
+  })
+
+  it('cada juego de la recreativa tiene canción propia y el selector también', () => {
+    GAMES.forEach((game) => expect(THEMES[game.theme], game.id).toBeTruthy())
+    expect(THEMES[MENU_THEME]).toBeTruthy()
+    expect(new Set([...GAMES.map((game) => game.theme), MENU_THEME]).size).toBe(GAMES.length + 1)
   })
 
   it('todas las voces de cada canción suman los mismos pulsos, así el bucle cierra sin saltos', () => {

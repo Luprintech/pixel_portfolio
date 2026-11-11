@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { printStepNotes } from '../lib/printerSound.js'
-import { RETRO_SOUNDS } from '../lib/retroSound.js'
+import { ARCADE_SOUNDS } from '../lib/arcadeSound.js'
 import { SIT_POSE, frameName } from './avatar/index.js'
 import { sitDown, standUp } from './sitting.js'
 import { DECK, nearRoofDoor } from './terrace.js'
@@ -70,9 +70,13 @@ describe('sonidos de la casa', () => {
     expect(falling.to).toBeLessThan(falling.freq)
   })
 
-  it('cada suceso del juego retro tiene su sonido', () => {
-    ;['swing', 'hit', 'kill', 'hurt', 'chest', 'pickup', 'door', 'locked', 'stairs', 'room', 'dialog', 'dead', 'win'].forEach((type) => {
-      expect(RETRO_SOUNDS[type], type).toBeTruthy()
+  it('cada suceso de los juegos de la recreativa tiene su sonido', () => {
+    const events = [
+      'swing', 'hit', 'kill', 'hurt', 'chest', 'pickup', 'door', 'locked', 'stairs', 'room', 'dialog', 'dead', 'win', 'block', 'push', 'plate', 'gate', 'checkpoint', 'phase', 'slam', 'spit', 'crystal', 'bossDown',
+      'shoot', 'boom', 'bigBoom', 'bonus', 'extra', 'shield', 'fuel', 'lowFuel', 'takeoff', 'land', 'bridge', 'crash', 'lose',
+    ]
+    events.forEach((type) => {
+      expect(ARCADE_SOUNDS[type], type).toBeTruthy()
     })
   })
 })
