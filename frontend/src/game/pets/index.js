@@ -1,8 +1,8 @@
 // Dibujo de la mascota de la viajera. La elección y su validación están en `../pet.js`.
-import { catCanvas, khalessiCanvas, khalessiScaredCanvas, khalessiSitCanvas } from './cats.js'
+import { catCanvas, khalessiCanvas, khalessiEatCanvas, khalessiScaredCanvas, khalessiSitCanvas, khalessiSleepCanvas } from './cats.js'
 import { dogCanvas } from './dogs.js'
 
-export { khalessiCanvas, khalessiScaredCanvas, khalessiSitCanvas }
+export { khalessiCanvas, khalessiEatCanvas, khalessiScaredCanvas, khalessiSitCanvas, khalessiSleepCanvas }
 
 // Sin mascota no hay dibujo: quien llama decide qué hacer con `null`. Cada raza tiene su propio
 // tamaño de lienzo.

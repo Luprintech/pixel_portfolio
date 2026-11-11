@@ -4,6 +4,7 @@
 // de luz).
 import { drawText, textWidth } from '../../pixelFont.js'
 import { INK, WOOD, rect, slab } from '../draw.js'
+import { ellipse } from '../../pixelKit.js'
 
 // Canales de la tele y su orden en la rejilla de la pantalla inteligente (`components/valle/SmartTv.jsx`).
 export const TV_CHANNELS = ['weather', 'netflix', 'plex', 'max', 'youtube']
@@ -181,5 +182,47 @@ export const coffeeTable = {
     rect(g, 22, 1, 5, 4, INK.white)
     rect(g, 27, 2, 1, 2, INK.white)
     rect(g, 23, 1, 3, 1, INK.tileDark)
+  },
+}
+
+// Lámpara de pie a la izquierda del sofá: pie y varilla finos y pantalla de tela. Con `E` se enciende (modo `on`): la
+// pantalla se llena de luz y en el suelo queda un charco cálido, a pasos duros como el resto del dibujo.
+const SHADE = { off: ['#e9dcc4', '#fbf1dc', '#c9b896'], on: ['#ffe9a8', '#fff6d2', '#f5c95c'] }
+
+function lampShade(g, mode) {
+  const [base, light, dark] = SHADE[mode]
+  for (let row = 0; row < 14; row++) {
+    const half = 5 + Math.floor(row / 3)
+    rect(g, 20 - half, row, half * 2, 1, row === 0 ? light : row === 13 ? dark : base)
+  }
+  rect(g, 20 - 5, 1, 1, 12, light)
+  rect(g, 20 + 4, 1, 1, 12, dark)
+}
+
+export const floorLamp = {
+  w: 40,
+  h: 54,
+  frames: 2,
+  ms: 1000,
+  modes: { off: [0], on: [1] },
+  body: [{ l: -4, t: -4, r: 4, b: 0 }],
+  paint(g, frame) {
+    const on = frame === 1
+    if (on) {
+      g.globalAlpha = 0.22
+      ellipse(g, 20, 50, 19, 3.5, INK.saffronLight)
+      g.globalAlpha = 0.3
+      ellipse(g, 20, 50, 12, 2.5, '#fff3c4')
+      g.globalAlpha = 1
+    }
+    lampShade(g, on ? 'on' : 'off')
+    rect(g, 19, 14, 2, 35, INK.steel)
+    rect(g, 19, 14, 1, 35, INK.steelLight)
+    rect(g, 16, 49, 8, 3, INK.slate)
+    rect(g, 16, 49, 8, 1, INK.slateLight)
+    if (on) {
+      rect(g, 17, 14, 6, 1, '#fff6d2')
+      rect(g, 18, 15, 4, 1, INK.saffronLight)
+    }
   },
 }

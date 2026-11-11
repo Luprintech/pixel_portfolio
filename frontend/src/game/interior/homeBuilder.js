@@ -2,12 +2,12 @@
 // Khalessi. La escena (`InteriorScene.js`) solo le pasa a quien se mueve y recibe los cuerpos sólidos; aquí no hay
 // lógica de movimiento ni de diálogos.
 import { DIRS, POSES, frameName, frameRect } from '../avatar/index.js'
-import { khalessiCanvas, khalessiSitCanvas } from '../pets/index.js'
+import { khalessiCanvas, khalessiEatCanvas, khalessiSitCanvas, khalessiSleepCanvas } from '../pets/index.js'
 import { makeCanvas, rect } from '../pixelKit.js'
 import { prefersReducedMotion } from '../../lib/reducedMotion.js'
 import { atreusBlink, atreusSheet } from './atreusSheet.js'
 import { FURNITURE, framesOf, furnitureCanvas, solidsOf } from './furniture/index.js'
-import { createCat, updateCat } from './catBrain.js'
+import { catDepth, createCat, updateCat } from './catBrain.js'
 import { ATREUS_BODY, FURNITURE_PLAN, NPC_PLAN } from './homeLayout.js'
 import { sardineCanvas } from './sardine.js'
 
@@ -132,7 +132,7 @@ function buildAtreus(scene, plan, addSolid) {
 }
 
 // La sardina según lo que haga la gata: en el suelo (con meneo si juega), subiendo a la boca al cogerla con un saltito, en la boca
-// mientras la lleva, o cayendo a los pies de Atreus al dársela. La boca está en el lado al que mira.
+// mientras la lleva, o cayendo al suelo al soltarla. La boca está en el lado al que mira.
 const lerp = (a, b, t) => a + (b - a) * t
 
 function placeToy(toy, cat, flip, beat) {
@@ -160,19 +160,47 @@ function placeToy(toy, cat, flip, beat) {
   toy.setPosition(x, y).setDepth(Math.round(Math.max(y, cat.toyPhase === 'ground' ? y : cat.y + 1))).setFlipX(flip).setAngle(angle)
 }
 
-// Khalessi (ver `catBrain.js`): descansa en su caja, sale a jugar con su sardina de peluche, se la lleva en la boca a Atreus
-// y la deja a sus pies maullando. Va entre las dos capas de la caja mientras está dentro y, fuera, con la profundidad de su fila.
-// `onMeow(variante)` avisa de cada maullido. Con «reducir movimiento» se queda sentada en la caja.
-function buildKhalessi(scene, plan, onMeow) {
+// Fotograma de Khalessi según su pose (la gata del dibujo mira a la derecha: se refleja al mirar a la izquierda). Mientras gira se
+// ve compacta (sentada). `tick` es el tiempo en milisegundos.
+function khalessiFrame(cat, tick) {
+  const beat = Math.floor(tick / 220) % 2
+  if (cat.turning > 0) return 'npc-khalessi-sit-0'
+  switch (cat.pose) {
+    case 'walk':
+      return `npc-khalessi-walk-${beat}`
+    case 'play':
+    case 'grab':
+    case 'give':
+    case 'drop':
+      return `npc-khalessi-walk-${Math.floor(tick / 160) % 2}`
+    case 'scratch':
+      return `npc-khalessi-walk-${Math.floor(tick / 110) % 2}`
+    case 'eat':
+      return `npc-khalessi-eat-${Math.floor(tick / 500) % 2}`
+    case 'wash':
+      return `npc-khalessi-wash-${beat}`
+    case 'sleep':
+      return `npc-khalessi-sleep-${Math.floor(tick / 1400) % 2}`
+    default:
+      return `npc-khalessi-sit-${Math.floor(tick / 800) % 2}`
+  }
+}
+
+// Khalessi (ver `catBrain.js`): pasea, come, usa el arenero, se asea, rasca, duerme en su caja y le lleva la sardina a
+// Atreus. Se dibuja con la profundidad de su fila (o justo sobre el mueble en que está subida o metida) y con la altura del salto.
+// `onMeow(variante)` avisa de cada maullido. Con «reducir movimiento» se queda dormida en su caja.
+function buildKhalessi(scene, onMeow) {
   ;[0, 1].forEach((step) => {
     addCanvas(scene, `npc-khalessi-sit-${step}`, khalessiSitCanvas(false, step))
     addCanvas(scene, `npc-khalessi-wash-${step}`, khalessiSitCanvas(true, step))
     addCanvas(scene, `npc-khalessi-walk-${step}`, khalessiCanvas(step, step))
+    addCanvas(scene, `npc-khalessi-eat-${step}`, khalessiEatCanvas(step))
+    addCanvas(scene, `npc-khalessi-sleep-${step}`, khalessiSleepCanvas(step))
   })
   addCanvas(scene, 'npc-sardine', sardineCanvas())
-  const sprite = scene.add.image(plan.x, plan.y - 3, 'npc-khalessi-sit-0').setOrigin(0.5, 1).setDepth(plan.y)
-  const toy = scene.add.image(0, 0, 'npc-sardine').setOrigin(0.5, 1)
   const cat = createCat()
+  const sprite = scene.add.image(cat.x, cat.y - cat.z, 'npc-khalessi-sleep-0').setOrigin(0.5, 1).setDepth(catDepth(cat))
+  const toy = scene.add.image(0, 0, 'npc-sardine').setOrigin(0.5, 1)
   const brain = { cat, sprite, toy }
   toy.setPosition(cat.toy.x, cat.toy.y).setDepth(cat.toy.y)
   if (prefersReducedMotion()) return brain
@@ -180,17 +208,10 @@ function buildKhalessi(scene, plan, onMeow) {
   const onUpdate = (_time, delta) => {
     tick += delta
     updateCat(cat, delta).forEach((event) => onMeow(event.variant))
-    const beat = Math.floor(tick / 220) % 2
-    // La gata del dibujo mira a la derecha: se refleja al mirar a la izquierda. Mientras gira se ve compacta (sentada).
     const flip = cat.face === 'left'
-    let key = `npc-khalessi-sit-${Math.floor(tick / 800) % 2}`
-    if (cat.turning > 0) key = 'npc-khalessi-sit-0'
-    else if (cat.pose === 'walk') key = `npc-khalessi-walk-${beat}`
-    else if (cat.pose === 'play' || cat.pose === 'grab' || cat.pose === 'give') key = `npc-khalessi-walk-${Math.floor(tick / 160) % 2}`
-    else if (cat.inBox && Math.floor(tick / 800) % 8 >= 5) key = `npc-khalessi-wash-${beat}`
-    sprite.setTexture(key).setFlipX(flip)
-    sprite.setPosition(cat.x, cat.inBox ? cat.y - 3 : cat.y).setDepth(cat.inBox ? plan.y : Math.round(cat.y))
-    placeToy(toy, cat, flip, beat)
+    sprite.setTexture(khalessiFrame(cat, tick)).setFlipX(flip)
+    sprite.setPosition(cat.x, cat.y - cat.z).setDepth(catDepth(cat))
+    placeToy(toy, cat, flip, Math.floor(tick / 220) % 2)
   }
   scene.events.on('update', onUpdate)
   scene.events.once('shutdown', () => scene.events.off('update', onUpdate))
@@ -233,13 +254,12 @@ function buildPrintMark(scene) {
 }
 
 // Monta todo y devuelve a Atreus y la exclamación para que la escena los gobierne. `addSolid(rect)` registra un cuerpo
-// sólido en la escena.
+// sólido en la escena y `onMeow(variante)` recibe los maullidos de la gata.
 export function buildHome(scene, pastel, addSolid, onMeow = () => {}) {
   const switches = buildFurniture(scene, pastel, addSolid)
   const atreusPlan = NPC_PLAN.find((npc) => npc.id === 'atreus')
-  const khalessiPlan = NPC_PLAN.find((npc) => npc.id === 'khalessi')
   const atreus = buildAtreus(scene, atreusPlan, addSolid)
-  const khalessi = buildKhalessi(scene, khalessiPlan, onMeow)
+  const khalessi = buildKhalessi(scene, onMeow)
   return { atreus, exclamation: buildExclamation(scene, atreus), switches, khalessi, printMark: buildPrintMark(scene) }
 }
 

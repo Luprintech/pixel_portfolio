@@ -29,7 +29,11 @@ export const WALL_X = { stairs: 38, atreusDesk: 116, consoleShelf: 204, arcade: 
 export const SPOTS = {
   sofa: { x: WALL_X.tv, y: 190 },
   coffeeTable: { x: WALL_X.tv, y: 140 },
+  lamp: { x: WALL_X.tv - 42, y: 188 },
   box: { x: 236, y: 176 },
+  scratcher: { x: 262, y: 172 },
+  bowls: { x: 262, y: 210 },
+  litter: { x: 222, y: 238 },
   printerA1: { x: 58, y: 256 },
   printerMini: { x: 122, y: 256 },
   makerShelf: { x: 176, y: 248 },
@@ -79,6 +83,7 @@ export const FURNITURE_PLAN = [
   { kind: 'coffeeTable', ...SPOTS.coffeeTable },
   { kind: 'sofa', ...SPOTS.sofa, dz: -0.5 },
   { kind: 'sofaFront', ...SPOTS.sofa, dz: 0.5 },
+  { kind: 'floorLamp', ...SPOTS.lamp },
   { kind: 'tallPlant', x: 418, y: 184 },
   // Rincón maker, abajo a la izquierda y por delante: dos impresoras Bambu Lab, la A1 (con el AMS arriba) y la A1 mini, y la
   // vitrina de las piezas ya impresas.
@@ -89,18 +94,16 @@ export const FURNITURE_PLAN = [
   // Zona de Khalessi: la caja de cartón (la capa de atrás, la gata y la capa de delante), el rascador, la comida y el arenero.
   { kind: 'boxBack', ...SPOTS.box, dz: -0.5 },
   { kind: 'boxFront', ...SPOTS.box, dz: 0.5 },
-  { kind: 'scratcher', x: 262, y: 172 },
-  { kind: 'catBowls', x: 262, y: 210 },
-  { kind: 'litterBox', x: 222, y: 238 },
+  { kind: 'scratcher', ...SPOTS.scratcher },
+  { kind: 'catBowls', ...SPOTS.bowls },
+  { kind: 'litterBox', ...SPOTS.litter },
 ]
 
-// Personajes de la sala. `facing` es hacia donde miran en reposo.
-export const NPC_PLAN = [
-  { id: 'atreus', x: 148, y: 106, facing: 'down' },
-  { id: 'khalessi', x: SPOTS.box.x, y: SPOTS.box.y - 1 },
-]
+// Personajes fijos de la sala. `facing` es hacia donde miran en reposo. Khalessi no está aquí: se mueve por toda la casa y
+// se rige por `catBrain.js`, que parte de su caja.
+export const NPC_PLAN = [{ id: 'atreus', x: 148, y: 106, facing: 'down' }]
 
-// Cuerpo sólido de Atreus, para que no se le atraviese. Khalessi no lo necesita: la caja en la que está ya es sólida.
+// Cuerpo sólido de Atreus, para que no se le atraviese. Khalessi no lo necesita: anda por donde no hay muebles (ver `catNav.js`).
 export const ATREUS_BODY = { l: -5, t: -4, r: 5, b: 0 }
 
 // Asientos de la casa. `x, y` es el sitio de los pies al sentarse (la viajera se queda en él, con las piernas tapadas),
@@ -124,6 +127,7 @@ export const ARCADE_FRONT = { x: WALL_X.arcade, y: 96, facing: 'up' }
 export const INTERACTIONS = [
   { id: 'atreus', anchor: { x: 148, y: 106 }, zones: [{ x: 124, y: 92, w: 50, h: 34 }] },
   { id: 'khalessi', anchor: { x: SPOTS.box.x, y: SPOTS.box.y + 10 }, zones: [{ x: 212, y: 164, w: 48, h: 30 }] },
+  { id: 'lamp', anchor: { x: SPOTS.lamp.x - 2, y: SPOTS.lamp.y + 10 }, zones: [{ x: SPOTS.lamp.x - 22, y: SPOTS.lamp.y + 4, w: 32, h: 14 }] },
   { id: 'shelf', anchor: { x: WALL_X.consoleShelf, y: 90 }, zones: [{ x: 178, y: 82, w: 54, h: 16 }] },
   { id: 'arcade', anchor: { x: ARCADE_FRONT.x, y: ARCADE_FRONT.y }, zones: [{ x: 250, y: 82, w: 32, h: 26 }] },
   { id: 'television', anchor: { x: WALL_X.tv, y: 92 }, zones: [{ x: 302, y: 82, w: 72, h: 18 }] },

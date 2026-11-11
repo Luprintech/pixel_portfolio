@@ -257,6 +257,24 @@ const sitSpec = (washing, step) => ({
 // `wash` activa el aseo; `step` (0 o 1) alterna los dos fotogramas del aseo o el vaivén de la cola.
 export const khalessiSitCanvas = (wash = false, step = 0) => drawPet(sitSpec(wash, step), KHALESSI, 0, step)
 
+// Khalessi durmiendo hecha un ovillo: el cuerpo ancho y bajo, la cabeza apoyada al frente con los ojos cerrados y la cola
+// tendida. `step` (0 o 1) alterna la respiración (el lomo sube un poco).
+const sleepSpec = (step) => ({
+  w: 26, h: 16,
+  body: { cx: 11, cy: 11.4 - step * 0.4, rx: 8, ry: 3.4 + step * 0.5 },
+  legs: { y: 14, h: 2 },
+  tail: { frames: TAIL_FLAT },
+  head: { rows: HEAD_EYES_SHUT, x: 1, y: 4, keys: KEYS },
+  post: whiskers,
+})
+
+export const khalessiSleepCanvas = (step = 0) => drawPet(sleepSpec(step), KHALESSI, 0, step)
+
+// Khalessi comiendo: de pie, con la cabeza baja hacia el cuenco. `step` mueve la cola.
+const eatSpec = { ...SPECS.comun, head: { ...SPECS.comun.head, y: 4 } }
+
+export const khalessiEatCanvas = (step = 0) => drawPet(eatSpec, KHALESSI, 0, step)
+
 export function catCanvas(breed, coat, marks, frame = 0, tail = 0) {
   const { spec, colors } = CAT_BREEDS[breed]
   return drawPet(spec, colors(coat, marks), frame, tail)

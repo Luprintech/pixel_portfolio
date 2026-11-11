@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BUILDINGS, TILE } from '../world.js'
 import { roomOf } from '../interiors.js'
-import { CAT_SEQUENCE, CAT_SPOTS } from './catBrain.js'
+import { CAT_SPOTS, NAV } from './catBrain.js'
 import { FURNITURE, solidsOf } from './furniture/index.js'
 import { ARCADE_FRONT, ATREUS_BODY, FURNITURE_PLAN, HOME_ID, INTERACTIONS, LUPE_TOWER_W, NPC_PLAN, ROOF_DOOR, SEATS, WALL_X, WINDOWS, homeRoom, interactionAt } from './homeLayout.js'
 
@@ -109,28 +109,22 @@ describe('plano de la casa de Lupe', () => {
 })
 
 describe('zona de Khalessi', () => {
-  // Los puntos por los que pasa la gata, en orden, empezando por la caja. Ella (un punto) no atraviesa ningún mueble salvo
-  // la caja, de la que sale por delante: se comprueba con dos píxeles de margen.
-  const route = [CAT_SPOTS.box, ...CAT_SEQUENCE.filter((step) => step.kind === 'walk').map((step) => step.to)]
-  const props = FURNITURE_PLAN.filter((piece) => !piece.kind.startsWith('box')).flatMap(solidsOf).concat(solids.slice(-1))
-  const inside = (x, y, margin) => props.some((s) => x > s.x - margin && x < s.x + s.w + margin && y > s.y - margin && y < s.y + s.h + margin)
+  // Los sitios a los que la gata camina (no los saltos: la caja y el arenero son sólidos) tienen que ser suelo libre y
+  // alcanzable desde delante de su caja.
+  const walkSpots = ['scratcherFront', 'boxFront', 'bowls', 'litterFront', 'atreus']
 
-  it('el recorrido de la gata hasta Atreus y de vuelta no cruza ningún mueble', () => {
-    route.slice(1).forEach((to, i) => {
-      const from = route[i]
-      for (let t = 0; t <= 1; t += 0.02) {
-        const x = from.x + (to.x - from.x) * t
-        const y = from.y + (to.y - from.y) * t
-        expect(inside(x, y, 2), `paso ${i + 1} en (${Math.round(x)}, ${Math.round(y)})`).toBe(false)
-      }
+  it('todos los sitios a los que camina son suelo libre y se llega a ellos desde su caja', () => {
+    walkSpots.forEach((name) => {
+      expect(NAV.free(CAT_SPOTS[name].x, CAT_SPOTS[name].y), `${name} libre`).toBe(true)
+      expect(NAV.path(CAT_SPOTS.boxFront, CAT_SPOTS[name]), `${name} alcanzable`).not.toBeNull()
     })
   })
 
-  it('la sardina cae a los pies de Atreus, fuera de la caja y de los muebles', () => {
-    const toy = CAT_SPOTS.toy
-    expect(inside(toy.x, toy.y, 2)).toBe(false)
-    const atreusSpot = CAT_SPOTS.atreus
-    expect(inside(atreusSpot.x + 6, atreusSpot.y + 2, 0)).toBe(false)
+  it('todos los sitios están dentro de la sala', () => {
+    Object.values(CAT_SPOTS).forEach(({ x, y }) => {
+      expect(x).toBeGreaterThan(16)
+      expect(y).toBeGreaterThan(64)
+    })
   })
 
   it('tiene su rascador, su comida y su arenero, y la caja', () => {

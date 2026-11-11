@@ -144,6 +144,7 @@ export default class InteriorScene extends Phaser.Scene {
     const { registry } = this.game
     this.switches.tvUnit?.set(registry.get('tvChannel') ?? 'off')
     this.switches.hifi?.set(jukebox.snapshot().playing ? 'on' : 'off')
+    this.switches.floorLamp?.set(registry.get('lampOn') ? 'on' : 'off')
     exclamation.setVisible(!this.seen.has(ENTRANCE))
     this.physics.add.collider(this.princess, this.solids)
   }
@@ -199,6 +200,7 @@ export default class InteriorScene extends Phaser.Scene {
     else if (SEAT_IDS.has(this.near)) this.sit(SEATS.find((seat) => seat.id === this.near))
     else if (this.near === 'standup') this.stand()
     else if (this.near === 'television') this.useTelevision()
+    else if (this.near === 'lamp' || this.near === 'lampOn') this.toggleLamp()
     else if (this.near === 'printerMini' || this.near === 'printerBusy') this.game.events.emit('enter', 'printer')
     else if (this.near === 'printerCollect') this.collectPrint()
     else if (this.near === 'arcade') this.game.events.emit('enter', 'console')
@@ -210,6 +212,13 @@ export default class InteriorScene extends Phaser.Scene {
   useTelevision() {
     if (this.seen.has(TELEVISION)) this.game.events.emit('enter', 'tv')
     else this.talk('television')
+  }
+
+  // La lámpara de pie: E la enciende o la apaga y la sala se acuerda al salir y volver a entrar.
+  toggleLamp() {
+    const on = !this.game.registry.get('lampOn')
+    this.game.registry.set('lampOn', on)
+    this.switches.floorLamp?.set(on ? 'on' : 'off')
   }
 
   // Lo que la página le pide a la sala: cambiar el canal de la tele (`null` la apaga), lanzar la impresión, encender y apagar la
@@ -361,8 +370,10 @@ export default class InteriorScene extends Phaser.Scene {
     this.frame = { moving, delta }
   }
 
-  // La impresora pequeña ofrece una cosa u otra según el trabajo: usarla, ver cómo va o recoger la figura terminada.
-  printerAction(id) {
+  // Lo que se ofrece con E cambia con el estado del mueble: la impresora pequeña (usarla, ver cómo va o recoger la figura
+  // terminada) y la lámpara (encender o apagar).
+  switchAction(id) {
+    if (id === 'lamp') return this.switches.floorLamp?.on ? 'lampOn' : id
     if (id !== 'printerMini') return id
     return this.printKind === 'done' ? 'printerCollect' : this.printKind === 'printing' ? 'printerBusy' : id
   }
@@ -401,7 +412,7 @@ export default class InteriorScene extends Phaser.Scene {
   // Khalessi fuera de la caja se puede saludar donde esté: cerca de ella, y no solo ante la caja.
   catNear(px, py) {
     const cat = this.cat?.cat
-    return Boolean(cat) && !cat.inBox && Math.hypot(px - cat.x, py - cat.y) < 22
+    return Boolean(cat) && cat.z < 8 && Math.hypot(px - cat.x, py - cat.y) < 22
   }
 
   // Lo que depende de dónde ha quedado la viajera va en `postupdate`, cuando la física ya movió el sprite
@@ -419,7 +430,7 @@ export default class InteriorScene extends Phaser.Scene {
     if (this.leaving) id = null
     else if (this.seat) id = this.seat.use ?? 'standup'
     else if (this.exitZone.contains(px, py)) id = EXIT_ID
-    else if (this.room.home) id = this.catNear(px, py) ? 'khalessi' : this.printerAction(interactionAt(px, py, this.facing))
+    else if (this.room.home) id = this.catNear(px, py) ? 'khalessi' : this.switchAction(interactionAt(px, py, this.facing))
     if (id !== this.near) {
       this.near = id
       this.game.events.emit('near', id)
