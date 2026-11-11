@@ -51,6 +51,18 @@
       document.documentElement.setAttribute('data-theme', theme);
       if (theme === 'dark') document.documentElement.classList.add('dark');
     })();
+    // Tema del juego (Aventura o Cozy) en la portada y el valle, que son las únicas rutas que lo usan: así el
+    // primer pintado ya lleva su fondo. Misma clave y valores que lib/gameTheme.js; GameThemeScope lo mantiene después.
+    (function () {
+      var path = location.pathname.replace(/\/+$/, '') || '/';
+      if (path !== '/' && path !== '/valle') return;
+      var game = 'aventura';
+      try {
+        var saved = localStorage.getItem('valle-del-bucle:game-theme');
+        if (saved === 'cozy') game = saved;
+      } catch (e) {}
+      document.documentElement.setAttribute('data-game-theme', game);
+    })();
   </script>
 
   <!-- El enlace de saltar al contenido está en el HTML estático y se vería un instante hasta que

@@ -37,11 +37,17 @@ La base visual del avatar está aprobada (2026-11-09): figura de 16×28 en un li
 
 Todos los colores viven como tokens en `frontend/src/index.css`; el juego usa los mismos valores en `game/palette.js`.
 
-Hay tres temas (`data-theme` en `<html>`, `context/ThemeContext.jsx`): **`valle`** (por defecto, pastel), **`dark`** (modo noche: el azul marino y el azafrán de antes) y `light` (hueso, heredado). El botón de tema de la barra alterna entre el valle y el modo noche. La elección solo se guarda si se pulsa el botón (clave `valle-del-bucle:theme`).
+Hay dos ejes de tema. El **tema del sitio** (`data-theme` en `<html>`, `context/ThemeContext.jsx`) tiene tres valores: **`valle`** (por defecto, pastel), **`dark`** (modo noche) y `light` (hueso, heredado). Gobierna el blog, el CMS y las páginas que no son el juego; su botón está en la barra del sitio y se guarda en `valle-del-bucle:theme`.
 
-### Tema valle (por defecto)
+El **tema del juego** (`data-game-theme` en `<html>`, `context/GameThemeContext.jsx`) existe solo en la portada y el valle y se elige en Opciones: **Aventura** (por defecto: el azul marino y el azafrán originales, paleta de `game/palette.js`) y **Cozy** (el pastel de la sección siguiente). Se guarda en `valle-del-bucle:game-theme`, se cambia en caliente sin reiniciar la partida y es independiente del tema del sitio; `/clasico` no lo recibe. Aventura usa los tokens del bloque oscuro de `index.css` y Cozy los del bloque valle, con la especificidad suficiente para ganar al tema del sitio dentro del juego.
 
-Lavanda, rosa empolvado, azul cielo y marfil, con texto y contornos en ciruela oscuro. La frambuesa se reserva para la acción principal y lo seleccionado; no se reparte por marcos, enlaces ni controles en reposo. Los valores viven como `--t-*` en el bloque `:root[data-theme="valle"]` de `index.css`.
+### Tema Aventura (por defecto en el juego)
+
+La paleta original de la tabla que sigue a la sección Cozy, sin mezcla de rosa pastel, frambuesa ni lavanda. Es lo que se ve en el juego si no hay una elección guardada.
+
+### Tema Cozy (el tema valle de antes)
+
+Lavanda, rosa empolvado, azul cielo y marfil, con texto y contornos en ciruela oscuro. La frambuesa se reserva para la acción principal y lo seleccionado; no se reparte por marcos, enlaces ni controles en reposo. Los valores viven como `--t-*` en el bloque valle de `index.css`, que sirve al tema del sitio `valle` y al tema del juego Cozy.
 
 | Nombre | Hex | Uso |
 | --- | --- | --- |
@@ -55,7 +61,7 @@ Lavanda, rosa empolvado, azul cielo y marfil, con texto y contornos en ciruela o
 
 Contrastes comprobados: ciruela sobre lavanda 9,6:1, frambuesa honda sobre lavanda 5,1:1, marfil sobre frambuesa 4,6:1, contorno de los sprites sobre el pistacho 11:1.
 
-**Cómo se usa en el código.** Las piezas que llevan colores en línea (creador, panel de zona, HUD, joystick) los piden con `tone('ink', PAL.ink)` (`lib/tone.js`): la variable del tema si existe y, si no (modo noche), el color de siempre. Las piezas compartidas (botones, enlaces, volumen, marcos, diálogos, campos) se tiñen en la sección "Tema valle" de `pixel.css`; la portada, en `title.css`. El paisaje de la portada y el prado de las escenas del creador se aclaran y suavizan en el propio dibujo (`game/titleSoften.js`), no con un filtro CSS, para que Lupe, Khalessi y las flores móviles conserven su color. El mapa del juego (`/valle`) sigue con su paleta.
+**Cómo se usa en el código.** Las piezas que llevan colores en línea (creador, panel de zona, HUD, joystick) los piden con `tone('ink', PAL.ink)` (`lib/tone.js`): la variable del tema si existe y, si no (modo noche), el color de siempre. Las piezas compartidas (botones, enlaces, volumen, marcos, diálogos, campos) se tiñen en la sección de tema pastel de `pixel.css`; la portada, en `title.css`. El paisaje de la portada y el prado de las escenas del creador se aclaran y suavizan en el propio dibujo (`game/titleSoften.js`), no con un filtro CSS, para que Lupe, Khalessi y las flores móviles conserven su color. El mapa del juego (`/valle`) se pinta con la paleta del tema del juego: la original en Aventura y la aclarada en Cozy.
 
 | Nombre | Hex | Uso |
 | --- | --- | --- |

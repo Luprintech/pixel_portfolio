@@ -1,7 +1,8 @@
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate, Outlet } from "react-router-dom";
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import { lazy, Suspense } from "react";
 import ProtectedRoute from "../components/cms/ProtectedRoute";
+import { GameThemeScope } from "../context/GameThemeContext";
 
 // Páginas del portfolio (lazy)
 const Title                  = lazy(() => import("../pages/Title"));
@@ -61,8 +62,12 @@ export default function AppRoutes() {
         <Routes location={location} key={location.pathname}>
 
           {/* Portfolio */}
-          <Route path="/" element={<Title />} />
-          <Route path="/valle" element={<Valle />} />
+          {/* El tema del juego (Aventura o Cozy) solo existe en la portada y el valle */}
+          {/* Con su propio Suspense, el tema ya está puesto mientras carga el chunk: la pantalla de carga sale en el tema elegido */}
+          <Route element={<GameThemeScope><Suspense fallback={<PageLoader />}><Outlet /></Suspense></GameThemeScope>}>
+            <Route path="/" element={<Title />} />
+            <Route path="/valle" element={<Valle />} />
+          </Route>
           <Route path="/cv" element={<Cv />} />
           {/* Sin Motion.div: el transform del envoltorio rompería el position: fixed de la barra original */}
           <Route path="/clasico" element={<Clasico />} />

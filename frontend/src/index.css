@@ -41,8 +41,11 @@
    --bg-code-header cabecera del bloque de código (siempre oscuro) */
 
 /* Tema oscuro */
+/* El mismo bloque es el tema "Aventura" del juego (data-game-theme, ver lib/gameTheme.js): el azul marino y el
+   azafrán originales. La especificidad extra le hace ganar al tema del sitio, sea cual sea. */
 :root,
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+:root[data-theme][data-game-theme="aventura"] {
   color-scheme: dark;
   --nav-height: 5rem;
   --section-gutter-x: clamp(1.25rem, 2vw, 2.5rem);
@@ -140,7 +143,10 @@
    oscuro. La frambuesa se reserva para la acción principal y lo seleccionado. El oscuro de siempre sigue
    disponible como modo noche (botón del menú). Contrastes comprobados: ciruela sobre lavanda 9,6:1, frambuesa
    honda sobre lavanda 5,1:1, marfil sobre frambuesa 4,6:1. */
-:root[data-theme="valle"] {
+/* También es el tema "Cozy" del juego. Dentro del juego en Aventura, el valle del sitio no debe filtrar sus
+   tokens (en especial --t-*, que solo existen aquí y son lo que pinta el pastel). */
+:root[data-theme="valle"]:not([data-game-theme="aventura"]),
+:root[data-theme][data-game-theme="cozy"] {
   color-scheme: light;
   --nav-height: 5rem;
   --section-gutter-x: clamp(1.25rem, 2vw, 2.5rem);

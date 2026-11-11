@@ -15,7 +15,7 @@ import { prefersReducedMotion } from '../lib/reducedMotion'
 import { playPetSound } from '../lib/petSounds'
 import { tone } from '../lib/tone'
 import { useValleCopy } from '../lib/valleCopy'
-import { useThemeContext } from '../context/ThemeContext'
+import { useGameTheme } from '../context/GameThemeContext'
 import '../title.css'
 
 
@@ -34,7 +34,7 @@ const isTouch = () => window.matchMedia?.('(pointer: coarse)').matches
 export default function Title() {
   const { copy } = useValleCopy()
   // El paisaje pastel (hierba y tierra aclaradas, cielo suave) solo se dibuja en el tema "valle".
-  const pastel = useThemeContext().theme === 'valle'
+  const { pastel } = useGameTheme()
   const canvasRef = useRef(null)
   const menuRef = useRef(null)
   const rootRef = useRef(null)

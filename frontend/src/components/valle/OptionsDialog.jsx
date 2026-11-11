@@ -6,6 +6,7 @@ import { useSoundPrefs } from '../../hooks/useSoundPrefs'
 import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
 import AchievementsList from './AchievementsList'
+import GameThemePicker from './GameThemePicker'
 import VolumeSlider from './VolumeSlider'
 
 // Todos los botones del diálogo miden lo mismo (`--ctl`, definido en el marco) y usan el mismo texto: antes cada
@@ -89,10 +90,10 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
             <button type="button" data-sound="back" className={`px-btn px-btn--bone mt-4 w-full sm:w-auto ${BTN}`} onClick={() => setView('main')}>{copy.options.back}</button>
           </div>
         ) : (
-        <div className="px-text mt-4 grid gap-x-8 gap-y-4 sm:mt-4 sm:gap-y-6 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_1fr] [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
+        <div className="px-text mt-4 grid gap-x-8 gap-y-4 sm:mt-4 sm:gap-y-6 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_auto_1fr] [@media(max-height:600px)]:mt-2 [@media(max-height:600px)]:gap-y-2">
           {/* El sonido ocupa todas las filas de su columna; la última (1fr) absorbe la altura que sobra,
               así los ajustes de la izquierda quedan pegados entre sí en vez de estirarse. */}
-          <section className="sm:col-start-2 sm:row-span-4 sm:row-start-1">
+          <section className="sm:col-start-2 sm:row-span-5 sm:row-start-1">
             <h3 className="text-sm" style={muted}>{copy.options.soundTitle}</h3>
             {/* En móvil y tablet el general son las teclas físicas del dispositivo */}
             <div className="px-volume-bar">
@@ -110,6 +111,10 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
           </section>
 
           <section className="sm:col-start-1 sm:row-start-1">
+            <GameThemePicker />
+          </section>
+
+          <section className="sm:col-start-1 sm:row-start-2">
             <h3 className="text-sm" style={muted}>{copy.options.saveTitle}</h3>
             {onSave && !asking && (
               <>
@@ -142,7 +147,7 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
           )}
 
           {install.available && (
-            <section className="sm:col-start-1 sm:row-start-2">
+            <section className="sm:col-start-1 sm:row-start-3">
               <h3 className="text-sm" style={muted}>{copy.options.installTitle}</h3>
               <p className="mt-1 text-xs leading-snug sm:text-sm [@media(max-height:600px)]:hidden">{copy.options.installHint}</p>
               <button type="button" className={`px-btn px-btn--bone mt-2 w-full ${BTN}`} onClick={installApp}>{copy.options.install}</button>

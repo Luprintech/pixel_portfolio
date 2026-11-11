@@ -53,7 +53,7 @@ export default class InteriorSky {
 
   // Un lienzo vivo por cristal, detrás de la imagen de la sala, y los travesaños y cortinas por delante.
   buildWindows() {
-    const { scene, room, pastel } = this
+    const { scene } = this
     WINDOWS.forEach((window) => {
       const key = `window-view:${window.id}`
       // El lienzo de cada cristal se conserva entre visitas: solo se vuelve a pintar.
@@ -61,9 +61,22 @@ export default class InteriorSky {
       const image = scene.add.image(window.x, window.y, key).setOrigin(0, 0).setDepth(DEPTH.view)
       this.views.push({ window, texture, image, stars: windowStars(window.w, window.h, window.x) })
     })
-    const barsKey = `window-bars:${pastel}`
-    if (!scene.textures.exists(barsKey)) scene.textures.addCanvas(barsKey, windowOverlayCanvas(room, pastel))
-    scene.add.image(0, 0, barsKey).setOrigin(0, 0).setDepth(DEPTH.bars)
+    this.bars = scene.add.image(0, 0, this.barsTexture()).setOrigin(0, 0).setDepth(DEPTH.bars)
+  }
+
+  // Los travesaños y cortinas del tema vigente: un dibujo por tema, que se conserva entre visitas.
+  barsTexture() {
+    const { scene, room, pastel } = this
+    const key = `window-bars:${pastel}`
+    if (!scene.textures.exists(key)) scene.textures.addCanvas(key, windowOverlayCanvas(room, pastel))
+    return key
+  }
+
+  // Cambio de tema con la viajera dentro: los travesaños pasan al tema nuevo y los cristales se vuelven a pintar ya.
+  setPastel(pastel) {
+    this.pastel = pastel
+    this.bars?.setTexture(this.barsTexture())
+    this.lastPaint = -Infinity
   }
 
   // Las luces decorativas: cada capa va a la profundidad del objeto al que está pegada (ver `ledLights.js`), así los

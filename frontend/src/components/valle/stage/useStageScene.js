@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useThemeContext } from '../../../context/ThemeContext'
+import { useGameTheme } from '../../../context/GameThemeContext'
 import { lightenWorld, softenCanvas } from '../../../game/titleSoften'
 import { paintMeadow } from './meadow'
 
@@ -18,7 +18,7 @@ export function useStageScene({ minCols, minRows, paint }) {
   const [size, setSize] = useState({ scale: 4, cols: minCols, rows: minRows })
   // En el tema valle el prado se aclara un poco y se suaviza, como el de la portada; la figura se dibuja
   // después y conserva su color.
-  const pastel = useThemeContext().theme === 'valle'
+  const { pastel } = useGameTheme()
 
   useEffect(() => {
     const box = boxRef.current

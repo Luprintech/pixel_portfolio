@@ -20,6 +20,7 @@ import { getStory, updateStory } from './story/storyStore.js'
 import { setTour, tourOnRoofEntry } from './story/story.js'
 import { registerSheet } from './sheetTexture.js'
 import { sitDown, standUp } from './sitting.js'
+import { GAME_THEME_COLOR, GAME_THEME_FADE, themeName } from '../lib/gameTheme.js'
 
 const SPEED = 90
 // Lo máximo que cambia la altura de los pies por fotograma al entrar en la escalera: más que la pendiente de la rampa.
@@ -57,6 +58,9 @@ export default class ValleScene extends Phaser.Scene {
     this.seat = null
     this.standFrom = null
     this.benches = []
+    // Dibujos del escenario que dependen del tema (clave y cómo pedirlos al tema vigente): son los que se vuelven a registrar al cambiarlo.
+    this.themed = []
+    this.replaced = null
   }
 
   create() {
@@ -98,11 +102,12 @@ export default class ValleScene extends Phaser.Scene {
     this.game.registry.events.on('changedata-locked', onLock)
     this.game.events.on('action', this.tryEnter, this)
     this.game.events.on('appearance', this.setAppearance, this)
+    this.game.events.on('theme', this.onTheme, this)
     this.game.events.on('zoom', this.stepZoom, this)
     this.events.on('wake', this.onWake, this)
     this.input.on('wheel', this.onWheel, this)
     // Entrar al valle: un fundido corto desde el color de la página en lugar de un corte.
-    cam.fadeIn(350, 220, 203, 240)
+    cam.fadeIn(350, ...GAME_THEME_FADE[themeName(this.pastel)])
     this.events.once('shutdown', () => {
       this.events.off('wake', this.onWake, this)
       this.input.off('wheel', this.onWheel, this)
@@ -110,6 +115,7 @@ export default class ValleScene extends Phaser.Scene {
       this.game.registry.events.off('changedata-locked', onLock)
       this.game.events.off('action', this.tryEnter, this)
       this.game.events.off('appearance', this.setAppearance, this)
+      this.game.events.off('theme', this.onTheme, this)
       this.game.events.off('zoom', this.stepZoom, this)
     })
   }
@@ -155,6 +161,7 @@ export default class ValleScene extends Phaser.Scene {
   addCanvas(key, canvas) {
     if (this.textures.exists(key)) this.textures.remove(key)
     this.textures.addCanvas(key, canvas)
+    this.replaced?.add(key)
   }
 
   // Dibujo del escenario ya preparado en `worldAssets` (paleta pastel incluida): se registra con sus
@@ -163,6 +170,36 @@ export default class ValleScene extends Phaser.Scene {
   addPrepared(key, set) {
     this.addCanvas(key, set.base)
     SEASONS.forEach((season) => set[season] && this.addCanvas(`${key}:${season}`, set[season]))
+  }
+
+  // Un dibujo del escenario que cambia con el tema. `assetsOf()` lo pide al tema vigente (`this.pastel`), así que al
+  // cambiarlo basta con volver a registrar todos los de `themed` (ver `applyTheme`).
+  addThemed(key, assetsOf) {
+    this.addPrepared(key, assetsOf())
+    this.themed = this.themed.filter((entry) => entry.key !== key).concat({ key, assetsOf })
+  }
+
+  // La página avisa de un cambio de tema (Opciones) con el juego en marcha. Los dibujos nuevos ya están preparados
+  // (`warmWorld` termina antes del aviso), así que el cambio es inmediato y la viajera no se mueve.
+  onTheme(pastel) {
+    if (!!pastel === this.pastel) return
+    this.applyTheme(!!pastel)
+  }
+
+  // Cambia el tema sin reiniciar la escena: las texturas se vuelven a registrar con la misma clave y las imágenes ya
+  // colocadas (suelo, árboles, edificios, estaciones...) apuntan a la nueva. Posición, hora, tiempo y personajes no se tocan.
+  applyTheme(pastel) {
+    this.pastel = pastel
+    this.replaced = new Set()
+    this.themed.forEach(({ key, assetsOf }) => this.addPrepared(key, assetsOf()))
+    // Las estaciones del suelo que aún se estaban preparando se piden ya para el tema nuevo.
+    this.groundPending = this.groundPending.map(([season]) => [season, groundSeasonJob(season, pastel)])
+    this.children.list.forEach((child) => {
+      const key = child.texture?.key
+      if (key && this.replaced.has(key)) child.setTexture(key)
+    })
+    this.replaced = null
+    this.cameras.main.setBackgroundColor(GAME_THEME_COLOR[themeName(pastel)])
   }
 
   // Imagen de un dibujo con sus versiones de estación apiladas encima, al mismo sitio y profundidad.
@@ -234,18 +271,18 @@ export default class ValleScene extends Phaser.Scene {
 
   buildTextures() {
     this.addTravellerSheet()
-    ;[0, 1, 2].forEach((v) => this.addPrepared(`tree-${v}`, treeAssets(v, this.pastel)))
+    ;[0, 1, 2].forEach((v) => this.addThemed(`tree-${v}`, () => treeAssets(v, this.pastel)))
     // Lupe, que acompaña a la viajera: la misma hoja del generador, compartida con los interiores.
     if (!this.textures.exists('npc-lupe')) registerSheet(this.textures, 'npc-lupe', characterSheet('lupe'))
     this.addCanvas('shadow', shadowSprite(14, 5))
     this.addCanvas('lamp-glow', lampGlowCanvas())
-    this.addPrepared('bridge', bridgeAssets(this.pastel))
+    this.addThemed('bridge', () => bridgeAssets(this.pastel))
   }
 
   // Para entrar solo hace falta la base del suelo. El otoño y el invierno se terminan de preparar mientras se
   // juega (porciones de unos 4 ms por fotograma, ver `advanceGroundSeasons`) y se añaden cuando están listos.
   buildGround() {
-    this.addCanvas('ground', groundBase(this.pastel))
+    this.addThemed('ground', () => ({ base: groundBase(this.pastel) }))
     this.placeScenery('ground', 0, 0, [0, 0], 0)
     this.groundPending = SEASONS.map((season) => [season, groundSeasonJob(season, this.pastel)])
   }
@@ -256,7 +293,7 @@ export default class ValleScene extends Phaser.Scene {
     while (this.groundPending.length && performance.now() - start < 4) {
       const [season, work] = this.groundPending[0]
       if (!work.step()) continue
-      this.addCanvas(`ground:${season}`, work.value)
+      this.addThemed(`ground:${season}`, () => ({ base: groundSeasonJob(season, this.pastel).get() }))
       this.sky.addSeason(season, this.add.image(0, 0, `ground:${season}`).setOrigin(0, 0).setDepth(0))
       this.groundPending.shift()
     }
@@ -282,9 +319,9 @@ export default class ValleScene extends Phaser.Scene {
   // se encienden de noche con una copia de los cristales que se pinta por encima del oscurecimiento.
   buildBuildings() {
     BUILDINGS.forEach((b, i) => {
-      const { sprite, set, overlay } = buildingAssets(b, this.pastel)
+      const { sprite, overlay } = buildingAssets(b, this.pastel)
       const key = `building-${b.id}`
-      this.addPrepared(key, set)
+      this.addThemed(key, () => buildingAssets(b, this.pastel).set)
       const px = b.door.x * TILE + TILE / 2 - sprite.doorCol
       const py = b.y * TILE
       // Cuerpo sólido: el muro del dibujo, del borde del tejado a su base. Arriba no puede quedarse en la mitad
@@ -297,7 +334,7 @@ export default class ValleScene extends Phaser.Scene {
       this.placeScenery(key, px, py, [0, 0], bodyBottom)
       if (b.terrace) {
         this.buildTerrace(px, py, bodyTop, bodyBottom, sprite.canvas.width)
-        if (overlay) this.addFrontRail(key, overlay, px, py)
+        if (overlay) this.addFrontRail(key, overlay, px, py, () => buildingAssets(b, this.pastel).overlay.set)
       } else this.solid(px + 2, bodyTop, sprite.canvas.width - 4, bodyBottom - bodyTop)
       this.addLitWindows(`${key}:lit`, sprite, px, py, i / (BUILDINGS.length - 1))
       if (sprite.glow) this.addGlow(`${key}:glow`, sprite.glow, px, py, i / (BUILDINGS.length - 1))
@@ -333,9 +370,9 @@ export default class ValleScene extends Phaser.Scene {
 
   // Pasamanos de la escalera y barandilla delantera de la cubierta: una imagen aparte, un nivel por encima de la viajera
   // cuando está arriba, para que suba y ande por detrás de ellos. Quien anda por el suelo queda siempre más abajo.
-  addFrontRail(key, overlay, px, py) {
+  addFrontRail(key, overlay, px, py, setOf) {
     const railKey = `${key}:front`
-    this.addPrepared(railKey, overlay.set)
+    this.addThemed(railKey, setOf)
     this.placeScenery(railKey, px + overlay.x, py + overlay.y, [0, 0], this.terrace.depth + 1)
   }
 
@@ -392,8 +429,8 @@ export default class ValleScene extends Phaser.Scene {
   buildProps() {
     PROPS.forEach((prop) => {
       const key = `prop-${prop.kind}-${prop.variant ?? 0}`
-      const { sprite, set } = propAssets(prop, this.pastel)
-      if (!this.textures.exists(key)) this.addPrepared(key, set)
+      const { sprite } = propAssets(prop, this.pastel)
+      if (!this.textures.exists(key)) this.addThemed(key, () => propAssets(prop, this.pastel).set)
       const px = prop.at[0] * TILE
       const py = prop.at[1] * TILE
       this.placeScenery(key, px, py, [0.5, 1], py)
@@ -515,7 +552,7 @@ export default class ValleScene extends Phaser.Scene {
       this.scene.launch('interior', { building: BUILDINGS.find((b) => b.id === id), pastel: this.pastel, from, guided })
       this.scene.sleep()
     })
-    cam.fadeOut(220, 220, 203, 240)
+    cam.fadeOut(220, ...GAME_THEME_FADE[themeName(this.pastel)])
   }
 
   sit(seat) {
@@ -547,7 +584,7 @@ export default class ValleScene extends Phaser.Scene {
     // Al salir de la casa, Lupe vuelve a su sitio fuera; si había visita en marcha queda hecha o pendiente según hasta dónde llegó.
     if (data?.home) this.npcs.leaveHome()
     this.fitCamera()
-    this.cameras.main.fadeIn(250, 220, 203, 240)
+    this.cameras.main.fadeIn(250, ...GAME_THEME_FADE[themeName(this.pastel)])
   }
 
   // Coloca a la viajera junto a la puerta de la derecha de la cubierta, mirando hacia la izquierda, como quien acaba de salir

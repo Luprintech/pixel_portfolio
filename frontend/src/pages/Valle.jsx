@@ -28,7 +28,7 @@ import { loadSave } from '../game/save'
 import { initialStory, reachNode, storyFeatures } from '../game/story/story'
 import { updateStory } from '../game/story/storyStore'
 import { clockOffset, valleSkyAt } from '../game/valleSky'
-import { useThemeContext } from '../context/ThemeContext'
+import { useGameTheme } from '../context/GameThemeContext'
 import { warmWorld } from '../game/worldAssets'
 import { useAchievements } from '../hooks/useAchievements'
 import { useJukebox } from '../hooks/useJukebox'
@@ -71,7 +71,7 @@ export default function Valle() {
   const [params] = useSearchParams()
   const mode = params.get('modo')
   // El tema se lee al entrar al valle, igual que el aspecto: dentro no hay botón para cambiarlo.
-  const pastel = useThemeContext().theme === 'valle'
+  const { pastel } = useGameTheme()
 
   // "Nueva aventura" abre el creador; "Continuar" va directa al valle, donde el botón "Personalizar aspecto"
   // vuelve a abrirlo.
@@ -209,6 +209,18 @@ export default function Valle() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started])
 
+  // El tema se cambia desde Opciones con el juego en marcha: cuando los dibujos del tema nuevo están listos, la escena los
+  // pone sin reiniciarse (la viajera, la hora y los personajes siguen donde estaban). Al crearse el juego el aviso llega con
+  // el tema con el que ya nació y la escena lo ignora.
+  useEffect(() => {
+    if (!game) return undefined
+    let cancelled = false
+    warmWorld(pastel).then(() => !cancelled && game.events.emit('theme', pastel))
+    return () => {
+      cancelled = true
+    }
+  }, [game, pastel])
+
   // El texto de carga solo sale si tarda (0,3 s): casi siempre el mundo ya está listo y no hay nada que mostrar.
   useEffect(() => {
     if (status !== 'loading' || !started) return undefined
@@ -267,6 +279,12 @@ export default function Valle() {
   useEffect(() => {
     game?.registry.set('locked', (!!zone && !(zone === 'pc' && pcMinimized)) || !!dialogue || optionsOpen)
   }, [game, zone, dialogue, optionsOpen, pcMinimized])
+
+  // Al abrir Opciones se adelanta el dibujo del otro tema, para que elegirlo se vea casi al instante.
+  useEffect(() => {
+    if (game && optionsOpen) warmWorld(!pastel)
+  }, [game, optionsOpen, pastel])
+
   useEffect(() => {
     if (zone !== 'pc') setPcMinimized(false)
   }, [zone])

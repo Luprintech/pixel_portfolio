@@ -15,7 +15,7 @@ export const TILE_BACKGROUND = tone('tile', PAL.moss)
 
 // La cruz de las opciones "sin nada" se dibuja en un canvas, que no lee variables CSS; en el valle va en
 // frambuesa honda (4,5:1 sobre el pistacho) y en modo noche en el rojo teja de siempre.
-export const crossColor = (theme) => (theme === 'valle' ? '#a30f4c' : PAL.tile)
+export const crossColor = (pastel) => (pastel ? '#a30f4c' : PAL.tile)
 
 export const pickShadow = (active, ring = 5) =>
   active

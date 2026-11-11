@@ -8,7 +8,8 @@ import { involvesLupe, talkFor } from './dialogue/scripts.js'
 import { loadSeen, markSeen } from './dialogue/seen.js'
 import InteriorLupe from './npc/InteriorLupe.js'
 import { getStory } from './story/storyStore.js'
-import { buildHome, faceTraveller } from './interior/homeBuilder.js'
+import { buildHome, faceTraveller, rethemeFurniture } from './interior/homeBuilder.js'
+import { GAME_THEME_FADE, themeName } from '../lib/gameTheme.js'
 import { ARCADE_FRONT, FACE_TO_SEAT, SEATS, interactionAt } from './interior/homeLayout.js'
 import InteriorSky from './interior/InteriorSky.js'
 import { jukebox } from '../lib/jukebox.js'
@@ -21,7 +22,6 @@ import { sitDown, standUp } from './sitting.js'
 const SPEED = 90
 // Lo que cambia el cuerpo físico sobre los pies: el mismo de la viajera en el valle.
 const FEET_BODY = 4
-const FADE = [220, 203, 240]
 // Tras cerrar un diálogo o un panel, durante este rato se ignora E: es la misma pulsación que lo cierra, y si no abriría
 // otra vez lo que acaba de cerrarse.
 const REOPEN_GUARD_MS = 250
@@ -78,9 +78,7 @@ export default class InteriorScene extends Phaser.Scene {
   create() {
     const room = roomOf(this.building)
     this.room = room
-    const key = `room:${this.building.id}:${this.pastel}`
-    if (!this.textures.exists(key)) this.textures.addCanvas(key, roomCanvas(room, this.pastel))
-    this.add.image(0, 0, key).setOrigin(0, 0).setDepth(0)
+    this.roomImage = this.add.image(0, 0, this.roomTexture()).setOrigin(0, 0).setDepth(0)
 
     const { bounds, spawn } = room
     const start = this.fromRoof && room.home ? ROOF_ARRIVAL : spawn
@@ -111,10 +109,11 @@ export default class InteriorScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.princess, true, 1, 1)
     this.cameras.main.setRoundPixels(false)
     this.fit()
-    this.cameras.main.fadeIn(250, ...FADE)
+    this.cameras.main.fadeIn(250, ...GAME_THEME_FADE[themeName(this.pastel)])
 
     this.scale.on('resize', this.fit, this)
     this.game.events.on('action', this.act, this)
+    this.game.events.on('theme', this.onTheme, this)
     this.game.events.on('interior-action', this.onDialogueAction, this)
     this.game.events.on('zoom', this.stepZoom, this)
     this.input.on('wheel', this.onWheel, this)
@@ -131,12 +130,30 @@ export default class InteriorScene extends Phaser.Scene {
       this.game.events.off('bubble-closed', this.onBubbleClosed, this)
       this.scale.off('resize', this.fit, this)
       this.game.events.off('action', this.act, this)
+      this.game.events.off('theme', this.onTheme, this)
       this.game.events.off('interior-action', this.onDialogueAction, this)
       this.game.events.off('zoom', this.stepZoom, this)
       this.input.off('wheel', this.onWheel, this)
       this.game.registry.events.off('changedata-travellerKey', this.retexture, this)
       this.game.registry.events.off('changedata-locked', this.onLock, this)
     })
+  }
+
+  // La sala del tema vigente: un dibujo por edificio y tema, que se conserva entre visitas.
+  roomTexture() {
+    const key = `room:${this.building.id}:${this.pastel}`
+    if (!this.textures.exists(key)) this.textures.addCanvas(key, roomCanvas(this.room, this.pastel))
+    return key
+  }
+
+  // La página avisa de un cambio de tema (Opciones) con la viajera dentro: sala, muebles y cristales pasan al tema nuevo
+  // sin reiniciar la escena, así que nadie se mueve ni se pierde lo que estaba pasando.
+  onTheme(pastel) {
+    if (!!pastel === this.pastel) return
+    this.pastel = !!pastel
+    this.roomImage.setTexture(this.roomTexture())
+    if (this.room.home) rethemeFurniture(this)
+    this.sky.setPastel(this.pastel)
   }
 
   // Muebles, personajes y colisiones de la casa de Lupe (el resto de salas no tiene nada de esto).
@@ -392,7 +409,7 @@ export default class InteriorScene extends Phaser.Scene {
       this.scene.stop()
       this.scene.wake('valle', { ...(to && { to }), home: !!this.room.home })
     })
-    this.cameras.main.fadeOut(220, ...FADE)
+    this.cameras.main.fadeOut(220, ...GAME_THEME_FADE[themeName(this.pastel)])
   }
 
   // La escalera de la casa lleva a la cubierta, donde sigue el telescopio de siempre.

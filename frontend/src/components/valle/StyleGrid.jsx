@@ -3,7 +3,7 @@ import { styleChoices } from '../../game/look'
 import { PAL } from '../../game/palette'
 import { tone } from '../../lib/tone'
 import { avatarCanvas } from '../../game/avatar/index.js'
-import { useThemeContext } from '../../context/ThemeContext'
+import { useGameTheme } from '../../context/GameThemeContext'
 import { CROSS, TILE_BACKGROUND, crossColor, pickShadow } from './pickStyle'
 
 // Recortes del sprite (18×34) para enseñar cada opción dibujada: qué parte del cuerpo se enseña. La
@@ -22,7 +22,7 @@ const NONE_VALUES = ['ninguno']
 // Cada opción se dibuja con el aspecto actual y solo cambia lo que representa, así se ve
 // exactamente cómo quedaría, y lleva su nombre debajo.
 function PixelTile({ look, field, value, view, active, label, name, onPick }) {
-  const { theme } = useThemeContext()
+  const { pastel } = useGameTheme()
   const ref = useRef(null)
   const { sx, sy, sw, sh } = VIEWS[view]
   useEffect(() => {
@@ -30,10 +30,10 @@ function PixelTile({ look, field, value, view, active, label, name, onPick }) {
     g.clearRect(0, 0, sw, sh)
     g.drawImage(avatarCanvas({ ...look, [field]: value }, 'down', 0), sx, sy, sw, sh, 0, 0, sw, sh)
     if (NONE_VALUES.includes(value)) {
-      g.fillStyle = crossColor(theme)
+      g.fillStyle = crossColor(pastel)
       CROSS.forEach(([x, y]) => g.fillRect(sw - 6 + x, 1 + y, 1, 1))
     }
-  }, [look, field, value, sx, sy, sw, sh, theme])
+  }, [look, field, value, sx, sy, sw, sh, pastel])
   return (
     <button
       type="button"

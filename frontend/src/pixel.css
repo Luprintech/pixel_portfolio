@@ -508,137 +508,139 @@
   }
 }
 
-/* Tema "valle" (por defecto, ver index.css): botones, enlaces, volumen, marcos y diálogos en pastel. En el
-   modo noche (data-theme dark) nada de esto se aplica y las piezas conservan el azul y el azafrán. */
+/* Tema pastel (index.css): botones, enlaces, volumen, marcos y diálogos. Se aplica en el valle del sitio y en el
+   tema Cozy del juego (data-game-theme); en Aventura, y en el modo noche del sitio, nada de esto se aplica y las
+   piezas conservan el azul y el azafrán. La selección va con :is(:where(...)) para que la regla pese lo mismo que
+   antes (un atributo y una clase) y no gane ni pierda frente a las demás. */
 /* Botones: la acción principal es frambuesa y los demás, marfil con contorno ciruela. */
-:root[data-theme='valle'] .px-btn {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn {
   color: var(--t-ivory);
   background: var(--t-berry);
 }
-:root[data-theme='valle'] .px-btn--bone {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn--bone {
   color: var(--t-ink);
   background: var(--t-ivory);
 }
 /* Al apuntarlos, el principal se tiñe de frambuesa suave y los marfil suben un tono; texto ciruela
    en todos (contraste > 5:1). */
-:root[data-theme='valle'] .px-btn:hover {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn:hover {
   color: var(--t-ink);
   background: var(--t-berry-soft);
 }
-:root[data-theme='valle'] .px-btn--bone:hover {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn--bone:hover {
   background: #f3e6cf;
 }
-:root[data-theme='valle'] .px-btn:active,
-:root[data-theme='valle'] .px-btn--bone:active {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn:active,
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn--bone:active {
   color: var(--t-ivory);
   background: var(--t-berry-deep);
 }
-:root[data-theme='valle'] .px-btn:focus-visible,
-:root[data-theme='valle'] .px-link:focus-visible,
-:root[data-theme='valle'] .px-range:focus-visible {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn:focus-visible,
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-link:focus-visible,
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range:focus-visible {
   outline-color: var(--t-berry-deep);
 }
-:root[data-theme='valle'] .px-link {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-link {
   color: var(--t-ink);
 }
-:root[data-theme='valle'] .px-link:hover {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-link:hover {
   color: var(--t-berry-deep);
 }
 
 /* Barra de volumen: carril lavanda claro y mando frambuesa. */
-:root[data-theme='valle'] .px-range::-webkit-slider-runnable-track {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range::-webkit-slider-runnable-track {
   background: var(--t-ivory);
 }
-:root[data-theme='valle'] .px-range::-moz-range-track {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range::-moz-range-track {
   background: var(--t-ivory);
 }
-:root[data-theme='valle'] .px-range::-webkit-slider-thumb {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range::-webkit-slider-thumb {
   background: var(--t-lavender-deep);
 }
-:root[data-theme='valle'] .px-range::-moz-range-thumb {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range::-moz-range-thumb {
   background: var(--t-lavender-deep);
 }
-:root[data-theme='valle'] .px-range:hover::-webkit-slider-thumb {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range:hover::-webkit-slider-thumb {
   background: var(--t-powder);
 }
-:root[data-theme='valle'] .px-range:hover::-moz-range-thumb {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range:hover::-moz-range-thumb {
   background: var(--t-powder);
 }
-:root[data-theme='valle'] .px-range:active::-webkit-slider-thumb,
-:root[data-theme='valle'] .px-range:focus-visible::-webkit-slider-thumb {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range:active::-webkit-slider-thumb,
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range:focus-visible::-webkit-slider-thumb {
   background: var(--t-berry);
 }
-:root[data-theme='valle'] .px-range:active::-moz-range-thumb,
-:root[data-theme='valle'] .px-range:focus-visible::-moz-range-thumb {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range:active::-moz-range-thumb,
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-range:focus-visible::-moz-range-thumb {
   background: var(--t-berry);
 }
 
 /* Telón de los diálogos en ciruela en lugar de azul noche. */
-:root[data-theme='valle'] .px-dialog::backdrop {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-dialog::backdrop {
   background: rgba(58, 28, 71, 0.72);
 }
 
 /* Campo de texto del creador: marfil con contorno ciruela y un segundo contorno lavanda. */
-:root[data-theme='valle'] .px-input {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-input {
   color: var(--t-ink);
   background: var(--t-ivory);
   box-shadow: 0 0 0 3px var(--t-ink), 0 0 0 5px var(--t-lavender-deep);
 }
-:root[data-theme='valle'] .px-input::placeholder {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-input::placeholder {
   color: var(--t-muted);
 }
-:root[data-theme='valle'] .px-check {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-check {
   box-shadow: 0 0 0 3px var(--t-ink), 0 0 0 5px var(--t-lavender-deep);
 }
-:root[data-theme='valle'] .px-check:checked {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-check:checked {
   box-shadow: inset 0 0 0 4px var(--t-ivory), 0 0 0 3px var(--t-ink), 0 0 0 5px var(--t-lavender-deep);
 }
 
 /* Interruptor y casilla del diálogo de opciones: marcados en frambuesa. */
-:root[data-theme='valle'] .px-switch[aria-checked='true'] .px-switch__track,
-:root[data-theme='valle'] .px-check:checked {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-switch[aria-checked='true'] .px-switch__track,
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-check:checked {
   background: var(--t-berry);
 }
-:root[data-theme='valle'] .px-switch__thumb {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-switch__thumb {
   background: var(--t-ink);
 }
-:root[data-theme='valle'] .px-switch[aria-checked='true'] .px-switch__thumb {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-switch[aria-checked='true'] .px-switch__thumb {
   background: var(--t-ivory);
 }
 
 /* Bocadillos: marfil con contorno ciruela. */
-:root[data-theme='valle'] .px-bubble {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-bubble {
   background: var(--t-ivory);
   color: var(--t-ink);
   box-shadow: 0 0 0 2px var(--t-ink), 0 4px 0 2px var(--t-ink);
 }
-:root[data-theme='valle'] .px-bubble::after {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-bubble::after {
   border-right-color: var(--t-ink);
   border-bottom-color: var(--t-ink);
 }
 
 /* Pulido: un solo marco de ciruela en el menú, sin anillo interior. */
-:root[data-theme='valle'] .px-frame {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-frame {
   box-shadow: 0 0 0 3px var(--t-ink), 0 5px 0 3px var(--t-ink);
 }
 
 /* Botones con contorno de 2 px y sombra de 4: el contorno pixel se mantiene, pesa menos. */
-:root[data-theme='valle'] .px-btn {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn {
   box-shadow: 0 0 0 2px var(--t-ink), 0 4px 0 2px var(--t-ink);
 }
-:root[data-theme='valle'] .px-btn:active {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn:active {
   transform: translateY(3px);
   box-shadow: 0 0 0 2px var(--t-ink), 0 1px 0 2px var(--t-ink);
 }
 
 /* Los títulos de píxel en tinta oscura no llevan sombra: con ella el trazo se empasta. */
-:root[data-theme='valle'] .px-title {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-title {
   text-shadow: none;
 }
 
 /* Tarjetas del creador: una línea fina de ciruela separa el dibujo (pistacho) de la etiqueta (marfil),
    que sin ella se funden (1,56:1). */
-:root[data-theme='valle'] .px-pick .px-tile {
+:root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-pick .px-tile {
   border-bottom: 2px solid var(--t-ink);
 }
 

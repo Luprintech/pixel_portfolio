@@ -20,16 +20,33 @@ const furnitureKey = (kind, frame, pastel) => `furn:${kind}:${frame}:${pastel}`
 
 // Muebles: una imagen por pieza, con la base como origen y esa fila como profundidad (quien pase por delante, tapa; por
 // detrás, queda tapado). Los que tienen fotogramas cambian de textura con su propio temporizador, salvo con movimiento reducido.
+// Registra los fotogramas de todos los muebles para un tema (si ya están, no se repiten).
+function registerFurniture(scene, pastel) {
+  FURNITURE_PLAN.forEach((piece) => {
+    for (let f = 0; f < framesOf(piece.kind); f++) addCanvas(scene, furnitureKey(piece.kind, f, pastel), furnitureCanvas(piece.kind, f, pastel))
+  })
+}
+
+// Con la viajera dentro, el tema cambia sin reiniciar la sala: los muebles pasan a las texturas del tema nuevo en el
+// fotograma en que estaban. Las animaciones leen `scene.pastel` en cada cambio, así que siguen sin cortarse.
+export function rethemeFurniture(scene) {
+  registerFurniture(scene, scene.pastel)
+  scene.children.list.forEach((child) => {
+    const match = child.texture?.key.match(/^furn:(.+):(\d+):(?:true|false)$/)
+    if (match) child.setTexture(furnitureKey(match[1], Number(match[2]), scene.pastel))
+  })
+}
+
 function buildFurniture(scene, pastel, addSolid) {
   const still = prefersReducedMotion()
+  registerFurniture(scene, pastel)
   // Muebles con modos (la tele, la minicadena, la impresora pequeña): se devuelven para que la sala los cambie.
   const switches = {}
   FURNITURE_PLAN.forEach((piece) => {
     const frames = framesOf(piece.kind)
-    for (let f = 0; f < frames; f++) addCanvas(scene, furnitureKey(piece.kind, f, pastel), furnitureCanvas(piece.kind, f, pastel))
     const sprite = scene.add.image(piece.x, piece.y, furnitureKey(piece.kind, 0, pastel)).setOrigin(0.5, 1).setDepth(piece.y + (piece.dz ?? 0))
     if (FURNITURE[piece.kind].modes) {
-      switches[piece.kind] = modeFor(scene, sprite, piece.kind, pastel, still)
+      switches[piece.kind] = modeFor(scene, sprite, piece.kind, still)
     } else if (frames > 1 && !still) {
       // El orden de los fotogramas es el del dibujo salvo que el mueble declare su propia secuencia (las impresoras repiten
       // unos y se detienen en otros).
@@ -42,7 +59,7 @@ function buildFurniture(scene, pastel, addSolid) {
         loop: true,
         callback: () => {
           step = (step + 1) % order.length
-          sprite.setTexture(furnitureKey(piece.kind, order[(step + offset) % order.length], pastel))
+          sprite.setTexture(furnitureKey(piece.kind, order[(step + offset) % order.length], scene.pastel))
         },
       })
     }
@@ -53,11 +70,11 @@ function buildFurniture(scene, pastel, addSolid) {
 
 // Modos de un mueble (`modes` en el catálogo): cada uno es una lista de fotogramas que se alternan cada `ms`, o uno solo
 // si no hay animación. `set(modo)` cambia de modo; `mode` es el actual. El primero que declara el mueble es el de partida.
-function modeFor(scene, sprite, kind, pastel, still) {
+function modeFor(scene, sprite, kind, still) {
   const { modes, ms } = FURNITURE[kind]
   let mode = Object.keys(modes)[0]
   let timer = null
-  const show = (frame) => sprite.setTexture(furnitureKey(kind, frame, pastel))
+  const show = (frame) => sprite.setTexture(furnitureKey(kind, frame, scene.pastel))
   const api = {
     get mode() {
       return mode

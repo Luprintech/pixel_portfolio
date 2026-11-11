@@ -5,7 +5,7 @@ import { tone } from '../../lib/tone'
 import { petCanvas } from '../../game/pets'
 import ColorRow from './ColorRow'
 import FieldGroup from './FieldGroup'
-import { useThemeContext } from '../../context/ThemeContext'
+import { useGameTheme } from '../../context/GameThemeContext'
 import { CROSS, TILE_BACKGROUND, crossColor, pickShadow } from './pickStyle'
 
 // Caja común de las tarjetas: cabe la raza más grande, y cada animal se apoya abajo y centrado,
@@ -15,7 +15,7 @@ const BOX_W = 32
 const BOX_H = 20
 
 function PetTile({ pet, active, label, name, onPick }) {
-  const { theme } = useThemeContext()
+  const { pastel } = useGameTheme()
   const ref = useRef(null)
   useEffect(() => {
     const g = ref.current.getContext('2d')
@@ -24,10 +24,10 @@ function PetTile({ pet, active, label, name, onPick }) {
     if (sprite) {
       g.drawImage(sprite, Math.floor((BOX_W - sprite.width) / 2), BOX_H - sprite.height)
     } else {
-      g.fillStyle = crossColor(theme)
+      g.fillStyle = crossColor(pastel)
       CROSS.forEach(([x, y]) => g.fillRect(BOX_W / 2 - 2 + x, BOX_H / 2 - 2 + y, 1, 1))
     }
-  }, [pet, theme])
+  }, [pet, pastel])
   return (
     <button
       type="button"
