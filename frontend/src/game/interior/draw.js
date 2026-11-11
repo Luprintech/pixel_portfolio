@@ -31,6 +31,9 @@ export const INK = {
   twitch: '#8f5fe8',
 }
 export const WOOD = TONE.wood
+// El mismo reparto de tonos que `WOOD` (de más oscuro a más claro) para los muebles blancos de la casa: estanterías y mesas del
+// rincón maker.
+export const WHITE_FURNITURE = ['#b3aa97', INK.whiteShade, INK.white, '#ffffff']
 
 // Con el tema pastel todo lo que se dibuja se aclara igual que el resto del valle (mismo `tint` que la sala y el
 // escenario). Se aplica a la pieza ya terminada, así los dibujos usan siempre los colores base.
@@ -136,15 +139,18 @@ export function pageScreen(g, x, y, w, h, frame) {
   rect(g, x + 1, y + h - 2, 5, 1, INK.tile)
 }
 
-// Monitor de frente: marco oscuro, pantalla y peana. (x, y) es la esquina superior izquierda del marco; el pie
-// ocupa tres filas bajo él.
-export function monitor(g, x, y, w, h, paintScreen) {
-  rect(g, x, y, w, h, INK.night)
-  rect(g, x, y, w, 1, INK.slateLight)
+// Monitor de frente: marco, pantalla y peana. (x, y) es la esquina superior izquierda del marco; el pie ocupa tres filas bajo
+// él. `look` cambia la carcasa: por defecto oscura; la blanca (`WHITE_MONITOR`) es la del setup de Atreus.
+export const WHITE_MONITOR = { bezel: INK.white, edge: '#ffffff', shade: INK.whiteShade, stand: INK.whiteShade }
+const DARK_MONITOR = { bezel: INK.night, edge: INK.slateLight, shade: INK.night, stand: INK.slate }
+
+export function monitor(g, x, y, w, h, paintScreen, look = DARK_MONITOR) {
+  rect(g, x, y, w, h, look.bezel)
+  rect(g, x, y, w, 1, look.edge)
   paintScreen(g, x + 1, y + 1, w - 2, h - 3)
-  rect(g, x + 1, y + h - 2, w - 2, 1, INK.night)
-  rect(g, x + Math.floor(w / 2) - 1, y + h, 2, 2, INK.slate)
-  rect(g, x + Math.floor(w / 2) - 4, y + h + 2, 8, 1, INK.slate)
+  rect(g, x + 1, y + h - 2, w - 2, 1, look.shade)
+  rect(g, x + Math.floor(w / 2) - 1, y + h, 2, 2, look.stand)
+  rect(g, x + Math.floor(w / 2) - 4, y + h + 2, 8, 1, look.stand)
 }
 
 // Teclado visto desde delante: base oscura y filas de teclas claras; `keys` y `base` cambian el color.

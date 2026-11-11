@@ -8,7 +8,7 @@
 // espalda tienen dibujo propio; el perfil izquierdo es el derecho reflejado, salvo en lo que no es
 // simétrico (guiño, rapado, lazo y flor), que se dibuja desde el lado que enseña.
 import { COLS, EMPTY, FIGURE_ROWS, MARGIN, createGrid, painter } from './grid.js'
-import { stance } from './stance.js'
+import { SIT_POSE, stance } from './stance.js'
 import { paintArms } from './parts/arms.js'
 import { paintTop } from './parts/body.js'
 import { dressHair } from './parts/accessories.js'
@@ -71,7 +71,9 @@ export function composeAvatar(look, dir = 'down', pose = 0) {
   const hair = dressHair(look, ctx, hairCells(look.hairStyle, view, ctx))
 
   head.cells(hair.back)
-  paintLegs(ground, ctx)
+  // Sentada y de espaldas las piernas quedan delante, bajo la mesa y tapadas por el asiento: no se ven. Pintarlas dejaba unas
+  // botas asomando bajo la silla que hacían parecer que estaba de pie sobre ella.
+  if (!(view === 'up' && pose === SIT_POSE)) paintLegs(ground, ctx)
   paintHips(upper, ctx)
   const sleeve = paintTop(upper, ctx)
   // La melena larga de perfil cae sobre la espalda: por encima del torso y por debajo del brazo.

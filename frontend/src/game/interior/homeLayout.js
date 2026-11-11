@@ -9,7 +9,7 @@
 //   4. Lupe (setup de trabajo), en la esquina derecha del fondo.
 //   5. Impresión 3D (dos Bambu Lab y la vitrina de piezas), abajo a la izquierda y por delante. Las impresoras están
 //      adelantadas unos píxeles respecto a la vitrina, sin llegar a la zona gaming de Atreus.
-//   6. Khalessi (rascador, comedero y arenero), pegada a la pared derecha, bajo la zona de Lupe.
+//   6. Khalessi (caja, rascador, comedero y arenero), pegada a la pared derecha, bajo la zona de Lupe.
 import { TILE } from '../world.js'
 
 export const HOME_ID = 'about'
@@ -23,20 +23,22 @@ export const WALL_BASE = 80
 
 // Columna central de cada mueble de la pared del fondo, de izquierda a derecha. La decoración de la pared y las luces
 // led leen estas cifras para quedar siempre sobre su mueble.
-export const WALL_X = { stairs: 38, atreusDesk: 116, consoleShelf: 204, arcade: 266, tv: 338, hifi: 402, lupeDesk: 474 }
+export const WALL_X = { stairs: 38, atreusDesk: 116, consoleShelf: 204, arcade: 266, tv: 338, hifi: 396, lupeDesk: 474 }
 
 // Sitios de los muebles del suelo que otras piezas (zonas, cámara, decoración) necesitan conocer.
 export const SPOTS = {
   sofa: { x: WALL_X.tv, y: 198 },
   coffeeTable: { x: WALL_X.tv, y: 148 },
   lamp: { x: WALL_X.tv - 42, y: 196 },
-  // Rincón de Khalessi, contra la pared derecha y bajo la mesa de Lupe: rascador arriba, comedero en medio y arenero abajo.
+  // Rincón de Khalessi, contra la pared derecha y bajo la mesa de Lupe: la caja de cartón a la izquierda, el rascador arriba, el
+  // comedero en medio y el arenero abajo.
+  box: { x: 452, y: 186 },
   scratcher: { x: 494, y: 166 },
   bowls: { x: 490, y: 202 },
   litter: { x: 480, y: 238 },
-  printerA1: { x: 58, y: 260 },
-  printerMini: { x: 122, y: 260 },
-  makerShelf: { x: 176, y: 248 },
+  printerA1: { x: 58, y: 220 },
+  printerMini: { x: 122, y: 220 },
+  makerShelf: { x: 176, y: 208 },
 }
 
 // La torre del PC de Lupe va pegada a la izquierda de su mesa, dentro del mismo dibujo: la mesa mide 14 píxeles más y su
@@ -63,7 +65,7 @@ export const WINDOWS = [
   },
 ]
 
-// `dz` ajusta el orden de dibujo respecto a otros elementos de la misma base (las sillas y el sofá van en dos capas).
+// `dz` ajusta el orden de dibujo respecto a otros elementos de la misma base (las sillas, el sofá y la caja de Khalessi van en dos capas).
 export const FURNITURE_PLAN = [
   // Pared del fondo, de izquierda a derecha: escalera a la azotea (como la escalera exterior), mesa de Atreus, estantería de
   // consolas, recreativa, tele, minicadena y mesa de Lupe.
@@ -91,6 +93,8 @@ export const FURNITURE_PLAN = [
   { kind: 'printerMini', ...SPOTS.printerMini },
   { kind: 'makerShelf', ...SPOTS.makerShelf },
   // Zona de Khalessi: la caja de cartón (la capa de atrás, la gata y la capa de delante), el rascador, la comida y el arenero.
+  { kind: 'boxBack', ...SPOTS.box, dz: -0.5 },
+  { kind: 'boxFront', ...SPOTS.box, dz: 0.5 },
   { kind: 'scratcher', ...SPOTS.scratcher },
   { kind: 'catBowls', ...SPOTS.bowls },
   { kind: 'litterBox', ...SPOTS.litter },
@@ -104,16 +108,40 @@ export const NPC_PLAN = [{ id: 'atreus', x: 148, y: 106, facing: 'down' }]
 // Cuerpo sólido de Atreus, para que no se le atraviese. Khalessi no lo necesita: anda por donde no hay muebles (ver `catNav.js`).
 export const ATREUS_BODY = { l: -5, t: -4, r: 5, b: 0 }
 
-// Asientos de la casa. `x, y` es el sitio de los pies al sentarse (la viajera se queda en él, con las piernas tapadas),
-// `depth` el orden de dibujo (un poco por delante del mueble), `zone` el suelo desde el que se ofrece sentarse y `use` lo
-// que se hace con E estando sentada: abrir el ordenador o encender la tele. Sin `use`, E levanta.
+// Asientos de la casa. `x, y` es el sitio de los pies al sentarse (la viajera se queda en él, con las piernas tapadas), `facing`
+// hacia dónde mira sentada y `depth` el orden de dibujo (entre las dos capas del mueble). Se entra por delante del asiento, por
+// el lado al que mira: `zone` es el suelo desde el que se ofrece sentarse, `anchor` desempata entre dos zonas y `exit` el sitio
+// libre en el que aparece la viajera al levantarse. Todas las sillas y el sofá miran a su mesa o a la tele, al norte, así que
+// la entrada está entre el asiento y esa mesa y hay que mirar hacia el sur, hacia el asiento. `use` es lo que se hace con E
+// estando sentada: abrir el ordenador o encender la tele. Sin `use`, E levanta.
 const SOFA = SPOTS.sofa
+// `y` es la fila de la base del dibujo de la viajera sentada, que de espaldas no lleva piernas: se elige para que sus hombros
+// queden justo por encima del respaldo (el tablón de delante del sofá y la parte alta de la silla), que le tapa el resto del
+// cuerpo, y la cabeza asome sobre él. Con los pies en esa fila parecía de pie sobre el asiento.
+const CHAIR_SEAT_Y = 96
+const SOFA_SEAT_Y = SOFA.y - 11
+// Entre el escritorio y la silla queda un pasillo: los pies (cuerpo de 8×4) caben en él sin tocar ninguno de los dos.
+const DESK_FRONT_Y = 93
+// Entre la mesita y el sofá, igual.
+const SOFA_FRONT_Y = SOFA.y - 38
+// Hacia dónde hay que mirar para tener el asiento delante, según hacia dónde mira quien se sienta.
+export const FACE_TO_SEAT = { up: 'down', down: 'up', left: 'right', right: 'left' }
+
+const deskChair = (id, x, use) => ({
+  id, x, y: CHAIR_SEAT_Y, facing: 'up', depth: 108, use,
+  zone: { x: x - 12, y: DESK_FRONT_Y - 9, w: 24, h: 16 }, anchor: { x, y: DESK_FRONT_Y }, exit: { x, y: DESK_FRONT_Y },
+})
+
+const sofaSeat = (id, x, use) => ({
+  id, x, y: SOFA_SEAT_Y, facing: 'up', depth: SOFA.y, use,
+  zone: { x: x - 12, y: SOFA_FRONT_Y - 9, w: 24, h: 16 }, anchor: { x, y: SOFA_FRONT_Y }, exit: { x, y: SOFA_FRONT_Y },
+})
+
 export const SEATS = [
-  // Solo se ofrece sentarse desde delante: las zonas están ante la silla o el sofá, a su ancho y nunca a los lados ni detrás.
-  { id: 'chairAtreus', x: 108, y: 106, facing: 'up', depth: 108, zone: { x: 98, y: 113, w: 20, h: 11 }, anchor: { x: 108, y: 118 } },
-  { id: 'chairLupe', x: WALL_X.lupeDesk, y: 106, facing: 'up', depth: 108, zone: { x: WALL_X.lupeDesk - 10, y: 113, w: 20, h: 11 }, anchor: { x: WALL_X.lupeDesk, y: 118 }, use: 'pc' },
-  { id: 'sofaLeft', x: SOFA.x - 12, y: SOFA.y - 22, facing: 'up', depth: SOFA.y, zone: { x: SOFA.x - 28, y: SOFA.y + 5, w: 24, h: 11 }, anchor: { x: SOFA.x - 16, y: SOFA.y + 11 }, use: 'television' },
-  { id: 'sofaRight', x: SOFA.x + 14, y: SOFA.y - 22, facing: 'up', depth: SOFA.y, zone: { x: SOFA.x + 4, y: SOFA.y + 5, w: 24, h: 11 }, anchor: { x: SOFA.x + 16, y: SOFA.y + 11 }, use: 'television' },
+  deskChair('chairAtreus', 108),
+  deskChair('chairLupe', WALL_X.lupeDesk, 'pc'),
+  sofaSeat('sofaLeft', SOFA.x - 12, 'television'),
+  sofaSeat('sofaRight', SOFA.x + 14, 'television'),
 ]
 
 // Desde dónde se juega a la recreativa y a dónde vuelve la viajera al salir del juego: ante la máquina, mirándola.
@@ -125,19 +153,37 @@ export const ARCADE_FRONT = { x: WALL_X.arcade, y: 96, facing: 'up' }
 export const INTERACTIONS = [
   { id: 'atreus', anchor: { x: 148, y: 106 }, zones: [{ x: 124, y: 92, w: 50, h: 34 }] },
   // Ante el rascador, su sitio de siempre; si anda por la sala se la saluda donde esté (ver `InteriorScene.catNear`).
-  { id: 'khalessi', anchor: { x: SPOTS.scratcher.x - 6, y: SPOTS.scratcher.y + 14 }, zones: [{ x: SPOTS.scratcher.x - 34, y: SPOTS.scratcher.y + 6, w: 52, h: 22 }] },
+  {
+    id: 'khalessi',
+    anchor: { x: SPOTS.scratcher.x - 6, y: SPOTS.scratcher.y + 14 },
+    zones: [
+      { x: SPOTS.scratcher.x - 34, y: SPOTS.scratcher.y + 6, w: 52, h: 22 },
+      // Ante su caja, donde se asoma a verla.
+      { x: SPOTS.box.x - 18, y: SPOTS.box.y + 8, w: 36, h: 22 },
+    ],
+  },
   { id: 'lamp', anchor: { x: SPOTS.lamp.x - 2, y: SPOTS.lamp.y + 10 }, zones: [{ x: SPOTS.lamp.x - 22, y: SPOTS.lamp.y + 4, w: 32, h: 14 }] },
   { id: 'shelf', anchor: { x: WALL_X.consoleShelf, y: 90 }, zones: [{ x: 178, y: 82, w: 54, h: 16 }] },
   { id: 'arcade', anchor: { x: ARCADE_FRONT.x, y: ARCADE_FRONT.y }, zones: [{ x: 250, y: 82, w: 32, h: 26 }] },
   { id: 'television', anchor: { x: WALL_X.tv, y: 92 }, zones: [{ x: 302, y: 82, w: 72, h: 18 }] },
-  { id: 'hifi', anchor: { x: WALL_X.hifi, y: 92 }, zones: [{ x: 384, y: 82, w: 36, h: 18 }] },
+  { id: 'hifi', anchor: { x: WALL_X.hifi, y: 92 }, zones: [{ x: WALL_X.hifi - 18, y: 82, w: 36, h: 18 }] },
   { id: 'roof', anchor: { x: WALL_X.stairs, y: 92 }, zones: [{ x: 16, y: 82, w: 44, h: 24 }] },
-  { id: 'pc', anchor: { x: WALL_X.lupeDesk, y: 96 }, zones: [{ x: WALL_X.lupeDesk - 38, y: 82, w: 76, h: 40 }] },
-  { id: 'printer', anchor: { x: SPOTS.printerA1.x, y: 270 }, zones: [{ x: 28, y: 264, w: 62, h: 8 }] },
-  { id: 'printerMini', anchor: { x: SPOTS.printerMini.x, y: 270 }, zones: [{ x: 98, y: 264, w: 46, h: 8 }] },
-  { id: 'figures', anchor: { x: SPOTS.makerShelf.x, y: 258 }, zones: [{ x: 152, y: 252, w: 48, h: 20 }] },
-  // Sentarse solo se ofrece de cara al asiento: `faces` es hacia dónde hay que mirar (el asiento está al norte de su zona).
-  ...SEATS.map(({ id, anchor, zone, facing }) => ({ id, anchor, zones: [zone], faces: facing })),
+  // El ordenador de Lupe se enciende de pie desde los lados de la silla y desde detrás de ella; desde delante de la silla se ofrece
+  // sentarse (y, sentada, se enciende con E).
+  {
+    id: 'pc',
+    anchor: { x: WALL_X.lupeDesk - 28, y: 96 },
+    zones: [
+      { x: WALL_X.lupeDesk - 38, y: 82, w: 26, h: 22 },
+      { x: WALL_X.lupeDesk + 12, y: 82, w: 26, h: 22 },
+      { x: WALL_X.lupeDesk - 38, y: 104, w: 76, h: 18 },
+    ],
+  },
+  { id: 'printer', anchor: { x: SPOTS.printerA1.x, y: SPOTS.printerA1.y + 10 }, zones: [{ x: 28, y: SPOTS.printerA1.y + 4, w: 62, h: 8 }] },
+  { id: 'printerMini', anchor: { x: SPOTS.printerMini.x, y: SPOTS.printerMini.y + 10 }, zones: [{ x: 98, y: SPOTS.printerMini.y + 4, w: 46, h: 8 }] },
+  { id: 'figures', anchor: { x: SPOTS.makerShelf.x, y: SPOTS.makerShelf.y + 10 }, zones: [{ x: 152, y: SPOTS.makerShelf.y + 4, w: 48, h: 20 }] },
+  // Sentarse solo se ofrece de cara al asiento: `faces` es hacia dónde hay que mirar (el asiento está al sur de su zona).
+  ...SEATS.map(({ id, anchor, zone, facing }) => ({ id, anchor, zones: [zone], faces: FACE_TO_SEAT[facing] })),
 ]
 
 // Interacción cuya zona contiene los pies en (x, y), o null. Si hay dos a la vez gana la de ancla más cercana. Con `facing`

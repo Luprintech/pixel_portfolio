@@ -194,6 +194,30 @@ function makerMat(g, x, y, w, h) {
   rect(g, x + 1, y + h - 3, w - 2, 2, '#00ae42')
 }
 
+// Alfombra de la zona de Atreus: blanca con un filo de luz y unos puntos azules, a juego con su setup blanco.
+function gamerRug(g, x, y, w, h) {
+  rect(g, x, y, w, h, INK.whiteShade)
+  rect(g, x + 2, y + 2, w - 4, h - 4, INK.white)
+  rect(g, x + 2, y + 2, w - 4, 1, INK.lagoonLight)
+  rect(g, x + 2, y + h - 3, w - 4, 1, INK.lagoonLight)
+  for (let px = x + 8; px < x + w - 8; px += 10) {
+    rect(g, px, y + 6, 2, 2, INK.lagoonLight)
+    rect(g, px + 4, y + h - 8, 2, 2, INK.lagoonLight)
+  }
+}
+
+// Alfombra de la zona de Lupe: cálida, con franjas de colores y fleco.
+function workRug(g, x, y, w, h) {
+  rect(g, x, y, w, h, INK.plum)
+  rect(g, x + 2, y + 2, w - 4, h - 4, INK.saffronLight)
+  rect(g, x + 4, y + 4, w - 8, h - 8, INK.white)
+  for (let py = y + 8; py < y + h - 6; py += 8) rect(g, x + 4, py, w - 8, 2, INK.rose)
+  for (let fx = x + 2; fx < x + w - 2; fx += 3) {
+    rect(g, fx, y - 2, 1, 2, INK.whiteShade)
+    rect(g, fx, y + h, 1, 2, INK.whiteShade)
+  }
+}
+
 // Esterilla del rincón de Khalessi: rosa claro con borde y unas huellitas, bajo el rascador, el comedero y el arenero, para que
 // se lea como su espacio.
 function catMat(g, x, y, w, h) {
@@ -207,16 +231,18 @@ function catMat(g, x, y, w, h) {
   }
 }
 
+// Borde derecho de la esterilla de Khalessi: el suelo útil acaba en 512 (la última tesela es pared) y se deja un píxel de aire.
+const CAT_MAT_RIGHT = 511
+
 function floor(g) {
   // La alfombra queda centrada bajo el sofá: la lámpara a su izquierda y la planta a su derecha también están sobre ella.
   rug(g, SPOTS.sofa.x - 62, SPOTS.sofa.y - 70, 124, 96)
-  catMat(g, SPOTS.litter.x - 22, SPOTS.scratcher.y - 6, 70, SPOTS.litter.y - SPOTS.scratcher.y + 22)
-  makerMat(g, 22, 246, 184, 26)
-  // Pequeños restos de vida: unas zapatillas junto a la puerta.
-  ;[[292, 258], [299, 259]].forEach(([x, y]) => {
-    rect(g, x, y, 6, 3, INK.rose)
-    rect(g, x, y, 3, 3, INK.whiteShade)
-  })
+  // Las alfombras de las dos mesas van bajo sus sillas, para que cada zona de trabajo se lea aparte.
+  gamerRug(g, 70, 86, 98, 50)
+  workRug(g, WALL_X.lupeDesk - 34, 88, 68, 44)
+  // La esterilla de Khalessi abarca la caja, el rascador, el comedero y el arenero y queda a un paso de la pared derecha.
+  catMat(g, SPOTS.box.x - 28, SPOTS.scratcher.y - 6, CAT_MAT_RIGHT - (SPOTS.box.x - 28), SPOTS.litter.y - SPOTS.scratcher.y + 22)
+  makerMat(g, 22, SPOTS.printerA1.y - 14, 184, 26)
 }
 
 // Travesaños y cortinas de las ventanas, como una capa transparente del tamaño de la sala que va por delante del cristal.

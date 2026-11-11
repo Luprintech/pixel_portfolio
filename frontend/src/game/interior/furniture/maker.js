@@ -6,7 +6,7 @@
 // `shelves.js`.
 import { drawText } from '../../pixelFont.js'
 import { line } from '../../pixelKit.js'
-import { INK, WOOD, canvasOf, rect, slab } from '../draw.js'
+import { INK, WHITE_FURNITURE, canvasOf, rect, slab } from '../draw.js'
 import { drawPokemon } from '../figures.js'
 
 const WHITE = INK.white
@@ -30,8 +30,8 @@ const ROWS_PER_STAGE = 2
 export const MINI_STAGES = 8
 
 function table(g, x, top, width, height) {
-  const [deep, dark, mid, light] = WOOD
-  slab(g, x, top, width, 5, light, '#d9a173', mid)
+  const [deep, dark, mid, light] = WHITE_FURNITURE
+  slab(g, x, top, width, 5, mid, light, dark)
   rect(g, x, top + 5, width, 2, dark)
   ;[x + 2, x + width - 5].forEach((lx) => {
     rect(g, lx, top + 7, 3, height - top - 7, mid)

@@ -8,7 +8,7 @@ import { talkFor } from './dialogue/scripts.js'
 import { loadSeen, markSeen } from './dialogue/seen.js'
 import Follower from './follower.js'
 import { buildHome, faceTraveller } from './interior/homeBuilder.js'
-import { ARCADE_FRONT, SEATS, interactionAt } from './interior/homeLayout.js'
+import { ARCADE_FRONT, FACE_TO_SEAT, SEATS, interactionAt } from './interior/homeLayout.js'
 import InteriorSky from './interior/InteriorSky.js'
 import { jukebox } from '../lib/jukebox.js'
 import { prefersReducedMotion } from '../lib/reducedMotion.js'
@@ -316,9 +316,11 @@ export default class InteriorScene extends Phaser.Scene {
     this.standFrom = sitDown(this.princess, this.shadow, seat)
   }
 
-  // Se levanta donde estaba antes de sentarse (siempre un sitio libre).
+  // Se levanta delante del asiento, en su sitio de salida (libre por construcción: lo comprueban las pruebas del plano), mirando
+  // hacia él.
   stand() {
-    standUp(this.princess, this.shadow, this.standFrom)
+    standUp(this.princess, this.shadow, this.seat.exit ?? this.standFrom)
+    this.facing = FACE_TO_SEAT[this.seat.facing]
     this.seat = null
     this.standFrom = null
   }

@@ -1,9 +1,9 @@
-// Los dos escritorios de la casa, hechos para distinguirse de un vistazo: el de Atreus es oscuro y de gamer (dos
-// monitores, torre blanca con cristal, tira de luz bajo la mesa) y el de Lupe es de madera cálida, con tres monitores
-// de desarrolladora y las pequeñas cosas de su trabajo. `paint(g, frame)` dibuja el fotograma `frame` del ciclo de
+// Los dos escritorios de la casa, hechos para distinguirse de un vistazo: el de Atreus es un setup gamer todo blanco (dos
+// monitores, teclado, ratón, torre con cristal y una tira de luz bajo la mesa) y el de Lupe tiene la mesa blanca, con tres
+// monitores de desarrolladora y las pequeñas cosas de su trabajo. `paint(g, frame)` dibuja el fotograma `frame` del ciclo de
 // animación (pantallas y luces); las medidas son del lienzo de cada pieza y el suelo cae en su última fila.
 import { LUPE_TOWER_W } from '../homeLayout.js'
-import { INK, WOOD, codeScreen, footballScreen, keyboard, monitor, mouse, pageScreen, rect, slab, streamScreen } from '../draw.js'
+import { INK, WHITE_MONITOR, codeScreen, footballScreen, keyboard, monitor, mouse, pageScreen, rect, slab, streamScreen } from '../draw.js'
 
 const RGB = [INK.lagoonLight, INK.rose, INK.saffronLight, INK.meadow]
 const SYNTAX = [INK.lagoonLight, INK.saffronLight, INK.rose, INK.meadow, INK.steelLight]
@@ -41,6 +41,18 @@ function whiteTower(g, x, y, frame, lights) {
   rect(g, x + 11, y + 30, 2, 1, INK.slate)
 }
 
+// Tablero blanco con luz arriba y canto en sombra, y pata de la mesa: las dos mesas comparten estas piezas.
+function whiteTop(g, x, y, w) {
+  slab(g, x, y, w, 6, INK.white, '#ffffff', INK.whiteShade)
+  rect(g, x, y + 6, w, 2, INK.whiteShade)
+}
+
+function whiteLeg(g, x, y, h) {
+  rect(g, x, y, 3, h, INK.white)
+  rect(g, x + 2, y, 1, h, INK.whiteShade)
+  rect(g, x - 1, y + h - 1, 5, 1, INK.whiteShade)
+}
+
 export const atreusDesk = {
   w: 80,
   h: 48,
@@ -49,30 +61,25 @@ export const atreusDesk = {
   body: [{ l: -40, t: -15, r: 40, b: 0 }],
   paint(g, frame) {
     whiteTower(g, 66, 18, frame, WHITE_LIGHT)
-    // Tablero oscuro con luz arriba, canto y una tira de color bajo el borde delantero.
-    slab(g, 0, 30, 64, 6, INK.slate, INK.slateLight, INK.night2)
-    rect(g, 0, 36, 64, 2, INK.night2)
+    // Tablero blanco con una tira de color bajo el borde delantero.
+    whiteTop(g, 0, 30, 64)
     rect(g, 1, 38, 62, 1, RGB[frame % RGB.length])
-    ;[3, 59].forEach((x) => {
-      rect(g, x, 38, 3, 9, INK.steel)
-      rect(g, x + 2, 38, 1, 9, INK.slateLight)
-      rect(g, x - 1, 47, 5, 1, INK.slate)
-    })
-    rect(g, 4, 43, 56, 1, INK.slate)
-    monitor(g, 5, 11, 26, 16, (gg, x, y, w, h) => footballScreen(gg, x, y, w, h, frame))
-    monitor(g, 33, 11, 26, 16, (gg, x, y, w, h) => streamScreen(gg, x, y, w, h, frame))
-    // Teclado oscuro con teclas claras, un segundo teclado blanco en el borde (le gustan) y el ratón con su luz.
-    keyboard(g, 19, 31, 24, INK.night2, INK.steelLight)
+    ;[3, 59].forEach((x) => whiteLeg(g, x, 39, 9))
+    rect(g, 4, 43, 56, 1, INK.whiteShade)
+    monitor(g, 5, 11, 26, 16, (gg, x, y, w, h) => footballScreen(gg, x, y, w, h, frame), WHITE_MONITOR)
+    monitor(g, 33, 11, 26, 16, (gg, x, y, w, h) => streamScreen(gg, x, y, w, h, frame), WHITE_MONITOR)
+    // Teclado y ratón blancos (un segundo teclado en el borde, le gustan), con una luz de color en el ratón.
+    keyboard(g, 19, 31, 24, INK.whiteShade, '#ffffff')
     keyboard(g, 2, 32, 12, INK.white, INK.whiteShade)
-    mouse(g, 47, 31, INK.night2, RGB[(frame + 1) % RGB.length])
-    rect(g, 45, 34, 9, 1, INK.night)
+    mouse(g, 47, 31, INK.white, RGB[(frame + 1) % RGB.length])
+    rect(g, 45, 34, 9, 1, INK.whiteShade)
     rect(g, 56, 29, 4, 5, INK.white)
     rect(g, 56, 29, 4, 1, INK.whiteShade)
     rect(g, 60, 30, 1, 3, INK.whiteShade)
   },
 }
 
-// Escritorio de Lupe: madera cálida, cajonera a la derecha, tres monitores (terminal, editor y navegador) y las cosas de
+// Escritorio de Lupe: mesa blanca, cajonera a la derecha, tres monitores (terminal, editor y navegador) y las cosas de
 // su mesa: taza, patito de depuración, placa de desarrollo con un led, cactus, pieza impresa y notas adhesivas.
 export const lupeDesk = {
   w: 76 + LUPE_TOWER_W,
@@ -90,19 +97,17 @@ export const lupeDesk = {
   },
 }
 
-// Mesa de madera de Lupe con todo lo que hay sobre ella, de la esquina (0, 0) de su propio dibujo.
+// Mesa blanca de Lupe con todo lo que hay sobre ella, de la esquina (0, 0) de su propio dibujo.
 function paintLupeDesk(g, frame) {
-  const [deep, dark, mid, light] = WOOD
-  slab(g, 0, 31, 76, 6, light, '#d9a173', mid)
-  rect(g, 0, 37, 76, 2, dark)
-  rect(g, 2, 39, 3, 8, mid)
-  rect(g, 2, 39, 1, 8, light)
+  whiteTop(g, 0, 31, 76)
+  rect(g, 2, 39, 3, 8, INK.white)
+  rect(g, 4, 39, 1, 8, INK.whiteShade)
   // Cajonera: dos cajones con tirador y un hueco libre a la izquierda para las piernas.
-  slab(g, 52, 39, 22, 9, mid, light, dark)
-  rect(g, 53, 43, 20, 1, dark)
-  rect(g, 61, 41, 4, 1, INK.saffronLight)
-  rect(g, 61, 45, 4, 1, INK.saffronLight)
-  rect(g, 2, 47, 3, 1, deep)
+  slab(g, 52, 39, 22, 9, INK.white, '#ffffff', INK.whiteShade)
+  rect(g, 53, 43, 20, 1, INK.whiteShade)
+  rect(g, 61, 41, 4, 1, INK.steel)
+  rect(g, 61, 45, 4, 1, INK.steel)
+  rect(g, 2, 47, 3, 1, INK.whiteShade)
 
   monitor(g, 1, 14, 19, 14, (gg, x, y, w, h) => {
     codeScreen(gg, x, y, w, h, frame, [INK.meadow, INK.lagoonLight, INK.meadow])

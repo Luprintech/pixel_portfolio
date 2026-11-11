@@ -1,8 +1,8 @@
 // Lo que hace Khalessi en casa. No sigue un guion fijo: elige una actividad de una bolsa que se baraja (pasear, comer, usar el
-// arenero, asearse, rascar, dormir arriba del rascador y la de la sardina) y la cumple paso a paso: caminar (por un camino que
-// esquiva los muebles, ver `catNav.js`), esperar en una pose o dar un salto (al arenero, al rascador). Esta parte es pura (sin
+// arenero, asearse, rascar, dormir arriba del rascador, echar una cabezada en su caja y la de la sardina) y la cumple paso a paso: caminar (por un camino que
+// esquiva los muebles, ver `catNav.js`), esperar en una pose o dar un salto (al arenero, a la caja, al rascador). Esta parte es pura (sin
 // Phaser ni lienzo), así se prueba sin navegador; la escena (`homeBuilder.js`) la dibuja.
-// Los sitios clave salen del plano (`homeLayout.js`): rascador, comedero y arenero contra la pared derecha, Atreus en su mesa.
+// Los sitios clave salen del plano (`homeLayout.js`): caja, rascador, comedero y arenero contra la pared derecha, Atreus en su mesa.
 import { FURNITURE, solidsOf } from './furniture/index.js'
 import { ATREUS_BODY, FURNITURE_PLAN, NPC_PLAN, SPOTS, homeRoom } from './homeLayout.js'
 import { createNav } from './catNav.js'
@@ -10,6 +10,9 @@ import { createNav } from './catNav.js'
 const atreus = NPC_PLAN.find((npc) => npc.id === 'atreus')
 
 export const CAT_SPOTS = {
+  // Delante de la caja, desde donde salta dentro y fuera; y dentro, con los pies un poco por encima del suelo (`z`).
+  boxFront: { x: SPOTS.box.x, y: SPOTS.box.y + 18 },
+  boxIn: { x: SPOTS.box.x, y: SPOTS.box.y - 4, z: 3 },
   // Ante el rascador, desde donde salta arriba y baja; y a su lado, donde se afila las uñas.
   scratcherFront: { x: SPOTS.scratcher.x, y: SPOTS.scratcher.y + 9 },
   scratcherSide: { x: SPOTS.scratcher.x - 16, y: SPOTS.scratcher.y + 4 },
@@ -41,7 +44,7 @@ const WANDER_POINTS = NAV.wanderPoints()
 
 // Pasos. `walk` camina hasta `to` (esquivando muebles), `hop` salta a `to` con una `z` de altura y `wait` se queda `ms`. `pose` es
 // lo que se dibuja; `meow` el maullido que suelta al empezar (0 corto, 1 largo e insistente, 2 agudo y contento); `face` hacia
-// dónde se vuelve; `layer` dónde queda al acabar un salto (sobre el rascador o dentro del arenero, para dibujarla encima).
+// dónde se vuelve; `layer` dónde queda al acabar un salto (sobre el rascador, dentro de la caja o dentro del arenero, para dibujarla en su sitio).
 // `grab` y `carry` son coger la sardina y llevarla en la boca; `drop` es soltarla y `gift` que es el regalo para Atreus.
 const wait = (ms, pose, extra) => ({ kind: 'wait', ms, pose, ...extra })
 const walk = (to, extra) => ({ kind: 'walk', to, pose: 'walk', ...extra })
@@ -63,6 +66,15 @@ const ACTIVITIES = {
     wait(2600, 'wash'),
   ],
   wash: () => [wait(3800, 'wash')],
+  // Se mete en su caja de cartón, se acomoda y echa una cabezada.
+  nap: (cat) => [
+    walk(CAT_SPOTS.boxFront),
+    hop(CAT_SPOTS.boxIn, { layer: 'box' }),
+    wait(1600, 'sit'),
+    wait(between(cat, 7000, 12000), 'sleep'),
+    wait(1800, 'sit'),
+    hop(CAT_SPOTS.boxFront, { layer: null }),
+  ],
   scratch: () => [walk(CAT_SPOTS.scratcherSide), wait(3200, 'scratch', { face: 'right' })],
   sleep: (cat) => [
     walk(CAT_SPOTS.scratcherFront),
@@ -86,7 +98,7 @@ const ACTIVITIES = {
 }
 
 // Lo que hay en la bolsa de cada vuelta: todo ocurre una vez por vuelta y el paseo, dos.
-const BAG = ['wander', 'eat', 'litter', 'sleep', 'sardine', 'scratch', 'wander', 'wash']
+const BAG = ['wander', 'eat', 'litter', 'sleep', 'nap', 'sardine', 'scratch', 'wander', 'wash']
 
 function shuffled(cat) {
   const bag = [...BAG]
@@ -117,9 +129,10 @@ export function createCat(rng = Math.random) {
   }
 }
 
-// Dónde se dibuja la gata en orden de profundidad: sobre el rascador o dentro del arenero va justo por encima de ese mueble y,
+// Dónde se dibuja la gata en orden de profundidad: dentro de la caja va entre sus dos capas; sobre el rascador o dentro del arenero va justo por encima de ese mueble y,
 // en el suelo, con la fila de sus pies.
 export function catDepth(cat) {
+  if (cat.layer === 'box') return SPOTS.box.y
   if (cat.layer === 'scratcher') return SPOTS.scratcher.y + 1
   if (cat.layer === 'litter') return SPOTS.litter.y + 1
   return Math.round(cat.y)

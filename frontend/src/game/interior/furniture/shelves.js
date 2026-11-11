@@ -3,7 +3,7 @@
 // Color, Nintendo 3DS y Wii arriba; PlayStation 1, 2, 3 y 4 en medio; una Xbox, una Switch, una GameCube y mandos abajo.
 // El borde de cada balda lleva el color de su familia (rojo, azul, verde) para que se lea la clasificación. Cada pieza se
 // coloca por su base (`SHELF` es la fila de la balda): apoya sobre la madera, nunca queda en el aire.
-import { INK, WOOD, rect, slab } from '../draw.js'
+import { INK, WHITE_FURNITURE, rect, slab } from '../draw.js'
 
 const SHELF_RED = INK.tile
 const SHELF_BLUE = INK.blue
@@ -113,7 +113,7 @@ export const consoleShelf = {
   // El cuerpo llega hasta la pared: así no queda una franja libre e inalcanzable entre la estantería y el fondo.
   body: [{ l: -32, t: -16, r: 32, b: 0 }],
   paint(g) {
-    const [deep, dark, mid, light] = WOOD
+    const [deep, dark, mid, light] = WHITE_FURNITURE
     rect(g, 0, 0, 64, 56, mid)
     rect(g, 0, 0, 64, 2, light)
     rect(g, 0, 0, 2, 56, light)
@@ -153,7 +153,7 @@ export const makerShelf = {
   h: 46,
   body: [{ l: -18, t: -10, r: 18, b: 0 }],
   paint(g) {
-    const [deep, dark, mid, light] = WOOD
+    const [deep, dark, mid, light] = WHITE_FURNITURE
     rect(g, 0, 0, 36, 46, mid)
     rect(g, 0, 0, 36, 2, light)
     rect(g, 0, 0, 2, 46, light)

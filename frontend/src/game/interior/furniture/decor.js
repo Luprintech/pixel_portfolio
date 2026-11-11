@@ -20,10 +20,11 @@ function gamerChair(g, body, light, dark, accent) {
   rect(g, 17, 15, 3, 7, INK.slate)
 }
 
-// Las sillas van en dos capas para que quien se siente quede entre ellas: la de atrás (ruedas, reposacabezas y parte alta
-// del respaldo, detrás de la persona) y la de delante (la parte baja del respaldo y los reposabrazos, que le tapan las
-// caderas). Se pintan igual y cada capa borra lo que no es suyo; las filas 15 a 23 son la frontera.
-const CHAIR_SPLIT = { from: 15, to: 24 }
+// Las sillas van en dos capas para que quien se siente quede entre ellas: la de atrás (reposacabezas y base con ruedas, detrás
+// de la persona) y la de delante (todo el respaldo y los reposabrazos). Vista de espaldas, el respaldo está entre la cámara y
+// quien se sienta: le tapa la espalda y las caderas y solo asoman la cabeza y los hombros por encima. Se pintan igual y cada
+// capa borra lo que no es suyo; las filas 9 a 23 son el respaldo.
+const CHAIR_SPLIT = { from: 9, to: 24 }
 
 function chairLayer(layer, colors) {
   return (g) => {
@@ -36,13 +37,48 @@ function chairLayer(layer, colors) {
   }
 }
 
-const ATREUS_CHAIR = [INK.night2, INK.slateLight, INK.night, INK.lagoonLight]
+const ATREUS_CHAIR = [INK.white, '#ffffff', INK.whiteShade, INK.lagoonLight]
 const LUPE_CHAIR = [INK.plum, '#a05fb5', '#4f2a60', INK.rose]
 
 export const chairAtreus = { w: 20, h: 30, body: [{ l: -8, t: -6, r: 8, b: 0 }], paint: chairLayer('back', ATREUS_CHAIR) }
 export const chairAtreusFront = { w: 20, h: 30, body: [], paint: chairLayer('front', ATREUS_CHAIR) }
 export const chairLupe = { w: 20, h: 30, body: [{ l: -8, t: -6, r: 8, b: 0 }], paint: chairLayer('back', LUPE_CHAIR) }
 export const chairLupeFront = { w: 20, h: 30, body: [], paint: chairLayer('front', LUPE_CHAIR) }
+
+// Caja de cartón abierta: la capa de atrás (fondo y solapas) y la de delante (la pared baja), con la gata entre ambas.
+const CARDBOARD = ['#cba36a', '#b98f5a', '#dfbf86', '#9c7547']
+
+export const boxBack = {
+  w: 26,
+  h: 14,
+  body: [{ l: -12, t: -8, r: 12, b: 0 }],
+  paint(g) {
+    const [mid, dark, light, deep] = CARDBOARD
+    rect(g, 1, 2, 24, 12, dark)
+    rect(g, 0, 0, 7, 3, light)
+    rect(g, 19, 0, 7, 3, light)
+    rect(g, 0, 2, 26, 1, mid)
+    rect(g, 1, 13, 24, 1, deep)
+  },
+}
+
+export const boxFront = {
+  w: 26,
+  h: 14,
+  body: [],
+  paint(g) {
+    const [mid, dark, light, deep] = CARDBOARD
+    rect(g, 0, 6, 26, 8, mid)
+    rect(g, 0, 6, 26, 1, light)
+    rect(g, 0, 13, 26, 1, deep)
+    rect(g, 0, 6, 1, 8, dark)
+    rect(g, 25, 6, 1, 8, dark)
+    // Cinta de embalar, con un trozo suelto.
+    rect(g, 9, 6, 6, 8, light)
+    rect(g, 9, 6, 6, 1, INK.white)
+    rect(g, 17, 9, 4, 1, INK.white)
+  },
+}
 
 // Monstera grande de maceta de barro, para la esquina.
 export const bigPlant = {

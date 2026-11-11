@@ -26,7 +26,7 @@ describe('Khalessi', () => {
     expect(cat.pose).toBe('sleep')
   })
 
-  it('en una tarde hace de todo: pasea, come, usa el arenero, se asea, rasca, duerme y juega con la sardina', () => {
+  it('en una tarde hace de todo: pasea, come, usa el arenero, se asea, rasca, duerme en el rascador, se mete en su caja y juega con la sardina', () => {
     const cat = createCat(seeded(7))
     const meows = []
     const seen = new Set()
@@ -38,7 +38,7 @@ describe('Khalessi', () => {
       if (cat.carrying && cat.giving) throw new Error('lleva y entrega a la vez')
     }
     ;['sit', 'walk', 'play', 'grab', 'give', 'eat', 'wash', 'scratch', 'sleep'].forEach((pose) => expect(seen.has(pose), pose).toBe(true))
-    ;['scratcher', 'litter', null].forEach((layer) => expect(layers.has(layer), String(layer)).toBe(true))
+    ;['scratcher', 'litter', 'box', null].forEach((layer) => expect(layers.has(layer), String(layer)).toBe(true))
     // Tres maullidos distintos.
     expect(new Set(meows)).toEqual(new Set([0, 1, 2]))
     // Nunca se queda sin camino.

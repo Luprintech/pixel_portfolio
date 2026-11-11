@@ -127,8 +127,8 @@ describe('zona de Khalessi', () => {
     })
   })
 
-  it('tiene su rascador, su comida y su arenero', () => {
-    ;['scratcher', 'catBowls', 'litterBox'].forEach((kind) => expect(FURNITURE_PLAN.some((piece) => piece.kind === kind), kind).toBe(true))
+  it('tiene su caja, su rascador, su comida y su arenero', () => {
+    ;['boxBack', 'boxFront', 'scratcher', 'catBowls', 'litterBox'].forEach((kind) => expect(FURNITURE_PLAN.some((piece) => piece.kind === kind), kind).toBe(true))
   })
 })
 
@@ -161,8 +161,8 @@ describe('sentarse', () => {
   it('el aviso solo sale delante del asiento y mirando hacia él', () => {
     seatIds.forEach((id) => {
       const { anchor } = INTERACTIONS.find((interaction) => interaction.id === id)
-      expect(interactionAt(anchor.x, anchor.y, 'up'), `${id} de cara`).toBe(id)
-      ;['down', 'left', 'right'].forEach((facing) => expect(interactionAt(anchor.x, anchor.y, facing), `${id} mirando ${facing}`).not.toBe(id))
+      expect(interactionAt(anchor.x, anchor.y, 'down'), `${id} de cara`).toBe(id)
+      ;['up', 'left', 'right'].forEach((facing) => expect(interactionAt(anchor.x, anchor.y, facing), `${id} mirando ${facing}`).not.toBe(id))
     })
   })
 
@@ -173,11 +173,31 @@ describe('sentarse', () => {
     })
   })
 
-  it('las zonas de asiento están delante del asiento (al sur) y nunca a su lado ni detrás', () => {
+  it('las zonas de asiento están delante del asiento, por donde mira (al norte), y nunca a su lado ni detrás', () => {
     SEATS.forEach((seat) => {
-      expect(seat.zone.y, seat.id).toBeGreaterThan(seat.y)
+      expect(seat.facing, seat.id).toBe('up')
+      // `depth` es la fila de la base del mueble: la zona acaba antes de su cuerpo sólido, más al norte.
+      expect(seat.zone.y + seat.zone.h, seat.id).toBeLessThan(seat.depth - 5)
       expect(seat.zone.x + seat.zone.w, seat.id).toBeGreaterThan(seat.x - 20)
       expect(seat.zone.x, seat.id).toBeLessThan(seat.x + 20)
+    })
+  })
+
+  it('el sitio de salida está delante del asiento, dentro de su zona y libre de muebles', () => {
+    SEATS.forEach((seat) => {
+      const { exit, zone } = seat
+      expect(exit.y, seat.id).toBeLessThan(seat.depth - 5)
+      expect(interactionAt(exit.x, exit.y, 'down'), seat.id).toBe(seat.id)
+      expect(exit.x >= zone.x && exit.x <= zone.x + zone.w && exit.y >= zone.y && exit.y <= zone.y + zone.h, seat.id).toBe(true)
+      expect(standable(exit.x, exit.y), `${seat.id} libre`).toBe(true)
+    })
+  })
+
+  it('desde el sitio de salida se llega al resto de la sala', () => {
+    const cells = reachable()
+    SEATS.forEach(({ id, exit }) => {
+      const near = [0, 1, -1].some((dx) => [0, 1, -1].some((dy) => cells.has(`${exit.x + dx},${exit.y + dy}`)))
+      expect(near, id).toBe(true)
     })
   })
 
