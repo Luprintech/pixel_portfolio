@@ -12,6 +12,8 @@ export const PAL = {
   saffron: '#f2b134',
   saffronLight: '#f8d77a',
   rose: '#f4b8cc',
+  // Amarillo pastel de las respuestas al puntero y del retrato del diálogo (igual que `--accent-hover`).
+  butter: '#fbe6a2',
   tile: '#d4503a',
   tileDark: '#b8402c',
   bone: '#f1e6cf',

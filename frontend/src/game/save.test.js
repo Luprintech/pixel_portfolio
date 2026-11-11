@@ -52,7 +52,7 @@ describe('look', () => {
   it('las partidas de antes de las láminas de referencia pasan a los estilos nuevos', () => {
     const { trait: _trait, ...rest } = DEFAULT_LOOK
     const old = { ...rest, beard: 'bigote', face: 'timida', accessory: 'flor', shoes: 'botas' }
-    expect(upgradeLook(old)).toMatchObject({ trait: 'bigote', face: 'verguenza', accessory: 'horquillas', shoes: 'botines' })
+    expect(upgradeLook(old)).toMatchObject({ trait: 'bigote', face: 'verguenza', accessory: 'ninguno', shoes: 'botines' })
     expect(upgradeLook({ ...rest, beard: 'ninguna' })).toMatchObject({ trait: 'ninguno' })
   })
 

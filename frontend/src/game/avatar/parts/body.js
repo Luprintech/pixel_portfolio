@@ -116,23 +116,6 @@ const GARMENTS = {
     return sleeve(0, null)
   },
 
-  camisa(b) {
-    b.shoulders()
-    b.body(1, 5)
-    b.row(6, b.tl, b.tr, 'M')
-    if (b.front) {
-      b.row(0, b.tl + 1, b.tr - 1, 'L')
-      b.centre.forEach((x) => {
-        b.dot(0, x, 'S')
-        b.dot(1, x, 'S')
-      })
-      b.dot(1, b.tl + 1, 'L')
-      b.dot(1, b.tr - 1, 'L')
-      ;[2, 4].forEach((r) => b.dot(r, b.c0, 'T'))
-    }
-    return sleeve(3, 'L')
-  },
-
   sudadera(b) {
     b.shoulders()
     b.body(1, 5)

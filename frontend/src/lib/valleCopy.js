@@ -170,6 +170,16 @@ export const COPY = {
       controls: 'Flechas o WASD para andar. Acércate a una puerta y pulsa E para entrar.',
       touchControls: 'Mueve el joystick. Acércate a una puerta y toca el botón para entrar.',
       loading: 'Preparando el valle…',
+      loadingLines: [
+        '> Creando mundo…',
+        '> Creando vegetación…',
+        '> Levantando casas y caminos…',
+        '> Llenando el río…',
+        '> Colocando el cielo…',
+        '> Encendiendo las farolas…',
+        '> Despertando a Lupe y a Khalessi…',
+        '> Casi listo…',
+      ],
       error: 'No se pudo cargar el juego. Prueba el modo clásico.',
     },
     achievements: {
@@ -499,6 +509,16 @@ export const COPY = {
       controls: 'Arrows or WASD to walk. Go up to a door and press E to go in.',
       touchControls: 'Move the joystick. Go up to a door and tap the button to go in.',
       loading: 'Getting the valley ready…',
+      loadingLines: [
+        '> Creating world…',
+        '> Growing vegetation…',
+        '> Building houses and paths…',
+        '> Filling the river…',
+        '> Placing the sky…',
+        '> Lighting the lamps…',
+        '> Waking up Lupe and Khalessi…',
+        '> Almost ready…',
+      ],
       error: "The game couldn't load. Try classic mode.",
     },
     achievements: {

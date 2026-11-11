@@ -87,10 +87,9 @@
   cursor: not-allowed;
   pointer-events: none;
 }
-/* Los botones secundarios se tiñen de rosa al apuntarlos: el amarillo queda
-   reservado al botón principal y el rosa premia la exploración. */
+/* Los botones secundarios se tiñen de amarillo pastel al apuntarlos, igual que la barra de volumen. */
 .px-btn--bone:hover {
-  background: var(--accent-rose);
+  background: var(--accent-hover);
 }
 .px-btn--ghost {
   color: var(--text-primary);
@@ -155,10 +154,10 @@
   box-shadow: 0 0 0 2px var(--px-ink), 0 3px 0 2px var(--px-ink);
 }
 .px-range:hover::-webkit-slider-thumb {
-  background: var(--accent-rose);
+  background: var(--accent-hover);
 }
 .px-range:hover::-moz-range-thumb {
-  background: var(--accent-rose);
+  background: var(--accent-hover);
 }
 .px-range:focus-visible {
   outline: 3px solid var(--accent-secondary);
@@ -524,14 +523,13 @@
   color: var(--t-ink);
   background: var(--t-ivory);
 }
-/* Al apuntarlos, el principal se tiñe de frambuesa suave y los marfil suben un tono; texto ciruela
-   en todos (contraste > 5:1). */
+/* Al apuntarlos, todos se tiñen de mantequilla (amarillo pastel); texto ciruela en todos (contraste > 9:1). */
 :root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn:hover {
   color: var(--t-ink);
-  background: var(--t-berry-soft);
+  background: var(--t-butter);
 }
 :root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn--bone:hover {
-  background: #f3e6cf;
+  background: var(--t-butter);
 }
 :root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn:active,
 :root:is(:where([data-theme='valle']:not([data-game-theme='aventura'])), [data-game-theme='cozy']) .px-btn--bone:active {

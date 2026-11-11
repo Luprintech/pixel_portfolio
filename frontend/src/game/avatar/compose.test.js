@@ -90,10 +90,10 @@ describe('composeAvatar', () => {
     // El guiño cierra el ojo izquierdo del personaje: solo cambia el perfil izquierdo.
     expect(mirrored({ ...BASE, face: 'guino' })).toBe(false)
     expect(rowsOf({ ...BASE, face: 'guino' }, 'right')).toEqual(rowsOf({ ...BASE, face: 'sonrisa' }, 'right'))
-    // El rapado lateral solo se ve por el lado rapado, y el lazo, las horquillas y el nudo del pañuelo
+    // El rapado lateral solo se ve por el lado rapado, y el lazo y el nudo del pañuelo
     // por el lado en que se llevan.
     expect(mirrored({ ...BASE, hairStyle: 'rapado' })).toBe(false)
-    ;['lazo', 'horquillas', 'panuelo'].forEach((accessory) => expect(mirrored({ ...BASE, accessory }), accessory).toBe(false))
+    ;['lazo', 'panuelo'].forEach((accessory) => expect(mirrored({ ...BASE, accessory }), accessory).toBe(false))
   })
 
   it('los dos pasos y el reposo son tres dibujos distintos en cada dirección', () => {
@@ -232,10 +232,9 @@ describe('catálogo de las láminas de referencia', () => {
     expect(men.slice(0, 3)).toEqual(['rasurado', 'cortoClasico', 'dePunta'])
   })
 
-  it('las rejillas de expresiones, rasgos, calzados y prendas de arriba tienen 16 opciones y la de complementos 20', () => {
-    ;['face', 'trait', 'shoes', 'top'].forEach((field) => expect(LOOK_STYLES[field], field).toHaveLength(16))
-    expect(LOOK_STYLES.accessory).toHaveLength(20)
-    expect(LOOK_STYLES.bottom).toHaveLength(8)
+  it('cada rejilla del creador tiene las opciones que quedan tras retirar las que no gustaban', () => {
+    const counts = { face: 14, trait: 9, shoes: 9, top: 15, accessory: 17, bottom: 8 }
+    Object.entries(counts).forEach(([field, count]) => expect(LOOK_STYLES[field], field).toHaveLength(count))
   })
 
   it('los sombreros más altos y más anchos caben en el lienzo sin tocar el borde', () => {

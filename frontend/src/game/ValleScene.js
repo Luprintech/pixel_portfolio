@@ -280,17 +280,20 @@ export default class ValleScene extends Phaser.Scene {
   }
 
   // Para entrar solo hace falta la base del suelo. El otoño y el invierno se terminan de preparar mientras se
-  // juega (porciones de unos 4 ms por fotograma, ver `advanceGroundSeasons`) y se añaden cuando están listos.
+  // juega (porciones por fotograma, ver `advanceGroundSeasons`) y se añaden cuando están listos.
   buildGround() {
     this.addThemed('ground', () => ({ base: groundBase(this.pastel) }))
     this.placeScenery('ground', 0, 0, [0, 0], 0)
     this.groundPending = SEASONS.map((season) => [season, groundSeasonJob(season, this.pastel)])
   }
 
+  // No se empieza hasta que la viajera ha terminado de subir por el camino: en un móvil, preparar las estaciones
+  // durante esos primeros pasos la dejaba como a cámara lenta. En pantallas táctiles la porción es menor.
   advanceGroundSeasons() {
-    if (!this.groundPending.length) return
+    if (!this.groundPending.length || this.arriving) return
+    const budget = this.sys.game.device.input.touch ? 2 : 4
     const start = performance.now()
-    while (this.groundPending.length && performance.now() - start < 4) {
+    while (this.groundPending.length && performance.now() - start < budget) {
       const [season, work] = this.groundPending[0]
       if (!work.step()) continue
       this.addThemed(`ground:${season}`, () => ({ base: groundSeasonJob(season, this.pastel).get() }))

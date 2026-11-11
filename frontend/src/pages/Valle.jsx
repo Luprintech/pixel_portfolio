@@ -8,6 +8,7 @@ import AchievementToast from '../components/valle/AchievementToast'
 import ArcadeMachine from '../components/valle/arcade/ArcadeMachine'
 import CustomizeButton from '../components/valle/CustomizeButton'
 import DialogueBox from '../components/valle/DialogueBox'
+import LoadingConsole from '../components/valle/LoadingConsole'
 import FiguresViewer from '../components/valle/FiguresViewer'
 import ConsolesViewer from '../components/valle/ConsolesViewer'
 import OptionsButton from '../components/valle/OptionsButton'
@@ -30,7 +31,7 @@ import { initialStory, reachNode, storyFeatures } from '../game/story/story'
 import { updateStory } from '../game/story/storyStore'
 import { clockOffset, valleSkyAt } from '../game/valleSky'
 import { useGameTheme } from '../context/GameThemeContext'
-import { warmWorld } from '../game/worldAssets'
+import { warmEntry, warmWorld } from '../game/worldAssets'
 import { useAchievements } from '../hooks/useAchievements'
 import { useJukebox } from '../hooks/useJukebox'
 import { useUiSounds } from '../hooks/useUiSounds'
@@ -157,13 +158,15 @@ export default function Valle() {
   // el código de Phaser y los dibujos del mundo. Los dibujos van a porciones de pocos milisegundos (ver
   // game/sliced.js) para que el creador no se congele en un móvil; se empieza pasado un instante, con el creador
   // ya pintado y sin que el visitante haya tocado nada.
+  // Con el juego ya en marcha las estaciones del suelo las prepara la propia escena (cuando la viajera ha llegado): aquí
+  // solo se adelanta lo necesario para entrar, para no competir con ella por el procesador del móvil.
   useEffect(() => {
     const timer = setTimeout(() => {
       import('../game/boot').catch(() => {})
-      warmWorld(pastel)
+      ;(started ? warmEntry : warmWorld)(pastel)
     }, 1200)
     return () => clearTimeout(timer)
-  }, [pastel])
+  }, [pastel, started])
 
   // Phaser se carga solo aquí: el resto del sitio no paga su peso.
   const applied = useRef({ look, pet })
@@ -173,7 +176,10 @@ export default function Valle() {
     let instance = null
     let cancelled = false
     setStatus('loading')
-    import('../game/boot')
+    // El código del juego y los dibujos del mundo se esperan con la pantalla de carga puesta, a porciones: la escena
+    // arranca con todo hecho y sin bloquear el móvil. Se deja pasar un fotograma para que se pinte lo último escrito.
+    Promise.all([import('../game/boot'), warmEntry(pastel)])
+      .then(([boot]) => new Promise((resolve) => requestAnimationFrame(() => resolve(boot))))
       .then(({ startGame }) => {
         if (cancelled || !hostRef.current) return
         applied.current = { look, pet }
@@ -228,10 +234,10 @@ export default function Valle() {
     }
   }, [game, pastel])
 
-  // El texto de carga solo sale si tarda (0,3 s): casi siempre el mundo ya está listo y no hay nada que mostrar.
+  // La pantalla de carga solo sale si tarda (0,2 s): con el mundo ya preparado en el creador no hay nada que mostrar.
   useEffect(() => {
     if (status !== 'loading' || !started) return undefined
-    const timer = setTimeout(() => setSlow(true), 300)
+    const timer = setTimeout(() => setSlow(true), 200)
     return () => clearTimeout(timer)
   }, [status, started])
 
@@ -452,7 +458,7 @@ export default function Valle() {
         <div ref={hostRef} className="valle-host absolute inset-0" aria-hidden={!!zone} />
 
         {status === 'loading' && started && slow && (
-          <p className="px-text absolute inset-0 grid place-items-center text-xl" style={{ color: tone('ink', PAL.bone) }} role="status">{copy.hud.loading}</p>
+          <LoadingConsole lines={copy.hud.loadingLines} title={copy.hud.loading} />
         )}
         {status === 'error' && (
           <p className="px-text absolute inset-0 z-10 grid place-items-center p-6 text-center text-lg" style={{ color: tone('ink', PAL.bone) }} role="alert">

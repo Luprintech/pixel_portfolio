@@ -17,11 +17,9 @@ export const EXPRESSIONS = {
   enfado: { eyes: 'open', brows: 'angry', mouth: 'flat' },
   tristeza: { eyes: 'open', brows: 'sad', mouth: 'frown' },
   llanto: { eyes: 'open', brows: 'sad', mouth: 'wail', tears: true },
-  concentracion: { eyes: 'lid', mouth: 'dot' },
   duda: { eyes: 'open', brows: 'doubt', mouth: 'slant' },
   sueno: { eyes: 'sleepy', mouth: 'yawn' },
   verguenza: { eyes: 'aside', mouth: 'smile', blush: true },
-  picardia: { eyes: 'lid', mouth: 'smirk' },
   miedo: { eyes: 'open', brows: 'sad', mouth: 'gasp' },
   aburrimiento: { eyes: 'lid', mouth: 'flat' },
   ternura: { eyes: 'arc', mouth: 'smile', blush: true },
@@ -90,20 +88,11 @@ const FRONT_MOUTHS = {
     p.span(10, 6, 9, 'O')
     p.span(11, 7, 8, 'O')
   },
-  dot: (p) => {
-    p.put(8, 10, 'm')
-    p.put(8, 11, 'm')
-  },
   slant: (p) => {
     p.span(11, 6, 7, 'm')
     p.span(10, 8, 9, 'm')
   },
   yawn: (p) => p.span(10, 7, 8, 'O'),
-  // Media sonrisa: solo sube la comisura derecha.
-  smirk: (p) => {
-    p.span(11, 6, 8, 'm')
-    p.span(10, 9, 10, 'm')
-  },
 }
 
 function paintFront(p, expression, male) {
@@ -175,16 +164,11 @@ const SIDE_MOUTHS = {
     p.span(MOUTH, 10, 11, 'O')
     p.put(10, MOUTH + 1, 'O')
   },
-  dot: (p) => p.put(11, MOUTH, 'm'),
   slant: (p) => {
     p.put(10, MOUTH, 'm')
     p.put(11, MOUTH - 1, 'm')
   },
   yawn: (p) => p.rect(10, MOUTH, 11, MOUTH + 1, 'O'),
-  smirk: (p) => {
-    p.put(10, MOUTH, 'm')
-    p.put(11, MOUTH - 1, 'm')
-  },
 }
 
 function paintSide(p, expression, left) {

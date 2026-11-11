@@ -178,7 +178,7 @@ export default function DialogueBox({ scriptId, features: extra, player, onReach
                 src={portrait}
                 alt={`${copy.ui.portrait} ${speaker}`}
                 className="h-24 w-auto border-4 [image-rendering:pixelated]"
-                style={{ borderColor: PAL.ink, background: tone('powder', PAL.rose) }}
+                style={{ borderColor: PAL.ink, background: tone('butter', PAL.butter) }}
               />
             </div>
           )}

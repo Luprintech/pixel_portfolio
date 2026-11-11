@@ -1,7 +1,6 @@
-// Rasgos de la cara que se pintan sobre ella: barba, bigote, perilla, patillas, pecas, lunares,
-// cejas y cicatrices. Cada rasgo es una lista de tramos `[letra, fila, columnas]`, uno para la vista
+// Rasgos de la cara que se pintan sobre ella: barba, bigote, perilla, patillas y cejas. Cada rasgo es una lista de tramos `[letra, fila, columnas]`, uno para la vista
 // de frente y otro para el perfil derecho (de perfil se dibujan sobre las columnas 10 a 13).
-// De espaldas no se ve ninguno. K es el vello (color propio), F peca o lunar, C cicatriz.
+// De espaldas no se ve ninguno. K es el vello (color propio).
 
 const FULL_BEARD = [
   ['K', 8, [3, 12]],
@@ -17,11 +16,6 @@ const FULL_BEARD_SIDE = [
   ['K', 10, [10, 11, 13]],
   ['K', 11, [10, 11, 12, 13]],
   ['K', 12, [10, 11, 12]],
-]
-
-const FRECKLES = [
-  ['F', 9, [5, 6, 9, 10]],
-  ['F', 10, [4, 11]],
 ]
 
 export const TRAITS = {
@@ -94,49 +88,9 @@ export const TRAITS = {
     front: [7, 8, 9, 10].map((y) => ['K', y, [3, 12]]),
     side: [7, 8, 9].map((y) => ['K', y, [10]]),
   },
-  pecas: { front: FRECKLES, side: [['F', 8, [12]], ['F', 9, [11]]] },
-  pecasMuchas: {
-    front: [...FRECKLES, ['F', 9, [7, 8]], ['F', 10, [5, 10]]],
-    side: [['F', 8, [12, 13]], ['F', 9, [11, 12]], ['F', 10, [11]]],
-  },
-  lunarMejilla: { front: [['F', 10, [10]]], side: [['F', 9, [12]]] },
-  lunarLabio: { front: [['F', 11, [10]]], side: [['F', 11, [12]]] },
   cejas: {
     front: [['K', 5, [3, 4, 5, 6, 9, 10, 11, 12]]],
     side: [['K', 4, [10, 11, 12]]],
-  },
-  cejaPartida: {
-    front: [
-      ['K', 5, [3, 4, 5, 10, 12]],
-      ['C', 4, [11]],
-    ],
-    side: [
-      ['K', 4, [10, 12]],
-      ['C', 4, [11]],
-    ],
-  },
-  cicatrizCeja: {
-    front: [
-      ['K', 5, [10, 11, 12]],
-      ['C', 4, [12]],
-      ['C', 5, [11]],
-      ['C', 6, [10]],
-    ],
-    side: [
-      ['K', 4, [11, 12]],
-      ['C', 5, [12]],
-    ],
-  },
-  cicatrizMejilla: {
-    front: [
-      ['C', 9, [12]],
-      ['C', 10, [11]],
-      ['C', 11, [10]],
-    ],
-    side: [
-      ['C', 9, [11]],
-      ['C', 10, [12]],
-    ],
   },
 }
 

@@ -22,22 +22,15 @@ const only = (index, ch, otherwise = null) => (t) => (t === index ? ch : otherwi
 // `top` es la fila más alta que tapa el calzado: las piernas se pintan hasta la anterior.
 export const SHOES = {
   zapatillas: { top: INSTEP, rows: [[INSTEP, 'front', 'R'], [SOLE, 'front', 'W']] },
-  deportivas: { top: INSTEP, rows: [[INSTEP, 'foot', only(1, 'r', 'R')], [SOLE, 'foot', 'W']] },
   altas: { top: ANKLE, rows: [[ANKLE, 'shaft', 'R'], [INSTEP, 'foot', (t) => (t === 0 ? 'W' : 'R')], [SOLE, 'foot', 'W']] },
-  lona: { top: INSTEP, rows: [[INSTEP, 'front', (t) => (t === 0 ? 'W' : 'R')], [SOLE, 'front', 'W']] },
   botines: { top: ANKLE, rows: [[ANKLE, 'shaft', 'R'], [INSTEP, 'foot', 'R'], [SOLE, 'foot', 'Q']] },
   montana: { top: ANKLE, rows: [[ANKLE, 'shaft', only(1, 'r', 'R')], [INSTEP, 'foot', only(1, 'r', 'R')], [SOLE, 'foot', 'Q']] },
   botasAltas: { top: CALF, rows: [[CALF, 'shaft', 'r'], [ANKLE, 'shaft', 'R'], [INSTEP, 'foot', 'R'], [SOLE, 'foot', 'Q']] },
   lluvia: { top: CALF, rows: [[CALF, 'shaft', 'R'], [ANKLE, 'shaft', 'R'], [INSTEP, 'foot', 'R'], [SOLE, 'foot', 'Y']] },
-  clasicos: { top: INSTEP, rows: [[INSTEP, 'front', 'R'], [SOLE, 'front', 'Q']] },
-  mocasines: { top: INSTEP, rows: [[INSTEP, 'front', only(1, 'r', 'R')], [SOLE, 'front', 'Q']] },
-  merceditas: { top: INSTEP, rows: [[ANKLE, 'shaft', only(1, 'R')], [INSTEP, 'front', 'R'], [SOLE, 'front', 'Q']] },
   // Calzado abierto: la suela va oscura para que se separe de la piel de la pierna.
   bailarinas: { top: INSTEP, rows: [[INSTEP, 'front', (t, n) => (t < n / 2 ? 'R' : 'S')], [SOLE, 'front', 'Q']] },
   sandalias: { top: INSTEP, rows: [[INSTEP, 'foot', (t) => (t === 1 || t === 3 ? 'R' : 'S')], [SOLE, 'front', 'Q']] },
-  chanclas: { top: INSTEP, rows: [[INSTEP, 'foot', only(2, 'R', 'S')], [SOLE, 'front', 'Q']] },
   tacon: { top: INSTEP, rows: [[INSTEP, 'front', 'R'], [SOLE, 'foot', (t, n) => (t <= 1 || t === n - 1 ? 'Q' : null)]] },
-  aventura: { top: CALF, rows: [[CALF, 'shaft', 'r'], [ANKLE, 'shaft', only(1, 'r', 'R')], [INSTEP, 'foot', 'R'], [SOLE, 'foot', 'Q']] },
 }
 
 // Columnas de la caña y del pie de una pierna vista de frente: el pie sale hacia fuera.
@@ -48,7 +41,7 @@ function frontColumns({ cols: [a, b], out }) {
 }
 
 // Las botas de perfil son una columna más cortas de puntera que el resto del calzado.
-const BOOTS = ['altas', 'botines', 'montana', 'botasAltas', 'lluvia', 'aventura']
+const BOOTS = ['altas', 'botines', 'montana', 'botasAltas', 'lluvia']
 
 // Primera columna de la espinilla de una pierna de perfil en su fila `i` (0 es el muslo, 3 el
 // tobillo). La comparten pierna y calzado, así la bota siempre sigue a su pierna.

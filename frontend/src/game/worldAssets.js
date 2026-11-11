@@ -98,20 +98,28 @@ export const groundSeasonJob = (season, pastel) =>
   })
 
 // Prepara el valle en segundo plano, a porciones. Se puede pedir las veces que haga falta: la segunda vez
-// devuelve la misma promesa. Primero lo que hace falta para entrar y al final las estaciones del suelo.
-const warming = new Map()
-export function warmWorld(pastel) {
-  if (warming.has(pastel)) return warming.get(pastel)
+// devuelve la misma promesa. `warmEntry` es lo que hace falta para entrar (suelo, árboles, edificios y
+// objetos); la pantalla de carga espera solo a eso, y así la escena lo encuentra hecho en vez de pintarlo de
+// golpe y congelar el móvil. `warmWorld` añade después las estaciones del suelo.
+const entryWarming = new Map()
+export function warmEntry(pastel) {
+  if (entryWarming.has(pastel)) return entryWarming.get(pastel)
   const props = [...new Map(PROPS.map((p) => [`${p.kind}:${p.variant ?? 0}`, p])).values()]
-  const list = [
+  const done = runSliced([
     groundBaseJob(pastel),
     ...[0, 1, 2].map((v) => treeJob(v, pastel)),
     ...BUILDINGS.map((b) => buildingJob(b, pastel)),
     ...props.map((p) => propJob(p, pastel)),
     bridgeJob(pastel),
-    ...SEASONS.map((season) => groundSeasonJob(season, pastel)),
-  ]
-  const done = runSliced(list)
+  ])
+  entryWarming.set(pastel, done)
+  return done
+}
+
+const warming = new Map()
+export function warmWorld(pastel) {
+  if (warming.has(pastel)) return warming.get(pastel)
+  const done = warmEntry(pastel).then(() => runSliced(SEASONS.map((season) => groundSeasonJob(season, pastel))))
   warming.set(pastel, done)
   return done
 }

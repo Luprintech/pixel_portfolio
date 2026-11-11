@@ -6,7 +6,7 @@
 //   D/L/M prenda de arriba, luz y sombra     T ribete
 //   N/u/n prenda de abajo, luz y sombra      W blanco hueso (camisa, suela, cordones)
 //   R/Q calzado y suela              A/a complemento y su sombra     G gafas   P/Y pétalo y centro
-//   Z cejas y párpados (un tono muy oscuro de la piel)   F peca o lunar   C cicatriz   q lágrima
+//   Z cejas y párpados (un tono muy oscuro de la piel)   q lágrima
 //   r tono claro del calzado (cordones, puños)   J gema roja (el collar de Lupe)
 //   x y j k l o   contorno: el borde oscuro de la piel, el pelo, la prenda de arriba, la de abajo,
 //                 el calzado y los complementos (cada celda de borde hereda el color de lo que bordea)
@@ -109,8 +109,6 @@ export function avatarColors(look, blink = false) {
     O: '#2a1a2e',
     K: shade(look.beardColor, 0.85),
     Z: shade(look.skin, 0.42),
-    F: shade(mix(look.skin, '#8a3f2c', 0.4), 0.78),
-    C: tint(look.skin, 0.55),
     q: '#7fd0dc',
     w: blink ? look.skin : EYE_WHITE,
     e: blink ? look.skin : pupil,

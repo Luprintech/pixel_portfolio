@@ -28,26 +28,25 @@ export const LOOK_STYLES = {
   body: ['mujer', 'hombre'],
   face: [
     'serena', 'sonrisa', 'risa', 'guino', 'sorpresa', 'enfado', 'tristeza', 'llanto',
-    'concentracion', 'duda', 'sueno', 'verguenza', 'picardia', 'miedo', 'aburrimiento', 'ternura',
+    'duda', 'sueno', 'verguenza', 'miedo', 'aburrimiento', 'ternura',
   ],
   hairStyle: [...new Set([...HAIR_STYLES_BY_BODY.mujer, ...HAIR_STYLES_BY_BODY.hombre])],
   trait: [
-    'ninguno', 'incipiente', 'barbaCorta', 'barba', 'bigoteFino', 'bigote', 'perilla', 'patillas',
-    'pecas', 'pecasMuchas', 'lunarMejilla', 'lunarLabio', 'cejas', 'cejaPartida', 'cicatrizCeja', 'cicatrizMejilla',
+    'ninguno', 'incipiente', 'barbaCorta', 'barba', 'bigoteFino', 'bigote', 'perilla', 'patillas', 'cejas',
   ],
   accessory: [
-    'ninguno', 'gafas', 'gafasRect', 'gafasSol', 'pendientes', 'aros', 'piercing', 'auriculares',
-    'diadema', 'lazo', 'horquillas', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja',
-    'bufanda', 'corona', 'boina', 'orejasGato',
+    'ninguno', 'gafas', 'gafasRect', 'gafasSol', 'pendientes', 'aros', 'auriculares',
+    'diadema', 'lazo', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja',
+    'bufanda', 'corona', 'orejasGato',
   ],
   top: [
-    'camiseta', 'oversize', 'tirantes', 'camisa', 'sudadera', 'cremallera', 'jersey', 'vaquera',
+    'camiseta', 'oversize', 'tirantes', 'sudadera', 'cremallera', 'jersey', 'vaquera',
     'polo', 'chaleco', 'cardigan', 'vestido', 'vestidoTirantes', 'vestidoLargo', 'vestidoCamisero', 'peto',
   ],
   bottom: ['pantalon', 'cargo', 'ancho', 'pirata', 'shorts', 'falda', 'plisada', 'faldaLarga'],
   shoes: [
-    'zapatillas', 'deportivas', 'altas', 'lona', 'botines', 'montana', 'botasAltas', 'lluvia',
-    'clasicos', 'mocasines', 'merceditas', 'bailarinas', 'sandalias', 'chanclas', 'tacon', 'aventura',
+    'zapatillas', 'altas', 'botines', 'montana', 'botasAltas', 'lluvia',
+    'bailarinas', 'sandalias', 'tacon',
   ],
 }
 
@@ -61,10 +60,10 @@ export const LOOK_OPTIONS = { ...LOOK_COLORS, ...LOOK_STYLES }
 // Los vestidos y el peto son de una pieza: no se elige prenda de abajo, y en los vestidos tampoco su color.
 const DRESSES = ['vestido', 'vestidoTirantes', 'vestidoLargo', 'vestidoCamisero']
 const ONE_PIECE = [...DRESSES, 'peto']
-// Los rasgos que se tiñen con el color del vello; pecas, lunares y cicatrices llevan su propio tono.
-const HAIRY_TRAITS = ['incipiente', 'barbaCorta', 'barba', 'bigoteFino', 'bigote', 'perilla', 'patillas', 'cejas', 'cejaPartida', 'cicatrizCeja']
-// Las gafas, el piercing y los auriculares son de un solo color; el resto se tiñe.
-const TINTED_ACCESSORIES = ['pendientes', 'aros', 'diadema', 'lazo', 'horquillas', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja', 'bufanda', 'corona', 'boina', 'orejasGato']
+// Los rasgos que se tiñen con el color del vello.
+const HAIRY_TRAITS = ['incipiente', 'barbaCorta', 'barba', 'bigoteFino', 'bigote', 'perilla', 'patillas', 'cejas']
+// Las gafas y los auriculares son de un solo color; el resto se tiñe.
+const TINTED_ACCESSORIES = ['pendientes', 'aros', 'diadema', 'lazo', 'panuelo', 'gorra', 'gorro', 'sombreroPaja', 'sombreroBruja', 'bufanda', 'corona', 'orejasGato']
 const hasBeard = (look) => HAIRY_TRAITS.includes(look.trait)
 const hasHair = (look) => look.hairStyle !== 'calvo'
 const hasAccessoryColor = (look) => TINTED_ACCESSORIES.includes(look.accessory)
@@ -183,7 +182,6 @@ const CLOTHES_ES = {
   camiseta: 'Camiseta básica',
   oversize: 'Camiseta oversize',
   tirantes: 'Top sin mangas',
-  camisa: 'Camisa',
   sudadera: 'Sudadera con capucha',
   cremallera: 'Sudadera con zip',
   jersey: 'Jersey',
@@ -209,7 +207,6 @@ const CLOTHES_EN = {
   camiseta: 'Basic T-shirt',
   oversize: 'Oversized T-shirt',
   tirantes: 'Sleeveless top',
-  camisa: 'Shirt',
   sudadera: 'Hoodie',
   cremallera: 'Zip hoodie',
   jersey: 'Sweater',
@@ -244,11 +241,9 @@ export const STYLE_NAMES = {
     enfado: 'Enfado',
     tristeza: 'Tristeza',
     llanto: 'Llanto',
-    concentracion: 'Concentración',
     duda: 'Duda',
     sueno: 'Sueño',
     verguenza: 'Vergüenza',
-    picardia: 'Picardía',
     miedo: 'Miedo',
     aburrimiento: 'Aburrimiento',
     ternura: 'Ternura',
@@ -282,24 +277,15 @@ export const STYLE_NAMES = {
     bigote: 'Bigote ancho',
     perilla: 'Perilla',
     patillas: 'Patillas',
-    pecas: 'Pecas suaves',
-    pecasMuchas: 'Pecas abundantes',
-    lunarMejilla: 'Lunar en la mejilla',
-    lunarLabio: 'Lunar junto al labio',
     cejas: 'Cejas pobladas',
-    cejaPartida: 'Ceja partida',
-    cicatrizCeja: 'Cicatriz en la ceja',
-    cicatrizMejilla: 'Cicatriz en la mejilla',
     gafas: 'Gafas redondas',
     gafasRect: 'Gafas cuadradas',
     gafasSol: 'Gafas de sol',
     pendientes: 'Pendientes pequeños',
     aros: 'Pendientes de aro',
-    piercing: 'Piercing de nariz',
     auriculares: 'Auriculares',
     diadema: 'Diadema',
     lazo: 'Lazo',
-    horquillas: 'Horquillas',
     panuelo: 'Pañuelo',
     gorra: 'Gorra',
     gorro: 'Gorro de lana',
@@ -307,25 +293,17 @@ export const STYLE_NAMES = {
     sombreroBruja: 'Sombrero de bruja',
     bufanda: 'Bufanda',
     corona: 'Corona de princesa',
-    boina: 'Boina',
     orejasGato: 'Orejas de gato',
     ...CLOTHES_ES,
     zapatillas: 'Zapatillas básicas',
-    deportivas: 'Zapatillas deportivas',
     altas: 'Zapatillas altas',
-    lona: 'Zapatillas de lona',
     botines: 'Botines',
     montana: 'Botas de montaña',
     botasAltas: 'Botas altas',
     lluvia: 'Botas de lluvia',
-    clasicos: 'Zapatos clásicos',
-    mocasines: 'Mocasines',
-    merceditas: 'Merceditas',
     bailarinas: 'Bailarinas',
     sandalias: 'Sandalias',
-    chanclas: 'Chanclas',
     tacon: 'Zapatos de tacón',
-    aventura: 'Botas de aventura',
   },
   en: {
     mujer: 'Woman',
@@ -338,11 +316,9 @@ export const STYLE_NAMES = {
     enfado: 'Angry',
     tristeza: 'Sad',
     llanto: 'Crying',
-    concentracion: 'Focused',
     duda: 'Doubtful',
     sueno: 'Sleepy',
     verguenza: 'Embarrassed',
-    picardia: 'Mischief',
     miedo: 'Fear',
     aburrimiento: 'Boredom',
     ternura: 'Tenderness',
@@ -376,24 +352,15 @@ export const STYLE_NAMES = {
     bigote: 'Thick moustache',
     perilla: 'Goatee',
     patillas: 'Sideburns',
-    pecas: 'Light freckles',
-    pecasMuchas: 'Many freckles',
-    lunarMejilla: 'Mole on the cheek',
-    lunarLabio: 'Mole by the lip',
     cejas: 'Thick eyebrows',
-    cejaPartida: 'Split eyebrow',
-    cicatrizCeja: 'Scar through the eyebrow',
-    cicatrizMejilla: 'Scar on the cheek',
     gafas: 'Round glasses',
     gafasRect: 'Rectangular glasses',
     gafasSol: 'Sunglasses',
     pendientes: 'Stud earrings',
     aros: 'Hoop earrings',
-    piercing: 'Nose piercing',
     auriculares: 'Headphones',
     diadema: 'Headband',
     lazo: 'Bow',
-    horquillas: 'Hair clips',
     panuelo: 'Bandana',
     gorra: 'Cap',
     gorro: 'Wool beanie',
@@ -401,25 +368,17 @@ export const STYLE_NAMES = {
     sombreroBruja: 'Witch hat',
     bufanda: 'Scarf',
     corona: 'Princess crown',
-    boina: 'Beret',
     orejasGato: 'Cat ears',
     ...CLOTHES_EN,
     zapatillas: 'Basic sneakers',
-    deportivas: 'Running shoes',
     altas: 'High-top sneakers',
-    lona: 'Canvas sneakers',
     botines: 'Ankle boots',
     montana: 'Hiking boots',
     botasAltas: 'Tall boots',
     lluvia: 'Rain boots',
-    clasicos: 'Oxford shoes',
-    mocasines: 'Loafers',
-    merceditas: 'Mary Janes',
     bailarinas: 'Ballet flats',
     sandalias: 'Sandals',
-    chanclas: 'Flip-flops',
     tacon: 'Heels',
-    aventura: 'Adventure boots',
   },
 }
 
@@ -558,17 +517,30 @@ const HAIR_LEGACY = {
 }
 
 // Estilos de antes de las láminas de referencia y el que los sustituye: `beard` pasó a `trait`,
-// la flor es un par de horquillas y la tímida es la vergüenza.
-const FACE_LEGACY = { timida: 'verguenza' }
+// la tímida es la vergüenza. Las opciones retiradas (rasgos, calzado, camisa, complementos) pasan a la más parecida.
+const FACE_LEGACY = { timida: 'verguenza', concentracion: 'serena', picardia: 'sonrisa' }
 const TRAIT_LEGACY = { ninguna: 'ninguno' }
-const ACCESSORY_LEGACY = { flor: 'horquillas' }
-const SHOES_LEGACY = { botas: 'botines' }
+const TRAIT_REMOVED = ['pecas', 'pecasMuchas', 'lunarMejilla', 'lunarLabio', 'cejaPartida', 'cicatrizCeja', 'cicatrizMejilla']
+const ACCESSORY_LEGACY = { flor: 'ninguno', piercing: 'ninguno', horquillas: 'ninguno', boina: 'gorro' }
+const SHOES_LEGACY = {
+  botas: 'botines',
+  deportivas: 'zapatillas',
+  lona: 'zapatillas',
+  clasicos: 'tacon',
+  mocasines: 'bailarinas',
+  merceditas: 'bailarinas',
+  chanclas: 'sandalias',
+  aventura: 'botasAltas',
+}
+const TOP_LEGACY = { camisa: 'polo' }
 
 // Traduce lo guardado antes de que la ropa se separara en prenda de arriba, de abajo y calzado, de
 // los doce peinados actuales y de las láminas de rostro, complementos y calzado.
 function fromLegacy(look) {
   const next = { ...look }
   if ('beard' in look) next.trait = TRAIT_LEGACY[look.beard] ?? look.beard
+  if (TRAIT_REMOVED.includes(next.trait)) next.trait = 'ninguno'
+  if (TOP_LEGACY[next.top]) next.top = TOP_LEGACY[next.top]
   if (FACE_LEGACY[look.face]) next.face = FACE_LEGACY[look.face]
   if (ACCESSORY_LEGACY[look.accessory]) next.accessory = ACCESSORY_LEGACY[look.accessory]
   if (SHOES_LEGACY[look.shoes]) next.shoes = SHOES_LEGACY[look.shoes]

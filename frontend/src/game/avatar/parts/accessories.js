@@ -1,7 +1,7 @@
 // Complementos. Se pintan por encima del pelo y, salvo los que cubren la cabeza (gorra, gorro,
 // pañuelo y sombreros), se suman sin quitar nada: esos sustituyen la parte de arriba del peinado,
-// también lo que sobresale, como un moño. Lo que se lleva en un solo lado de la cabeza (lazo,
-// horquillas, nudo del pañuelo) solo se ve en el perfil que enseña ese lado, el izquierdo; el
+// también lo que sobresale, como un moño. Lo que se lleva en un solo lado de la cabeza (lazo y
+// nudo del pañuelo) solo se ve en el perfil que enseña ese lado, el izquierdo; el
 // derecho lo deja en la otra cara, tapado.
 //
 // Cada complemento es una función de `ACCESSORIES` que recibe un pequeño pincel (`add`, `rect`) y la
@@ -62,11 +62,6 @@ function hoops({ add, view, side }) {
   else if (side) [[9, 9], [8, 10], [8, 11], [9, 12]].forEach(([x, y]) => add(x, y, 'A'))
 }
 
-function nosePiercing({ add, view }) {
-  if (view === 'down') add(9, 9, 'Y')
-  else if (view === 'side') add(13, 9, 'Y')
-}
-
 // Auriculares: arco sobre la cabeza y una almohadilla en cada oreja, con una franja de color.
 function headphones({ add, rect, view }) {
   if (view !== 'side') {
@@ -99,13 +94,6 @@ function bow({ add, side, left, view }) {
   if (side && !left) return
   const x = side ? 4 : 10
   ;[[0, 1, 'A'], [1, 1, 'a'], [2, 1, 'A'], [0, 2, 'A'], [1, 2, 'a'], [2, 2, 'A']].forEach(([dx, y, ch]) => add(sameSide(x + dx, view), y, ch))
-}
-
-// Horquillas: dos pasadores cortos y paralelos sobre la sien.
-function hairClips({ add, side, left, view }) {
-  if (side && !left) return
-  const x = side ? 5 : 10
-  ;[[0, 2, 'A'], [1, 2, 'A'], [1, 3, 'A'], [2, 3, 'A'], [2, 2, 'a']].forEach(([dx, y, ch]) => add(sameSide(x + dx, view), y, ch))
 }
 
 // Gorro de lana: casquete, vuelta del borde y pompón.
@@ -199,19 +187,6 @@ function crown({ rect, add, side }) {
   ;[2, 3].forEach((dx) => add(x + dx, -1, 'J'))
 }
 
-// Boina: casquete blando que cae hacia el lado izquierdo del personaje, con su rabito arriba.
-function beret({ rect, add, dome, dropHairAbove, side, left, view }) {
-  dropHairAbove()
-  dome('A')
-  add(side ? 8 : 7, -1, 'a')
-  if (side) {
-    if (left) rect(2, 2, 2, 3, 'a')
-    return
-  }
-  const x = sameSide(13, view)
-  rect(x, 1, x, 3, 'a')
-}
-
 // Orejas de gato: una diadema con dos orejas triangulares de interior rosa.
 function catEars({ rect, add, side, view }) {
   if (side) {
@@ -235,11 +210,9 @@ const ACCESSORIES = {
   gafasSol: sunglasses,
   pendientes: studs,
   aros: hoops,
-  piercing: nosePiercing,
   auriculares: headphones,
   diadema: headband,
   lazo: bow,
-  horquillas: hairClips,
   panuelo: bandana,
   gorra: cap,
   gorro: beanie,
@@ -247,7 +220,6 @@ const ACCESSORIES = {
   sombreroBruja: witchHat,
   bufanda: scarf,
   corona: crown,
-  boina: beret,
   orejasGato: catEars,
 }
 

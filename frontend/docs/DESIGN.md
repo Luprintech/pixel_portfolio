@@ -56,7 +56,8 @@ Lavanda, rosa empolvado, azul cielo y marfil, con texto y contornos en ciruela o
 | Marfil | `#fff6e6` | Tarjetas, botones secundarios, bocadillos (`--t-ivory`) |
 | Rosa empolvado | `#fbd3e3` | Apoyo y hover suave (`--t-powder`) |
 | Azul cielo | `#bfe3f7` | Apoyo (`--t-sky`) |
-| Frambuesa | `#d81b6a` | Solo acción principal y selección (`--t-berry`); `#a30f4c` para texto, enlaces y foco (`--t-berry-deep`); `#f27ab0` en hover (`--t-berry-soft`) |
+| Mantequilla | `#fbe6a2` | Hover de botones y conversaciones (`--t-butter`) |
+| Frambuesa | `#d81b6a` | Solo acción principal y selección (`--t-berry`); `#a30f4c` para texto, enlaces y foco (`--t-berry-deep`) |
 | Pistacho | `#b5d19a` | Fondo de las tarjetas con dibujo del creador (`--t-tile`); la cruz de "sin opción" va en `#a30f4c` |
 
 Contrastes comprobados: ciruela sobre lavanda 9,6:1, frambuesa honda sobre lavanda 5,1:1, marfil sobre frambuesa 4,6:1, contorno de los sprites sobre el pistacho 11:1.
@@ -72,7 +73,7 @@ Contrastes comprobados: ciruela sobre lavanda 9,6:1, frambuesa honda sobre lavan
 | Azafrán | `#f2b134` | Acento principal, anillos de foco |
 | Teja | `#d4503a` | Tejados, acento cálido |
 | Hueso | `#f1e6cf` | Fondo claro, texto sobre oscuro |
-| Rosa | `#f4b8cc` | Solo hover de los botones secundarios (`--accent-rose`); el azafrán sigue siendo el color del botón principal |
+| Amarillo pastel | `#fbe6a2` | Solo hover de los botones secundarios y del mando de volumen (`--accent-hover`); el azafrán sigue siendo el color del botón principal |
 
 Dentro del juego, cada color base se amplía con una escala de cuatro o cinco tonos (`TONE` en `game/palette.js`: hierba, tierra, agua, arena, madera, pared, piedra y cerezo) para sombrear al estilo cálido de Stardew. Los contornos son del tono oscuro de cada sprite, no negro. Detalle en `docs/IDENTIDAD-VISUAL.md`.
 

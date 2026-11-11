@@ -81,7 +81,7 @@
   --accent-secondary: #4cb3c9;
   --accent-secondary-dim: rgba(76, 179, 201, 0.16);
   --accent-violet: #b8a2e0;
-  --accent-rose: #f4b8cc; /* Rosa: solo para respuestas al puntero (hover), nunca como color de reposo */
+  --accent-hover: #fbe6a2; /* Amarillo pastel: solo para respuestas al puntero (hover), nunca como color de reposo */
 
   /* Acentos extras: verde · naranja · violeta (stack tecnológico) */
   --accent-green: #a3c14f;
@@ -161,7 +161,7 @@
   --t-ivory: #fff6e6;
   --t-berry: #d81b6a;
   --t-berry-deep: #a30f4c;
-  --t-berry-soft: #f27ab0;
+  --t-butter: #fbe6a2;
   --t-muted: #6b4a7a;
   --t-tile: #b5d19a;
   --t-cross: #a30f4c;
@@ -199,7 +199,7 @@
   --accent-secondary: #a30f4c;
   --accent-secondary-dim: rgba(216, 27, 106, 0.16);
   --accent-violet: #7a4fa8;
-  --accent-rose: #f27ab0; /* Respuestas al puntero (hover) */
+  --accent-hover: #fbe6a2; /* Amarillo pastel: respuestas al puntero (hover) */
 
   --accent-green: #5c8a50;
   --accent-green-dim: rgba(92, 138, 80, 0.18);
