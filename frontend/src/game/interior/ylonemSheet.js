@@ -1,8 +1,7 @@
-// Ylonem tal como se le ve en Gran Capitán: su dibujo de siempre (`ylonem.js`, el mismo generador que la viajera) con una cámara de
+// Ylonem con la cámara en la mano, tal como se le ve cuando graba por el valle (`npc/GranNeighbours.js`): su dibujo de siempre (`ylonem.js`, el mismo generador que la viajera) con una cámara de
 // fotos en la mano. La cámara se pinta encima del fotograma ya compuesto, así que no cambia el aspecto fijo del personaje ni sus
 // proporciones. Sin dependencias de Phaser ni de React.
-import { DIRS, SHEET_POSES, avatarCanvas, frameRect } from '../avatar/index.js'
-import { YLONEM_LOOK } from '../ylonem.js'
+import { DIRS, SHEET_POSES, frameRect } from '../avatar/index.js'
 import { characterSheet } from '../characters.js'
 import { rect } from '../pixelKit.js'
 
@@ -30,8 +29,8 @@ export function paintCamera(g, dir, ox = 0, oy = 0) {
   CAMERA_BOXES[dir].forEach(([x, y, w, h, color]) => rect(g, ox + x, oy + y, w, h, color))
 }
 
-// Hoja completa de Ylonem: la misma rejilla que cualquier personaje (`frameRect`). La cámara solo en reposo: es lo único que hace en
-// el aula (mirar, parpadear y girarse hacia quien se acerca).
+// Hoja completa de Ylonem: la misma rejilla que cualquier personaje (`frameRect`). La cámara solo en reposo, que es cuando graba (parado, mirando
+// a lo que filma); al andar se usa su hoja sin cámara, porque los brazos se mueven y la cámara no acompañaría.
 export function ylonemSheet() {
   const sheet = characterSheet('ylonem')
   const g = sheet.getContext('2d')
@@ -42,11 +41,4 @@ export function ylonemSheet() {
     }
   })
   return sheet
-}
-
-// Fotograma de frente con los ojos cerrados (y la cámara): se alterna con el de reposo para que parpadee.
-export function ylonemBlink() {
-  const frame = avatarCanvas(YLONEM_LOOK, 'down', 0, true)
-  paintCamera(frame.getContext('2d'), 'down')
-  return frame
 }

@@ -59,22 +59,18 @@ const NAS_MENU = [
 ]
 
 // IES Gran Capitán (`docs/DIALOGOS.md`, `desarrollo.daw` y `desarrollo.vocaccion`): el tablón del itinerario y la pizarra del proyecto
-// final. Las dos ofrecen la ficha de DAW; ninguna obliga a nada. Ylonem y Grace son compañeras de aula: hablan con la viajera y Lupe
-// comenta como voz en off (su sprite no aparece en la sala), igual que en el tablón.
+// final. Las dos ofrecen la ficha de DAW; ninguna obliga a nada.
 const GRAN_MENU = [option('ficha', 'gran.opt.ficha', { action: 'ficha' }), option('seguir', 'casa.opt.explorar', { close: true })]
 
-// "Ver el estudio" abre la web de Ylonem en otra pestaña (acción `estudio`, atendida por la página): el dominio está autorizado.
-const YLONEM_MENU = [
-  option('aplicacion', 'ylonem.opt.aplicacion', { to: 'ylonem.aplicacion' }),
-  option('estreno', 'ylonem.opt.estreno', { to: 'ylonem.gran_estreno' }),
-  option('seguir', 'casa.opt.explorar', { close: true }),
-]
-const YLONEM_ESTUDIO_MENU = [
-  option('estreno', 'ylonem.opt.estreno', { to: 'ylonem.gran_estreno' }),
-  option('estudio', 'ylonem.opt.estudio', { action: 'estudio' }),
-  option('volver', 'ylonem.opt.volver', { to: 'ylonem.presentacion' }),
-]
-const GRACE_MENU = [option('ciber', 'grace.opt.ciber', { to: 'grace.ciberseguridad' }), option('seguir', 'casa.opt.explorar', { close: true })]
+// Ylonem y Grace viven fuera, junto a la puerta, y hablan con la viajera (nunca la llaman Lupe). Lo que cuentan se ofrece como opciones: la
+// presentación con Lupe (`gran.llegada`) las abre y sus repeticiones las vuelven a ofrecer mientras no se hayan oído. "Ver el estudio" abre
+// la web de Ylonem en otra pestaña (acción `estudio`, atendida por la página): el dominio está autorizado.
+const SEGUIR = option('seguir', 'casa.opt.explorar', { close: true })
+const APLICACION = option('aplicacion', 'ylonem.opt.aplicacion', { to: 'ylonem.aplicacion' })
+const ESTRENO = option('estreno', 'ylonem.opt.estreno', { to: 'ylonem.gran_estreno' })
+const ESTUDIO = option('estudio', 'ylonem.opt.estudio', { action: 'estudio' })
+const CIBER = option('ciber', 'grace.opt.ciber', { to: 'grace.ciberseguridad' })
+const LLEGADA_MENU = [APLICACION, ESTRENO, CIBER, option('entrar', 'gran.opt.entrar', { close: true })]
 
 export const SCRIPTS = {
   'inicio.bienvenida': {
@@ -172,29 +168,19 @@ export const SCRIPTS = {
   'gran.repeticion': { pages: lines('lupe', 'gran.repeticion', 1), options: GRAN_MENU },
   'gran.pizarra': { pages: lines('lupe', 'gran.pizarra', 3), options: GRAN_MENU },
 
-  'ylonem.presentacion': {
-    pages: [{ who: 'ylonem', text: 'ylonem.presentacion.1' }, { who: 'ylonem', text: 'ylonem.presentacion.2' }, { who: 'lupe', text: 'ylonem.presentacion.3' }],
-    options: YLONEM_MENU,
+  // La primera vez que la viajera llega a la puerta del IES, Lupe sale a presentarles a Ylonem y a Grace (`npc/GranNeighbours.js`).
+  'gran.llegada': {
+    pages: [{ who: 'lupe', text: 'gran.llegada.1' }, { who: 'ylonem', text: 'gran.llegada.2' }, { who: 'grace', text: 'gran.llegada.3' }, { who: 'lupe', text: 'gran.llegada.4' }],
+    options: LLEGADA_MENU,
   },
-  'ylonem.aplicacion': {
-    pages: [{ who: 'lupe', text: 'ylonem.aplicacion.1' }, { who: 'ylonem', text: 'ylonem.aplicacion.2' }, { who: 'lupe', text: 'ylonem.aplicacion.3' }],
-    options: YLONEM_ESTUDIO_MENU,
-  },
-  'ylonem.gran_estreno': {
-    pages: [{ who: 'ylonem', text: 'ylonem.gran_estreno.1' }, { who: 'lupe', text: 'ylonem.gran_estreno.2' }, { who: 'ylonem', text: 'ylonem.gran_estreno.3' }],
-    options: [option('aplicacion', 'ylonem.opt.aplicacion', { to: 'ylonem.aplicacion' }), YLONEM_ESTUDIO_MENU[1], option('seguir', 'casa.opt.explorar', { close: true })],
-  },
-  'ylonem.repeticion': { pages: lines('ylonem', 'ylonem.repeticion', 1), options: YLONEM_MENU },
-
-  'grace.presentacion': {
-    pages: [{ who: 'grace', text: 'grace.presentacion.1' }, { who: 'grace', text: 'grace.presentacion.2' }, { who: 'lupe', text: 'grace.presentacion.3' }],
-    options: GRACE_MENU,
-  },
-  'grace.ciberseguridad': {
-    pages: [{ who: 'lupe', text: 'grace.ciberseguridad.1' }, { who: 'grace', text: 'grace.ciberseguridad.2' }],
-    options: GRAN_MENU,
-  },
-  'grace.repeticion': { pages: lines('grace', 'grace.repeticion', 1), options: GRACE_MENU },
+  'ylonem.aplicacion': { pages: lines('ylonem', 'ylonem.aplicacion', 3), options: [ESTRENO, ESTUDIO, SEGUIR] },
+  'ylonem.gran_estreno': { pages: lines('ylonem', 'ylonem.gran_estreno', 3), options: [APLICACION, ESTUDIO, SEGUIR] },
+  'ylonem.repeticion': { pages: lines('ylonem', 'ylonem.repeticion', 1), options: [APLICACION, ESTRENO, SEGUIR] },
+  'grace.ciberseguridad': { pages: lines('grace', 'grace.ciberseguridad', 2), options: [SEGUIR] },
+  'grace.repeticion': { pages: lines('grace', 'grace.repeticion', 1), options: [CIBER, SEGUIR] },
+  // Lo que dicen si se les habla mientras hacen su rutina por el pueblo (`npc/GranNeighbours.js`): Grace sentada con las palomas y Ylonem grabando.
+  'grace.palomas': { pages: lines('grace', 'grace.palomas', 2), options: [CIBER, SEGUIR] },
+  'ylonem.grabando': { pages: lines('ylonem', 'ylonem.grabando', 2), options: [APLICACION, ESTRENO, SEGUIR] },
 
   'pc.abrir': { pages: lines('lupe', 'pc.abrir', 4), options: PC_TALK_MENU },
   'pc.proyectos_info': { pages: lines('lupe', 'pc.proyectos_info', 3), options: PC_TALK_MENU },
@@ -225,8 +211,6 @@ export const TALKS = {
   khalessi: { first: 'casa.khalessi', rest: 'casa.khalessi_reposo' },
   granCartel: { first: 'gran.entrada', again: 'gran.repeticion' },
   granPizarra: { first: 'gran.pizarra' },
-  granYlonem: { first: 'ylonem.presentacion', again: 'ylonem.repeticion' },
-  granGrace: { first: 'grace.presentacion', again: 'grace.repeticion' },
 }
 
 // Conversación de una interacción según lo ya visto: `seen` es el conjunto de ids de conversaciones abiertas

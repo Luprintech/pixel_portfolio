@@ -100,6 +100,11 @@ export const tourOnRoofEntry = (story) => story.tour === 'none' || story.tour ==
 // Se ofrece enseñar la casa mientras no se haya hecho ni esté en marcha.
 export const tourOffered = (story) => ['none', 'pending', 'cancelled'].includes(story.tour)
 
+// Lupe sale a presentar a Ylonem y a Grace ante la puerta del IES Gran Capitán una sola vez (`npc/GranNeighbours.js`). Mientras tenga a Lupe
+// guiándola por la casa no toca: la visita en marcha manda.
+export const GRAN_ARRIVAL = 'gran.llegada'
+export const granArrivalDue = (story) => story.tour !== 'accepted' && !story.heard.includes(GRAN_ARRIVAL)
+
 // Conversaciones nuevas de cada personaje, por orden: mientras haya una sin escuchar, el personaje lleva la exclamación.
 // Por ahora solo Lupe tiene la bienvenida; los demás personajes añaden aquí sus entradas.
 const NEWS = { lupe: ['inicio.bienvenida'] }

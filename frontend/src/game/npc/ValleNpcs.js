@@ -14,6 +14,7 @@ import { createLupeBrain, endTalk, enterHome, placeAt, setAnchor, startGuide, st
 import { go } from './npcStates.js'
 import { CONVERSATION, beginTalk, createVisit, isVisiting, startVisit, stepVisit, visitAlpha, visitDue } from './deckVisit.js'
 import { facingFor } from '../walk.js'
+import { screenAnchor } from './bubbleAnchor.js'
 
 // A qué distancia se puede hablar con ella, a cuál empieza sola la bienvenida (la viajera tiene que acercarse un poco) y a
 // cuál se vuelve a armar si la viajera se va y regresa.
@@ -43,6 +44,7 @@ export default class ValleNpcs {
     this.mark = buildExclamation(scene, () => ({ x: this.brain.x, y: this.brain.y - MARK_ABOVE + 2 }))
     this.places = places
     this.armed = true
+    this.catAway = false
     this.offered = false
     this.lastState = this.brain.state
     this.waitBubbleAt = -WAIT_BUBBLE_MS
@@ -68,10 +70,37 @@ export default class ValleNpcs {
     this.visitor?.destroy()
   }
 
+  // Los dibujos que andan por el valle, para recortarlos de los cristales encendidos de los edificios (`litWindows.js`).
+  sprites() {
+    return [this.lupe.sprite, this.cat.sprite, this.visitor?.sprite]
+  }
+
   // Mientras Khalessi conoce a la mascota (olfatea o juega), dónde está y en qué fase, para que la mascota la mire y juegue.
   petCue() {
     const phase = meetPhase(this.companion)
     return phase ? { phase, x: this.companion.x, y: this.companion.y } : null
+  }
+
+  // Lupe puede salir a presentar a Ylonem y a Grace ante el IES si no está ocupada: ni dentro de casa, ni en la azotea, ni hablando o guiando.
+  canLeave() {
+    return !this.brain.inside && this.visit.phase === 'away' && ['idle', 'routine'].includes(this.brain.state)
+  }
+
+  // Lupe está en otro sitio (presentando a Ylonem y a Grace): aquí no se la ve ni se puede hablar con ella. Se reutiliza `inside`, que ya
+  // la esconde, la calla y le quita la exclamación.
+  setElsewhere(away) {
+    this.brain.inside = away
+    this.syncMark()
+  }
+
+  // Khalessi puede ir a ver a Grace a la plaza si no está con Lupe en algo (la visita en marcha, conociendo a la mascota o en la azotea).
+  canSpareCat() {
+    return !this.catAway && !this.brain.inside && !this.companion.meet && this.visit.phase === 'away' && getStory(this.game).tour !== 'accepted'
+  }
+
+  // Mientras Khalessi está en la plaza (la dibujan los vecinos del IES), aquí no se la ve: es una sola gata.
+  setCatAway(away) {
+    this.catAway = away
   }
 
   // Mientras va a su puerta o espera dentro no se puede hablar con ella.
@@ -224,13 +253,7 @@ export default class ValleNpcs {
   // Mientras el bocadillo está abierto, la página sabe dónde está la cabeza de Lupe en la pantalla (en píxeles CSS del lienzo).
   publishBubble() {
     if (!this.bubbleOpen) return
-    const camera = this.scene.cameras.main
-    const { canvas } = this.game
-    const ratio = canvas.clientWidth / this.scene.scale.width
-    this.game.events.emit('bubble-anchor', {
-      x: (this.brain.x - camera.worldView.x) * camera.zoom * ratio,
-      y: (this.brain.y - MARK_ABOVE - camera.worldView.y) * camera.zoom * ratio,
-    })
+    this.game.events.emit('bubble-anchor', screenAnchor(this.scene, this.brain.x, this.brain.y - MARK_ABOVE))
   }
 
   // `locked` es que hay un diálogo o un panel abierto: mientras tanto Lupe no abre conversaciones por su cuenta.
@@ -265,7 +288,7 @@ export default class ValleNpcs {
     this.cat.render(this.companion)
     // Dentro de su casa no se las ve: Khalessi entra con ella.
     this.lupe.setVisible(!brain.inside)
-    this.cat.setVisible(!brain.inside)
+    this.cat.setVisible(!brain.inside && !this.catAway)
     if (brain.inside) this.mark.setVisible(false)
     this.publishBubble()
     this.updateVisit(delta, locked, traveller, onDeck)

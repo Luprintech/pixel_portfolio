@@ -15,6 +15,7 @@ import { advanceWalk, facingFor, inputVector } from './walk.js'
 import { resumePoint } from './worldSave.js'
 import { characterSheet } from './characters.js'
 import ValleNpcs from './npc/ValleNpcs.js'
+import GranNeighbours from './npc/GranNeighbours.js'
 import { createValleNav } from './npc/valleNav.js'
 import { getStory, updateStory } from './story/storyStore.js'
 import { setTour, tourOnRoofEntry } from './story/story.js'
@@ -97,6 +98,7 @@ export default class ValleScene extends Phaser.Scene {
         this.input.keyboard.enableGlobalCapture()
         // Lupe retoma lo que hacía al cerrarse el diálogo.
         this.npcs.onUnlock()
+        this.neighbours.onUnlock()
       }
     }
     this.game.registry.events.on('changedata-locked', onLock)
@@ -505,7 +507,10 @@ export default class ValleScene extends Phaser.Scene {
 
     // Lupe y Khalessi tienen vida propia: andan por los mismos caminos libres que la viajera (los cuerpos sólidos del mapa).
     const bodies = this.solids.map((body) => ({ x: body.x - body.width / 2, y: body.y - body.height / 2, w: body.width, h: body.height }))
-    this.npcs = new ValleNpcs(this, createValleNav(bodies), () => ({ x: this.princess.x, y: this.princess.y }), () => this.companion && { x: this.companion.x, y: this.companion.y })
+    const travellerAt = () => ({ x: this.princess.x, y: this.princess.y })
+    this.npcs = new ValleNpcs(this, createValleNav(bodies), travellerAt, () => this.companion && { x: this.companion.x, y: this.companion.y })
+    // Ylonem y Grace viven junto al IES Gran Capitán; Lupe sale a presentárselos a la viajera la primera vez.
+    this.neighbours = new GranNeighbours(this, bodies, travellerAt, this.npcs)
     this.buildPet(x, y)
     this.facing = this.arriving ? 'up' : 'down'
     this.walk = { timer: 0, step: 0 }
@@ -525,6 +530,7 @@ export default class ValleScene extends Phaser.Scene {
     if (this.inside || this.arriving || this.game.registry.get('locked') || !this.near) return
     if (this.near === 'standup') this.stand()
     else if (this.near === 'npc:lupe') this.npcs.talk()
+    else if (this.near.startsWith('npc:')) this.neighbours.talk(this.near.slice('npc:'.length))
     else if (this.near.startsWith('bench:') || this.near === 'chairDeck') this.sit(this.benches.find((bench) => bench.id === this.near).seat)
     else if (this.near === 'telescope' && this.npcs.onDeck()) this.npcs.talkAtTelescope()
     else if (this.near === 'rooftopDoor') this.enterBuilding('about', 'deck')
@@ -620,6 +626,7 @@ export default class ValleScene extends Phaser.Scene {
 
     // Lupe y Khalessi siguen a lo suyo aunque la viajera esté sentada o leyendo.
     this.npcs.update(delta, locked, this.climbMode === 'deck')
+    this.neighbours.update(delta, locked)
 
     if (this.arriving) {
       // Sube por el camino sola. Si algo la frena (o la página estuvo oculta) no se queda atascada: el tiempo manda.
@@ -683,7 +690,9 @@ export default class ValleScene extends Phaser.Scene {
     this.princess.setDepth(onGround ? py : this.terrace.depth)
     // La sombra usa la misma posición sin redondear que el sprite: si no, se desfasa de él al caminar.
     this.shadow.setPosition(this.princess.x, this.princess.y - 1)
-    this.litWindows.forEach((lit) => lit.update(this.princess))
+    // Los cristales encendidos van por encima de todo: se recortan las siluetas de la viajera y de cuantos andan por el valle.
+    const cutters = [this.princess, this.companion, ...this.npcs.sprites(), ...this.neighbours.sprites()]
+    this.litWindows.forEach((lit) => lit.update(cutters))
 
     // La mascota espera al pie de la escalera: no sabe subir y se perdería tras la pared.
     if (this.companion) this.followPet(moving && onGround, px, py, delta)
@@ -759,7 +768,9 @@ export default class ValleScene extends Phaser.Scene {
     const atScope = !hit && !chair && this.terrace && nearTelescope(this.climbMode, this.princess.x - this.terrace.px, this.princess.y - this.terrace.py)
     const atRoofDoor = !hit && !chair && !atScope && this.terrace && nearRoofDoor(this.climbMode, this.princess.x - this.terrace.px, this.princess.y - this.terrace.py)
     const bench = chair || (!hit && !atScope && !atRoofDoor && this.benches.find((b) => !b.deck && b.zone.contains(px, py)))
-    const id = hit ? hit.id : atScope ? 'telescope' : atRoofDoor ? 'rooftopDoor' : bench ? bench.id : null
+    // Ylonem y Grace se atienden desde fuera de la puerta: ante ella, E entra.
+    const neighbour = !hit && onGround && this.neighbours.talkTarget(px, py)
+    const id = hit ? hit.id : neighbour ? `npc:${neighbour}` : atScope ? 'telescope' : atRoofDoor ? 'rooftopDoor' : bench ? bench.id : null
     if (id !== this.near) {
       this.near = id
       this.game.events.emit('near', id)

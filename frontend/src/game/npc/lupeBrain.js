@@ -172,12 +172,17 @@ export function enterHome(brain, door) {
   brain.inside = brain.path.length === 0
 }
 
-function walkTo(brain, target) {
+// Echa a andar hacia `target` a paso de paseo. Devuelve false (y se queda quieta) si no hay camino.
+export function walkTo(brain, target) {
   const path = brain.nav.path({ x: brain.x, y: brain.y }, target)
-  if (!path?.length) return rest(brain)
+  if (!path?.length) {
+    rest(brain)
+    return false
+  }
   brain.path = path
   brain.speed = TUNING.routineSpeed
   brain.state = go(brain.state, 'routine')
+  return true
 }
 
 // Siguiente punto de su paseo, o su sitio si no tiene más.

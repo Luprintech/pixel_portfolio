@@ -1,6 +1,6 @@
 // Ylonem, seudónimo autorizado de un antiguo compañero de DAW de Lupe (`docs/LORE_Y_MUNDO.md`), fotógrafo y videógrafo de bodas.
 // Se dibuja con el mismo generador que la viajera y que Atreus: sin pelo, barba corta poco poblada, camiseta y pantalón negros y
-// zapatillas oscuras. La cámara de fotos que lleva en la mano se pinta aparte (`interior/ylonemSheet.js`). `calvo` no es un
+// zapatillas oscuras. `calvo` no es un
 // peinado del generador: sin forma, `hairCells` devuelve las capas vacías y se ve el cráneo.
 export const YLONEM_LOOK = {
   body: 'hombre',
