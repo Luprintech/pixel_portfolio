@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { ACHIEVEMENT_IDS, clearAchievements, loadAchievements, unlockAchievement } from '../achievements.js'
+import { ACHIEVEMENT_IDS, SECRET_IDS, clearAchievements, loadAchievements, unlockAchievement } from '../achievements.js'
 import { CAT_SEQUENCE, CAT_SPOTS, createCat, updateCat } from './catBrain.js'
 import { FURNITURE } from './furniture/index.js'
 import { FIGURES } from './figures.js'
@@ -41,6 +41,48 @@ describe('Khalessi', () => {
     expect(Math.hypot(dropped.x - CAT_SPOTS.atreus.x, dropped.y - CAT_SPOTS.atreus.y)).toBeLessThan(12)
   })
 
+  it('se gira antes de andar hacia el otro lado: mientras gira no se mueve y mira hacia donde va', () => {
+    const cat = createCat()
+    cat.step = 1
+    cat.face = 'left'
+    cat.inBox = false
+    cat.x = 150
+    cat.y = 130
+    // El paso 1 la lleva a la derecha: debe girar primero.
+    const before = [cat.x, cat.y]
+    updateCat(cat, 50)
+    expect(cat.turning).toBeGreaterThan(0)
+    expect([cat.x, cat.y]).toEqual(before)
+    expect(cat.face).toBe('left')
+    for (let i = 0; i < 20 && cat.turning > 0; i++) updateCat(cat, 50)
+    expect(cat.face).toBe('right')
+    updateCat(cat, 50)
+    expect(cat.x).toBeGreaterThan(before[0])
+  })
+
+  it('la sardina se ve cogida, llevada y entregada, en ese orden', () => {
+    const cat = createCat()
+    const phases = []
+    for (let i = 0; i < 20000; i++) {
+      updateCat(cat, 50)
+      if (phases.at(-1) !== cat.toyPhase) phases.push(cat.toyPhase)
+    }
+    const order = phases.filter((phase) => phase !== 'ground')
+    expect(order.slice(0, 3)).toEqual(['lifting', 'carried', 'dropping'])
+    expect(phases).toContain('ground')
+  })
+
+  it('nunca anda de espaldas: en cada paso mira hacia donde se mueve en horizontal', () => {
+    const cat = createCat()
+    let last = [cat.x, cat.y]
+    for (let i = 0; i < 20000; i++) {
+      updateCat(cat, 50)
+      const dx = cat.x - last[0]
+      if (Math.abs(dx) > 0.01) expect(cat.face, `paso ${i}`).toBe(dx > 0 ? 'right' : 'left')
+      last = [cat.x, cat.y]
+    }
+  })
+
   it('los puntos del recorrido están dentro de la sala y fuera de los muebles grandes', () => {
     Object.values(CAT_SPOTS).forEach(({ x, y }) => {
       expect(x).toBeGreaterThan(16)
@@ -70,8 +112,10 @@ describe('logros', () => {
     expect(loadAchievements().size).toBe(0)
   })
 
-  it('los dos primeros son el de la impresora y el de la consola retro', () => {
-    expect(ACHIEVEMENT_IDS).toEqual(['maker', 'retro'])
+  it('hay cuatro: la impresora, la consola retro y los dos secretos del ordenador', () => {
+    expect(ACHIEVEMENT_IDS).toEqual(['maker', 'retro', 'hola', 'developer'])
+    expect(SECRET_IDS).toEqual(['hola', 'developer'])
+    expect(unlockAchievement(new Set(), 'hola').isNew).toBe(true)
   })
 })
 

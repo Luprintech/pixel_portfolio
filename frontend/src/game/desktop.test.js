@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { DESKTOP_ENTRIES, ICONS, iconCells, visibleEntries } from './desktop.js'
+import { DESKTOP_ENTRIES, ICONS, iconCells, iconSize, visibleEntries } from './desktop.js'
 import { clearSeen, loadSeen, markSeen } from './dialogue/seen.js'
 
 describe('escritorio retro', () => {
@@ -18,13 +18,26 @@ describe('escritorio retro', () => {
     expect(visibleEntries(entries).map((entry) => entry.id)).toEqual(['y'])
   })
 
-  it('todos los accesos tienen icono y los iconos son de 12×12', () => {
-    DESKTOP_ENTRIES.forEach((entry) => expect(ICONS[entry.id], entry.id).toBeTruthy())
+  it('todos los accesos tienen icono, cuadrado y dentro de su cuadrícula', () => {
+    DESKTOP_ENTRIES.forEach((entry) => expect(iconCells(entry.id).length, entry.id).toBeGreaterThan(20))
     Object.entries(ICONS).forEach(([id, rows]) => {
       expect(rows.length, id).toBe(12)
       rows.forEach((row) => expect(row.length, id).toBe(12))
     })
-    expect(iconCells('projects').length).toBeGreaterThan(20)
+    ;['ie', 'calculator', 'paint', 'notepad', 'winamp', 'vscode'].forEach((id) => {
+      const side = iconSize(id)
+      expect(side).toBe(16)
+      iconCells(id).forEach(({ x, y }) => {
+        expect(x, id).toBeGreaterThanOrEqual(0)
+        expect(x, id).toBeLessThan(side)
+        expect(y, id).toBeGreaterThanOrEqual(0)
+        expect(y, id).toBeLessThan(side)
+      })
+    })
+  })
+
+  it('los programas del escritorio incluyen el editor de código', () => {
+    expect(DESKTOP_ENTRIES.map((entry) => entry.id)).toEqual(expect.arrayContaining(['ie', 'winamp', 'paint', 'calculator', 'notepad', 'vscode']))
   })
 
   it('los enlaces externos son https', () => {

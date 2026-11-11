@@ -61,6 +61,13 @@ function modeFor(scene, sprite, kind, pastel, still) {
     get on() {
       return mode !== Object.keys(modes)[0]
     },
+    // Enseña un fotograma concreto del modo actual sin animar (la impresora pequeña sigue el avance de la pantalla).
+    showFrame(frame) {
+      mode = 'printing'
+      timer?.remove()
+      timer = null
+      show(frame)
+    },
     set(next) {
       if (!modes[next]) return
       mode = next
@@ -113,6 +120,35 @@ function buildAtreus(scene, plan, addSolid) {
   return atreus
 }
 
+// La sardina según lo que haga la gata: en el suelo (con meneo si juega), subiendo a la boca al cogerla con un saltito, en la boca
+// mientras la lleva, o cayendo a los pies de Atreus al dársela. La boca está en el lado al que mira.
+const lerp = (a, b, t) => a + (b - a) * t
+
+function placeToy(toy, cat, flip, beat) {
+  const mouth = { x: cat.x + (flip ? -10 : 10), y: cat.y - 3 }
+  const arc = (t) => -5 * Math.sin(Math.PI * t)
+  let x = cat.toy.x
+  let y = cat.toy.y
+  let angle = 0
+  if (cat.toyPhase === 'lifting') {
+    x = lerp(cat.toy.x, mouth.x, cat.toyT)
+    y = lerp(cat.toy.y, mouth.y, cat.toyT) + arc(cat.toyT)
+    angle = flip ? -25 * cat.toyT : 25 * cat.toyT
+  } else if (cat.toyPhase === 'carried') {
+    x = mouth.x
+    y = mouth.y + (beat ? 1 : 0)
+    angle = flip ? -10 : 10
+  } else if (cat.toyPhase === 'dropping') {
+    x = lerp(mouth.x, cat.toy.x, cat.toyT)
+    y = lerp(mouth.y, cat.toy.y, cat.toyT) + arc(cat.toyT)
+    angle = (flip ? -1 : 1) * 40 * cat.toyT
+  } else if (cat.pose === 'play') {
+    x += beat ? 2 : -2
+    angle = beat ? 12 : -12
+  }
+  toy.setPosition(x, y).setDepth(Math.round(Math.max(y, cat.toyPhase === 'ground' ? y : cat.y + 1))).setFlipX(flip).setAngle(angle)
+}
+
 // Khalessi (ver `catBrain.js`): descansa en su caja, sale a jugar con su sardina de peluche, se la lleva en la boca a Atreus
 // y la deja a sus pies maullando. Va entre las dos capas de la caja mientras está dentro y, fuera, con la profundidad de su fila.
 // `onMeow(variante)` avisa de cada maullido. Con «reducir movimiento» se queda sentada en la caja.
@@ -134,21 +170,16 @@ function buildKhalessi(scene, plan, onMeow) {
     tick += delta
     updateCat(cat, delta).forEach((event) => onMeow(event.variant))
     const beat = Math.floor(tick / 220) % 2
-    const flip = cat.face === 'right'
+    // La gata del dibujo mira a la derecha: se refleja al mirar a la izquierda. Mientras gira se ve compacta (sentada).
+    const flip = cat.face === 'left'
     let key = `npc-khalessi-sit-${Math.floor(tick / 800) % 2}`
-    if (cat.pose === 'walk') key = `npc-khalessi-walk-${beat}`
+    if (cat.turning > 0) key = 'npc-khalessi-sit-0'
+    else if (cat.pose === 'walk') key = `npc-khalessi-walk-${beat}`
     else if (cat.pose === 'play' || cat.pose === 'grab' || cat.pose === 'give') key = `npc-khalessi-walk-${Math.floor(tick / 160) % 2}`
     else if (cat.inBox && Math.floor(tick / 800) % 8 >= 5) key = `npc-khalessi-wash-${beat}`
     sprite.setTexture(key).setFlipX(flip)
-    // Dentro de la caja se sienta en su sitio; fuera, sobre el suelo.
     sprite.setPosition(cat.x, cat.inBox ? cat.y - 3 : cat.y).setDepth(cat.inBox ? plan.y : Math.round(cat.y))
-    // La sardina: en la boca mientras la lleva, con un meneo si juega, o en el suelo donde la dejó.
-    if (cat.carrying) {
-      toy.setPosition(cat.x + (flip ? 10 : -10), cat.y - 3).setDepth(Math.round(cat.y) + 1).setFlipX(flip).setAngle(0)
-    } else {
-      const wiggle = cat.pose === 'play' ? (beat ? 2 : -2) : 0
-      toy.setPosition(cat.toy.x + wiggle, cat.toy.y).setDepth(Math.round(cat.toy.y)).setFlipX(false).setAngle(cat.pose === 'play' ? (beat ? 12 : -12) : 0)
-    }
+    placeToy(toy, cat, flip, beat)
   }
   scene.events.on('update', onUpdate)
   scene.events.once('shutdown', () => scene.events.off('update', onUpdate))

@@ -15,18 +15,24 @@ const WALL_BASE = 80
 
 // `dz` ajusta el orden de dibujo respecto a otros elementos de la misma base (la caja de Khalessi va en dos capas).
 export const FURNITURE_PLAN = [
-  // Pared del fondo, de izquierda a derecha: mesa de Atreus, estantería de consolas, tele y mesa de Lupe. El hueco de la
-  // izquierda queda libre: ahí está el acceso a la azotea, una zona de suelo sin mueble (ver `INTERACTIONS`).
+  // Pared del fondo, de izquierda a derecha: escalera a la azotea (como la escalera exterior), mesa de Atreus, estantería de
+  // consolas, tele y mesa de Lupe.
+  { kind: 'roofStairs', x: 38, y: WALL_BASE },
   { kind: 'atreusDesk', x: 100, y: WALL_BASE },
   { kind: 'consoleShelf', x: 176, y: WALL_BASE },
   { kind: 'tvUnit', x: 248, y: WALL_BASE },
   { kind: 'lupeDesk', x: 326, y: WALL_BASE },
-  { kind: 'chairAtreus', x: 92, y: 108 },
-  { kind: 'chairLupe', x: 326, y: 108 },
+  // Cada silla va en dos capas (`dz`): persona sentada entre ellas.
+  { kind: 'chairAtreus', x: 92, y: 108, dz: -0.5 },
+  { kind: 'chairAtreusFront', x: 92, y: 108, dz: 0.5 },
+  { kind: 'chairLupe', x: 326, y: 108, dz: -0.5 },
+  { kind: 'chairLupeFront', x: 326, y: 108, dz: 0.5 },
   // Zona de ocio: la mesita entre la tele y el sofá, y el sofá de espaldas a la sala, mirando a la tele.
   { kind: 'coffeeTable', x: 248, y: 124 },
-  { kind: 'sofa', x: 248, y: 164 },
-  { kind: 'tallPlant', x: 200, y: 150 },
+  { kind: 'sofa', x: 248, y: 170, dz: -0.5 },
+  { kind: 'sofaFront', x: 248, y: 170, dz: 0.5 },
+  // La planta, a la derecha del sofá: a su izquierda tapaba a Khalessi al coger la sardina.
+  { kind: 'tallPlant', x: 296, y: 156 },
   // Rincón maker, a la izquierda: dos impresoras Bambu Lab, la A1 (con el AMS arriba) y la A1 mini, y la lámpara de pie.
   { kind: 'printerA1', x: 52, y: 164 },
   { kind: 'printerMini', x: 112, y: 164 },
@@ -54,10 +60,11 @@ export const ATREUS_BODY = { l: -5, t: -4, r: 5, b: 0 }
 // `depth` el orden de dibujo (un poco por delante del mueble), `zone` el suelo desde el que se ofrece sentarse y `use` lo
 // que se hace con E estando sentada: abrir el ordenador o encender la tele. Sin `use`, E levanta.
 export const SEATS = [
-  { id: 'chairAtreus', x: 92, y: 105, facing: 'up', depth: 108.5, zone: { x: 72, y: 112, w: 40, h: 14 }, anchor: { x: 92, y: 118 } },
-  { id: 'chairLupe', x: 326, y: 105, facing: 'up', depth: 108.5, zone: { x: 306, y: 112, w: 40, h: 14 }, anchor: { x: 326, y: 118 }, use: 'pc' },
-  { id: 'sofaLeft', x: 236, y: 158, facing: 'up', depth: 164.5, zone: { x: 216, y: 170, w: 30, h: 14 }, anchor: { x: 232, y: 176 }, use: 'television' },
-  { id: 'sofaRight', x: 262, y: 158, facing: 'up', depth: 164.5, zone: { x: 248, y: 170, w: 30, h: 14 }, anchor: { x: 264, y: 176 }, use: 'television' },
+  // Solo se ofrece sentarse desde delante: las zonas están ante la silla o el sofá, a su ancho y nunca a los lados ni detrás.
+  { id: 'chairAtreus', x: 92, y: 106, facing: 'up', depth: 108, zone: { x: 82, y: 113, w: 20, h: 11 }, anchor: { x: 92, y: 118 } },
+  { id: 'chairLupe', x: 326, y: 106, facing: 'up', depth: 108, zone: { x: 316, y: 113, w: 20, h: 11 }, anchor: { x: 326, y: 118 }, use: 'pc' },
+  { id: 'sofaLeft', x: 236, y: 148, facing: 'up', depth: 170, zone: { x: 220, y: 175, w: 24, h: 11 }, anchor: { x: 232, y: 181 }, use: 'television' },
+  { id: 'sofaRight', x: 262, y: 148, facing: 'up', depth: 170, zone: { x: 252, y: 175, w: 24, h: 11 }, anchor: { x: 264, y: 181 }, use: 'television' },
 ]
 
 // Lo que se puede usar con E. Cada zona es el suelo desde el que se alcanza (los pies de la viajera dentro del rectángulo).

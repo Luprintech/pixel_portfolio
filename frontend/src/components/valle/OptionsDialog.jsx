@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ACHIEVEMENT_IDS } from '../../game/achievements'
+import { ACHIEVEMENT_IDS, SECRET_IDS } from '../../game/achievements'
 import { PAL } from '../../game/palette'
 import { useInstallPrompt } from '../../hooks/useInstallPrompt'
 import { useSoundPrefs } from '../../hooks/useSoundPrefs'
@@ -127,12 +127,13 @@ export default function OptionsDialog({ open, onClose, saved, onErase, onSave = 
                 {ACHIEVEMENT_IDS.map((id) => {
                   const done = achievements.has(id)
                   const item = copy.achievements.items[id]
+                  const hidden = !done && SECRET_IDS.includes(id)
                   return (
                     <li key={id} className="flex items-start gap-2 text-sm" style={{ opacity: done ? 1 : 0.6 }}>
                       <span aria-hidden="true">{done ? '★' : '☆'}</span>
                       <span>
-                        <strong>{item.name}</strong>
-                        <span className="block text-xs">{done ? item.desc : `${copy.achievements.locked}: ${item.desc}`}</span>
+                        <strong>{hidden ? '???' : item.name}</strong>
+                        <span className="block text-xs">{hidden ? copy.achievements.secret : done ? item.desc : `${copy.achievements.locked}: ${item.desc}`}</span>
                       </span>
                     </li>
                   )

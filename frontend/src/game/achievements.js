@@ -4,7 +4,9 @@
 const KEY = 'valle-del-bucle:achievements'
 
 // En el orden en que se enseñan en Opciones.
-export const ACHIEVEMENT_IDS = ['maker', 'retro']
+export const ACHIEVEMENT_IDS = ['maker', 'retro', 'hola', 'developer']
+// Logros secretos: en Opciones no se enseña qué piden hasta conseguirlos.
+export const SECRET_IDS = ['hola', 'developer']
 
 export function loadAchievements() {
   try {

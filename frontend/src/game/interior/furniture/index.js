@@ -4,14 +4,14 @@
 // fotograma y `ms` es lo que dura cada uno.
 import { canvasOf, pastelize } from '../draw.js'
 import { atreusDesk, lupeDesk } from './desks.js'
-import { bigPlant, boxBack, boxFront, chairAtreus, chairLupe, tallPlant } from './decor.js'
-import { coffeeTable, floorLamp, sofa, tvUnit } from './living.js'
+import { bigPlant, boxBack, boxFront, chairAtreus, chairAtreusFront, chairLupe, chairLupeFront, roofStairs, tallPlant } from './decor.js'
+import { coffeeTable, floorLamp, sofa, sofaFront, tvUnit } from './living.js'
 import { hifi } from './audio.js'
 import { printerA1, printerMini } from './maker.js'
 import { consoleShelf, makerShelf } from './shelves.js'
 
 export const FURNITURE = {
-  atreusDesk, lupeDesk, chairAtreus, chairLupe, tvUnit, sofa, coffeeTable, floorLamp, consoleShelf, makerShelf,
+  atreusDesk, lupeDesk, chairAtreus, chairAtreusFront, chairLupe, chairLupeFront, sofaFront, roofStairs, tvUnit, sofa, coffeeTable, floorLamp, consoleShelf, makerShelf,
   printerA1, printerMini, hifi, boxBack, boxFront, bigPlant, tallPlant,
 }
 

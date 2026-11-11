@@ -53,7 +53,7 @@ export default function Paint() {
   }
 
   return (
-    <div className="space-y-2" style={{ background: '#ece9d8', margin: '-1rem', padding: '0.5rem' }}>
+    <div className="h-full space-y-2 overflow-auto p-2" style={{ background: '#ece9d8' }}>
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <button type="button" className="rounded border px-2 py-1" style={{ borderColor: '#7f9db9', background: '#fff' }} onClick={clear}>{p.new}</button>
         <button type="button" aria-pressed={erase} className="rounded border px-2 py-1" style={{ borderColor: '#7f9db9', background: erase ? '#cfe3ff' : '#fff' }} onClick={() => setErase((on) => !on)}>{p.eraser}</button>

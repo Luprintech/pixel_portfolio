@@ -83,6 +83,8 @@ export default function Valle() {
   // Estado de la impresora pequeña: 'idle' o 'done' (figura impresa pero sin recoger). Y el canal de la tele, o null.
   const printState = useRef('idle')
   const [tvChannel, setTvChannel] = useState(null)
+  // El ordenador de Lupe minimizado deja de bloquear el juego.
+  const [pcMinimized, setPcMinimized] = useState(false)
   // Límites del zoom que publica la escena; hasta que existe, ambos botones valen.
   const [zoomState, setZoomState] = useState({ canIn: true, canOut: true })
   const hostRef = useRef(null)
@@ -210,8 +212,11 @@ export default function Valle() {
   // Con un panel o el diálogo de opciones abiertos el juego se bloquea: las flechas son del control en foco.
   const [optionsOpen, setOptionsOpen] = useState(false)
   useEffect(() => {
-    game?.registry.set('locked', !!zone || !!dialogue || optionsOpen)
-  }, [game, zone, dialogue, optionsOpen])
+    game?.registry.set('locked', (!!zone && !(zone === 'pc' && pcMinimized)) || !!dialogue || optionsOpen)
+  }, [game, zone, dialogue, optionsOpen, pcMinimized])
+  useEffect(() => {
+    if (zone !== 'pc') setPcMinimized(false)
+  }, [zone])
 
   const closeZone = useCallback(() => setZone(null), [])
   // La minicadena de la sala enseña si suena la música (la ponga ella o el Winamp del escritorio).
@@ -230,7 +235,17 @@ export default function Valle() {
     printState.current = mode === 'done' ? 'done' : 'idle'
     game?.events.emit('interior-action', { type: 'printer', mode })
   }, [game])
-  const claimFigure = useCallback(() => achievements.unlock('maker'), [achievements])
+  // El avance de la impresión se refleja en la impresora de la sala, capa a capa.
+  const printProgress = useCallback((progress) => game?.events.emit('interior-action', { type: 'printer', mode: 'printing', progress }), [game])
+  // Entregar la figura: la sala hace que la viajera la enseñe y, al acabar, avisa para dar el logro.
+  const claimFigure = useCallback(() => game?.events.emit('interior-action', { type: 'show-figure' }), [game])
+  const { unlock } = achievements
+  useEffect(() => {
+    if (!game) return undefined
+    const done = () => unlock('maker')
+    game.events.on('figure-shown', done)
+    return () => game.events.off('figure-shown', done)
+  }, [game, unlock])
   // Junto a la impresora 3D suena su trabajo, mientras no haya un diálogo o un panel delante.
   const nearPrinter = near === 'printer' && !zone && !dialogue
   useEffect(() => (nearPrinter ? startPrinterSound() : undefined), [nearPrinter])
@@ -353,10 +368,10 @@ export default function Valle() {
 
         {touch && status === 'ready' && !zone && !dialogue && !optionsOpen && !editing && <Joystick game={game} />}
         {zone === 'telescope' && !editing && <SkyView getSky={getSky} pastel={pastel} onClose={closeZone} />}
-        {zone === 'pc' && !editing && <RetroDesktop onClose={closeZone} />}
+        {zone === 'pc' && !editing && <RetroDesktop onClose={closeZone} unlock={achievements.unlock} onMinimizedChange={setPcMinimized} />}
         {zone === 'console' && !editing && <ConsoleGame onClose={closeZone} onWin={() => achievements.unlock('retro')} />}
         {zone === 'tv' && !editing && <SmartTv channel={tvChannel} onSelect={selectChannel} onClose={closeZone} />}
-        {zone === 'printer' && !editing && <PrinterPanel initial={printState.current} claimed={achievements.unlocked.has('maker')} onMode={setPrinterMode} onClaim={claimFigure} onClose={closeZone} />}
+        {zone === 'printer' && !editing && <PrinterPanel initial={printState.current} claimed={achievements.unlocked.has('maker')} onMode={setPrinterMode} onProgress={printProgress} onClaim={claimFigure} onClose={closeZone} />}
         {zone === 'figures' && !editing && <FiguresViewer unlocked={achievements.unlocked} onClose={closeZone} />}
         {zone && zone !== 'telescope' && !['pc', 'console', 'tv', 'printer', 'figures'].includes(zone) && !editing && <ZonePanel zone={zone} onClose={closeZone} />}
         {dialogue && !editing && <DialogueBox key={dialogue} scriptId={dialogue} onClose={closeDialogue} />}

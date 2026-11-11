@@ -19,9 +19,13 @@ const ROOM_MAX_IN = 3
 export function steppedRoomZoom(steps, width, height, roomWidth, roomHeight) {
   const cover = roomCover(width, height, roomWidth, roomHeight)
   const contain = Math.max(1, Math.min(width / roomWidth, height / roomHeight))
-  const min = Math.min(0, Math.ceil(Math.log(contain / cover) / Math.log(ROOM_STEP)))
+  // El nivel más lejano es el que enseña la sala entera: su zoom nunca pasa de `contain` (por debajo del cuarto de punto),
+  // así no queda nada fuera de la vista y la sala se centra con márgenes iguales.
+  const farthest = Math.max(1, Math.floor(contain * 4) / 4)
+  const min = cover <= farthest ? 0 : Math.ceil(Math.log(farthest / cover) / Math.log(ROOM_STEP))
   const level = Math.min(ROOM_MAX_IN, Math.max(min, steps))
-  return { zoom: Math.round(cover * ROOM_STEP ** level * 4) / 4, steps: level, canIn: level < ROOM_MAX_IN, canOut: level > min }
+  const zoom = level === min && min < 0 ? farthest : Math.round(cover * ROOM_STEP ** level * 4) / 4
+  return { zoom, steps: level, canIn: level < ROOM_MAX_IN, canOut: level > min }
 }
 
 // Cuánto se puede acercar la vista, a partir del zoom que da la pantalla, con el botón +.

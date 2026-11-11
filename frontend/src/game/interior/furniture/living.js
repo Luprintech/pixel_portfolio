@@ -115,29 +115,52 @@ export const tvUnit = {
   },
 }
 
-// Sofá visto desde atrás: respaldo ancho con un almohadón, una manta doblada sobre él y los brazos a los lados.
+// Sofá que mira a la tele (hacia arriba en pantalla). Se ve de espaldas pero con la perspectiva de la cámara: más allá del
+// respaldo asoman el asiento y los brazos. Va en dos capas para que quien se siente quede entre ellas: la base (brazos y
+// cojines del asiento, detrás de la persona) y el respaldo (delante, tapándole la espalda y las piernas).
+const TEAL = INK.teal
+const TEAL_LIGHT = '#4eb2ad'
+const TEAL_DARK = '#1f6b68'
+
 export const sofa = {
   w: 64,
-  h: 34,
-  body: [{ l: -32, t: -10, r: 32, b: 0 }],
+  h: 38,
+  body: [{ l: -32, t: -30, r: 32, b: 0 }],
   paint(g) {
-    rect(g, 2, 28, 3, 6, INK.night2)
-    rect(g, 59, 28, 3, 6, INK.night2)
-    slab(g, 0, 8, 64, 22, INK.teal, '#4eb2ad', '#1f6b68')
-    rect(g, 0, 2, 64, 8, '#4eb2ad')
-    rect(g, 0, 2, 64, 1, '#7fd0dc')
-    rect(g, 0, 9, 64, 1, '#1f6b68')
-    rect(g, 4, 11, 56, 1, '#1f6b68')
-    for (let i = 1; i < 4; i++) rect(g, i * 16, 12, 1, 14, '#1f6b68')
-    slab(g, 0, 10, 7, 24, INK.teal, '#4eb2ad', '#1f6b68')
-    slab(g, 57, 10, 7, 24, INK.teal, '#4eb2ad', '#1f6b68')
-    // Manta de cuadros sobre el respaldo y un almohadón rosa en la esquina.
-    rect(g, 36, 6, 18, 12, INK.saffronLight)
-    for (let x = 36; x < 54; x += 4) rect(g, x, 6, 2, 12, INK.saffron)
-    rect(g, 36, 12, 18, 2, INK.tile)
-    rect(g, 36, 17, 18, 1, INK.saffron)
-    slab(g, 10, 6, 11, 10, INK.rose, '#fde0e8', '#c4577f')
-    rect(g, 14, 9, 3, 3, '#c4577f')
+    // Brazos a los lados, de la altura del asiento hasta delante.
+    slab(g, 0, 4, 8, 28, TEAL, TEAL_LIGHT, TEAL_DARK)
+    slab(g, 56, 4, 8, 28, TEAL, TEAL_LIGHT, TEAL_DARK)
+    rect(g, 1, 4, 6, 2, '#7fd0dc')
+    rect(g, 57, 4, 6, 2, '#7fd0dc')
+    // Cojines del asiento, con su costura, y un almohadón rosa y una manta de cuadros sobre ellos.
+    slab(g, 8, 6, 24, 14, TEAL_LIGHT, '#7fd0dc', TEAL)
+    slab(g, 32, 6, 24, 14, TEAL_LIGHT, '#7fd0dc', TEAL)
+    rect(g, 31, 7, 1, 12, TEAL_DARK)
+    slab(g, 10, 7, 9, 8, INK.rose, '#fde0e8', '#c4577f')
+    rect(g, 13, 9, 3, 3, '#c4577f')
+    rect(g, 40, 8, 14, 9, INK.saffronLight)
+    for (let x = 40; x < 54; x += 4) rect(g, x, 8, 2, 9, INK.saffron)
+    rect(g, 40, 12, 14, 2, INK.tile)
+    rect(g, 6, 34, 4, 4, INK.night2)
+    rect(g, 54, 34, 4, 4, INK.night2)
+  },
+}
+
+export const sofaFront = {
+  w: 64,
+  h: 38,
+  body: [],
+  paint(g) {
+    // Respaldo: un tablón ancho con botones, por delante del asiento, y los brazos recortando el costado.
+    slab(g, 6, 20, 52, 16, TEAL, TEAL_LIGHT, TEAL_DARK)
+    rect(g, 6, 20, 52, 2, '#7fd0dc')
+    for (let x = 14; x < 56; x += 10) {
+      rect(g, x, 26, 2, 2, TEAL_DARK)
+      rect(g, x + 5, 30, 2, 2, TEAL_DARK)
+    }
+    rect(g, 6, 35, 52, 1, TEAL_DARK)
+    slab(g, 0, 22, 8, 12, TEAL, TEAL_LIGHT, TEAL_DARK)
+    slab(g, 56, 22, 8, 12, TEAL, TEAL_LIGHT, TEAL_DARK)
   },
 }
 

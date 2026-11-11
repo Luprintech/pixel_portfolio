@@ -18,7 +18,7 @@ export default function Winamp() {
   const w = copy.desktop.winampUi
   const { playing, index, controls } = useJukebox()
   return (
-    <div className="mx-auto w-full max-w-sm space-y-2 p-2 text-xs" style={{ background: '#2b2b3a', color: '#00e000', margin: '-1rem', width: 'calc(100% + 2rem)', maxWidth: 'none', fontFamily: '"Lucida Console", "Courier New", monospace' }}>
+    <div className="h-full space-y-2 overflow-auto p-2 text-xs" style={{ background: '#2b2b3a', color: '#00e000', fontFamily: '"Lucida Console", "Courier New", monospace' }}>
       <div className="flex items-center gap-3 rounded border p-2" style={{ borderColor: '#5a5a70', background: '#000' }}>
         <svg width="28" height="36" viewBox="0 0 7 9" shapeRendering="crispEdges" aria-hidden="true">
           {BOLT.flatMap((row, y) => [...row].map((cell, x) => (cell === '#' ? <rect key={`${x},${y}`} x={x} y={y} width="1" height="1" fill="#ff9d00" /> : null)))}

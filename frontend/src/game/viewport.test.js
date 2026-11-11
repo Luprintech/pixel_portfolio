@@ -79,7 +79,9 @@ describe('steppedRoomZoom', () => {
     expect(steppedRoomZoom(9, 750, 1500, 384, 224).canIn).toBe(false)
     const far = steppedRoomZoom(-9, 750, 1500, 384, 224)
     expect(far.canOut).toBe(false)
-    expect(384 * far.zoom).toBeLessThanOrEqual(750 + 384)
+    // En el nivel más lejano la sala entera cabe en la pantalla (sobra a los lados: la cámara la centra).
+    expect(384 * far.zoom).toBeLessThanOrEqual(750)
+    expect(224 * far.zoom).toBeLessThanOrEqual(1500)
     expect(far.zoom).toBeLessThan(base.zoom)
   })
 

@@ -12,6 +12,8 @@ import { SEATS, interactionAt } from './interior/homeLayout.js'
 import { LED_PALETTES, ledCanvas } from './interior/ledLights.js'
 import { jukebox } from '../lib/jukebox.js'
 import { prefersReducedMotion } from '../lib/reducedMotion.js'
+import { figureCanvas, FIGURES } from './interior/figures.js'
+import { MINI_STAGES } from './interior/furniture/maker.js'
 import { sitDown, standUp } from './sitting.js'
 
 const SPEED = 90
@@ -51,6 +53,7 @@ export default class InteriorScene extends Phaser.Scene {
     this.standFrom = null
     this.zoomSteps = 0
     this.lastWheel = 0
+    this.showing = false
   }
 
   create() {
@@ -158,7 +161,13 @@ export default class InteriorScene extends Phaser.Scene {
     if (!width || !height) return
     const { zoom, steps, canIn, canOut } = steppedRoomZoom(this.zoomSteps, width, height, this.room.width, this.room.height)
     this.zoomSteps = steps
-    this.cameras.main.setZoom(zoom)
+    const camera = this.cameras.main
+    camera.setZoom(zoom)
+    // Los límites de la cámara se amplían por igual a los dos lados cuando la sala no llena la pantalla: así queda centrada y
+    // con márgenes simétricos (con límites más pequeños que la vista, Phaser la pega a una esquina).
+    const padX = Math.max(0, (width / zoom - this.room.width) / 2)
+    const padY = Math.max(0, (height / zoom - this.room.height) / 2)
+    camera.setBounds(-padX, -padY, this.room.width + padX * 2, this.room.height + padY * 2)
     this.cameras.main.setBackgroundColor('#2e2d5a')
     this.game.registry.set('zoom', { canIn, canOut })
   }
@@ -184,7 +193,7 @@ export default class InteriorScene extends Phaser.Scene {
   // E, Espacio o el botón de la pantalla: salir si se está sobre el felpudo, sentarse o levantarse y, si no, usar lo que
   // haya cerca.
   act() {
-    if (this.leaving || !this.near || this.game.registry.get('locked')) return
+    if (this.showing || this.leaving || !this.near || this.game.registry.get('locked')) return
     if (performance.now() - this.unlockedAt < REOPEN_GUARD_MS) return
     if (this.near === EXIT_ID) this.leave()
     else if (this.near === 'roof') this.goUpToRoof()
@@ -208,10 +217,42 @@ export default class InteriorScene extends Phaser.Scene {
     if (action.type === 'tv') {
       this.game.registry.set('tvChannel', action.channel)
       this.switches.tvUnit?.set(action.channel ?? 'off')
-    } else if (action.type === 'printer') {
+    } else if (action.type === 'show-figure') this.showFigure()
+    else if (action.type === 'printer') {
       this.game.registry.set('printerMode', action.mode)
-      this.switches.printerMini?.set(action.mode)
+      // Imprimiendo, la pantalla manda: la tanda sale del avance (0 a 1) y no de un reloj, para que coincidan.
+      if (action.mode === 'printing' && action.progress !== undefined) this.switches.printerMini?.showFrame(1 + Math.min(MINI_STAGES - 1, Math.floor(action.progress * MINI_STAGES)))
+      else this.switches.printerMini?.set(action.mode)
     } else if (action.type === 'music') this.switches.hifi?.set(action.on ? 'on' : 'off')
+  }
+
+  // Entrega de la figura: la viajera, de frente, levanta el Pikachu acabado por encima de la cabeza, con un destello, y lo
+  // enseña un momento antes de recibirlo (después se da el logro). Durante la escena no se anda ni se usa nada.
+  showFigure() {
+    if (this.showing) return
+    this.showing = true
+    if (this.seat) this.stand()
+    this.princess.body.setVelocity(0, 0)
+    this.facing = 'down'
+    this.princess.setFrame(frameName('down', 0))
+    const key = 'fig-pokemon'
+    if (!this.textures.exists(key)) this.textures.addCanvas(key, figureCanvas(FIGURES.find((figure) => figure.id === 'pokemon')))
+    const { x, y } = this.princess
+    const glow = this.add.rectangle(x, y - 40, 22, 22, 0xf8d77a, 0.55).setDepth(9000).setAngle(45)
+    const figure = this.add.image(x, y - 14, key).setOrigin(0.5, 1).setDepth(9001)
+    if (prefersReducedMotion()) {
+      figure.setY(y - 30)
+      glow.setY(y - 40)
+    } else {
+      this.tweens.add({ targets: figure, y: y - 30, duration: 450, ease: 'Back.Out' })
+      this.tweens.add({ targets: glow, angle: 135, alpha: 0.2, duration: 1600, yoyo: true })
+    }
+    this.time.delayedCall(1900, () => {
+      figure.destroy()
+      glow.destroy()
+      this.showing = false
+      this.game.events.emit('figure-shown')
+    })
   }
 
   // Abre la conversación de lo que hay cerca. Primera vez o repetición lo decide `talkFor` según lo ya visto; la página
@@ -258,7 +299,7 @@ export default class InteriorScene extends Phaser.Scene {
 
   update(_time, delta) {
     const body = this.princess.body
-    const locked = this.game.registry.get('locked') || this.leaving
+    const locked = this.game.registry.get('locked') || this.leaving || this.showing
     const { x, y } = locked ? { x: 0, y: 0 } : inputVector(this.cursors, this.keys, this.game.registry.get('joy'))
     const len = Math.hypot(x, y)
     const moving = len > 0.15

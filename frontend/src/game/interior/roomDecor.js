@@ -4,6 +4,7 @@
 import { PAL } from '../palette.js'
 import { ellipse } from '../pixelKit.js'
 import { INK, WOOD, canvasOf, hash2, pastelize, rect, slab } from './draw.js'
+import { roofSign } from './furniture/decor.js'
 
 // Ventana pequeña de la pared: marco de madera, dos hojas con cielo y nubes, y cortinas si `curtains` es un color.
 function windowPane(g, x, y, w, h, curtains) {
@@ -126,7 +127,8 @@ function wall(g) {
   // Sobre la estantería y la tele: una ventana pequeña cada una.
   windowPane(g, 154, 6, 28, 14, null)
   windowPane(g, 230, 7, 36, 18, INK.rose)
-  // Sobre la mesa de Lupe, la Trifuerza y su estante.
+  // Sobre la escalera, el cartel de la azotea; sobre la mesa de Lupe, la Trifuerza y su estante.
+  roofSign(g, 24, 7)
   frame(g, 292, 8, 20, 22, triforceArt)
   lupeShelf(g, 318, 22)
 }

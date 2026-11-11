@@ -45,7 +45,7 @@ export default function Calculator() {
   )
 
   return (
-    <div className="mx-auto w-56 space-y-2" style={{ background: '#ece9d8', margin: '-1rem auto', padding: '1rem' }}>
+    <div className="mx-auto h-full w-full max-w-xs space-y-2 p-3" style={{ background: '#ece9d8' }}>
       <output aria-live="polite" aria-label="Resultado" className="block overflow-hidden rounded border-2 px-2 py-1 text-right text-2xl" style={{ borderColor: '#7f9db9', background: '#fff', fontFamily: '"Courier New", monospace' }}>{display}</output>
       <div className="grid grid-cols-4 gap-1">
         {button('C', 'col-span-2 !bg-[#f4c7c3]')}

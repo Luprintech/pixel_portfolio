@@ -1,6 +1,7 @@
 // Lo que hace que la casa parezca habitada: sillas, la caja de cartón de Khalessi (en dos capas, para que la gata quede
 // dentro), plantas y el acceso a la azotea (escalera con puerta de cristal y su cartel).
-import { INK, hash2, rect, slab } from '../draw.js'
+import { drawText, textWidth } from '../../pixelFont.js'
+import { INK, WOOD, hash2, rect, slab } from '../draw.js'
 
 // Silla gamer vista desde atrás: respaldo alto con reposacabezas, base de cinco brazos y ruedas.
 function gamerChair(g, body, light, dark, accent) {
@@ -18,19 +19,29 @@ function gamerChair(g, body, light, dark, accent) {
   rect(g, 17, 15, 3, 7, INK.slate)
 }
 
-export const chairAtreus = {
-  w: 20,
-  h: 30,
-  body: [{ l: -8, t: -6, r: 8, b: 0 }],
-  paint: (g) => gamerChair(g, INK.night2, INK.slateLight, INK.night, INK.lagoonLight),
+// Las sillas van en dos capas para que quien se siente quede entre ellas: la de atrás (ruedas, reposacabezas y parte alta
+// del respaldo, detrás de la persona) y la de delante (la parte baja del respaldo y los reposabrazos, que le tapan las
+// caderas). Se pintan igual y cada capa borra lo que no es suyo; las filas 15 a 23 son la frontera.
+const CHAIR_SPLIT = { from: 15, to: 24 }
+
+function chairLayer(layer, colors) {
+  return (g) => {
+    gamerChair(g, ...colors)
+    if (layer === 'back') g.clearRect(0, CHAIR_SPLIT.from, 20, CHAIR_SPLIT.to - CHAIR_SPLIT.from)
+    else {
+      g.clearRect(0, 0, 20, CHAIR_SPLIT.from)
+      g.clearRect(0, CHAIR_SPLIT.to, 20, 30 - CHAIR_SPLIT.to)
+    }
+  }
 }
 
-export const chairLupe = {
-  w: 20,
-  h: 30,
-  body: [{ l: -8, t: -6, r: 8, b: 0 }],
-  paint: (g) => gamerChair(g, INK.plum, '#a05fb5', '#4f2a60', INK.rose),
-}
+const ATREUS_CHAIR = [INK.night2, INK.slateLight, INK.night, INK.lagoonLight]
+const LUPE_CHAIR = [INK.plum, '#a05fb5', '#4f2a60', INK.rose]
+
+export const chairAtreus = { w: 20, h: 30, body: [{ l: -8, t: -6, r: 8, b: 0 }], paint: chairLayer('back', ATREUS_CHAIR) }
+export const chairAtreusFront = { w: 20, h: 30, body: [], paint: chairLayer('front', ATREUS_CHAIR) }
+export const chairLupe = { w: 20, h: 30, body: [{ l: -8, t: -6, r: 8, b: 0 }], paint: chairLayer('back', LUPE_CHAIR) }
+export const chairLupeFront = { w: 20, h: 30, body: [], paint: chairLayer('front', LUPE_CHAIR) }
 
 // Caja de cartón abierta: la capa de atrás (fondo y solapas) y la de delante (la pared baja), con la gata entre ambas.
 const CARDBOARD = ['#cba36a', '#b98f5a', '#dfbf86', '#9c7547']
@@ -108,4 +119,43 @@ export const tallPlant = {
     }
     rect(g, 8, 3, 4, 4, INK.meadow)
   },
+}
+
+// Escalera a la azotea: peldaños de madera con barandilla hasta una puerta de cristal por la que entra el cielo, vista de
+// frente en la pared de la izquierda, como la escalera exterior de la casa. El cartel va encima (`roofSign`).
+export const roofStairs = {
+  w: 36,
+  h: 62,
+  body: [{ l: -17, t: -16, r: 17, b: 0 }],
+  paint(g) {
+    const [deep, dark, mid, light] = WOOD
+    slab(g, 4, 0, 28, 38, dark, mid, deep)
+    rect(g, 7, 3, 22, 24, INK.lagoonLight)
+    rect(g, 7, 3, 22, 1, INK.white)
+    rect(g, 7, 17, 22, 10, '#b3e3ea')
+    rect(g, 11, 6, 7, 2, INK.white)
+    rect(g, 20, 9, 6, 2, INK.white)
+    rect(g, 17, 3, 2, 24, dark)
+    rect(g, 7, 14, 22, 2, dark)
+    rect(g, 7, 30, 22, 6, mid)
+    rect(g, 27, 29, 2, 2, INK.saffronLight)
+    for (let i = 0; i < 5; i++) {
+      const y = 38 + i * 5
+      const inset = Math.max(0, 4 - i)
+      rect(g, inset, y, 36 - inset * 2, 2, light)
+      rect(g, inset, y + 2, 36 - inset * 2, 3, i % 2 ? mid : dark)
+    }
+    rect(g, 0, 61, 36, 1, deep)
+    rect(g, 0, 36, 2, 25, dark)
+    rect(g, 0, 34, 3, 3, mid)
+    rect(g, 34, 36, 2, 25, dark)
+    rect(g, 33, 34, 3, 3, mid)
+  },
+}
+
+// Cartel de pared de la azotea, en el mismo rótulo de píxeles que la placa de la fachada.
+export function roofSign(g, x, y) {
+  const text = 'AZOTEA'
+  slab(g, x, y, textWidth(text) + 6, 9, WOOD[2], WOOD[3], WOOD[0])
+  drawText(g, x + 3, y + 2, text, INK.night)
 }

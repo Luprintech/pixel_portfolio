@@ -14,7 +14,7 @@ const FIGURE = FIGURES.find((figure) => figure.id === 'pokemon')
 // Pantalla táctil de la impresora Bambu Lab A1 mini: oscura, con acentos verdes, el archivo, las temperaturas y el avance de
 // la impresión. `initial` es 'done' si ya había una figura sin recoger; `onMode` avisa a la sala (la impresora de verdad
 // cambia de animación) y `onClaim` entrega la figura. Esc cierra: si se está imprimiendo, se cancela.
-export default function PrinterPanel({ initial, claimed, onMode, onClaim, onClose }) {
+export default function PrinterPanel({ initial, claimed, onMode, onProgress, onClaim, onClose }) {
   const { copy } = useValleCopy()
   const p = copy.printer
   const [phase, setPhase] = useState(initial === 'done' ? 'done' : 'ready')
@@ -44,6 +44,7 @@ export default function PrinterPanel({ initial, claimed, onMode, onClaim, onClos
     const timer = setInterval(() => {
       const fraction = Math.min(1, (performance.now() - start) / PRINT_MS)
       setProgress(fraction)
+      onProgress(fraction)
       if (fraction >= 1) {
         clearInterval(timer)
         stopSound()
@@ -56,7 +57,7 @@ export default function PrinterPanel({ initial, claimed, onMode, onClaim, onClos
       clearInterval(timer)
       stopSound()
     }
-  }, [phase, onMode])
+  }, [phase, onMode, onProgress])
 
   const start = () => {
     setProgress(0)

@@ -1,37 +1,141 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useValleCopy } from '../../../lib/valleCopy'
+import { AboutBlock, ProjectsBlock, StackBlock } from '../Content'
+import { HOME_URL, canGoBack, canGoForward, createHistory, currentUrl, goBack, goForward, isBlocked, parseAddress, search, searchUrl, visit } from './browserPages'
 
 const LETTERS = [['G', '#4285f4'], ['o', '#ea4335'], ['o', '#fbbc05'], ['g', '#4285f4'], ['l', '#34a853'], ['e', '#ea4335']]
+const BUTTON = { borderColor: '#7f9db9', background: 'linear-gradient(#ffffff, #dedbc8)' }
 
-// Navegador de la época (Internet Explorer) con la página de inicio de un buscador de los primeros: el nombre en letras de
-// colores, una caja de búsqueda y dos botones. Es operativo: buscar abre los resultados reales del buscador en otra pestaña
-// (un navegador dentro del juego no puede mostrar páginas ajenas). La barra de direcciones es de solo lectura.
-export default function Browser() {
-  const { copy } = useValleCopy()
-  const b = copy.desktop.browser
-  const [home, setHome] = useState(0)
+const PORTFOLIO_BODY = { projects: ProjectsBlock, about: AboutBlock, stack: StackBlock }
+
+// Estilos de las secciones del portfolio dentro de la página (el contenido es el mismo del resto del juego).
+const pageTokens = { ['--text-primary']: '#000', ['--text-secondary']: '#333', ['--bg-surface']: '#f5f4ea', ['--bg-elevated']: '#f5f4ea', ['--bg-secondary']: '#ece9d8', ['--border-color']: '#7f9db9', ['--px-ink']: '#0a246a', ['--px-ring']: '#7f9db9', ['--accent-primary']: '#0a246a', ['--accent-secondary']: '#0a246a' }
+
+// La página de inicio: el nombre en letras de colores, una caja de búsqueda y dos botones, como los buscadores de los primeros.
+function Home({ b, onSearch, onLucky }) {
+  const [query, setQuery] = useState('')
   return (
-    <div className="flex min-h-[18rem] flex-col text-[13px]" style={{ background: '#ece9d8', color: '#000', margin: '-1rem' }}>
-      <div className="flex flex-wrap items-center gap-2 border-b px-2 py-1" style={{ borderColor: '#aca899' }}>
-        <button type="button" className="rounded border px-2 py-0.5" style={{ borderColor: '#7f9db9', background: '#fff' }} onClick={() => setHome((n) => n + 1)}>{b.home}</button>
-        <span className="text-xs">{b.address}</span>
-        <input readOnly aria-label={b.address} value="http://www.google.com/" className="min-w-0 flex-1 border px-1 py-0.5" style={{ borderColor: '#7f9db9', background: '#fff' }} />
-      </div>
-      <div key={home} className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-8" style={{ background: '#fff' }}>
-        <h1 aria-label="Google" className="text-6xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-          {LETTERS.map(([letter, color], i) => (
-            <span key={i} aria-hidden="true" style={{ color }}>{letter}</span>
-          ))}
-        </h1>
-        <form action="https://www.google.com/search" method="get" target="_blank" className="flex w-full max-w-md flex-col items-center gap-3">
-          <input name="q" type="search" aria-label={b.search} autoComplete="off" className="w-full border-2 px-2 py-1 text-base" style={{ borderColor: '#7f9db9' }} />
-          <span className="flex flex-wrap justify-center gap-2">
-            <button type="submit" className="rounded border px-3 py-1" style={{ borderColor: '#707070', background: 'linear-gradient(#f8f8f8, #dcdcdc)' }}>{b.go}</button>
-            <button type="submit" name="btnI" value="1" className="rounded border px-3 py-1" style={{ borderColor: '#707070', background: 'linear-gradient(#f8f8f8, #dcdcdc)' }}>{b.lucky}</button>
-          </span>
-        </form>
-        <p className="text-xs" style={{ color: '#555' }}>{b.note}</p>
-      </div>
+    <div className="flex min-h-full flex-col items-center justify-center gap-4 px-4 py-8">
+      <h1 aria-label="Google" className="text-6xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+        {LETTERS.map(([letter, color], i) => (
+          <span key={i} aria-hidden="true" style={{ color }}>{letter}</span>
+        ))}
+      </h1>
+      <form className="flex w-full max-w-md flex-col items-center gap-3" onSubmit={(event) => { event.preventDefault(); onSearch(query) }}>
+        <input value={query} onChange={(event) => setQuery(event.target.value)} type="search" aria-label={b.search} autoComplete="off" className="w-full border-2 px-2 py-1 text-base" style={{ borderColor: '#7f9db9' }} />
+        <span className="flex flex-wrap justify-center gap-2">
+          <button type="submit" className="rounded border px-3 py-1" style={BUTTON}>{b.go}</button>
+          <button type="button" className="rounded border px-3 py-1" style={BUTTON} onClick={() => onLucky(query)}>{b.lucky}</button>
+        </span>
+      </form>
+      <p className="text-xs" style={{ color: '#555' }}>{b.tip}</p>
     </div>
   )
 }
+
+// Resultados de una búsqueda: las secciones del portfolio y los enlaces conocidos que coinciden, con su dirección. Al final, la
+// opción (a elegir, nunca automática) de buscar lo mismo en el buscador de verdad, que se abre fuera.
+function Results({ b, query, lang, onVisit }) {
+  const results = search(query, lang)
+  return (
+    <div className="space-y-4 p-4 text-sm">
+      <p style={{ color: '#555' }}>{b.resultsFor} «{query}»</p>
+      {results.length === 0 && <p>{b.noResults}</p>}
+      <ul className="space-y-4">
+        {results.map((result) => (
+          <li key={result.url}>
+            <button type="button" className="block text-left text-base font-semibold underline" style={{ color: '#1a0dab' }} onClick={() => onVisit(result.url)}>{result.title}</button>
+            <span className="block text-xs" style={{ color: '#006621' }}>{result.url}</span>
+            <span className="block">{result.snippet}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="border-t pt-3 text-xs" style={{ borderColor: '#ddd' }}>
+        {b.outside}{' '}
+        <a href={`https://www.google.com/search?q=${encodeURIComponent(query)}`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: '#1a0dab' }}>{b.outsideLink}</a>
+      </p>
+    </div>
+  )
+}
+
+// Web de fuera: se intenta enseñar en un visor integrado y, si es de las que lo prohíben, se avisa y se ofrece abrirla fuera
+// (nunca se redirige sola). Como el navegador no avisa cuando una web se niega, la barra de arriba permite abrirla siempre.
+function External({ b, url, host }) {
+  const blocked = isBlocked(host)
+  return (
+    <div className="flex h-full flex-col">
+      <p className="flex shrink-0 flex-wrap items-center gap-2 border-b px-2 py-1 text-xs" style={{ background: '#ffffe1', borderColor: '#aca899' }}>
+        <span>{blocked ? b.blocked : b.maybeBlocked}</span>
+        <a href={url} target="_blank" rel="noopener noreferrer" className="rounded border px-2 py-0.5" style={BUTTON}>{b.openOutside}</a>
+      </p>
+      {blocked ? (
+        <div className="grid flex-1 place-items-center p-6 text-center text-sm">
+          <p>{host}</p>
+        </div>
+      ) : (
+        <iframe title={host} src={url} sandbox="allow-scripts allow-forms allow-popups" referrerPolicy="no-referrer" className="min-h-0 w-full flex-1 border-0" />
+      )}
+    </div>
+  )
+}
+
+// Internet Explorer: barra de direcciones, Atrás, Adelante, Actualizar e Inicio, con historial. Navega por dentro (el buscador,
+// los resultados, las secciones del portfolio y webs de fuera en un visor) sin abrir pestañas del navegador de verdad.
+export default function Browser() {
+  const { copy, lang } = useValleCopy()
+  const b = copy.desktop.browser
+  const [history, setHistory] = useState(createHistory)
+  const [reload, setReload] = useState(0)
+  const [typed, setTyped] = useState(null)
+  const scrollRef = useRef(null)
+  const url = currentUrl(history)
+  const page = parseAddress(url)
+
+  // Cada página nueva empieza arriba.
+  useEffect(() => {
+    scrollRef.current?.scrollTo(0, 0)
+  }, [url, reload])
+
+  const go = (address) => {
+    setTyped(null)
+    setHistory((h) => visit(h, parseAddress(address).url))
+  }
+  const lucky = (query) => {
+    const [first] = search(query, lang)
+    go(first ? first.url : searchUrl(query))
+  }
+  const toolbar = 'rounded border px-2 py-0.5 text-xs disabled:opacity-40'
+
+  let content
+  if (page.kind === 'home') content = <Home key={reload} b={b} onSearch={(query) => go(query.trim() ? query : HOME_URL)} onLucky={lucky} />
+  else if (page.kind === 'results') content = <Results b={b} query={page.query} lang={lang} onVisit={go} />
+  else if (page.kind === 'page') {
+    const Body = PORTFOLIO_BODY[page.page]
+    content = (
+      <div className="p-4 text-sm" style={pageTokens}>
+        <h1 className="mb-3 text-xl font-bold" style={{ color: '#003399' }}>{b.pages[page.page]}</h1>
+        <Body />
+      </div>
+    )
+  } else if (page.kind === 'external') content = <External b={b} url={page.url} host={page.host} />
+  else content = <p className="p-6 text-sm">{b.notFound}</p>
+
+  return (
+    <div className="flex h-full min-h-[16rem] flex-col text-[13px]" style={{ background: '#ece9d8', color: '#000' }}>
+      <div className="flex shrink-0 flex-wrap items-center gap-1 border-b px-2 py-1" style={{ borderColor: '#aca899' }}>
+        <button type="button" className={toolbar} style={BUTTON} disabled={!canGoBack(history)} onClick={() => setHistory(goBack)}>◀ {b.back}</button>
+        <button type="button" className={toolbar} style={BUTTON} disabled={!canGoForward(history)} onClick={() => setHistory(goForward)}>{b.forward} ▶</button>
+        <button type="button" className={toolbar} style={BUTTON} onClick={() => setReload((n) => n + 1)}>⟳ {b.refresh}</button>
+        <button type="button" className={toolbar} style={BUTTON} onClick={() => go(HOME_URL)}>⌂ {b.home}</button>
+      </div>
+      <form className="flex shrink-0 items-center gap-2 border-b px-2 py-1" style={{ borderColor: '#aca899' }} onSubmit={(event) => { event.preventDefault(); go(typed ?? url) }}>
+        <label htmlFor="ie-address" className="text-xs">{b.address}</label>
+        <input id="ie-address" value={typed ?? url} onChange={(event) => setTyped(event.target.value)} onFocus={(event) => event.target.select()} spellCheck="false" className="min-w-0 flex-1 border px-1 py-0.5" style={{ borderColor: '#7f9db9', background: '#fff' }} />
+        <button type="submit" className={toolbar} style={BUTTON}>{b.goButton}</button>
+      </form>
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto" style={{ background: '#fff' }}>{content}</div>
+      <p className="shrink-0 border-t px-2 py-0.5 text-xs" style={{ borderColor: '#aca899' }}>{page.kind === 'external' ? page.url : b.ready}</p>
+    </div>
+  )
+}
+

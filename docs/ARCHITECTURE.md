@@ -96,7 +96,7 @@ Resumen de lo que implicaría la mascota del visitante; las reglas de producto e
 - **Consola retro:** `game/retro/` es un juego aparte: `world.js` (salas), `logic.js` (paso puro, probado sin navegador), `sprites.js` y `render.js` (lienzo de 160×160); `ConsoleGame.jsx` lee teclas y pantalla táctil y lo hace avanzar. Sonidos en `lib/retroSound.js`, textos en `lib/retroCopy.js`.
 - **Pose sentada:** `SIT_POSE` en `avatar/stance.js` (columna extra de la hoja, `SHEET_POSES`); `sitting.js` la usa sin recortes.
 - **Modos de muebles y casa viva:** `modes` en el catálogo (`furniture/index.js`) y `modeFor` (`homeBuilder.js`) para la tele, la minicadena y la impresora pequeña; `interior/catBrain.js` mueve a Khalessi; `lib/jukebox.js` es el reproductor de música de la casa (minicadena y Winamp); `game/achievements.js` guarda los logros.
-- **Programas de XP:** `components/valle/xp/` (Internet Explorer, Calculadora, Paint, Bloc de notas, Winamp) y `RetroDesktop.jsx` como gestor de ventanas.
+- **Programas de XP:** `components/valle/xp/` (Internet Explorer con `browserPages.js`, Calculadora, Paint, Bloc de notas, Winamp y Visual Studio Code con `vscodeProject.js`). `xp/windows.js` es el gestor de ventanas (puro) y `XpWindow.jsx` la ventana; `RetroDesktop.jsx` monta la ventana principal del ordenador y, dentro, el escritorio con su gestor.
 - **De noche:** `interior/ledLights.js` dibuja las tiras led; la escena las enciende si el valle estaba a oscuras al entrar (`ValleScene.isNight`).
 
 ## Flujo de contenido
