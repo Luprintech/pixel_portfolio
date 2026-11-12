@@ -1,6 +1,6 @@
 // Dibujo de Khalessi fuera de casa. Las texturas llevan prefijo propio (`valle-khalessi`) para no pisar las de la casa:
 // si la sala volviera a registrar las suyas, los sprites de este mundo se quedarían sin imagen.
-import { khalessiCanvas, khalessiSitCanvas } from '../pets/index.js'
+import { khalessiCanvas, khalessiSitCanvas, khalessiSleepCanvas } from '../pets/index.js'
 import { shadowSprite } from '../sprites.js'
 
 const addCanvas = (scene, key, canvas) => {
@@ -11,6 +11,7 @@ function frameOf(cat) {
   const beat = Math.floor(cat.tick / 220) % 2
   if (cat.pose === 'walk') return `valle-khalessi-walk-${beat}`
   if (cat.pose === 'wash') return `valle-khalessi-wash-${beat}`
+  if (cat.pose === 'sleep') return `valle-khalessi-sleep-${Math.floor(cat.tick / 900) % 2}`
   return `valle-khalessi-sit-${Math.floor(cat.tick / 800) % 2}`
 }
 
@@ -20,6 +21,7 @@ export default class CatActor {
       addCanvas(scene, `valle-khalessi-sit-${step}`, khalessiSitCanvas(false, step))
       addCanvas(scene, `valle-khalessi-wash-${step}`, khalessiSitCanvas(true, step))
       addCanvas(scene, `valle-khalessi-walk-${step}`, khalessiCanvas(step, step))
+      addCanvas(scene, `valle-khalessi-sleep-${step}`, khalessiSleepCanvas(step))
     })
     addCanvas(scene, 'valle-khalessi-shadow', shadowSprite(16, 4))
     this.shadow = scene.add.image(cat.x, cat.y - 1, 'valle-khalessi-shadow').setDepth(2)

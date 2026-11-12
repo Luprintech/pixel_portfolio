@@ -18,6 +18,8 @@ export default class SkyLayer {
     this.lastMs = this.offset
     this.lastPublish = -PUBLISH_MS
     this.seasons = { autumn: [], winter: [] }
+    // El último estado del cielo calculado: lo leen los personajes y la vida ambiental sin recalcularlo (null hasta el primer fotograma).
+    this.last = null
     this.lit = []
     this.lamps = []
     this.shown = new WeakMap()
@@ -78,6 +80,7 @@ export default class SkyLayer {
     if (this.origin === null) this.origin = time
     const ms = time - this.origin + this.offset
     const sky = valleSkyAt(ms, this.seed)
+    this.last = sky
 
     tintLayers(sky).forEach(({ alpha }, i) => this.setIfChanged(this.tints[i], alpha))
     this.seasons.autumn.forEach((image) => this.setIfChanged(image, sky.autumn))

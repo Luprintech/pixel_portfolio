@@ -42,6 +42,12 @@ export const BUILDINGS = [
   { id: 'kiosko', kind: 'kiosk', x: 12, y: 10, w: 4, h: 4, door: { x: 13 } },
 ].map((b) => ({ ...b, door: { x: b.door.x, y: b.y + b.h } }))
 
+// Frutales: no entran en la siembra de árboles (se despeja a su alrededor después, ver `inMovedClearance`).
+const FRUIT_TREES = ['orangeTree', 'appleTree']
+// Lo de la piscina que se añadió después (sombrillas rehechas, tumbonas y toalla) tampoco entra en la siembra: se sembró con las sombrillas de antes.
+const POOL_EXTRAS = ['umbrella', 'lounger', 'towel']
+const UMBRELLAS_BEFORE = [{ at: [4.6, 17.4] }, { at: [11.2, 17.4] }]
+
 // Objetos sueltos: `at` es el punto de apoyo (centro de la base) en teselas, con decimales, y `zone` la
 // puerta que lleva a un panel. El tamaño del cuerpo sólido lo da `PROP_BODY` en ValleScene.
 const FIXED_PROPS = [
@@ -59,6 +65,11 @@ const FIXED_PROPS = [
   // Naranjos a los lados de la puerta de la Mezquita (centro de la puerta: 66,5). Apoyan en la base del muro: la puerta cae sobre el camino.
   { kind: 'orangeTree', at: [63.8, 28] },
   { kind: 'orangeTree', at: [69.2, 28] },
+  // Huerto al oeste de la plaza, en el prado bajo el camino de Mihrab y Copos, y un manzano junto al puente romano (orilla oeste).
+  { kind: 'appleTree', at: [20.5, 31.8] },
+  { kind: 'orangeTree', at: [24, 31.8] },
+  { kind: 'appleTree', at: [27.5, 31.8] },
+  { kind: 'appleTree', at: [47, 32.6] },
   { kind: 'easel', at: [33.5, 12.6] },
   { kind: 'easel', at: [39.5, 12.6] },
   { kind: 'bench', at: [32.5, 24.4] },
@@ -85,8 +96,12 @@ const FIXED_PROPS = [
   { kind: 'plankBridge', at: [58, 38.375] },
   // Puentecillo del camino sobre el afluente, entre Artes y la Mezquita.
   { kind: 'footBridge', at: [44, 17.375] },
-  { kind: 'umbrella', at: [4.6, 17.4] },
-  { kind: 'umbrella', at: [11.2, 17.4] },
+  // Piscina Santuario: dos sombrillas a los lados y, entre ellas, dos tumbonas mirando al agua (una con toalla doblada) y una toalla en el suelo.
+  { kind: 'umbrella', at: [4.6, 17.6] },
+  { kind: 'umbrella', at: [11.2, 17.6] },
+  { kind: 'lounger', at: [6.2, 18.5], variant: 0 },
+  { kind: 'lounger', at: [9.7, 18.5], variant: 1 },
+  { kind: 'towel', at: [8.1, 19.4] },
   ...Array.from({ length: 16 }, (_, i) => ({ kind: 'fence', at: [3 + i * 2, 50.4] })).filter((p) => p.at[0] < 34),
   ...Array.from({ length: 20 }, (_, i) => ({ kind: 'fence', at: [41 + i * 2, 50.4] })).filter((p) => p.at[0] < 78),
 ]
@@ -227,7 +242,7 @@ export function treePositions() {
     for (let y = from; y <= to; y++) roads.add(`${x},${y}`)
   })
   const buildings = [...BUILDINGS.filter((b) => !MOVED_BUILDINGS.includes(b.id)), ...LEGACY_BUILDINGS]
-  const props = [...PROPS.filter((p) => p.kind !== 'orangeTree'), ...STATUES_BEFORE]
+  const props = [...PROPS.filter((p) => !FRUIT_TREES.includes(p.kind) && !POOL_EXTRAS.includes(p.kind)), ...STATUES_BEFORE, ...UMBRELLAS_BEFORE]
   const water = legacyRiverTiles(COLS, ROWS)
   const plaza = plazaTiles()
   const rand = seeded(2024)
@@ -311,10 +326,11 @@ const MUSIC_SITE_TREES = [
 // Lo que las dos casas recolocadas dejan libre: su huella con un margen, el pasillo hasta su puerta y la copa de cada naranjo.
 const inMovedClearance = (x, y) => {
   const moved = BUILDINGS.filter((b) => MOVED_BUILDINGS.includes(b.id))
-  const orangeTrees = PROPS.filter((p) => p.kind === 'orangeTree')
+  const orangeTrees = PROPS.filter((p) => FRUIT_TREES.includes(p.kind))
   return (
     moved.some((b) => inside(b, x, y, 1) || (Math.abs(x - b.door.x) < 2 && y >= b.door.y - 1 && y <= b.door.y + 3)) ||
-    orangeTrees.some(({ at: [px, py] }) => Math.abs(x - px) < 2.2 && Math.abs(y - py) < 2.4)
+    orangeTrees.some(({ at: [px, py] }) => Math.abs(x - px) < 2.2 && Math.abs(y - py) < 2.4) ||
+    PROPS.some((p) => POOL_EXTRAS.includes(p.kind) && Math.abs(x - p.at[0]) < 2.2 && Math.abs(y - p.at[1]) < 2.4)
   )
 }
 

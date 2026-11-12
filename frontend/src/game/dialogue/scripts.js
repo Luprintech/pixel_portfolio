@@ -77,6 +77,10 @@ export const SCRIPTS = {
   // de pesca sin caña. Ninguna ofrece opciones: se leen y se cierran.
   'valle.mezquita': { pages: lines('lupe', 'valle.mezquita', 2) },
   'valle.cana': { pages: lines('lupe', 'valle.cana', 2) },
+  // Mirar un frutal: la conversación cambia con la estación del valle (`game/fruitTrees.js`). Lupe lo cuenta en voz en off, sin opciones.
+  ...Object.fromEntries(
+    ['naranjo', 'manzano'].flatMap((tree) => ['spring', 'autumn', 'winter'].map((season) => [`valle.${tree}.${season}`, { pages: lines('lupe', `valle.${tree}.${season}`, 2) }])),
+  ),
   'valle.sin_cana': { pages: lines('lupe', 'valle.sin_cana', 2) },
   'inicio.bienvenida': {
     pages: [

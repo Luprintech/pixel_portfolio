@@ -2,9 +2,11 @@
 // cuerpo sólido, medido desde el punto de apoyo (centro de la base): `l`, `r`, `t` y `b` son los bordes
 // en píxeles, con `t` y `b` negativos hacia arriba. Un `glow` marca la luz que se enciende de noche.
 import { PAL, TONE } from './palette.js'
-import { dot, ellipse, makeCanvas, noise, outline, rect } from './pixelKit.js'
+import { dot, ellipse, makeCanvas, outline, rect } from './pixelKit.js'
 import { drawText, textWidth } from './pixelFont.js'
 import { cordobaArch as arch } from './cordobaArch.js'
+import { appleTree, orangeTree } from './fruitTrees.js'
+import { lounger, poolUmbrella as umbrella, towel } from './poolProps.js'
 import { fishPost, footBridge, lily, plankBridge, reeds, rod, romanBridge } from './riverSprites.js'
 
 const [WOOD0, WOOD1, WOOD2, WOOD3] = TONE.wood
@@ -196,51 +198,6 @@ function pool() {
   return { canvas: done(s), body: [{ l: -52, t: -76, r: 52, b: -2 }] }
 }
 
-// Naranjo en su jardinera de piedra: copa frondosa con naranjas y algo de azahar. Es perenne, así que no tiene versión de otoño;
-// en invierno recibe la nieve como el resto de objetos. Mide 48 de ancho y apoya en la fila 53.
-function orangeTree() {
-  const s = sprite(48, 54)
-  const { g } = s
-  const leaf = TONE.grass
-  // Jardinera: caja de piedra con flores blancas y hojas en el borde.
-  rect(g, 2, 44, 44, 10, STONE1)
-  rect(g, 2, 44, 44, 2, STONE2)
-  rect(g, 2, 52, 44, 2, STONE0)
-  rect(g, 43, 46, 3, 6, STONE0)
-  rect(g, 4, 41, 40, 4, leaf[1])
-  for (let x = 5; x < 43; x += 4) {
-    dot(g, x, 41, x % 8 === 5 ? '#f6f0e0' : leaf[3])
-    dot(g, x + 1, 42, leaf[4])
-  }
-  // Tronco.
-  rect(g, 22, 28, 5, 15, WOOD1)
-  rect(g, 22, 28, 2, 15, WOOD2)
-  rect(g, 26, 30, 1, 13, WOOD0)
-  // Copa: bolas de hojas sombreadas desde arriba a la izquierda.
-  ;[[24, 16, 11], [14, 21, 8], [34, 21, 8], [24, 25, 8], [18, 12, 6], [31, 11, 6]].forEach(([cx, cy, r]) => {
-    for (let y = cy - r; y <= cy + r; y++) {
-      for (let x = cx - r; x <= cx + r; x++) {
-        const dist = Math.hypot(x - cx, y - cy) + (noise(x, y, 2.2, 3) - 0.5) * 2.4
-        if (dist > r) continue
-        const light = (-(x - cx) * 0.7 - (y - cy) * 0.9) / r + (noise(x, y, 3, 8) - 0.5) * 0.6
-        dot(g, x, y, leaf[light < -0.5 ? 0 : light < -0.05 ? 1 : light < 0.4 ? 2 : 3])
-      }
-    }
-  })
-  // Naranjas (dos píxeles con un brillo) y azahar (flor blanca con el centro dorado).
-  ;[[14, 18], [22, 9], [30, 16], [38, 22], [19, 26], [27, 24], [10, 25], [33, 8], [24, 18]].forEach(([x, y]) => {
-    rect(g, x, y, 3, 3, '#f08a24')
-    dot(g, x, y, '#ffc468')
-    dot(g, x + 2, y + 2, '#c4601a')
-  })
-  ;[[17, 14], [28, 12], [35, 17], [12, 22], [24, 22], [21, 7]].forEach(([x, y]) => {
-    dot(g, x, y, '#fffbe8')
-    dot(g, x + 1, y, '#fffbe8')
-    dot(g, x, y + 1, '#f8d77a')
-  })
-  return { canvas: done(s), body: [{ l: -20, t: -8, r: 20, b: -1 }] }
-}
-
 function easel() {
   const s = sprite(24, 32)
   const { g } = s
@@ -295,18 +252,6 @@ function rocks() {
   return { canvas: done(s), body: [{ l: -15, t: -14, r: 15, b: -1 }] }
 }
 
-function umbrella() {
-  const s = sprite(36, 44)
-  const { g } = s
-  rect(g, 17, 10, 2, 26, WOOD1)
-  ellipse(g, 18, 9, 16, 7, '#e07a9c')
-  for (let i = -15; i <= 15; i += 7) rect(g, 18 + i, 4, 3, 10, '#f6f0e0')
-  rect(g, 8, 34, 20, 3, WOOD2)
-  rect(g, 10, 37, 2, 6, WOOD0)
-  rect(g, 24, 37, 2, 6, WOOD0)
-  return { canvas: done(s), body: [{ l: -9, t: -8, r: 9, b: -1 }] }
-}
-
 // Tramo de valla de dos teselas de ancho.
 function fence() {
   const s = sprite(32, 20)
@@ -324,7 +269,7 @@ function fence() {
 }
 
 export const PROP_KINDS = {
-  fountain, noticeboard, postbox, arch, welcomeSign, busStop, bus, towTruck, pool, orangeTree, easel, bench, lamp, rocks, umbrella, fence,
+  fountain, noticeboard, postbox, arch, welcomeSign, busStop, bus, towTruck, pool, orangeTree, appleTree, easel, bench, lamp, rocks, umbrella, lounger, towel, fence,
   romanBridge, plankBridge, footBridge, lily, reeds, fishPost, rod,
 }
 

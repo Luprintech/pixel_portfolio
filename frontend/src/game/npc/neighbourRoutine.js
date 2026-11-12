@@ -11,8 +11,9 @@ export const PAUSE_MS = [2000, 5000]
 // Si un paso no tiene camino, lo salta y espera algo más antes del siguiente.
 export const SKIP_MS = 4000
 
-export function createRoutine(steps, rng = Math.random, firstWait = 1500) {
-  return { steps, rng, index: -1, step: null, phase: 'pause', wait: firstWait, left: 0 }
+// `pause` es el rango de espera entre pasos de esta rutina (Atreus descansa más entre paseos que Ylonem entre fotos).
+export function createRoutine(steps, rng = Math.random, firstWait = 1500, pause = PAUSE_MS) {
+  return { steps, rng, index: -1, step: null, phase: 'pause', wait: firstWait, left: 0, pause }
 }
 
 // Avanza `dt` ms. `busy` es que está hablando con la viajera y `walking` que aún le queda camino. Devuelve qué debe hacer quien la lleva:
@@ -29,7 +30,7 @@ export function stepRoutine(routine, dt, { busy = false, walking = false } = {})
     routine.left -= dt
     if (routine.left > 0) return null
     routine.phase = 'pause'
-    routine.wait = between(PAUSE_MS, routine.rng)
+    routine.wait = between(routine.pause, routine.rng)
     return { type: 'end', step: routine.step }
   }
   routine.wait -= dt
@@ -40,6 +41,20 @@ export function stepRoutine(routine, dt, { busy = false, walking = false } = {})
   return { type: 'go', step: routine.step }
 }
 
+// Cambia la lista de pasos (Ylonem se refugia si llueve, Atreus vuelve a casa): el paso en curso se termina y la rutina sigue por la lista nueva
+// desde el principio. Con la misma lista no hace nada.
+export function setSteps(routine, steps) {
+  if (routine.steps === steps) return
+  routine.steps = steps
+  routine.index = -1
+}
+
+// Corta el paso en curso (Grace se levanta del banco porque empieza a llover): al siguiente fotograma termina y la rutina sigue. Si aún anda
+// hacia él o espera, no hace nada.
+export function endNow(routine) {
+  if (routine.phase === 'doing') routine.left = 0
+}
+
 // El paso que acaba de empezar no tiene camino hasta su sitio: se salta.
 export function skipStep(routine) {
   routine.phase = 'pause'
@@ -48,3 +63,12 @@ export function skipStep(routine) {
 
 // Qué está haciendo ahora, o null si anda o espera (para elegir entre su conversación habitual y la que va con lo que hace).
 export const doingNow = (routine) => (routine.phase === 'doing' ? routine.step : null)
+
+// Los estados comunes de cualquier rutina, con el vocabulario de `docs/PLAN MAESTRO VALLE.md` (7b): `idle` espera, `walking` va a su sitio,
+// `returning` va de vuelta a casa (un paso con `home: true`), `activity` hace lo suyo e `interaction` habla con la viajera (`busy`).
+export function routineState(routine, busy = false) {
+  if (busy) return 'interaction'
+  if (routine.phase === 'doing') return 'activity'
+  if (routine.phase === 'walking') return routine.step?.home ? 'returning' : 'walking'
+  return 'idle'
+}

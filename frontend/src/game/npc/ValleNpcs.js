@@ -98,9 +98,30 @@ export default class ValleNpcs {
     return !this.catAway && !this.brain.inside && !this.companion.meet && this.visit.phase === 'away' && getStory(this.game).tour !== 'accepted'
   }
 
-  // Mientras Khalessi está en la plaza (la dibujan los vecinos del IES), aquí no se la ve: es una sola gata.
+  // Mientras Khalessi está en el pueblo (la dibuja `GranNeighbours`), aquí no se la ve: es una sola gata.
   setCatAway(away) {
     this.catAway = away
+  }
+
+  // Dónde está la gata ahora (con Lupe): de ahí sale a la plaza, para que no haya salto alguno.
+  catSpot() {
+    return { x: this.companion.x, y: this.companion.y }
+  }
+
+  // A dónde vuelve la gata: junto a Lupe, y si está en casa o fuera de escena, a su puerta.
+  catHome() {
+    return this.brain.inside ? HOME_DOOR : { x: this.brain.x, y: this.brain.y }
+  }
+
+  // La gata llega de vuelta andando: se queda donde ha llegado (sentada junto a Lupe) y aquí vuelve a dibujarse.
+  returnCat(x, y) {
+    Object.assign(this.companion, { x, y, trail: [], pose: 'sit', washLeft: 0 })
+    this.catAway = false
+  }
+
+  // Algo reclama a la gata junto a Lupe: la visita guiada en marcha o la visita de la azotea. Si está fuera, vuelve andando.
+  catRecalled() {
+    return getStory(this.game).tour === 'accepted' || this.visit.phase !== 'away'
   }
 
   // Mientras va a su puerta o espera dentro no se puede hablar con ella.

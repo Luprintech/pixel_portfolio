@@ -92,8 +92,11 @@ function scare(flock, pigeon, from, free) {
   }
 }
 
-// Avanza `dt` ms. `source` es quien da de comida ({ hand, feet }) o null, `scarers` quienes las espantan al acercarse y `free(x, y)` si se puede pisar.
-export function stepFlock(flock, dt, { source = null, scarers = [], free }) {
+// Avanza `dt` ms. `source` es quien da de comida ({ hand, feet }) o null, `scarers` quienes las espantan al acercarse (cada uno con su `range`, o
+// el de siempre) y `free(x, y)` si se puede pisar. `bodies` son personas y gatos `{ x, y, r }` que ocupan su sitio: ninguna paloma anda ni aterriza
+// encima de ellos (quien da de comida está quieto entre las migas y no las espanta, pero tampoco se le pisa).
+export function stepFlock(flock, dt, { source = null, scarers = [], bodies = [], free: ground }) {
+  const free = bodies.length ? (x, y) => ground(x, y) && !bodies.some((body) => Math.hypot(body.x - x, body.y - y) < body.r) : ground
   if (source) {
     flock.nextCrumb -= dt
     if (flock.nextCrumb <= 0) {
@@ -110,7 +113,8 @@ export function stepFlock(flock, dt, { source = null, scarers = [], free }) {
   flock.pigeons.forEach((pigeon) => {
     pigeon.scared = Math.max(0, pigeon.scared - dt)
     if (pigeon.state !== 'fly') {
-      const threat = scarers.find((who) => distance(who, pigeon) < FLOCK.scareRange)
+      // Quien llega encima de una paloma (o ella a sus pies) la aparta: no se queda dentro de nadie.
+      const threat = scarers.find((who) => distance(who, pigeon) < (who.range ?? FLOCK.scareRange)) ?? bodies.find((body) => distance(body, pigeon) < body.r)
       if (threat) scare(flock, pigeon, threat, free)
     }
     if (pigeon.state === 'fly') {

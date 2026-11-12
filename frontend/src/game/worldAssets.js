@@ -9,6 +9,7 @@ import { groundCanvasSteps } from './ground.js'
 import { BUILDINGS, COLS, PROPS, ROWS, TILE, plazaTiles, roadTiles } from './world.js'
 import { signedDistance as riverDistance } from './river.js'
 import { buildingSprite } from './buildings/index.js'
+import { FRUIT_STATES, isFruitTree } from './fruitTrees.js'
 import { propSprite } from './props.js'
 import { Job, runSliced } from './sliced.js'
 import { treeSprite } from './sprites.js'
@@ -60,7 +61,23 @@ function* withSprite(sprite, pastel) {
 const buildingJob = (building, pastel) => job(`building:${building.id}:${pastel}`, () => withSprite(buildingSprite(building), pastel))
 export const buildingAssets = (building, pastel) => buildingJob(building, pastel).get()
 
-const propJob = (prop, pastel) => job(`prop:${prop.kind}:${prop.variant ?? 0}:${pastel}`, () => withSprite(propSprite(prop.kind, prop.variant ?? 0), pastel))
+// Un frutal trae su dibujo de cada estación ya hecho (no recoloreado): la primavera es la base y el otoño y el invierno las capas que funde el cielo.
+function* fruitWithSprite(kind, pastel) {
+  const [spring, autumn, winter] = yield* (function* all() {
+    const out = []
+    for (let state = 0; state < FRUIT_STATES.length; state++) {
+      const { canvas } = propSprite(kind, state)
+      const lit = pastel ? yield* lightenSteps(copyCanvas(canvas)) : canvas
+      if (pastel) yield* softenSteps(lit)
+      out.push(lit)
+    }
+    return out
+  })()
+  return { sprite: propSprite(kind, 0), set: { base: spring, autumn, winter } }
+}
+
+const propJob = (prop, pastel) =>
+  job(`prop:${prop.kind}:${prop.variant ?? 0}:${pastel}`, () => (isFruitTree(prop.kind) ? fruitWithSprite(prop.kind, pastel) : withSprite(propSprite(prop.kind, prop.variant ?? 0), pastel)))
 export const propAssets = (prop, pastel) => propJob(prop, pastel).get()
 
 // El suelo es lo más pesado (más de un millón de píxeles): pintar, aclarar y suavizar la base es lo que hace

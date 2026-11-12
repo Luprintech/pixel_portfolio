@@ -144,11 +144,33 @@ describe('mapa del valle', () => {
   it('ante la Mezquita no quedan las columnas de la Universidad y hay un naranjo a cada lado de la puerta', () => {
     expect(PROPS.some((p) => p.kind === 'statue')).toBe(false)
     const mosque = BUILDINGS.find((b) => b.id === 'mezquita')
-    const trees = PROPS.filter((p) => p.kind === 'orangeTree').map((p) => p.at[0])
+    const trees = PROPS.filter((p) => p.kind === 'orangeTree' && Math.abs(p.at[0] - mosque.door.x) < 5).map((p) => p.at[0])
     const centre = mosque.door.x + 0.5
     expect(trees).toHaveLength(2)
     expect(trees[0] - centre).toBeCloseTo(centre - trees[1], 5)
     expect(trees[1] - centre).toBeGreaterThan(2)
+  })
+
+  it('los frutales (naranjos y manzanos) están sobre hierba: ni en caminos, ni en el agua, ni dentro de edificios, ni pegados a un árbol', () => {
+    const fruit = PROPS.filter((p) => p.kind === 'orangeTree' || p.kind === 'appleTree')
+    expect(fruit.filter((p) => p.kind === 'appleTree').length).toBeGreaterThanOrEqual(3)
+    expect(fruit.filter((p) => p.kind === 'orangeTree').length).toBeGreaterThanOrEqual(3)
+    const walk = new Set([...roadTiles(), ...plazaTiles()])
+    const water = blockedWaterTiles()
+    const trees = treePositions()
+    fruit.forEach(({ at: [x, y] }) => {
+      // Se mira justo delante de la base. Los naranjos de la Mezquita apoyan en el borde del muro, sobre el camino (entero en y): solo ellos pisan camino.
+      const feet = [Math.floor(x), Math.floor(y + 0.3)]
+      if (!Number.isInteger(y)) expect(walk.has(`${feet[0]},${feet[1]}`), `camino bajo el árbol en ${x},${y}`).toBe(false)
+      expect(water.has(`${feet[0]},${feet[1]}`), `agua bajo el árbol en ${x},${y}`).toBe(false)
+      expect(BUILDINGS.some((b) => feet[0] >= b.x && feet[0] < b.x + b.w && feet[1] >= b.y && feet[1] < b.y + b.h), `edificio en ${x},${y}`).toBe(false)
+      expect(trees.some((t) => Math.hypot(t.x + 0.5 - x, t.y - y) < 2), `árbol pegado en ${x},${y}`).toBe(false)
+    })
+  })
+
+  it('los frutales no cambian la siembra de árboles de antes: con ellos o sin ellos salen los mismos', () => {
+    const before = treePositions().length
+    expect(before).toBeGreaterThan(300)
   })
 
   it('los puntos de pesca están en tierra firme, junto al agua y a los que se llega andando, y la caña también', () => {

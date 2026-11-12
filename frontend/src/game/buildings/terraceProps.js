@@ -8,9 +8,9 @@ import { CHAIR, DECK, DECK_WIDEN, STAIRS, TABLE, TELESCOPE } from '../terrace.js
 import { WOOD0, WOOD1, WOOD2, WOOD3 } from './shared.js'
 
 export const BRASS = [shade(PAL.saffron, 0.55), shade(PAL.saffron, 0.78), PAL.saffron, PAL.saffronLight]
-const PINK = '#e07a9c'
-const CREAM = '#f6f0e0'
-const RIM = '#8a3a5c'
+export const PINK = '#e07a9c'
+export const CREAM = '#f6f0e0'
+export const RIM = '#8a3a5c'
 // Pintura blanca de la silla: luz, cuerpo y sombra.
 const CHAIR_WHITE = ['#ffffff', '#ece6f2', '#b3a8c4']
 
@@ -354,8 +354,7 @@ export function telescope(g) {
 // Cubierta de la sombrilla: cada gajo es un cilindro con luz en su borde izquierdo y sombra en el derecho, y el
 // conjunto se oscurece hacia la derecha y hacia el borde. Con dos tonos de más por gajo y un borde oscuro definido,
 // se lee como volumen y no como un dibujo plano. Sin varillas dibujadas: las separa la propia luz.
-function canopy(g) {
-  const { cx, top, rx, ry } = PARASOL
+export function canopy(g, { cx, top, rx, ry } = PARASOL) {
   const centerY = top + ry
   const tones = (base) => [shade(base, 0.62), shade(base, 0.8), base, tint(base, 0.22), tint(base, 0.4)]
   for (let y = top; y < centerY; y++) {

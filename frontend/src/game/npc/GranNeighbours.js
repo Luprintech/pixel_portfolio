@@ -1,10 +1,11 @@
-// Ylonem y Grace en el pueblo, y la llegada de Lupe a presentárselos a la viajera. Une los cerebros (los mismos de Lupe, `lupeBrain.js`, con una
-// rejilla de caminos propia) con lo que se ve y con lo que se dice. Hasta que Lupe los presenta se quedan junto a la puerta del IES; después
-// cada uno sigue su rutina (`neighbourRoutine.js`, pasos en `granPlaces.js`): Grace se sienta en un banco de la plaza a dar de comida a las
-// palomas (`PigeonFlock.js`) y a jugar con Khalessi, que viene a verla, y Ylonem recorre el pueblo grabando con su cámara. Si la viajera les
-// habla, contestan con lo que van haciendo. La escena solo le da el tiempo, la posición de la viajera y si hay un diálogo abierto.
+// La vida del pueblo fuera de la casa de Lupe: Ylonem, Grace y Atreus (que sale a pasear), Khalessi cuando sale de casa y la llegada de Lupe a
+// presentarles Gran Capitán a la viajera. Une los cerebros (los mismos de Lupe, `lupeBrain.js`, con una rejilla de caminos propia) con lo que se ve
+// y con lo que se dice. Hasta que Lupe los presenta, Ylonem y Grace se quedan junto a la puerta del IES; después cada uno sigue su rutina
+// (`neighbourRoutine.js`, pasos en `granPlaces.js`): Grace se sienta en un banco y, de pie junto a la fuente, esparce semillas a las palomas
+// (`PigeonFlock.js`); Ylonem recorre el pueblo grabando lo que ve; Atreus pasea y vuelve a casa. Khalessi sale por su cuenta (`catOuting.js`).
+// La escena solo le da el tiempo, el cielo, la posición de la viajera y si hay un diálogo abierto.
 import { createNav } from '../interior/catNav.js'
-import { characterSheet } from '../characters.js'
+import { CHARACTERS, characterSheet } from '../characters.js'
 import { registerSheet } from '../sheetTexture.js'
 import { ylonemSheet } from '../interior/ylonemSheet.js'
 import { facingFor } from '../walk.js'
@@ -14,27 +15,42 @@ import { GRAN_ARRIVAL, granArrivalDue } from '../story/story.js'
 import CatActor from './CatActor.js'
 import NpcActor from './NpcActor.js'
 import PigeonFlock from './PigeonFlock.js'
-import { screenAnchor } from './bubbleAnchor.js'
-import { createCompanion, updateCompanion } from './catCompanion.js'
+import TownBubbles from './TownBubbles.js'
+import { OUTING, beginOuting, createOuting, dueToGoOut, isOut, updateOuting } from './catOuting.js'
 import { arrivalAlpha, createArrival, isArriving, stepArrival } from './granArrival.js'
-import { GIVE_UP_RANGE, GRAN_DOOR, LUPE_ENTRY, LUPE_MEET, PEOPLE, PIGEON_COUNT, PIGEON_HOMES, ROUTINES, TOWN_REGION, TRIGGER_RANGE } from './granPlaces.js'
+import {
+  ATREUS_DOOR, ATREUS_PAUSE_MS, ATREUS_REST_MS, CAT_PLAZA, FOUNTAIN, GIVE_UP_RANGE, GRAN_DOOR, LUPE_ENTRY, LUPE_MEET, PEOPLE, PIGEON_COUNT, PIGEON_HOMES, ROUTINES, SUN_SPOTS,
+  TOWN_REGION, TRIGGER_RANGE, WEATHER_ROUTINES, frontOf, isNight, isRaining, isSunset,
+} from './granPlaces.js'
 import { createLupeBrain, endTalk, placeAt, startGuide, startTalk, updateLupe, walkTo } from './lupeBrain.js'
-import { createRoutine, doingNow, skipStep, stepRoutine } from './neighbourRoutine.js'
+import { createRoutine, doingNow, endNow, setSteps, skipStep, stepRoutine } from './neighbourRoutine.js'
 
 // A qué distancia se puede hablar con ellos.
 const TALK_RANGE = 26
 // Cada cuánto, como mínimo, dice Grace algo bonito, y a qué distancia de la viajera lo dice (el bocadillo solo se ve si está en pantalla).
 const SPEAK_EVERY = [9000, 14000]
 const SPEAK_RANGE = 170
-// Lo que tarda Khalessi en aparecer o irse, y cuánto se aleja de Grace y cada cuánto cambia de sitio mientras Grace está sentada.
-const CAT_FADE_MS = 700
-const CAT_ROAM = { radius: 38, every: [4000, 8000] }
+// Cuánto tarda en decir algo desde que empieza un paso (Ylonem y Atreus dicen una frase por paso) y a qué distancia de Khalessi le habla.
+const STEP_SPEAK_IN = [1800, 3600]
+const CAT_NEAR = 90
 // Alto sobre los pies al que sale el bocadillo y el punto rojo de la cámara.
 const HEAD = 38
+// Destello de la cámara de Ylonem: cada cuánto y lo que dura.
+const FLASH_EVERY = [3500, 6500]
+const FLASH_MS = 140
+// Cuánto se queda Atreus mirando a la viajera tras saludarla.
+const GREET_MS = 2400
+// Lo deprisa que se sienta o se levanta del banco (px/s).
+const SLIDE_SPEED = 46
+// Qué pasa por el pueblo a su paso: espacio que ocupa cada persona para las palomas y los gatos.
+const BODY_R = 8
+const WALKER_SCARE = 12
+const SKIN = Number.parseInt(CHARACTERS.grace.skin.slice(1), 16)
 
 const touches = (r, b) => r.x < b.x + b.width && r.x + r.w > b.x && r.y < b.y + b.height && r.y + r.h > b.y
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
 const between = (range) => range[0] + Math.random() * (range[1] - range[0])
+const capital = (word) => word[0].toUpperCase() + word.slice(1)
 
 export default class GranNeighbours {
   // `bodies` son los cuerpos sólidos del valle `{ x, y, w, h }` y `travellerAt()` devuelve dónde tiene los pies la viajera ({ x, y }). `npcs` es
@@ -54,7 +70,11 @@ export default class GranNeighbours {
         const brain = createLupeBrain({ nav: this.nav, post })
         brain.arrived = true
         const actor = new NpcActor(scene, key, brain.x, brain.y, id === 'ylonem' ? 'npc-ylonem-cam' : null)
-        return [id, { brain, actor, routine: createRoutine(ROUTINES[id]), sitting: null, filming: null }]
+        const walker = id === 'atreus'
+        // Atreus pasea desde su casa: empieza dentro (escondido) y su rutina espera mucho entre salidas y poco entre paradas.
+        const routine = walker ? createRoutine(ROUTINES.atreus, Math.random, between([30000, 60000]), ATREUS_PAUSE_MS) : createRoutine(ROUTINES[id])
+        if (walker) actor.setVisible(false)
+        return [id, { brain, actor, routine, sitting: null, filming: null, feeding: null, hidden: walker, speakAt: 0, spoke: true, greetLeft: 0, flashIn: 0 }]
       }),
     )
     // Lupe en esta escena: su propio dibujo y su propio cerebro, ya que la de la entrada del valle puede estar en otro sitio.
@@ -63,33 +83,33 @@ export default class GranNeighbours {
     this.lupe.setVisible(false)
     this.arrival = createArrival()
 
-    // Punto rojo de "grabando" sobre la cámara de Ylonem.
+    // Punto rojo de "grabando" y destello sobre la cámara de Ylonem; mano extendida de Grace cuando esparce semillas.
     this.rec = scene.add.rectangle(0, 0, 3, 3, Number.parseInt(PAL.tile.slice(1), 16)).setVisible(false)
-    // Khalessi, que viene a ver a Grace cuando va a sentarse en el banco: su propio dibujo (la de la entrada se esconde mientras) y su estado de compañera.
-    this.catState = createCompanion(0, 0)
-    this.cat = new CatActor(scene, this.catState)
+    this.flash = scene.add.rectangle(0, 0, 5, 5, 0xffffff).setVisible(false)
+    this.hand = scene.add.rectangle(0, 0, 3, 2, SKIN).setVisible(false)
+    // Khalessi sale de casa por su cuenta: su propio dibujo y su estado de salida (la de la entrada se esconde mientras está fuera).
+    this.outing = createOuting()
+    this.cat = new CatActor(scene, this.outing)
     this.cat.setVisible(false)
-    this.visit = { phase: 'away', t: 0, leader: { x: 0, y: 0 }, roamIn: 0 }
     // Las palomas de la plaza.
     const homes = PIGEON_HOMES.map(({ x, y }) => this.nav.nearestFree(x, y)).filter(Boolean)
     this.flock = homes.length ? new PigeonFlock(scene, homes, PIGEON_COUNT, this.nav.free) : null
+    this.bubbles = new TownBubbles(scene, () => this.npcs.bubbleOpen)
 
     this.clock = 0
     this.speakIn = between(SPEAK_EVERY)
-    this.bubbleOpen = false
-    this.onBubbleClosed = () => {
-      this.bubbleOpen = false
-    }
-    this.game.events.on('bubble-closed', this.onBubbleClosed)
+    this.weatherKey = ''
     scene.events.once('shutdown', () => this.destroy())
   }
 
   destroy() {
-    this.game.events.off('bubble-closed', this.onBubbleClosed)
+    this.bubbles.destroy()
     Object.values(this.people).forEach(({ actor }) => actor.destroy())
     this.lupe.destroy()
     this.cat.destroy()
     this.rec.destroy()
+    this.flash.destroy()
+    this.hand.destroy()
     this.flock?.destroy()
   }
 
@@ -98,15 +118,21 @@ export default class GranNeighbours {
     return [this.lupe.sprite, this.cat.sprite, ...Object.values(this.people).map(({ actor }) => actor.sprite)]
   }
 
-  // Ya se les presentó Lupe: pueden seguir su rutina y hablar por su cuenta.
+  // Ya se les presentó Lupe: Ylonem y Grace pueden seguir su rutina y hablar por su cuenta.
   introduced() {
     return getStory(this.game).heard.includes(GRAN_ARRIVAL)
   }
 
+  // Atreus solo sale a pasear después de su parte principal (la visita a la casa) y mientras no hay una visita guiada en marcha.
+  atreusMayWalk(story) {
+    return story.stops.includes('atreus') && story.tour !== 'accepted'
+  }
+
   // Quién queda al alcance de la viajera para hablarle (el más cercano), o null. Con la llegada en marcha no se puede: la hace Lupe.
   talkTarget(x, y) {
-    if (!this.introduced() || isArriving(this.arrival)) return null
+    if (isArriving(this.arrival)) return null
     const near = Object.entries(this.people)
+      .filter(([id, { hidden }]) => (id === 'atreus' ? !hidden : this.introduced()))
       .map(([id, { brain }]) => ({ id, gap: distance(brain, { x, y }) }))
       .filter(({ id, gap }) => gap <= TALK_RANGE && this.people[id].brain.state !== 'talking')
       .sort((a, b) => a.gap - b.gap)
@@ -116,20 +142,29 @@ export default class GranNeighbours {
   // La conversación que toca: la que va con lo que está haciendo (grabando, dando de comer a las palomas) o su repetición breve.
   scriptFor(id) {
     const step = doingNow(this.people[id].routine)
-    if (step?.kind === 'sit') return 'grace.palomas'
+    if (step?.kind === 'feed') return 'grace.palomas'
     if (step?.kind === 'film') return 'ylonem.grabando'
     return `${id}.repeticion`
   }
 
-  // E ante uno de ellos: se para a mirarla (sentada o grabando, sin moverse de su sitio) y contesta.
+  // E ante uno de ellos: se para a mirarla (sentada o grabando, sin moverse de su sitio) y contesta. Atreus no abre diálogo: saluda con un
+  // bocadillo, porque su paseo no es una conversación (ver `docs/DIALOGOS.md`, "Atreus: frases de paseo").
   talk(id) {
-    startTalk(this.people[id].brain, this.travellerAt())
+    const person = this.people[id]
+    startTalk(person.brain, this.travellerAt())
+    if (id === 'atreus') {
+      person.greetLeft = GREET_MS
+      this.say(id, 'atreusWalk')
+      return
+    }
     this.game.events.emit('talk', this.scriptFor(id))
   }
 
   // Al cerrarse el diálogo, cada uno vuelve a lo que hacía.
   onUnlock() {
-    Object.values(this.people).forEach(({ brain }) => endTalk(brain))
+    Object.entries(this.people).forEach(([id, { brain }]) => {
+      if (id !== 'atreus') endTalk(brain)
+    })
   }
 
   // Saca a Lupe por el borde de la franja y la manda hacia ellos. Sin camino, aparece ya con ellos en lugar de quedarse a medias.
@@ -148,123 +183,246 @@ export default class GranNeighbours {
     this.npcs.setElsewhere(false)
   }
 
+  // El bocadillo de `id` (sobre su cabeza). Devuelve si ha salido: no sale con otro abierto.
+  say(id, key) {
+    const { brain } = this.people[id]
+    return this.bubbles.say(key, () => ({ x: brain.x, y: brain.y - HEAD }))
+  }
+
   // La rutina echa a andar a uno hacia el sitio de su paso (sin camino, lo salta) o le hace empezar lo que va a hacer allí.
-  runRoutine(person, delta, busy) {
+  runRoutine(id, person, delta, busy) {
     const { brain, routine } = person
     const event = stepRoutine(routine, delta, { busy, walking: brain.path.length > 0 || brain.state === 'routine' })
-    if (event?.type === 'go') {
-      const reachable = distance(brain, event.step.to) < 6 || walkTo(brain, event.step.to)
-      if (!reachable) skipStep(routine)
-      else if (event.step.kind === 'sit') this.startVisit(person)
-    } else if (event?.type === 'begin') this.beginStep(person, event.step)
-    else if (event?.type === 'end') this.endStep(person, event.step)
+    if (event?.type === 'go') this.goTo(id, person, event.step)
+    else if (event?.type === 'begin') this.beginStep(id, person, event.step)
+    else if (event?.type === 'end') this.endStep(id, person, event.step)
   }
 
-  beginStep(person, step) {
+  goTo(id, person, step) {
+    const { brain, routine } = person
+    person.slide = null
+    // Atreus sale por la puerta de su casa: aparece en ella (sin camino que recorrer fuera de escena) y echa a andar desde ahí.
+    if (id === 'atreus' && person.hidden) {
+      placeAt(brain, ATREUS_DOOR.x, ATREUS_DOOR.y)
+      person.hidden = false
+      person.actor.setVisible(true)
+    }
+    const reachable = distance(brain, step.to) < 6 || walkTo(brain, step.to)
+    if (!reachable) skipStep(routine)
+    // Grace camina a un banco: es lo que llama a Khalessi (si está en casa y puede salir, sale en unos segundos).
+    else if (id === 'grace' && step.kind === 'sit') this.outing.restLeft = Math.min(this.outing.restLeft, 3000)
+  }
+
+  beginStep(id, person, step) {
     const { brain } = person
     brain.walking = false
+    person.spoke = false
+    person.speakAt = this.clock + between(STEP_SPEAK_IN)
     if (step.kind === 'sit') {
-      Object.assign(brain, { x: step.bench.seat.x, y: step.bench.seat.y, facing: step.bench.seat.facing })
-      person.sitting = step.bench.seat
+      // Se sube al banco andando los pocos pasos que lo separan de su asiento, no de golpe.
+      person.slide = { to: step.bench.seat, sit: true }
       this.speakIn = between(SPEAK_EVERY) / 2
-    } else if (step.kind === 'film') person.filming = step
-  }
-
-  endStep(person, step) {
-    const { brain } = person
-    if (step.kind === 'sit') {
-      Object.assign(brain, { x: step.bench.front.x, y: step.bench.front.y })
-      person.sitting = null
-      this.endVisit()
+    } else if (step.kind === 'film') {
+      person.filming = step
+      person.flashIn = between(FLASH_EVERY) / 2
+    } else if (step.kind === 'feed') {
+      person.feeding = step
+      this.speakIn = between(SPEAK_EVERY) / 3
+    } else if (step.home) {
+      // Llega a su puerta y entra: desaparece ahí, a la vista y andando, no en mitad del camino.
+      person.hidden = true
+      person.actor.setVisible(false)
     }
-    person.filming = null
   }
 
-  // Mientras hace su paso mantiene lo que lo define: sentada mira de frente, y grabando mira a lo que filma (aunque alguien se acerque).
+  endStep(id, person, step) {
+    if (step.kind === 'sit') {
+      person.sitting = null
+      person.slide = { to: step.bench.front, sit: false }
+    }
+    // Atreus entra y descansa en casa hasta el próximo paseo (la pausa de la rutina de después del paso es la corta de entre paradas).
+    if (step.home) person.routine.wait = between(ATREUS_REST_MS)
+    person.filming = null
+    person.feeding = null
+    person.spoke = true
+  }
+
+  // Sentarse y levantarse del banco: unos pasos entre el sitio de delante y el asiento, con la marcha, a un paso corto.
+  advanceSlide(person, delta) {
+    const { brain, slide } = person
+    if (!slide) return
+    const dx = slide.to.x - brain.x
+    const dy = slide.to.y - brain.y
+    const left = Math.hypot(dx, dy)
+    const step = (SLIDE_SPEED * delta) / 1000
+    if (left <= step) {
+      Object.assign(brain, { x: slide.to.x, y: slide.to.y, walking: false })
+      if (slide.sit) {
+        brain.facing = slide.to.facing
+        person.sitting = slide.to
+      }
+      person.slide = null
+      return
+    }
+    brain.x += (dx / left) * step
+    brain.y += (dy / left) * step
+    brain.facing = facingFor(dx, dy)
+    brain.walking = true
+  }
+
+  // Mientras hace su paso mantiene lo que lo define: sentada mira de frente, grabando mira a lo que filma y esparciendo semillas mira hacia donde caen.
   holdPose(person) {
     const { brain } = person
     if (brain.state === 'talking') return
     if (person.sitting) brain.facing = person.sitting.facing
-    if (person.filming) brain.facing = facingFor(person.filming.look.x - brain.x, person.filming.look.y - brain.y)
+    const target = person.filming ?? person.feeding ?? doingNow(person.routine)
+    if (target?.look && !brain.walking) brain.facing = facingFor(target.look.x - brain.x, target.look.y - brain.y)
   }
 
-  // Khalessi viene a ver a Grace cuando va a sentarse: aparece con un fundido a su lado, la sigue andando y juega cerca del banco.
-  startVisit(person) {
-    if (this.visit.phase !== 'away' || !this.npcs.canSpareCat()) return
-    const spot = this.nav.nearestFree(person.brain.x - 12, person.brain.y + 6) ?? { x: person.brain.x, y: person.brain.y }
-    Object.assign(this.catState, { x: spot.x, y: spot.y, trail: [], pose: 'sit', meet: null })
-    Object.assign(this.visit, { phase: 'in', t: 0, roamIn: 0, leader: { ...spot } })
+  // Cambia la rutina de cada uno según el tiempo: con lluvia se refugian (Ylonem y Grace en la fachada del IES; Atreus vuelve a casa), al atardecer
+  // Ylonem va a filmar el cielo y, de noche, Atreus se recoge. Al cambiar el tiempo se corta el paso en curso (no se queda sentada bajo la lluvia).
+  applyWeather(weather, atreusOk) {
+    const key = `${weather.rain}|${weather.night}|${weather.sunset}|${atreusOk}`
+    if (key === this.weatherKey) return
+    const first = this.weatherKey === ''
+    this.weatherKey = key
+    const { ylonem, grace, atreus } = this.people
+    const yWant = weather.rain ? WEATHER_ROUTINES.ylonemRain : weather.sunset ? WEATHER_ROUTINES.ylonemSunset : ROUTINES.ylonem
+    const gWant = weather.rain ? WEATHER_ROUTINES.graceRain : ROUTINES.grace
+    const aWant = weather.rain || weather.night || !atreusOk ? WEATHER_ROUTINES.atreusHome : ROUTINES.atreus
+    ;[[ylonem, yWant], [grace, gWant], [atreus, aWant]].forEach(([person, want]) => {
+      if (person.routine.steps === want) return
+      setSteps(person.routine, want)
+      if (!first) endNow(person.routine)
+    })
+  }
+
+  // Khalessi sale de casa cuando toca (o cuando Grace va a un banco, que es lo que la llama): anda por los caminos hasta la plaza.
+  startOuting() {
+    // No sale durante la bienvenida (Lupe y ella esperan en la entrada) ni mientras algo la reclama junto a Lupe.
+    if (getStory(this.game).welcome !== 'done' || !dueToGoOut(this.outing, this.catContext()) || !this.npcs.canSpareCat()) return
+    const goal = this.nav.nearestFree(CAT_PLAZA.x, CAT_PLAZA.y)
+    if (!goal || !beginOuting(this.outing, this.npcs.catSpot(), goal, this.nav)) {
+      this.outing.restLeft = OUTING.restMs[0]
+      return
+    }
     this.npcs.setCatAway(true)
     this.cat.setVisible(true)
   }
 
-  endVisit() {
-    if (this.visit.phase === 'away') return
-    Object.assign(this.visit, { phase: 'out', t: 0 })
-  }
-
-  // Khalessi sigue a Grace mientras anda y, con Grace sentada, trota de un punto a otro alrededor del banco, se sienta y se asea.
-  updateVisit(delta) {
-    const { visit, catState } = this
-    if (visit.phase === 'away') return
-    visit.t += delta
-    const { brain, sitting } = this.people.grace
-    if (sitting) {
-      visit.roamIn -= delta
-      if (visit.roamIn <= 0) {
-        const spot = this.nav.nearestFree(sitting.x + (Math.random() - 0.5) * 2 * CAT_ROAM.radius, sitting.y + 18 + Math.random() * 14)
-        if (spot) visit.leader = spot
-        visit.roamIn = between(CAT_ROAM.every)
-      }
-      updateCompanion(catState, delta, visit.leader, false)
-    } else updateCompanion(catState, delta, brain, brain.walking)
-    this.cat.render(catState)
-    const alpha = visit.phase === 'out' ? Math.max(0, 1 - visit.t / CAT_FADE_MS) : Math.min(1, visit.t / CAT_FADE_MS)
-    this.cat.sprite.setAlpha(alpha)
-    this.cat.shadow.setAlpha(alpha)
-    if (visit.phase === 'in' && alpha >= 1) visit.phase = 'here'
-    if (visit.phase === 'out' && alpha <= 0) {
-      visit.phase = 'away'
-      this.cat.setVisible(false)
-      this.npcs.setCatAway(false)
+  // Lo que Khalessi tiene alrededor: de quién huye, qué mira y qué le cierra el paso.
+  catContext(extra = {}) {
+    const weather = this.weather ?? {}
+    const traveller = this.travellerAt()
+    const { grace } = this.people
+    const others = [traveller, ...Object.values(this.people).filter(({ hidden }) => !hidden).map(({ brain }) => brain)]
+    return {
+      nav: this.nav,
+      home: this.npcs.catHome(),
+      rain: weather.rain,
+      night: weather.night,
+      recalled: this.npcs.catRecalled(),
+      others,
+      grace: { x: grace.brain.x, y: grace.brain.y, sitting: Boolean(grace.sitting) },
+      pigeons: this.flock?.flock.pigeons ?? [],
+      sunSpots: SUN_SPOTS,
+      fountain: FOUNTAIN,
+      butterflies: extra.butterflies ?? [],
+      traveller,
     }
   }
 
-  // Grace, sentada, le dice cosas bonitas a Khalessi (o a las palomas si está sola) en un bocadillo; solo si la viajera está lo bastante cerca para verlo.
-  speak(delta, traveller, locked) {
-    const { sitting, brain } = this.people.grace
-    if (!sitting || locked) return
-    this.speakIn -= delta
-    if (this.speakIn > 0 || this.bubbleOpen || this.npcs.bubbleOpen || distance(traveller, brain) > SPEAK_RANGE) return
-    this.speakIn = between(SPEAK_EVERY)
-    this.bubbleOpen = true
-    this.game.events.emit('npc-bubble', this.visit.phase === 'here' ? 'graceCat' : 'gracePigeons')
+  updateCat(delta, extra) {
+    const ctx = this.catContext(extra)
+    if (isOut(this.outing)) {
+      if (updateOuting(this.outing, delta, ctx) === 'home') {
+        this.npcs.returnCat(this.outing.x, this.outing.y)
+        this.cat.setVisible(false)
+        return
+      }
+      this.cat.render(this.outing)
+    } else {
+      updateOuting(this.outing, delta, ctx)
+      this.startOuting()
+    }
   }
 
-  publishBubble() {
-    if (!this.bubbleOpen) return
-    const { brain } = this.people.grace
-    this.game.events.emit('bubble-anchor', screenAnchor(this.scene, brain.x, brain.y - HEAD))
+  // Grace le habla a Khalessi si la tiene a su lado, y a las palomas mientras les echa de comer; solo si la viajera está lo bastante cerca para
+  // verlo. Ylonem y Atreus dicen una frase por paso (ver `beginStep`).
+  speak(traveller, locked) {
+    if (locked || this.bubbles.open) return
+    const { grace, ylonem, atreus } = this.people
+    if (this.clock >= this.graceSpeakAt && (grace.sitting || grace.feeding) && distance(traveller, grace.brain) <= SPEAK_RANGE) {
+      const catBeside = isOut(this.outing) && distance(this.outing, grace.brain) < CAT_NEAR
+      const key = grace.feeding ? 'gracePigeons' : catBeside ? 'graceCat' : null
+      if (key && this.say('grace', key)) this.graceSpeakAt = this.clock + between(SPEAK_EVERY)
+      else if (!key) this.graceSpeakAt = this.clock + 2000
+    }
+    ;[['ylonem', ylonem], ['atreus', atreus]].forEach(([id, person]) => {
+      if (person.spoke || this.clock < person.speakAt || person.hidden || distance(traveller, person.brain) > SPEAK_RANGE) return
+      const step = doingNow(person.routine)
+      if (!step?.topic) return
+      const catNear = isOut(this.outing) && distance(this.outing, person.brain) < CAT_NEAR
+      const key = id === 'atreus' ? 'atreusWalk' : catNear && Math.random() < 0.5 ? 'ylonemCat' : `ylonem${capital(step.topic)}`
+      if (this.say(id, key)) person.spoke = true
+    })
   }
 
-  // Dibuja a cada uno: sentada usa la pose sentada delante del banco, y Ylonem grabando, la hoja con la cámara y el punto rojo parpadeando.
-  drawPeople(delta) {
-    Object.values(this.people).forEach(({ brain, actor, sitting, filming }) => {
+  // La mano extendida de Grace y las migas: de pie y esparciendo semillas, la mano sale hacia delante (sube y baja con cada puñado) y el puñado
+  // cae delante de ella, entre las palomas.
+  feedSource() {
+    const { brain, feeding } = this.people.grace
+    if (!feeding || brain.state === 'talking' || brain.walking) return null
+    const side = brain.facing === 'left' ? -1 : brain.facing === 'right' ? 1 : 0
+    const hand = { x: brain.x + side * 9 + (side ? 0 : 3), y: brain.y - (side ? 13 : 9) }
+    return { hand, feet: frontOf(brain, feeding.look, 22) }
+  }
+
+  // Dibuja a cada uno: sentada usa la pose sentada delante del banco, y Ylonem grabando, la hoja con la cámara, el punto rojo y el destello.
+  drawPeople(delta, source) {
+    Object.values(this.people).forEach(({ brain, actor, sitting, filming, hidden }) => {
+      if (hidden) return
       actor.render({ ...brain, sitting: Boolean(sitting), alt: Boolean(filming) && !brain.walking }, delta, sitting?.depth)
     })
     const { brain, filming } = this.people.ylonem
     const recording = Boolean(filming) && brain.state !== 'talking' && Math.floor(this.clock / 450) % 2 === 0
     this.rec.setVisible(recording)
-    if (recording) this.rec.setPosition(brain.x + (brain.facing === 'left' ? -3 : 3), brain.y - HEAD).setDepth(brain.y + 1)
+    const ahead = brain.facing === 'left' ? -3 : 3
+    if (recording) this.rec.setPosition(brain.x + ahead, brain.y - HEAD).setDepth(brain.y + 1)
+    const person = this.people.ylonem
+    person.flashIn -= delta
+    if (filming && brain.state !== 'talking' && person.flashIn <= 0) {
+      person.flashIn = between(FLASH_EVERY)
+      person.flashLeft = FLASH_MS
+    }
+    person.flashLeft = Math.max(0, (person.flashLeft ?? 0) - delta)
+    this.flash.setVisible(person.flashLeft > 0)
+    if (person.flashLeft > 0) this.flash.setPosition(brain.x + ahead * 2.4, brain.y - HEAD + 2).setDepth(brain.y + 2)
+    // La mano de Grace: un puñado cada vez que echa semillas, con la mano un píxel más arriba.
+    this.hand.setVisible(Boolean(source))
+    if (source) this.hand.setPosition(source.hand.x, source.hand.y - (Math.floor(this.clock / 420) % 2)).setDepth(this.people.grace.brain.y + 1)
   }
 
-  // `locked` es que hay un diálogo o un panel abiertos: mientras tanto nadie empieza una conversación por su cuenta.
-  update(delta, locked) {
+  // Quién anda por el pueblo ocupa su sitio ante las palomas, y quien pasa andando las espanta si se les echa encima.
+  flockPeople(traveller) {
+    const visible = Object.values(this.people).filter(({ hidden }) => !hidden)
+    const bodies = visible.map(({ brain }) => ({ x: brain.x, y: brain.y, r: BODY_R }))
+    const walkers = visible.filter(({ brain }) => brain.walking).map(({ brain }) => ({ x: brain.x, y: brain.y, range: WALKER_SCARE }))
+    const cat = isOut(this.outing) ? [{ x: this.outing.x, y: this.outing.y }] : []
+    return { bodies, scarers: [traveller, ...walkers, ...cat] }
+  }
+
+  // `locked` es que hay un diálogo o un panel abiertos: mientras tanto nadie empieza una conversación por su cuenta. `sky` es el estado del cielo
+  // del fotograma anterior (o null) y `ambient` lo que haya de vida alrededor (mariposas).
+  update(delta, locked, sky = null, ambient = {}) {
     this.clock += delta
+    if (this.graceSpeakAt === undefined) this.graceSpeakAt = this.clock + between(SPEAK_EVERY)
     const traveller = this.travellerAt()
     const story = getStory(this.game)
     const introduced = story.heard.includes(GRAN_ARRIVAL)
     const toDoor = distance(traveller, GRAN_DOOR)
+    const weather = { rain: isRaining(sky), night: isNight(sky), sunset: isSunset(sky) }
+    this.weather = weather
 
     const event = stepArrival(this.arrival, delta, {
       due: granArrivalDue(story) && this.npcs.canLeave(),
@@ -286,20 +444,26 @@ export default class GranNeighbours {
       this.lupe.setAlpha(arrivalAlpha(this.arrival))
     }
 
-    Object.values(this.people).forEach((person) => {
+    this.applyWeather(weather, this.atreusMayWalk(story))
+    Object.entries(this.people).forEach(([id, person]) => {
       updateLupe(person.brain, delta, traveller)
-      // Hasta que Lupe los presenta (y mientras lo hace) se quedan quietos; después, cada uno con su rutina.
-      if (introduced && !isArriving(this.arrival)) this.runRoutine(person, delta, person.brain.state === 'talking')
+      // Atreus se queda mirando a la viajera un momento tras saludarla y sigue.
+      if (person.greetLeft > 0 && (person.greetLeft -= delta) <= 0) endTalk(person.brain)
+      const active = id === 'atreus' ? true : introduced && !isArriving(this.arrival)
+      if (active) {
+        // Atreus no sale de casa con lluvia, de noche ni sin permiso de la historia: su rutina espera con el reloj parado.
+        const frozen = id === 'atreus' && person.hidden && (weather.rain || weather.night || !this.atreusMayWalk(story) || isArriving(this.arrival))
+        this.runRoutine(id, person, delta, person.brain.state === 'talking' || frozen)
+      }
+      this.advanceSlide(person, delta)
       this.holdPose(person)
     })
-    this.drawPeople(delta)
-    this.updateVisit(delta)
-    this.speak(delta, traveller, locked)
-    this.publishBubble()
-    const { sitting } = this.people.grace
-    this.flock?.update(delta, {
-      source: sitting ? { hand: { x: sitting.x + 6, y: sitting.y - 12 }, feet: { x: sitting.x, y: sitting.y + 22 } } : null,
-      scarers: [traveller, ...(this.visit.phase === 'away' ? [] : [this.catState])],
-    })
+    const source = this.feedSource()
+    this.drawPeople(delta, source)
+    this.updateCat(delta, ambient)
+    this.speak(traveller, locked)
+    this.bubbles.publish()
+    const { bodies, scarers } = this.flockPeople(traveller)
+    this.flock?.update(delta, { source, scarers, bodies })
   }
 }

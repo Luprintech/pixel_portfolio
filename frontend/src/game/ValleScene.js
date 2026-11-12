@@ -8,6 +8,7 @@ import { shadowSprite } from './sprites.js'
 import { makeCanvas, wallRows } from './pixelKit.js'
 import { petCanvas, petRestCanvas } from './pets/index.js'
 import { createIdle, playOffset, takeSound, updateIdle } from './pets/idle.js'
+import { FRUIT_NAMES, fruitTalkId, isFruitTree } from './fruitTrees.js'
 import { buildingAssets, groundBase, groundSeasonJob, propAssets, treeAssets } from './worldAssets.js'
 import SkyLayer from './SkyLayer.js'
 import LitWindows from './litWindows.js'
@@ -20,6 +21,9 @@ import { createValleNav } from './npc/valleNav.js'
 import { getStory, updateStory } from './story/storyStore.js'
 import { addItem, hasItem, recordCatch, setTour, tourOnRoofEntry } from './story/story.js'
 import RiverFish from './RiverFish.js'
+import AmbientLife from './AmbientLife.js'
+import PoolLife from './PoolLife.js'
+import { prefersReducedMotion } from '../lib/reducedMotion.js'
 import { fishSpots } from './riverPlaces.js'
 import { COIN_FIND, FINAL_PHASES, rollCatch, startCast, stepCast } from './fishing.js'
 import { grantReward, loadWallet, saveWallet } from './arcade/wallet.js'
@@ -86,6 +90,7 @@ export default class ValleScene extends Phaser.Scene {
     this.buildProps()
     this.buildWater()
     this.riverFish = new RiverFish(this)
+    this.buildLife()
     this.spots = fishSpots().map((spot) => ({ ...spot, rect: new Phaser.Geom.Rectangle(spot.stand.x - 22, spot.stand.y - 22, 44, 44) }))
     this.buildCharacters()
     this.buildInput()
@@ -465,7 +470,20 @@ export default class ValleScene extends Phaser.Scene {
       if (sprite.glow) this.sky.addLamp(this.add.image(px + sprite.glow.dx, py + sprite.glow.dy, 'lamp-glow'))
       if (prop.zone) this.addDoor(prop.zone, prop.door.x, prop.door.y)
       if (prop.kind === 'bench') this.addBench(px, py)
+      if (isFruitTree(prop.kind)) this.addFruitDoor(prop.kind, px, py)
+      if (prop.kind === 'lily') this.bobLily(image, (prop.at[0] * 7 + prop.at[1] * 13) % 1800)
     })
+  }
+
+  // Los nenúfares se mecen despacio con el agua: un píxel arriba y abajo, cada uno a su ritmo (quieto con "reducir movimiento").
+  bobLily(image, delay) {
+    if (prefersReducedMotion()) return
+    this.tweens.add({ targets: [image, ...image.seasonImages], y: image.y - 1, duration: 1700 + (delay % 700), yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay })
+  }
+
+  // Un frutal se puede mirar desde delante: la conversación depende de la estación del valle en ese momento (`tryEnter`).
+  addFruitDoor(kind, px, py) {
+    this.doors.push({ id: `tree:${FRUIT_NAMES[kind]}`, rect: new Phaser.Geom.Rectangle(px - 26, py - 4, 52, 24) })
   }
 
   // Un banco se puede ocupar: desde delante sale «Sentarse». La viajera se sienta de frente, con la cadera en la tabla.
@@ -475,6 +493,21 @@ export default class ValleScene extends Phaser.Scene {
       zone: new Phaser.Geom.Rectangle(px - 18, py - 2, 36, 18),
       seat: { x: px, y: py - 5, facing: 'down', depth: py + 0.5 },
     })
+  }
+
+  // Vida ambiental: pájaros, mariposas y lo que cae de los frutales (`AmbientLife`), y los reflejos del agua de la piscina (`PoolLife`).
+  buildLife() {
+    const fruit = PROPS.filter((prop) => isFruitTree(prop.kind)).map((prop) => ({
+      x: prop.at[0] * TILE,
+      y: prop.at[1] * TILE,
+      height: prop.kind === 'appleTree' ? 52 : 40,
+      fallsIn: prop.kind === 'appleTree' ? ['spring', 'autumn'] : ['spring'],
+    }))
+    // La copa de la fuente es un buen sitio para posarse.
+    this.life = new AmbientLife(this, fruit, [{ x: 592, y: 417, depth: 468 }])
+    const pool = PROPS.find((prop) => prop.kind === 'pool')
+    this.pool = pool && new PoolLife(this, { x: pool.at[0] * TILE, y: pool.at[1] * TILE }, { w: 112, h: 84 }, pool.at[1] * TILE)
+    this.events.once('shutdown', () => this.life.destroy())
   }
 
   // Arroyo: colisión por tramos de teselas contiguas de cada fila, y destellos lentos en el agua.
@@ -557,6 +590,7 @@ export default class ValleScene extends Phaser.Scene {
     if (this.near === 'standup') this.stand()
     else if (this.near === 'rod') this.pickRod()
     else if (this.near.startsWith('fish:')) this.beginFishing(this.near.slice('fish:'.length))
+    else if (this.near.startsWith('tree:')) this.game.events.emit('talk', fruitTalkId(this.near.slice('tree:'.length), this.sky.last))
     else if (this.near === 'npc:lupe') this.npcs.talk()
     else if (this.near.startsWith('npc:')) this.neighbours.talk(this.near.slice('npc:'.length))
     else if (this.near.startsWith('bench:') || this.near === 'chairDeck') this.sit(this.benches.find((bench) => bench.id === this.near).seat)
@@ -795,7 +829,9 @@ export default class ValleScene extends Phaser.Scene {
 
     // Lupe y Khalessi siguen a lo suyo aunque la viajera esté sentada o leyendo.
     this.npcs.update(delta, locked, this.climbMode === 'deck')
-    this.neighbours.update(delta, locked)
+    this.neighbours.update(delta, locked, this.sky.last, { butterflies: this.life.butterflyPoints() })
+    this.life.update(delta, this.sky.last, { x: this.princess.x, y: this.princess.y }, [{ x: this.npcs.brain.x, y: this.npcs.brain.y }])
+    this.pool?.update(this.sky.last)
     this.riverFish.update(delta)
 
     if (this.arriving) {

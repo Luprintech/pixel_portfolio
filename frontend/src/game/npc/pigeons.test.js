@@ -59,4 +59,32 @@ describe('palomas', () => {
     run(flock, FLOCK.scaredMs + 500, {})
     expect(pigeon.scared).toBe(0)
   })
+
+  it('un susto de poco alcance (alguien que pasa andando) solo espanta a las que tiene muy cerca', () => {
+    const flock = createFlock([{ x: 50, y: 50 }], 2, seeded())
+    const [near, far] = flock.pigeons
+    Object.assign(far, { x: near.x + 20, y: near.y })
+    stepFlock(flock, 50, { free, scarers: [{ x: near.x + 4, y: near.y, range: 9 }] })
+    expect(near.state).toBe('fly')
+    expect(far.state).not.toBe('fly')
+  })
+
+  it('ninguna paloma pisa donde hay una persona o un gato, ni al andar ni al posarse', () => {
+    const flock = createFlock(homes, 6, seeded())
+    const source = { hand: { x: 200, y: 180 }, feet: { x: 200, y: 200 } }
+    const bodies = [{ x: 200, y: 200, r: 9 }]
+    for (let t = 0; t < 40000; t += 50) {
+      stepFlock(flock, 50, { free, source, bodies })
+      flock.pigeons.filter((p) => p.state !== 'fly').forEach((p) => expect(Math.hypot(p.x - 200, p.y - 200)).toBeGreaterThanOrEqual(9))
+    }
+  })
+
+  it('si alguien llega y se queda justo encima de una paloma, ella se aparta en lugar de quedarse dentro', () => {
+    const flock = createFlock([{ x: 200, y: 200 }], 1, seeded())
+    const [pigeon] = flock.pigeons
+    Object.assign(pigeon, { x: 202, y: 201 })
+    stepFlock(flock, 50, { free, bodies: [{ x: 200, y: 200, r: 9 }] })
+    expect(pigeon.state).toBe('fly')
+    expect(Math.hypot(pigeon.target.x - 200, pigeon.target.y - 200)).toBeGreaterThanOrEqual(9)
+  })
 })
