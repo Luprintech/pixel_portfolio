@@ -73,8 +73,9 @@ const FIXED_PROPS = [
   { kind: 'lamp', at: [40.2, 22.6] },
   { kind: 'lamp', at: [34.6, 33.6] },
   { kind: 'lamp', at: [40.2, 33.6] },
-  { kind: 'lamp', at: [35.4, 47.2] },
-  { kind: 'lamp', at: [39, 47.2] },
+  // Las farolas de la entrada flanquean la Puerta del Puente por fuera de sus alas (el dibujo ocupa de 33,5 a 40,5).
+  { kind: 'lamp', at: [32.4, 49.4] },
+  { kind: 'lamp', at: [41.6, 49.4] },
   { kind: 'lamp', at: [48.4, 19.8] },
   { kind: 'lamp', at: [20.5, 26.8] },
   { kind: 'rocks', at: [60.5, 47] },

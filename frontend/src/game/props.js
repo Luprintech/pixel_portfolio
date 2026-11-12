@@ -4,6 +4,7 @@
 import { PAL, TONE } from './palette.js'
 import { dot, ellipse, makeCanvas, noise, outline, rect } from './pixelKit.js'
 import { drawText, textWidth } from './pixelFont.js'
+import { cordobaArch as arch } from './cordobaArch.js'
 import { fishPost, footBridge, lily, plankBridge, reeds, rod, romanBridge } from './riverSprites.js'
 
 const [WOOD0, WOOD1, WOOD2, WOOD3] = TONE.wood
@@ -76,35 +77,6 @@ function postbox() {
   rect(g, 6, 15, 4, 1, '#c8402e')
   rect(g, 13, 8, 2, 5, PAL.saffron)
   return { canvas: done(s), body: [{ l: -5, t: -6, r: 5, b: -1 }] }
-}
-
-// Entrada del sur: dos pilares de piedra con farol y un arco de madera cubierto de flores.
-function arch() {
-  const s = sprite(72, 56)
-  const { g } = s
-  ;[2, 56].forEach((x) => {
-    rect(g, x, 14, 14, 42, STONE1)
-    rect(g, x, 14, 4, 42, STONE2)
-    rect(g, x + 11, 14, 3, 42, STONE0)
-    rect(g, x - 1, 10, 16, 5, STONE2)
-    for (let y = 22; y < 56; y += 6) rect(g, x, y, 14, 1, STONE0)
-  })
-  // Arco de madera con flores trepando.
-  for (let x = 14; x < 58; x++) {
-    const t = (x - 36) / 22
-    const y = 6 + Math.round(t * t * 12)
-    rect(g, x, y, 1, 5, WOOD2)
-    dot(g, x, y, WOOD3)
-    dot(g, x, y + 4, WOOD0)
-  }
-  for (let i = 0; i < 46; i++) {
-    const x = 6 + Math.round((i * 60) / 46)
-    const t = (x - 36) / 30
-    const y = 4 + Math.round(t * t * 16) + (i % 3)
-    dot(g, x, y, i % 3 === 0 ? TONE.grass[2] : i % 2 ? PAL.rose : '#f6f0e0')
-    dot(g, x + 1, y + 1, '#f09ab6')
-  }
-  return { canvas: done(s), body: [{ l: -34, t: -42, r: -20, b: -1 }, { l: 20, t: -42, r: 34, b: -1 }] }
 }
 
 // Cartel de bienvenida: tablón sobre dos postes con el nombre del valle en dos líneas.
