@@ -586,18 +586,104 @@ describe('el Rey Limo', () => {
     b.y = centre(5)
     run(state, IDLE, 2)
     expect(state.shots.length).toBe(3)
-    // Una bola que viene de frente choca con el escudo y no hace daño.
+    // Una bola que viene de frente choca con el escudo en alto y no hace daño; sin escudo, hiere.
     state.shots = [{ x: state.player.x + 6, y: state.player.y, vx: -72, vy: 0 }]
     state.player.dir = 'right'
     state.player.hurt = 0
-    const events = run(state, IDLE)
+    const events = run(state, { ...IDLE, guard: true })
     expect(events.map((e) => e.type)).toContain('block')
     expect(state.player.hp).toBe(state.player.maxHp)
-    // Por la espalda sí duele.
+    // Por la espalda duele aunque el escudo esté en alto.
     state.shots = [{ x: state.player.x + 6, y: state.player.y, vx: -72, vy: 0 }]
     state.player.dir = 'left'
-    run(state, IDLE)
+    run(state, { ...IDLE, guard: true })
     expect(state.player.hp).toBe(state.player.maxHp - 1)
+  })
+
+  it('el jefe no atraviesa pilares ni rocas: ni persiguiendo ni embistiendo, y rodea los obstáculos', () => {
+    const state = arena()
+    const b = boss(state)
+    state.player.hurt = 5000
+    // Cada paso, el cuerpo del jefe (24×24) no solapa ninguna casilla sólida.
+    const solidUnder = () => {
+      const half = ENEMIES.boss.size / 2
+      for (let col = Math.floor((b.x - half) / TILE); col <= Math.floor((b.x + half - 0.01) / TILE); col++) {
+        for (let row = Math.floor((b.y - half) / TILE); row <= Math.floor((b.y + half - 0.01) / TILE); row++) {
+          if ('#PRT~B'.includes(ROOMS.jefe.map[row]?.[col] ?? '#')) return true
+        }
+      }
+      return false
+    }
+    // La viajera al otro lado del pilar de la izquierda (col 3, fila 2): el camino recto cruza el pilar.
+    place(state, 3, 1)
+    b.x = centre(3)
+    b.y = centre(4)
+    b.timer = 1e9
+    let closest = Infinity
+    for (let i = 0; i < 900; i++) {
+      step(state, IDLE, 16)
+      state.player.hurt = 5000
+      state.player.x = centre(3)
+      state.player.y = centre(1)
+      closest = Math.min(closest, Math.hypot(b.x - state.player.x, b.y - state.player.y))
+      expect(solidUnder(), `fotograma ${i}`).toBe(false)
+    }
+    // Rodea el pilar en lugar de quedarse pegado: llega a estar muy cerca de ella.
+    expect(closest).toBeLessThan(TILE * 2.5)
+  })
+
+  it('un golpe de frente con el escudo en alto lo frena (no es invulnerable: de lado y por la espalda hiere)', () => {
+    const state = fresh()
+    state.player.sword = true
+    goTo(state, 'limos', 5, 5)
+    state.enemies = [{ ...state.enemies[0], id: 't', type: 'slime', x: state.player.x + 7, y: state.player.y, hp: 2, vx: 0, vy: 0, timer: 1e9, hurt: 0, phase: 0, mode: 'idle', stage: 0, boss: false, minion: false }]
+    state.player.dir = 'right'
+    state.player.hurt = 0
+    const events = run(state, { ...IDLE, guard: true })
+    expect(events.map((e) => e.type)).toContain('block')
+    expect(state.player.hp).toBe(state.player.maxHp)
+    // Mismo enemigo por la espalda: hiere.
+    const back = fresh()
+    back.player.sword = true
+    goTo(back, 'limos', 5, 5)
+    back.enemies = [{ ...state.enemies[0], x: back.player.x - 7, y: back.player.y }]
+    back.player.dir = 'right'
+    back.player.hurt = 0
+    run(back, { ...IDLE, guard: true })
+    expect(back.player.hp).toBe(back.player.maxHp - 1)
+  })
+
+  it('el escudo y la espada no se usan a la vez, y el escudo hace andar más despacio', () => {
+    const state = fresh()
+    state.player.sword = true
+    goTo(state, 'limos', 5, 5)
+    const walk = (input) => {
+      const before = state.player.x
+      run(state, { dx: 1, dy: 0, action: false, ...input }, 10)
+      return state.player.x - before
+    }
+    const free = walk({})
+    state.player.dir = 'right'
+    const guarded = walk({ guard: true })
+    expect(guarded).toBeLessThan(free)
+    expect(state.player.guard).toBe(true)
+    // Con el escudo en alto, la acción no blande la espada.
+    const events = run(state, { ...IDLE, guard: true, action: true })
+    expect(events.map((e) => e.type)).not.toContain('swing')
+    expect(state.player.swing).toBe(0)
+    // Al soltarlo, sí.
+    expect(run(state, { ...IDLE, action: true }).map((e) => e.type)).toContain('swing')
+    // Y no se levanta en pleno mandoble.
+    run(state, { ...IDLE, guard: true })
+    expect(state.player.guard).toBe(false)
+  })
+
+  it('sin la espada tampoco hay escudo: avisa de que aún no hay con qué defenderse', () => {
+    const state = fresh()
+    goTo(state, 'bosque', 7, 7)
+    run(state, { ...IDLE, guard: true })
+    expect(state.player.guard).toBe(false)
+    expect(state.message.key).toBe('needSword')
   })
 
   it('el anillo de la última fase lanza ocho bolas y la espada puede deshacerlas', () => {

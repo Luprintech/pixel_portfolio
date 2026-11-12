@@ -13,8 +13,8 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 // Pantalla de un juego de la recreativa: el lienzo, su bucle y el bocadillo del personaje que habla. Crea la partida al montarse
 // (cambiar `runKey` la reinicia), la hace avanzar con el reloj de la pantalla mientras no esté en pausa, dibuja cada fotograma y
 // avisa de lo que ocurre: la vista (`onView`), los sucesos del paso (`onEvents`, para sonido) y el resultado al terminar
-// (`onFinish`). Lee las teclas y los botones táctiles de `input` ({ held, action, hold }). El juego en sí no sabe de nada de esto.
-export default function GameStage({ gameId, runKey, paused, input, lang, ui, onView, onEvents, onFinish }) {
+// (`onFinish`). Lee las teclas y los botones táctiles de `input` ({ held, action, hold, guard }). El juego en sí no sabe de nada de esto.
+export default function GameStage({ gameId, runKey, paused, input, lang, ui, touch = false, onView, onEvents, onFinish }) {
   const boxRef = useRef(null)
   const canvasRef = useRef(null)
   const pausedRef = useRef(paused)
@@ -43,7 +43,7 @@ export default function GameStage({ gameId, runKey, paused, input, lang, ui, onV
         const { held } = input.current
         const dx = (held.has('right') ? 1 : 0) - (held.has('left') ? 1 : 0)
         const dy = (held.has('down') ? 1 : 0) - (held.has('up') ? 1 : 0)
-        const events = game.step(state, { dx, dy, action: input.current.action, hold: input.current.hold }, dt)
+        const events = game.step(state, { dx, dy, action: input.current.action, hold: input.current.hold, guard: input.current.guard }, dt)
         input.current.action = false
         if (events.length) callbacks.current.onEvents(events)
         const next = game.view(state)
@@ -80,7 +80,7 @@ export default function GameStage({ gameId, runKey, paused, input, lang, ui, onV
           className="block [image-rendering:pixelated]"
           style={{ width, height }}
         />
-        {bubble && <StageBubble x={bubble.x * scale} y={bubble.y * scale} width={width} height={height} text={arcadeText(lang, bubble.key)} more={bubble.more} fontSize={Math.min(22, Math.max(13, scale * 4.2))} />}
+        {bubble && <StageBubble x={bubble.x * scale} y={bubble.y * scale} width={width} height={height} text={arcadeText(lang, bubble.key, touch)} more={bubble.more} fontSize={Math.min(22, Math.max(13, scale * 4.2))} />}
       </div>
     </div>
   )

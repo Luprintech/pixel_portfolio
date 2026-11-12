@@ -241,6 +241,25 @@ function hero(dir, step, swinging) {
   }, true)
 }
 
+// Escudo en alto delante de la viajera (el que se levanta con B o Shift): una tabla más grande que la del brazo, con el bucle en
+// medio, vista desde el lado al que mira.
+function guardShield(dir) {
+  const horizontal = dir === 'left' || dir === 'right'
+  return canvas(horizontal ? 7 : 12, horizontal ? 12 : 7, (g) => {
+    if (horizontal) {
+      rect(g, 1, 0, 5, 12, SHIELD_RIM)
+      rect(g, 2, 1, 3, 10, SHIELD)
+      rect(g, 3, 4, 1, 4, PAL.saffron)
+      rect(g, 2, 5, 3, 2, PAL.tile)
+    } else {
+      rect(g, 0, 1, 12, 5, SHIELD_RIM)
+      rect(g, 1, 2, 10, 3, SHIELD)
+      rect(g, 4, 3, 4, 1, PAL.saffron)
+      rect(g, 5, 2, 2, 3, PAL.tile)
+    }
+  }, true)
+}
+
 // Hoja de la espada vista desde el lado al que mira (la caja del mandoble la calcula `logic.js`).
 function blade(dir) {
   const horizontal = dir === 'left' || dir === 'right'
@@ -415,6 +434,7 @@ export function dungeonSprites() {
     hero: heroFrames(false),
     heroSwing: heroFrames(true),
     blade: Object.fromEntries(DIRECTIONS.map((dir) => [dir, blade(dir)])),
+    guard: Object.fromEntries(DIRECTIONS.map((dir) => [dir, guardShield(dir)])),
     wizard: wizard(),
     enemy: { slime: [slime(0), slime(1)], bat: [bat(0), bat(1)], boss: [boss(0, 'normal'), boss(1, 'normal')] },
     bossFlash: [boss(0, 'flash'), boss(1, 'flash')],

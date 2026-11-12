@@ -175,7 +175,7 @@ function bridgeDown(state, bridge, events) {
   state.bridges += 1
   state.checkpoint = bridge.wy + 40
   say(state, 'rBridge')
-  events.push({ type: 'checkpoint' })
+  events.push({ type: 'checkpoint', bridges: state.bridges })
 }
 
 const onScreen = (state, o) => o.wy - state.dist < PLANE_Y + 30 && o.wy - state.dist > -50

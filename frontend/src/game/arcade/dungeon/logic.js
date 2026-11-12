@@ -12,6 +12,11 @@ const MAX_HP = 5
 const HURT_MS = 1200
 const SWING_MS = 220
 const SWING_COOLDOWN_MS = 360
+// Con el escudo en alto se anda a poco más de la mitad de velocidad, y un golpe de frente se frena un instante antes de repetirse el aviso.
+const GUARD_SPEED = 0.55
+const BLOCK_MS = 260
+// Cada cuánto vuelve a calcular el jefe el camino hasta la viajera.
+const PATH_MS = 180
 const MESSAGE_MS = 2600
 // El mago repara en la viajera cuando la tiene a menos de 3,5 baldosas; antes de hablar le sale la exclamación de misión.
 const NOTICE_RADIUS = TILE * 3.5
@@ -65,7 +70,7 @@ export function createGame(seed = 7) {
     seed,
     time: 0,
     room: START.room,
-    player: { x: centre(START.x), y: centre(START.y), dir: 'up', hp: MAX_HP, maxHp: MAX_HP, sword: false, keys: 0, coins: 0, hurt: 0, swing: 0, cooldown: 0, walk: 0, moving: false, push: 0 },
+    player: { x: centre(START.x), y: centre(START.y), dir: 'up', hp: MAX_HP, maxHp: MAX_HP, sword: false, keys: 0, coins: 0, hurt: 0, swing: 0, cooldown: 0, walk: 0, moving: false, push: 0, guard: false, blockMs: 0 },
     opened: new Set(),
     killed: new Set(),
     doors: new Set(),
@@ -165,7 +170,7 @@ export function loadRoom(state, room) {
 
 function newEnemy(type, id, x, y, phase = 0) {
   const boss = type === 'boss'
-  return { id, type, x, y, hp: ENEMIES[type].hp, vx: 0, vy: 0, timer: 400, hurt: 0, charge: 0, phase, mode: 'idle', stage: 0, dirX: 0, dirY: 0, minion: false, boss }
+  return { id, type, x, y, hp: ENEMIES[type].hp, vx: 0, vy: 0, timer: 400, hurt: 0, charge: 0, phase, mode: 'idle', stage: 0, dirX: 0, dirY: 0, heading: 0, pathMs: 0, minion: false, boss }
 }
 
 // Los bloques del acertijo vuelven a su sitio al entrar si aún no está resuelto; resuelto, se quedan sobre las placas.
@@ -211,13 +216,17 @@ function solidAt(state, col, row, flyer) {
   return SOLID_TILES.has(ch)
 }
 
-// ¿Una caja centrada en (x, y) toca algo sólido? Fuera de la pantalla solo estorba a quien no puede salir.
+// ¿Una caja centrada en (x, y) toca algo sólido? Fuera de la pantalla solo estorba a quien no puede salir. Se miran todas las
+// casillas que cubre la caja, no solo sus cuatro esquinas: el Rey Limo mide más de una casilla y, mirando solo esquinas, un pilar
+// o una roca quedaba justo en medio de su cuerpo y lo atravesaba.
 function blocked(state, x, y, half, { flyer = false, canLeave = false } = {}) {
   const eps = 0.01
-  for (const cx of [x - half, x + half - eps]) {
-    for (const cy of [y - half, y + half - eps]) {
-      const col = Math.floor(cx / TILE)
-      const row = Math.floor(cy / TILE)
+  const first = Math.floor((x - half) / TILE)
+  const last = Math.floor((x + half - eps) / TILE)
+  const top = Math.floor((y - half) / TILE)
+  const bottom = Math.floor((y + half - eps) / TILE)
+  for (let col = first; col <= last; col++) {
+    for (let row = top; row <= bottom; row++) {
       if (col < 0 || col >= COLS || row < 0 || row >= ROWS) {
         if (!canLeave) return true
       } else if (solidAt(state, col, row, flyer)) return true
@@ -283,7 +292,8 @@ function performAction(state, events) {
   const chest = chestAt(state, col, row)
   if (chest && !isOpen(state, col, row)) return openChest(state, chest, events)
   if (tileChar(state, col, row) === 'W') return talk(state, events)
-  if (player.cooldown > 0) return undefined
+  // Con el escudo en alto no se ataca: o una cosa o la otra.
+  if (player.guard || player.cooldown > 0) return undefined
   player.cooldown = SWING_COOLDOWN_MS
   if (player.sword) {
     player.swing = SWING_MS
@@ -383,7 +393,39 @@ function bossFire(state, boss, moves, events) {
   if (moves.fan || moves.ring) events.push({ type: 'spit' })
 }
 
-// Ciclo del jefe: espera persiguiendo despacio, avisa parpadeando, embiste en línea recta, lanza lo que le toque y descansa.
+// Camino del jefe hasta la viajera: una búsqueda en anchura sobre las casillas por las que cabe su cuerpo (centrado en ellas). Si
+// no hay camino hasta la viajera (ella está pegada a una roca, por ejemplo) va a la casilla alcanzable más cercana. Devuelve el
+// ángulo hacia la siguiente casilla del camino; si ya es la mejor, hacia la viajera en línea recta.
+function pathHeading(state, boss, half) {
+  const { player } = state
+  const key = (col, row) => row * COLS + col
+  const start = { col: clamp(tileOf(boss.x), 0, COLS - 1), row: clamp(tileOf(boss.y), 0, ROWS - 1) }
+  const from = new Map([[key(start.col, start.row), null]])
+  const queue = [start]
+  const gap = (tile) => Math.hypot(centre(tile.col) - player.x, centre(tile.row) - player.y)
+  let best = start
+  let bestGap = Math.hypot(boss.x - player.x, boss.y - player.y)
+  for (let head = 0; head < queue.length; head++) {
+    const tile = queue[head]
+    if (gap(tile) < bestGap - 0.5) {
+      best = tile
+      bestGap = gap(tile)
+    }
+    ;[[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dc, dr]) => {
+      const next = { col: tile.col + dc, row: tile.row + dr }
+      if (next.col < 0 || next.col >= COLS || next.row < 0 || next.row >= ROWS || from.has(key(next.col, next.row))) return
+      if (blocked(state, centre(next.col), centre(next.row), half)) return
+      from.set(key(next.col, next.row), tile)
+      queue.push(next)
+    })
+  }
+  let step = best
+  while (from.get(key(step.col, step.row)) && from.get(key(step.col, step.row)) !== start) step = from.get(key(step.col, step.row))
+  if (step === start || best === start) return Math.atan2(player.y - boss.y, player.x - boss.x)
+  return Math.atan2(centre(step.row) - boss.y, centre(step.col) - boss.x)
+}
+
+// Ciclo del jefe: espera persiguiendo despacio por el camino que rodea los obstáculos, avisa parpadeando, embiste en línea recta, lanza lo que le toque y descansa.
 function moveBoss(state, boss, dt, events) {
   const moves = BOSS_MOVES[boss.stage]
   const spec = ENEMIES.boss
@@ -393,7 +435,12 @@ function moveBoss(state, boss, dt, events) {
   boss.timer -= dt
   const toward = Math.atan2(player.y - boss.y, player.x - boss.x)
   if (boss.mode === 'idle') {
-    move(state, boss, (Math.cos(toward) * spec.speed * dt) / 1000, (Math.sin(toward) * spec.speed * dt) / 1000, half)
+    boss.pathMs -= dt
+    if (boss.pathMs <= 0) {
+      boss.heading = pathHeading(state, boss, half)
+      boss.pathMs = PATH_MS
+    }
+    move(state, boss, (Math.cos(boss.heading) * spec.speed * dt) / 1000, (Math.sin(boss.heading) * spec.speed * dt) / 1000, half)
     if (boss.timer <= 0) {
       boss.mode = 'windup'
       boss.timer = moves.windup
@@ -465,12 +512,43 @@ function hurtPlayer(state, source, events) {
   }
 }
 
-// El escudo frena lo que viene de frente: un proyectil que choca con él mirando hacia su origen se deshace.
+// El escudo solo vale mientras está en alto (B o Shift) y frena lo que viene de frente: un proyectil que choca con él mirando hacia
+// su origen se deshace. Lo que llega por un costado o por la espalda hiere igual: no hace invulnerable.
 function shielded(player, shot) {
-  if (player.swing > 0) return false
+  if (!player.guard) return false
   const [fx, fy] = DIRS[player.dir]
   const length = Math.hypot(shot.vx, shot.vy) || 1
   return (-shot.vx / length) * fx + (-shot.vy / length) * fy > 0.5
+}
+
+// ¿Está `source` delante de la viajera, dentro de unos 60 grados a cada lado de adonde mira?
+function facesSource(player, source) {
+  const [fx, fy] = DIRS[player.dir]
+  const length = Math.hypot(source.x - player.x, source.y - player.y) || 1
+  return ((source.x - player.x) / length) * fx + ((source.y - player.y) / length) * fy > 0.5
+}
+
+// Un enemigo toca a la viajera. Con el escudo en alto y de frente, el golpe se frena: ella retrocede un poco, el enemigo se
+// aparta y la embestida del jefe se corta (queda descansando, que es cuando conviene golpearle). Si no, la hiere.
+function contact(state, enemy, events) {
+  const { player } = state
+  if (!player.guard || !facesSource(player, enemy)) return hurtPlayer(state, enemy, events)
+  if (player.blockMs > 0) return undefined
+  player.blockMs = BLOCK_MS
+  const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x)
+  move(state, player, Math.cos(angle) * KNOCK * 0.6, Math.sin(angle) * KNOCK * 0.6, HALF)
+  if (enemy.boss) {
+    if (enemy.mode === 'dash') {
+      enemy.mode = 'rest'
+      enemy.timer = BOSS_MOVES[enemy.stage].rest
+    }
+  } else {
+    enemy.vx = -Math.cos(angle) * 90
+    enemy.vy = -Math.sin(angle) * 90
+    enemy.hurt = 200
+  }
+  events.push({ type: 'block' })
+  return undefined
 }
 
 function updateShots(state, dt, events) {
@@ -514,7 +592,7 @@ function enterRoom(state, room, x, y, events) {
   if (CHECKPOINT_ROOMS.has(room) && ORDER.indexOf(room) > ORDER.indexOf(state.checkpoint.room)) {
     state.checkpoint = { room, x, y }
     say(state, 'checkpoint')
-    events.push({ type: 'checkpoint' })
+    events.push({ type: 'checkpoint', room })
   } else if (room === 'acertijo' && !state.solved.has(room)) say(state, 'puzzleHint')
 }
 
@@ -652,8 +730,8 @@ function stepVictory(state, input, dt, events) {
   }
 }
 
-// Avanza el juego `dt` milisegundos. `input` es `{ dx, dy, action }`: dirección (-1 a 1 por eje) y si se acaba de pulsar
-// la acción. Devuelve los sucesos que ocurrieron, para el sonido y los logros.
+// Avanza el juego `dt` milisegundos. `input` es `{ dx, dy, action, guard }`: dirección (-1 a 1 por eje), si se acaba de pulsar
+// la acción (espada) y si se mantiene el escudo en alto. Devuelve los sucesos que ocurrieron, para el sonido y los logros.
 export function step(state, input, dt) {
   const events = []
   state.time += dt
@@ -686,6 +764,10 @@ export function step(state, input, dt) {
   player.hurt = Math.max(0, player.hurt - dt)
   player.swing = Math.max(0, player.swing - dt)
   player.cooldown = Math.max(0, player.cooldown - dt)
+  player.blockMs = Math.max(0, player.blockMs - dt)
+  // El escudo se levanta con la espada ya en la mano y no mientras se da un mandoble.
+  if (input.guard && !player.sword && !state.message) say(state, 'needSword')
+  player.guard = Boolean(input.guard) && player.sword && player.swing <= 0
 
   const length = Math.hypot(input.dx, input.dy)
   player.moving = length > 0.15
@@ -695,7 +777,8 @@ export function step(state, input, dt) {
     player.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down'
     // Durante el mandoble no se anda: la espada pide los pies quietos.
     if (player.swing <= 0) {
-      move(state, player, (dx * SPEED * dt) / 1000, (dy * SPEED * dt) / 1000, HALF, { canLeave: true })
+      const pace = player.guard ? GUARD_SPEED : 1
+      move(state, player, (dx * SPEED * pace * dt) / 1000, (dy * SPEED * pace * dt) / 1000, HALF, { canLeave: true })
       player.walk += dt
       checkDoor(state, dx, dy, events)
       pushBlock(state, dx, dy, dt, events)
@@ -716,7 +799,7 @@ export function step(state, input, dt) {
 
   state.enemies.forEach((enemy) => {
     moveEnemy(state, enemy, dt, events)
-    if (overlaps(boxOf(player, HALF - 1), boxOf(enemy, sizeOf(enemy) - 1))) hurtPlayer(state, enemy, events)
+    if (overlaps(boxOf(player, HALF - 1), boxOf(enemy, sizeOf(enemy) - 1))) contact(state, enemy, events)
   })
   updateShots(state, dt, events)
   collect(state, events)

@@ -2,9 +2,34 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-12 (rutinas de Ylonem y Grace por el pueblo, con palomas y Khalessi). Antes, 2026-11-12 (Lupe presenta Gran Capitán, Ylonem y Grace viven fuera y los NPC ya no quedan tapados por las ventanas). Antes, 2026-11-11 (Ylonem y Grace como personajes de Gran Capitán). Antes, 2026-11-11 (Fase D: IES Gran Capitán como primer edificio completo del nuevo mapa, y sincronización de la visita interior). Antes, 2026-11-11 (dos temas del juego, Aventura y Cozy, con selector en Opciones). Antes, 2026-11-11 (C2: visita guiada por dentro de la casa de Lupe). Antes, 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
+Última actualización: 2026-11-12 (recreativa con monedas y escudo, Mezquita, río nuevo y pesca; ver el primer bloque de Hecho). Antes, 2026-11-12 (planificación documental de rutinas de NPC, animales, árboles frutales, estaciones y piscina; pendiente de implementación). Antes, 2026-11-12 (rutinas de Ylonem y Grace por el pueblo, con palomas y Khalessi; prototipo parcial, no cierre de esta planificación). Antes, 2026-11-12 (Lupe presenta Gran Capitán, Ylonem y Grace viven fuera y los NPC ya no quedan tapados por las ventanas). Antes, 2026-11-11 (Ylonem y Grace como personajes de Gran Capitán). Antes, 2026-11-11 (Fase D: IES Gran Capitán como primer edificio completo del nuevo mapa, y sincronización de la visita interior). Antes, 2026-11-11 (dos temas del juego, Aventura y Cozy, con selector en Opciones). Antes, 2026-11-11 (C2: visita guiada por dentro de la casa de Lupe). Antes, 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
 
 ## Hecho
+
+### Recreativa con monedas y escudo, mapa con Mezquita y río nuevo, y pesca (2026-11-12)
+
+Avanza la visión (mundo vivo, mecánicas de aventura opcionales, homenaje a Córdoba) y la fase D (retirada de Cervantes). No se tocaron `/clasico`, la casa de Lupe ni su visita guiada.
+
+**Recreativa**
+- **Móvil:** el monitor ya no lleva borde interior ni marco de pantalla; el lienzo ocupa todo el ancho y se escala a píxel físico (`snapScale` con `fine`), sin recortes. Se mantiene el marco exterior de la máquina.
+- **Escudo (La espada del Bucle):** A es la espada y B, mantenido, el escudo (`ActionPad` en `TouchPad.jsx`; `guard: true` en `games.js`). En web: WASD o flechas, Espacio espada, Shift escudo (E e Intro siguen valiendo para actuar). Con el escudo en alto no se ataca, se anda al 55 % y se frena lo que llega de frente (bolas y golpes de contacto); de lado o por la espalda hiere igual. Necesita la espada. Un golpe frontal con el escudo corta la embestida del jefe. Textos de controles con variante táctil (`controlsTouch`, `<clave>Touch`).
+- **Jefe:** atravesaba pilares porque la colisión solo miraba las cuatro esquinas de su caja (24 px > una casilla). Ahora se miran todas las casillas que cubre (`blocked`) y, además, persigue por un camino que rodea obstáculos (búsqueda en anchura sobre las casillas por donde cabe, `pathHeading`). Las bolas ya morían contra sólidos.
+- **Monedas** (`game/arcade/wallet.js`, `rewards.js`): seis monedas al empezar, guardadas aparte en `valle-del-bucle:arcade-wallet` (Borrar partida las restablece). Insertar moneda (botón real en el panel de mandos, en el sitio del antiguo "Start" decorativo, que se quitó): -1 moneda, +1 crédito, suena la moneda. Empezar, reiniciar o repetir cuesta un crédito; sin crédito sale INSERT COIN y "Jugar" queda desactivado, sin bloquear la interfaz. Hitos que dan monedas, una sola vez por partida guardada: Espada (puerta con llave +1, reja +1, jefe +2), Galáctica (oleada 3 +1, oleada 5 +1, nodo +2), Río (3 puentes +1, 5 puentes +1, aterrizaje +2). Aviso pequeño "★ +N Moneda ganada" sobre el monitor.
+- **Pruebas:** `wallet.test.js`, `fishing.test.js` y ampliadas `dungeon.test.js` (escudo, jefe y pilares, sin espada), `useStageScale.test.js`.
+
+**Mapa**
+- Cervantes eliminado (edificio, generador `schoolSprite`, nombre en los textos); la Universidad ocupa su sitio (x 16, y 4, misma puerta en la tesela 23). La Mezquita-Catedral de Córdoba (`buildings/mosque.js`) ocupa donde estaba la Universidad: arcos de herradura con dovelas rojas y crema, Puerta del Perdón con alfiz, almenas, nave con cimborrio y campanario. Sin interior: su puerta abre una conversación de Lupe (`valle.mezquita`, campo `talk` del edificio).
+- **Río** (`game/river.js`): curva de Catmull-Rom con anchura variable (de 1,5 a unas 5 teselas), nace al noreste y sale por el sureste. Se pinta con distancia analítica (orilla redondeada, `ground.js` acepta `waterField`) y choca por teselas (`waterTiles`).
+- **Puentes** (`BRIDGES` en `world.js`, sprites en `riverSprites.js`, planos): puente romano (calzada de tierra entre pretiles de sillería y tres arcos sobre el agua) en el camino del este, y un puente de tablones nuevo, largo por cruzar en diagonal, entre la parada del autobús y las casitas (con camino nuevo en la fila 36).
+- **Vida del río** (`riverPlaces.js`, `RiverFish.js`): nenúfares (algunos con flor), juncos, rocas, 14 peces que nadan por el cauce y a veces saltan, y postes de pesca.
+
+**Pesca** (`fishing.js` puro, `ValleScene.js`)
+- La caña está apoyada en una piedra al este, entre los bancos de las casitas y el río (`ROD_SPOT`). Se recoge con E: queda en `story.items` (el guardado de la historia ahora lleva `items` y `catches`; las partidas antiguas se leen sin ellos) y Lupe cuenta de quién era.
+- Cinco sitios con poste. Sin caña, Lupe da una pista (`valle.sin_cana`). Con caña: se echa, se espera, y cuando pica (corcho que se hunde, "!" sobre la cabeza, sonido) se tira a tiempo (acción) o se escapa; tirar antes asusta al pez. Moverse recoge la caña. Salen peces (barbo, boga, carpa, cangrejo) y hallazgos (bota, botella); la primera captura de cada sitio es una moneda arcade (recompensa `pesca.<sitio>`, una vez). Tabla y reglas listas para ampliar.
+
+**Comprobado:** `npm run lint` sin avisos, `npm run build` correcto, `npm test` salvo un fallo intermitente de `avatar/compose.test.js` por tiempo (pasa solo). En el navegador integrado: selector de la recreativa en móvil y escritorio (INSERT COIN, insertar moneda, Jugar, juego a todo el ancho con A y B), mapa y río con preview propio, y en el valle un lance hasta la espera del corcho.
+**No comprobado:** la picada y el resultado del lance en el valle (el panel en segundo plano va muy lento), recoger la caña, el diálogo de la Mezquita, el escudo y el jefe jugando (solo pruebas unitarias), el sonido, móvil real, y de noche, lluvia y nieve con los peces.
+**Pendiente:** revisar los textos nuevos (`DIALOGOS.md`, 3c, borrador); que los peces desaparezcan con el hielo; decidir qué pasa si se agotan las monedas y los hitos (hoy solo dan más la pesca y los hitos, todos únicos).
 
 ### Recreativa en móvil: más limpia, más grande y sin gestos del navegador (2026-11-11)
 
@@ -17,7 +42,9 @@ Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza a
 - **Fondo del selector móvil:** la ilustración pixel art de Lupe (`frontend/public/arcade/fondo-movil.png`, reducida a 48 colores: de 1,3 MB a 0,5 MB) cubre el panel de mandos del selector y se recorta para que se vean la rejilla, el invasor y las franjas. Con ella el panel pierde su rejilla y sus rayas propias. Durante la partida no se usa.
 - **Comprobado en el navegador integrado** (emulación móvil, vertical y horizontal): selector, los tres juegos, opciones, zona amplia del joystick, banda de Galáctica, `preventDefault` de `touchmove` y escritorio con teclado. **No se probó en un móvil real:** el gesto de subir del sistema (iOS/Android) solo se puede confirmar allí.
 
-### Rutinas de Ylonem y Grace por el pueblo, palomas y Khalessi (2026-11-12)
+### Prototipo parcial de rutinas de Ylonem y Grace (2026-11-12)
+
+> Esta entrada histórica describe un prototipo parcial existente. **No equivale a dar por completada la planificación de rutinas, animales, estaciones y piscina incorporada el 12/11/2026.** El bloque completo permanece pendiente y debe revisarse contra `docs/PLAN MAESTRO VALLE.md`, sección 7b.
 
 Avanza la visión (NPC con rutina propia, mundo vivo) y la fase D. Sustituye el "pasean junto a la puerta" del bloque siguiente. No se tocaron `/clasico`, la casa de Lupe ni su visita guiada.
 
@@ -1107,6 +1134,17 @@ Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, aquí la casa) y
 - **C2 implementada** (ver «Hecho»). Queda por decidir con Lupe si la visita debería poder repetirse desde el valle una vez completada y si quiere un cierre distinto con lluvia o de noche; hoy la visita completada no se vuelve a ofrecer.
 - No empezar nuevos NPC biográficos hasta cerrar los textos de C1/C2 y decidir el alcance publicable de terceros.
 - Fase posterior de mapa: retirar Cervantes y biblioteca/blog, incorporar Ayuntamiento de Córdoba y conservar Trassierra, Messina y Granada como recuerdos cuando no necesiten edificio propio. **Gran Capitán ya es el nodo de DAW** (ver «Fase D · IES Gran Capitán»); lo demás sigue pendiente y Cervantes y la Biblioteca/blog siguen en el mapa a la espera de una retirada controlada con migración.
+
+### Planificación de vida del pueblo (2026-11-12, pendiente)
+
+- **Grace y Khalessi:** queda planificada la corrección de llegada de Khalessi a la plaza sin teletransporte visible, su independencia respecto a Grace, la alimentación de palomas con semillas y animación de mano, las reacciones de las palomas, las colisiones y la anécdota opcional del nido. No marcar como completado hasta verificar la secuencia completa.
+- **Atreus:** quedan planificados paseos ocasionales por caminos, plaza, puente y río, alternancia con descanso y frases contextuales sin sustituir la historia principal.
+- **Ylonem:** queda planificada la fotografía contextual con destello y animación, variaciones por lluvia y atardecer y bocadillos dependientes del lugar; no se implementará todavía álbum de fotos.
+- **Rutinas comunes:** quedan planificados los estados `idle`, `walking`, `activity`, `interaction` y `returning`, navegación segura, prioridad de misiones, ausencia de duplicados, respuesta a clima/ciclo horario y reducción de actividad fuera de cámara.
+- **Vida ambiental:** quedan planificados pájaros, mariposas, peces, patos, nenúfares, hojas, saludos entre NPC, bancos, refugios de lluvia, regresos nocturnos, baños de palomas y lugares de descanso de Khalessi.
+- **Árboles y estaciones:** quedan planificados naranjos con azahar/fruto según estación y manzanos estacionales, sin recolección todavía.
+- **Piscina Santuario:** quedan planificadas sombrillas coherentes con la azotea de Lupe, agua con reflejos y movimiento y detalles discretos como tumbonas o toallas; no hay sistema de baño previsto en este bloque.
+- **Estado documental:** los textos nuevos están en `docs/DIALOGOS.md` como borradores y las reglas narrativas en `docs/LORE_Y_MUNDO.md`; ninguna de estas funcionalidades debe pasar a «Hecho» sin implementación y comprobación real.
 
 ### Historia y NPC (fase C, lo que queda)
 - **Visita guiada interior: hecha (C2, 2026-11-11).** Lupe presenta entrada, impresoras, Atreus, su ordenador, Khalessi y cierre; se puede pausar, abandonar y retomar, y el progreso se guarda por paradas (ver «C2 · Visita guiada por dentro de la casa de Lupe» en «Hecho», con lo comprobado y lo no comprobado). Pendiente de esta línea: probarla en un móvil real y con el dedo, en inglés a ojo, con voz y maullido, de noche y con lluvia, y recargar con la visita en curso dentro de la casa.

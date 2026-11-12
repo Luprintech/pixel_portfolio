@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { PAL } from './palette.js'
-import { ARRIVAL, BRIDGE, BUILDINGS, COLS, PROPS, ROWS, TILE, blockedWaterTiles, treePositions } from './world.js'
+import { ARRIVAL, BUILDINGS, COLS, PROPS, ROWS, TILE, blockedWaterTiles, treePositions } from './world.js'
 import { steppedZoom } from './viewport.js'
 import { CHAIR, CHAIR_ZONE, DECK, FOOT, LUPE_SPOT, STAIRS, STAIR_PACE, climb, nearRoofDoor, nearTelescope } from './terrace.js'
 import { DIRS, WALK_CYCLE, avatarSheet, frameName, frameRect, SHEET_POSES } from './avatar/index.js'
@@ -8,7 +8,7 @@ import { shadowSprite } from './sprites.js'
 import { makeCanvas, wallRows } from './pixelKit.js'
 import { petCanvas, petRestCanvas } from './pets/index.js'
 import { createIdle, playOffset, takeSound, updateIdle } from './pets/idle.js'
-import { bridgeAssets, buildingAssets, groundBase, groundSeasonJob, propAssets, treeAssets } from './worldAssets.js'
+import { buildingAssets, groundBase, groundSeasonJob, propAssets, treeAssets } from './worldAssets.js'
 import SkyLayer from './SkyLayer.js'
 import LitWindows from './litWindows.js'
 import { advanceWalk, facingFor, inputVector } from './walk.js'
@@ -18,7 +18,11 @@ import ValleNpcs from './npc/ValleNpcs.js'
 import GranNeighbours from './npc/GranNeighbours.js'
 import { createValleNav } from './npc/valleNav.js'
 import { getStory, updateStory } from './story/storyStore.js'
-import { setTour, tourOnRoofEntry } from './story/story.js'
+import { addItem, hasItem, recordCatch, setTour, tourOnRoofEntry } from './story/story.js'
+import RiverFish from './RiverFish.js'
+import { fishSpots } from './riverPlaces.js'
+import { COIN_FIND, FINAL_PHASES, rollCatch, startCast, stepCast } from './fishing.js'
+import { grantReward, loadWallet, saveWallet } from './arcade/wallet.js'
 import { registerSheet } from './sheetTexture.js'
 import { sitDown, standUp } from './sitting.js'
 import { GAME_THEME_COLOR, GAME_THEME_FADE, themeName } from '../lib/gameTheme.js'
@@ -33,6 +37,8 @@ const LIT_WINDOW = '#f8d77a'
 const SEASONS = ['autumn', 'winter']
 // Lo máximo que dura la entrada andando, por si algo la frena.
 const ARRIVAL_MAX_MS = 6000
+// Cuánto se queda el resultado de un lance (el pez que sale, el que se escapa) antes de poder volver a echar la caña.
+const RESULT_MS = 650
 
 export default class ValleScene extends Phaser.Scene {
   constructor() {
@@ -59,6 +65,9 @@ export default class ValleScene extends Phaser.Scene {
     this.seat = null
     this.standFrom = null
     this.benches = []
+    // Lance en marcha (ver `beginFishing`) o null, y los puntos de pesca con su zona.
+    this.fishing = null
+    this.spots = []
     // Dibujos del escenario que dependen del tema (clave y cómo pedirlos al tema vigente): son los que se vuelven a registrar al cambiarlo.
     this.themed = []
     this.replaced = null
@@ -76,6 +85,8 @@ export default class ValleScene extends Phaser.Scene {
     this.buildBuildings()
     this.buildProps()
     this.buildWater()
+    this.riverFish = new RiverFish(this)
+    this.spots = fishSpots().map((spot) => ({ ...spot, rect: new Phaser.Geom.Rectangle(spot.stand.x - 22, spot.stand.y - 22, 44, 44) }))
     this.buildCharacters()
     this.buildInput()
 
@@ -119,6 +130,7 @@ export default class ValleScene extends Phaser.Scene {
       this.game.events.off('appearance', this.setAppearance, this)
       this.game.events.off('theme', this.onTheme, this)
       this.game.events.off('zoom', this.stepZoom, this)
+      this.riverFish.destroy()
     })
   }
 
@@ -207,9 +219,13 @@ export default class ValleScene extends Phaser.Scene {
   // Imagen de un dibujo con sus versiones de estación apiladas encima, al mismo sitio y profundidad.
   placeScenery(key, x, y, origin, depth) {
     const image = this.add.image(x, y, key).setOrigin(...origin).setDepth(depth)
+    // Las versiones de estación se guardan en la imagen: quien quite el objeto del mapa (la caña) las oculta con ella.
+    image.seasonImages = []
     SEASONS.forEach((season) => {
       if (!this.textures.exists(`${key}:${season}`)) return
-      this.sky.addSeason(season, this.add.image(x, y, `${key}:${season}`).setOrigin(...origin).setDepth(depth))
+      const layer = this.add.image(x, y, `${key}:${season}`).setOrigin(...origin).setDepth(depth)
+      this.sky.addSeason(season, layer)
+      image.seasonImages.push(layer)
     })
     return image
   }
@@ -278,7 +294,6 @@ export default class ValleScene extends Phaser.Scene {
     if (!this.textures.exists('npc-lupe')) registerSheet(this.textures, 'npc-lupe', characterSheet('lupe'))
     this.addCanvas('shadow', shadowSprite(14, 5))
     this.addCanvas('lamp-glow', lampGlowCanvas())
-    this.addThemed('bridge', () => bridgeAssets(this.pastel))
   }
 
   // Para entrar solo hace falta la base del suelo. El otoño y el invierno se terminan de preparar mientras se
@@ -433,18 +448,24 @@ export default class ValleScene extends Phaser.Scene {
   // Objetos sueltos: cada tipo se dibuja una vez y se coloca por su punto de apoyo.
   buildProps() {
     PROPS.forEach((prop) => {
+      // La caña olvidada solo está mientras nadie la haya recogido (ver `pickRod`).
+      if (prop.collect && hasItem(getStory(this.game), prop.collect)) return
       const key = `prop-${prop.kind}-${prop.variant ?? 0}`
       const { sprite } = propAssets(prop, this.pastel)
       if (!this.textures.exists(key)) this.addThemed(key, () => propAssets(prop, this.pastel).set)
       const px = prop.at[0] * TILE
       const py = prop.at[1] * TILE
-      this.placeScenery(key, px, py, [0.5, 1], py)
+      // Los puentes son planos: van por debajo de quien los cruza, no ordenados por su base como el resto de objetos.
+      const image = this.placeScenery(key, px, py, [0.5, 1], sprite.flat ? 1 : py)
       sprite.body.forEach(({ l, t, r, b }) => this.solid(px + l, py + t, r - l, b - t))
+      if (prop.collect) {
+        this.collectibles = { ...this.collectibles, [prop.collect]: { image, door: { id: prop.collect, rect: new Phaser.Geom.Rectangle(px - 18, py - 16, 36, 30) } } }
+        this.doors.push(this.collectibles[prop.collect].door)
+      }
       if (sprite.glow) this.sky.addLamp(this.add.image(px + sprite.glow.dx, py + sprite.glow.dy, 'lamp-glow'))
       if (prop.zone) this.addDoor(prop.zone, prop.door.x, prop.door.y)
       if (prop.kind === 'bench') this.addBench(px, py)
     })
-    this.placeScenery('bridge', BRIDGE.x * TILE, BRIDGE.y * TILE - 6, [0, 0], 1)
   }
 
   // Un banco se puede ocupar: desde delante sale «Sentarse». La viajera se sienta de frente, con la cadera en la tabla.
@@ -528,14 +549,162 @@ export default class ValleScene extends Phaser.Scene {
   // Un edificio lleva a su interior; el telescopio y el buzón avisan a la página para abrir su panel.
   tryEnter() {
     if (this.inside || this.arriving || this.game.registry.get('locked') || !this.near) return
+    // Con la caña echada, la acción es tirar de ella.
+    if (this.fishing) {
+      this.fishing.pull = true
+      return
+    }
     if (this.near === 'standup') this.stand()
+    else if (this.near === 'rod') this.pickRod()
+    else if (this.near.startsWith('fish:')) this.beginFishing(this.near.slice('fish:'.length))
     else if (this.near === 'npc:lupe') this.npcs.talk()
     else if (this.near.startsWith('npc:')) this.neighbours.talk(this.near.slice('npc:'.length))
     else if (this.near.startsWith('bench:') || this.near === 'chairDeck') this.sit(this.benches.find((bench) => bench.id === this.near).seat)
     else if (this.near === 'telescope' && this.npcs.onDeck()) this.npcs.talkAtTelescope()
     else if (this.near === 'rooftopDoor') this.enterBuilding('about', 'deck')
-    else if (BUILDINGS.some((b) => b.id === this.near)) this.enterBuilding(this.near)
+    else if (BUILDINGS.some((b) => b.id === this.near)) this.enterOrTalk(BUILDINGS.find((b) => b.id === this.near))
     else this.game.events.emit('enter', this.near)
+  }
+
+  // Un edificio con interior se entra; el que solo se mira desde la calle (la Mezquita) abre su conversación con Lupe.
+  enterOrTalk(building) {
+    if (building.talk) this.game.events.emit('talk', building.talk)
+    else this.enterBuilding(building.id)
+  }
+
+  // La caña olvidada: se recoge, queda en el inventario de la partida (`story.items`) y desaparece del mapa. Lupe cuenta de quién era.
+  pickRod() {
+    const found = this.collectibles?.cana
+    if (!found) return
+    updateStory(this.game, (story) => addItem(story, 'cana'))
+    // Se oculta, no se destruye: el cielo sigue regulando la transparencia de sus versiones de estación.
+    found.image.setVisible(false)
+    found.image.seasonImages.forEach((layer) => layer.setVisible(false))
+    this.doors = this.doors.filter((door) => door !== found.door)
+    this.collectibles = { ...this.collectibles, cana: undefined }
+    this.near = null
+    this.game.events.emit('near', null)
+    this.game.events.emit('fish-sound', 'pickup')
+    this.game.events.emit('fish-notice', { kind: 'rod' })
+    this.game.events.emit('talk', 'valle.cana')
+  }
+
+  // Echar la caña en un punto de pesca. Sin caña, Lupe da una pista en lugar de dejar el sitio mudo.
+  beginFishing(id) {
+    const spot = this.spots.find((item) => item.id === id)
+    if (!spot) return
+    if (!hasItem(getStory(this.game), 'cana')) {
+      this.game.events.emit('talk', 'valle.sin_cana')
+      return
+    }
+    this.fishing = { spot, cast: startCast(Math.random), pull: false, hold: 0, gfx: this.add.graphics().setDepth(100000), t: 0, result: null }
+    this.facing = spot.facing
+    this.princess.setFrame(frameName(this.facing, 0))
+    this.near = 'fishing'
+    this.game.events.emit('near', 'fishing')
+    this.game.events.emit('fish-sound', 'cast')
+  }
+
+  stopFishing() {
+    if (!this.fishing) return
+    this.fishing.gfx.destroy()
+    this.fishing = null
+    this.near = null
+    this.game.events.emit('near', null)
+  }
+
+  // Un lance por fotograma: avanza la máquina (`fishing.js`), reparte lo que sale y dibuja el hilo, el corcho y el aviso de picada.
+  updateFishing(delta) {
+    const fishing = this.fishing
+    fishing.t += delta
+    if (fishing.result) {
+      fishing.hold -= delta
+      if (fishing.hold <= 0) this.stopFishing()
+      else this.drawFishing()
+      return
+    }
+    const events = stepCast(fishing.cast, delta, fishing.pull)
+    fishing.pull = false
+    events.forEach(({ type }) => {
+      if (type === 'bite') this.game.events.emit('fish-sound', 'bite')
+      else this.finishCast(type)
+    })
+    if (FINAL_PHASES.includes(fishing.cast.phase) && !fishing.result) fishing.result = fishing.cast.phase
+    if (fishing.result) fishing.hold = RESULT_MS
+    this.drawFishing()
+  }
+
+  // El lance termina: tirar a tiempo da una captura (o la moneda del primer lance de cada sitio), y lo demás un aviso.
+  finishCast(type) {
+    const { spot } = this.fishing
+    if (type !== 'reel') {
+      this.game.events.emit('fish-sound', 'miss')
+      this.game.events.emit('fish-notice', { kind: type })
+      return
+    }
+    const key = `pesca.${spot.id}`
+    const wallet = loadWallet()
+    let found = rollCatch(Math.random, { firstHere: !wallet.rewards.includes(key) })
+    if (found.coin) {
+      const { wallet: next, gained } = grantReward(wallet, key, 1)
+      if (gained > 0) saveWallet(next)
+      else found = rollCatch(Math.random)
+    }
+    updateStory(this.game, (story) => recordCatch(story, found.id))
+    this.game.events.emit('fish-sound', found.coin ? 'coin' : 'reel')
+    this.game.events.emit('fish-notice', { kind: found.coin ? 'coin' : found.junk ? 'junk' : 'catch', id: found.id })
+  }
+
+  // Hilo desde la punta de la caña hasta el corcho; el corcho flota, se hunde al picar y vuelve a la mano al tirar. Un cartel con "!" sobre la
+  // cabeza avisa de la picada.
+  drawFishing() {
+    const { spot, cast, gfx, t, result } = this.fishing
+    const lean = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[spot.facing]
+    const tip = { x: this.princess.x + lean[0] * 9, y: this.princess.y - 17 + lean[1] * 4 }
+    let bob = { x: spot.water.x, y: spot.water.y }
+    if (cast.phase === 'cast') {
+      const k = Math.min(1, cast.ms / 600)
+      bob = { x: tip.x + (spot.water.x - tip.x) * k, y: tip.y + (spot.water.y - tip.y) * k - Math.sin(k * Math.PI) * 18 }
+    } else if (cast.phase === 'wait') bob.y += Math.round(Math.sin(t / 380))
+    else if (cast.phase === 'bite') bob.y += 2 + (Math.floor(t / 70) % 2)
+    else if (result === 'reel') {
+      const k = Math.min(1, 1 - this.fishing.hold / 650)
+      bob = { x: spot.water.x + (tip.x - spot.water.x) * k, y: spot.water.y + (tip.y - spot.water.y) * k - Math.sin(k * Math.PI) * 10 }
+    }
+    gfx.clear()
+    gfx.lineStyle(1, 0xf1e6cf, 1)
+    gfx.beginPath()
+    gfx.moveTo(Math.round(tip.x), Math.round(tip.y))
+    gfx.lineTo(Math.round(bob.x), Math.round(bob.y))
+    gfx.strokePath()
+    // Caña: un trazo más grueso y oscuro en la mano.
+    gfx.lineStyle(2, 0x7a4f35, 1)
+    gfx.beginPath()
+    gfx.moveTo(Math.round(this.princess.x + lean[0] * 3), Math.round(this.princess.y - 13))
+    gfx.lineTo(Math.round(tip.x), Math.round(tip.y))
+    gfx.strokePath()
+    gfx.fillStyle(0xd4503a, 1)
+    gfx.fillRect(Math.round(bob.x) - 1, Math.round(bob.y) - 2, 3, 2)
+    gfx.fillStyle(0xf6f0e0, 1)
+    gfx.fillRect(Math.round(bob.x) - 1, Math.round(bob.y), 3, 1)
+    if (cast.phase === 'wait' || cast.phase === 'bite') {
+      // Anillo del corcho: más ancho al picar.
+      gfx.lineStyle(1, 0xdcecf0, 0.8)
+      const radius = cast.phase === 'bite' ? 5 + (Math.floor(t / 90) % 3) : 3 + (Math.floor(t / 600) % 2)
+      gfx.strokeEllipse(Math.round(bob.x), Math.round(bob.y) + 1, radius * 2, radius)
+    }
+    if (cast.phase === 'bite') {
+      const x = Math.round(this.princess.x)
+      const y = Math.round(this.princess.y) - 46
+      gfx.fillStyle(0xf6f0e0, 1)
+      gfx.fillRect(x - 4, y, 9, 11)
+      gfx.fillStyle(0x1c1b3a, 1)
+      gfx.fillRect(x - 5, y - 1, 11, 1)
+      gfx.fillRect(x - 5, y + 11, 11, 1)
+      gfx.fillStyle(0xd4503a, 1)
+      gfx.fillRect(x, y + 2, 1, 5)
+      gfx.fillRect(x, y + 8, 1, 1)
+    }
   }
 
   // Fundido a color de página, y el valle se duerme mientras la sala interior hace de escena.
@@ -627,6 +796,7 @@ export default class ValleScene extends Phaser.Scene {
     // Lupe y Khalessi siguen a lo suyo aunque la viajera esté sentada o leyendo.
     this.npcs.update(delta, locked, this.climbMode === 'deck')
     this.neighbours.update(delta, locked)
+    this.riverFish.update(delta)
 
     if (this.arriving) {
       // Sube por el camino sola. Si algo la frena (o la página estuvo oculta) no se queda atascada: el tiempo manda.
@@ -637,6 +807,17 @@ export default class ValleScene extends Phaser.Scene {
       const move = inputVector(this.cursors, this.keys, this.game.registry.get('joy') || undefined)
       vx = move.x
       vy = move.y
+    }
+    // Con la caña echada se está quieta; pedir una dirección la recoge.
+    if (this.fishing) {
+      if (Math.hypot(vx, vy) > 0.15) this.stopFishing()
+      else {
+        body.setVelocity(0, 0)
+        this.updateFishing(delta)
+        this.frame = { moving: false, delta }
+        this.sky.update(time)
+        return
+      }
     }
     // Sentada no se anda: pedir una dirección la levanta.
     if (this.seat) {
@@ -752,6 +933,8 @@ export default class ValleScene extends Phaser.Scene {
   }
 
   checkDoors(px, py, onGround) {
+    // Mientras pesca, lo que hay cerca es la caña: no se ofrece ninguna otra cosa.
+    if (this.fishing) return
     // Lupe, si está al lado, tiene prioridad sobre una puerta cercana: hablar con ella es lo que se espera junto a su casa. Salvo si
     // la viajera ya eligió ir por su cuenta: ante la puerta, E entra; para hablar con ella basta apartarse un paso.
     const hit = this.doors.find((d) => d.rect.contains(px, py))
@@ -770,7 +953,9 @@ export default class ValleScene extends Phaser.Scene {
     const bench = chair || (!hit && !atScope && !atRoofDoor && this.benches.find((b) => !b.deck && b.zone.contains(px, py)))
     // Ylonem y Grace se atienden desde fuera de la puerta: ante ella, E entra.
     const neighbour = !hit && onGround && this.neighbours.talkTarget(px, py)
-    const id = hit ? hit.id : neighbour ? `npc:${neighbour}` : atScope ? 'telescope' : atRoofDoor ? 'rooftopDoor' : bench ? bench.id : null
+    // Un punto de pesca se ofrece con o sin caña (sin ella, Lupe da una pista).
+    const spot = !hit && !neighbour && onGround && this.spots.find((item) => item.rect.contains(px, py))
+    const id = hit ? hit.id : neighbour ? `npc:${neighbour}` : spot ? `fish:${spot.id}` : atScope ? 'telescope' : atRoofDoor ? 'rooftopDoor' : bench ? bench.id : null
     if (id !== this.near) {
       this.near = id
       this.game.events.emit('near', id)

@@ -11,8 +11,10 @@ describe('snapScale', () => {
     expect(snapScale(0.8)).toBe(0.75)
   })
 
-  it('en el móvil llena el monitor con pasos más finos aunque pase de 1', () => {
-    expect(snapScale(1.4, 1, true)).toBe(1.25)
-    expect(snapScale(1.4, 5, true)).toBe(1.4)
+  it('en el móvil llena todo el monitor, recortando solo al píxel físico', () => {
+    expect(snapScale(1.4, 1, true, 240)).toBeCloseTo(1.4, 5)
+    expect(snapScale(1.63, 3, true, 240)).toBeCloseTo(1.6292, 3)
+    expect(snapScale(1.63, 3, true, 240)).toBeLessThanOrEqual(1.63)
+    expect(snapScale(0.9, 2, true, 240)).toBeGreaterThan(0.89)
   })
 })

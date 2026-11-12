@@ -125,9 +125,10 @@ export function MoveZone({ labels, horizontal, onDirection }) {
   return horizontal ? <Band label={labels.band} onDirection={onDirection} /> : <Stick label={labels.joystick} onDirection={onDirection} />
 }
 
-// Botón de acción o disparo. Toda la zona es el botón (no hace falta acertar con el círculo) y, mantenido, repite el disparo. Va
-// separado de la zona de movimiento para que ambos pulgares trabajen sin pisarse.
-export function ActionZone({ label, onAction }) {
+// Botón táctil de la recreativa (A o B). Toda la zona es el botón (no hace falta acertar con el círculo) y, mantenido, avisa de
+// que sigue pulsado: la A lo usa para repetir el disparo y la B para mantener el escudo. Va separado de la zona de movimiento
+// para que ambos pulgares trabajen sin pisarse.
+export function ActionZone({ label, glyph = 'A', small = false, onAction }) {
   const [down, setDown] = useState(false)
   const set = useCallback((on) => {
     setDown(on)
@@ -139,15 +140,28 @@ export function ActionZone({ label, onAction }) {
   setRef.current = set
   useEffect(() => () => setRef.current(false), [])
 
+  const tint = glyph === 'B' ? ['lagoon', PAL.lagoon, PAL.lagoonLight] : ['berry', PAL.tile, PAL.tileDark]
   const events = zoneEvents({ update: () => set(true), release: () => set(false) })
   return (
-    <button type="button" aria-label={label} tabIndex={-1} className="grid h-full w-full touch-none select-none place-items-center" style={zoneStyle} {...events}>
+    <button type="button" aria-label={label} aria-pressed={down} tabIndex={-1} className="grid h-full w-full touch-none select-none place-items-center" style={zoneStyle} {...events}>
       <span
-        className="pointer-events-none grid h-24 w-24 place-items-center rounded-full text-4xl font-semibold"
-        style={{ background: down ? PAL.tileDark : tone('berry', PAL.tile), color: tone('ivory', PAL.bone), boxShadow: down ? `0 0 0 3px ${ink()}` : ring(), transform: down ? 'scale(0.92)' : 'none' }}
+        className={`pointer-events-none grid place-items-center rounded-full font-semibold ${small ? 'h-16 w-16 text-3xl' : 'h-24 w-24 text-4xl'}`}
+        style={{ background: down ? tint[2] : tone(tint[0], tint[1]), color: tone('ivory', PAL.bone), boxShadow: down ? `0 0 0 3px ${ink()}` : ring(), transform: down ? 'scale(0.92)' : 'none' }}
       >
-        A
+        {glyph}
       </span>
     </button>
+  )
+}
+
+// Botones de la recreativa: A (acción, espada o disparo) y, en los juegos con escudo, B debajo. B se mantiene pulsado para
+// levantar el escudo; A y B no se anulan entre sí porque cada zona captura su propio dedo.
+export function ActionPad({ labels, guard, onAction, onGuard }) {
+  if (!guard) return <ActionZone label={labels.actionLabel} onAction={onAction} />
+  return (
+    <div className="flex h-full w-full flex-col gap-2">
+      <div className="min-h-0 flex-[3]"><ActionZone label={labels.swordLabel} small onAction={onAction} /></div>
+      <div className="min-h-0 flex-[2]"><ActionZone label={labels.guardLabel} glyph="B" small onAction={onGuard} /></div>
+    </div>
   )
 }

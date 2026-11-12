@@ -21,9 +21,23 @@ export const TOUR_STOPS = ['entrada', 'impresoras', 'atreus', 'pc', 'khalessi', 
 const ID = /^[a-z0-9._-]{1,48}$/
 const MAX_IDS = 200
 
-export const initialStory = () => ({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: [] })
+// `items` es lo que la viajera lleva consigo (por ahora, solo la caña de pescar) y `catches` cuántas veces ha sacado cada cosa del río.
+export const initialStory = () => ({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: [], items: [], catches: {} })
 
 const cleanIds = (raw) => (Array.isArray(raw) ? [...new Set(raw.filter((id) => typeof id === 'string' && ID.test(id)))].slice(0, MAX_IDS) : [])
+
+const MAX_CATCH = 999
+
+// Capturas guardadas: ids válidos con un recuento entero entre 1 y 999. Lo demás se descarta.
+function cleanCatches(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  return Object.fromEntries(
+    Object.entries(raw)
+      .filter(([id, count]) => ID.test(id) && Number.isInteger(count) && count > 0)
+      .slice(0, MAX_IDS)
+      .map(([id, count]) => [id, Math.min(count, MAX_CATCH)]),
+  )
+}
 
 // Solo valen paradas que existen, sin repetir y en su orden. Una visita completada tiene todas (también las partidas guardadas antes
 // de que existieran las paradas).
@@ -43,6 +57,8 @@ export function sanitizeStory(raw) {
     stops: cleanStops(raw.stops, tour),
     heard: cleanIds(raw.heard),
     explained: cleanIds(raw.explained),
+    items: cleanIds(raw.items),
+    catches: cleanCatches(raw.catches),
   }
 }
 
@@ -53,6 +69,13 @@ export function recoverStory(story) {
 }
 
 export const setTour = (story, tour) => (story.tour === tour ? story : { ...story, tour })
+
+// Inventario: lo que lleva la viajera. `addItem` no hace nada si ya lo tiene.
+export const hasItem = (story, id) => story.items.includes(id)
+export const addItem = (story, id) => (hasItem(story, id) ? story : { ...story, items: [...story.items, id] })
+
+// Anota una captura del río (un pez o un hallazgo) para contarlas más adelante.
+export const recordCatch = (story, id) => ({ ...story, catches: { ...story.catches, [id]: Math.min(MAX_CATCH, (story.catches[id] ?? 0) + 1) } })
 
 // Siguiente parada por presentar, o null si ya se hicieron todas. Con `after` (la que se acaba de presentar) sigue por la que viene
 // detrás en el recorrido y, si no queda ninguna, vuelve a la primera que falte. El cierre va siempre el último.

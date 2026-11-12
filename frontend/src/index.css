@@ -804,6 +804,15 @@ article tbody tr td:first-child,
   background-image: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.16) 0, rgba(0, 0, 0, 0.16) 1px, transparent 1px, transparent 3px);
   box-shadow: inset 0 0 28px 2px rgba(0, 0, 0, 0.35);
 }
+/* INSERT COIN: parpadeo clásico a saltos. Sin movimiento, se queda encendido. */
+.arcade-insert {
+  animation: arcade-insert 1.1s steps(1, end) infinite;
+}
+@keyframes arcade-insert {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
 @media (prefers-reduced-motion: reduce) {
   .arcade-led { animation: none; }
+  .arcade-insert { animation: none; }
 }

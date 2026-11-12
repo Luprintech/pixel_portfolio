@@ -6,9 +6,10 @@
 // creador ni la animación se paren en un móvil, o terminar al momento si la escena la pide antes de tiempo.
 // Sin Phaser.
 import { groundCanvasSteps } from './ground.js'
-import { BUILDINGS, BRIDGE, COLS, PROPS, ROWS, TILE, plazaTiles, roadTiles, waterTiles } from './world.js'
+import { BUILDINGS, COLS, PROPS, ROWS, TILE, plazaTiles, roadTiles } from './world.js'
+import { signedDistance as riverDistance } from './river.js'
 import { buildingSprite } from './buildings/index.js'
-import { bridgeSprite, propSprite } from './props.js'
+import { propSprite } from './props.js'
 import { Job, runSliced } from './sliced.js'
 import { treeSprite } from './sprites.js'
 import { lightenSteps, softenSteps } from './titleSoften.js'
@@ -38,9 +39,6 @@ function* sceneryFrom(canvas, pastel, { seasons = SEASONS, cap = true } = {}) {
 const treeJob = (variant, pastel) => job(`tree:${variant}:${pastel}`, () => sceneryFrom(treeSprite(variant), pastel))
 export const treeAssets = (variant, pastel) => treeJob(variant, pastel).get()
 
-const bridgeJob = (pastel) => job(`bridge:${pastel}`, () => sceneryFrom(bridgeSprite(BRIDGE.w, BRIDGE.h), pastel, { seasons: ['winter'] }))
-export const bridgeAssets = (pastel) => bridgeJob(pastel).get()
-
 // Si el edificio trae una capa que va por encima de quien pasa (la barandilla delantera de la casa de Lupe), se
 // prepara igual que el dibujo principal para que cambie con la paleta y la nieve a la vez.
 // Si además trae una capa de nieve propia (`snow`: la que `snowCap` no alcanza, como pasamanos o bordes), se pinta
@@ -68,7 +66,7 @@ export const propAssets = (prop, pastel) => propJob(prop, pastel).get()
 // El suelo es lo más pesado (más de un millón de píxeles): pintar, aclarar y suavizar la base es lo que hace
 // falta para entrar; el otoño y el invierno se preparan después y la escena los añade cuando están listos.
 const groundRawJob = (pastel) =>
-  job(`ground:raw:${pastel}`, () => groundCanvasSteps({ cols: COLS, rows: ROWS, tile: TILE, roads: roadTiles(), plaza: plazaTiles(), water: waterTiles() }))
+  job(`ground:raw:${pastel}`, () => groundCanvasSteps({ cols: COLS, rows: ROWS, tile: TILE, roads: roadTiles(), plaza: plazaTiles(), waterField: riverDistance }))
 
 function* litGround(pastel) {
   const raw = yield* groundRawJob(pastel).steps()
@@ -110,7 +108,6 @@ export function warmEntry(pastel) {
     ...[0, 1, 2].map((v) => treeJob(v, pastel)),
     ...BUILDINGS.map((b) => buildingJob(b, pastel)),
     ...props.map((p) => propJob(p, pastel)),
-    bridgeJob(pastel),
   ])
   entryWarming.set(pastel, done)
   return done

@@ -34,6 +34,14 @@ export const ARCADE_SOUNDS = {
   crystal: [square(1047, 0, 0.1, 0.1), square(1319, 0.1, 0.1, 0.1), square(1568, 0.2, 0.1, 0.1), square(2093, 0.3, 0.3, 0.1)],
   bossDown: [saw(260, 40, 0, 0.8, 0.16), square(392, 0.1, 0.1), square(262, 0.25, 0.12), square(196, 0.45, 0.3)],
   win: [square(523, 0, 0.12), square(659, 0.12, 0.12), square(784, 0.24, 0.12), square(1047, 0.36, 0.12), square(784, 0.48, 0.12), square(1047, 0.6, 0.4)],
+  // Moneda de la recreativa: el «ting» clásico, dos notas agudas, y el golpe de la moneda al caer en la ranura. `noCoin` es el zumbido de rechazo.
+  coin: [square(988, 0, 0.07, 0.11), square(1319, 0.07, 0.32, 0.11), triangle(220, 0.0, 0.05, 0.2, 110)],
+  noCoin: [square(196, 0, 0.12, 0.1), square(147, 0.14, 0.2, 0.1)],
+  // Pesca del valle (`game/ValleScene.js`): echar la caña, la picada, tirar con acierto y el lance fallido.
+  cast: [square(420, 0, 0.1, 0.07, 880)],
+  bite: [square(880, 0, 0.07, 0.1), square(1175, 0.1, 0.1, 0.1)],
+  reel: [square(523, 0, 0.06), square(784, 0.06, 0.08), square(1047, 0.14, 0.14)],
+  miss: [square(220, 0, 0.1, 0.08), square(165, 0.12, 0.18, 0.08)],
   // Invasión Galáctica y Río en Peligro.
   shoot: [square(900, 0, 0.08, 0.07, 280)],
   boom: [saw(200, 50, 0, 0.2, 0.12), square(140, 0, 0.1, 0.08, 60)],

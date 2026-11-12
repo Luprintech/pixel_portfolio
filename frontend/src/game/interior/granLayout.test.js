@@ -47,7 +47,7 @@ describe('IES Gran Capitán: edificio y sala', () => {
   it('tiene sala propia con plano, distinta de la sala vacía genérica y de la casa', () => {
     expect(roomOf(building).plan).toBeTruthy()
     expect(roomOf(building).home).toBeUndefined()
-    expect(roomOf({ id: 'cervantes', w: 12, h: 8 }).plan).toBeUndefined()
+    expect(roomOf({ id: 'universidad', w: 15, h: 8 }).plan).toBeUndefined()
   })
 
   it('la entrada queda fuera de la zona de salida y dentro del suelo', () => {

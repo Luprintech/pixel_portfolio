@@ -18,21 +18,28 @@ function Cover({ id, label }) {
 // récord) con su botón «Jugar». Las flechas (o WASD) cambian de juego y E, Espacio o Enter juegan; con el ratón o el dedo se toca
 // una portada y «Jugar». Los tamaños de letra salen del ancho del monitor (`cqw`), así el menú cabe igual en el escritorio y en un
 // móvil; si aun así no cupiera, solo este menú se desplaza por dentro, nunca la página.
-export default function GameSelect({ ui, games, scores, unlocked, selected, touch, onSelect, onPlay }) {
+export default function GameSelect({ ui, games, scores, unlocked, selected, touch, credits, notice, onSelect, onPlay }) {
   const play = useRef(null)
+  // El foco va a «Jugar» al elegir juego y cuando entra un crédito (antes está desactivado y no puede tenerlo).
   useEffect(() => {
     play.current?.focus({ preventScroll: true })
-  }, [selected])
+  }, [selected, credits])
 
   const game = GAMES[selected]
   const copy = games[game.id]
   const record = scores[game.id]
+  const ready = credits > 0
+  const controls = (touch && copy.controlsTouch) || copy.controls
 
   return (
     <div data-scroll className="absolute inset-0 flex touch-pan-y flex-col gap-[1.6cqw] overflow-y-auto overscroll-contain p-[2.4cqw]" style={{ background: PAL.ink, color: PAL.bone, fontSize: 'max(12px, 2.5cqw)' }}>
       <h3 className={`px-text text-center font-semibold uppercase tracking-widest ${touch ? 'sr-only' : ''}`} style={{ color: PAL.saffronLight, fontSize: '1.15em' }}>
         {ui.pick}
       </h3>
+      <p aria-live="polite" className="px-text flex shrink-0 items-center justify-between gap-2 leading-none">
+        <span className={`font-semibold ${ready ? '' : 'arcade-insert tracking-widest'}`} style={{ color: ready ? PAL.meadow : PAL.saffronLight, fontSize: ready ? '1em' : '1.35em' }}>{ready ? `${ui.credits}: ${credits}` : ui.insertCoin}</span>
+        {notice && <span className="truncate text-right" style={{ color: notice.ok ? PAL.meadow : PAL.rose }}>{notice.text}</span>}
+      </p>
       <ul className="grid shrink-0 grid-cols-3 gap-[2cqw]">
         {GAMES.map((item, index) => {
           const active = index === selected
@@ -67,14 +74,14 @@ export default function GameSelect({ ui, games, scores, unlocked, selected, touc
             <p className="px-text line-clamp-3 leading-snug">{copy.desc}</p>
             <details className="px-text leading-snug" style={{ fontSize: '0.85em' }}>
               <summary className="cursor-pointer py-1" style={{ color: PAL.lagoonLight }}>{ui.controls}</summary>
-              <p style={{ opacity: 0.8 }}>{copy.controls}</p>
+              <p style={{ opacity: 0.8 }}>{controls}</p>
             </details>
           </>
         ) : (
           <>
             <p className="px-text leading-snug">{copy.desc}</p>
             <p className="px-text leading-snug" style={{ opacity: 0.8, fontSize: '0.85em' }}>
-              <strong>{ui.controls}:</strong> {copy.controls}
+              <strong>{ui.controls}:</strong> {controls}
             </p>
           </>
         )}
@@ -83,7 +90,7 @@ export default function GameSelect({ ui, games, scores, unlocked, selected, touc
         <p className="px-text" style={{ color: PAL.saffronLight }}>
           {ui.best}: {record.best > 0 ? record.best : ui.noBest}
         </p>
-        <button type="button" ref={play} data-arcade data-sound="confirm" className={`px-btn !px-4 !text-sm ${touch ? '!min-h-12 !px-6' : '!min-h-10'}`} onClick={() => onPlay(game.id)}>
+        <button type="button" ref={play} data-arcade data-sound="confirm" disabled={!ready} className={`px-btn !px-4 !text-sm ${touch ? '!min-h-12 !px-6' : '!min-h-10'}`} onClick={() => onPlay(game.id)}>
           {ui.play}
         </button>
       </div>

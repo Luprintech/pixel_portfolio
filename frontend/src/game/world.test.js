@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { BRIDGE, BUILDINGS, COLS, PROPS, ROWS, SPAWN, TILE, blockedWaterTiles, plazaTiles, roadTiles, treePositions, waterTiles } from './world.js'
+import { BRIDGES, BUILDINGS, COLS, PROPS, ROWS, SPAWN, TILE, blockedWaterTiles, plazaTiles, roadTiles, treePositions, waterTiles } from './world.js'
+import { fishSpots, ROD_SPOT } from './riverPlaces.js'
+import { signedDistance } from './river.js'
 
 const footprint = (b) => {
   const tiles = []
@@ -63,19 +65,92 @@ describe('mapa del valle', () => {
     PROPS.filter((p) => p.zone).forEach((p) => expect(seen.has(`${p.door.x},${p.door.y}`)).toBe(true))
   })
 
-  it('el puente cruza el arroyo por el camino del este', () => {
+  it('hay dos puentes y cada uno cruza el río de orilla a orilla, con tierra firme a los dos lados', () => {
     const water = waterTiles()
     const walkable = blockedWaterTiles()
-    let crossed = 0
-    for (let y = BRIDGE.y; y < BRIDGE.y + BRIDGE.h; y++) {
-      for (let x = BRIDGE.x; x < BRIDGE.x + BRIDGE.w; x++) {
-        if (water.has(`${x},${y}`)) {
-          crossed += 1
-          expect(walkable.has(`${x},${y}`)).toBe(false)
-        }
+    expect(BRIDGES.length).toBe(2)
+    BRIDGES.forEach((bridge) => {
+      // Cada fila de la calzada tiene agua en medio, que solo se pisa gracias al puente, y tierra en los dos extremos.
+      for (let y = bridge.y; y < bridge.y + bridge.h; y++) {
+        const row = Array.from({ length: bridge.w }, (_, i) => water.has(`${bridge.x + i},${y}`))
+        expect(row.some(Boolean), `${bridge.id} fila ${y}`).toBe(true)
+        expect(row[0] || row.at(-1), `${bridge.id} no apoya en tierra en la fila ${y}`).toBe(false)
+        row.forEach((isWater, i) => isWater && expect(walkable.has(`${bridge.x + i},${y}`)).toBe(false))
       }
+    })
+  })
+
+  it('el río es un cauce continuo de entre tres y seis teselas, sin cortes ni estrechamientos bruscos', () => {
+    const water = waterTiles()
+    // Por columnas, la anchura de cada tramo: se mide en la dirección en la que el río es más vertical y en la más horizontal.
+    const widths = []
+    for (let y = 18; y < 45; y++) {
+      let run = 0
+      for (let x = 40; x < 70; x++) if (water.has(`${x},${y}`)) run += 1
+      widths.push(run)
     }
-    expect(crossed).toBeGreaterThan(0)
+    widths.forEach((run, i) => expect(run, `fila ${18 + i}`).toBeGreaterThan(0))
+    const steps = widths.slice(1).map((run, i) => Math.abs(run - widths[i]))
+    expect(Math.max(...steps)).toBeLessThanOrEqual(4)
+    expect(Math.max(...widths)).toBeLessThanOrEqual(12)
+  })
+
+  it('Cervantes ya no está y la Universidad ocupa su sitio, con su misma puerta', () => {
+    expect(BUILDINGS.some((b) => b.id === 'cervantes')).toBe(false)
+    expect(BUILDINGS.some((b) => b.kind === 'school')).toBe(false)
+    const university = BUILDINGS.find((b) => b.id === 'universidad')
+    expect(university).toMatchObject({ x: 16, y: 4, door: { x: 23, y: 12 } })
+  })
+
+  it('la Mezquita está donde estaba la Universidad, sin interior, y su puerta abre la conversación con Lupe', () => {
+    const mosque = BUILDINGS.find((b) => b.id === 'mezquita')
+    expect(mosque).toMatchObject({ kind: 'mosque', x: 42, y: 3, talk: 'valle.mezquita' })
+  })
+
+  it('los puntos de pesca están en tierra firme, junto al agua y a los que se llega andando, y la caña también', () => {
+    const blocked = new Set([...blockedWaterTiles(), ...BUILDINGS.flatMap(footprint)])
+    const reach = new Set()
+    const start = `${Math.floor(SPAWN.x / TILE)},${Math.floor(SPAWN.y / TILE)}`
+    const queue = [start]
+    reach.add(start)
+    while (queue.length) {
+      const [x, y] = queue.shift().split(',').map(Number)
+      ;[[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+        const key = `${x + dx},${y + dy}`
+        if (x + dx < 0 || y + dy < 0 || x + dx >= COLS || y + dy >= ROWS || blocked.has(key) || reach.has(key)) return
+        reach.add(key)
+        queue.push(key)
+      })
+    }
+    const spots = fishSpots()
+    expect(spots.length).toBe(5)
+    spots.forEach((spot) => {
+      // La zona de pesca mide unos 36 px: basta con que alguna de las teselas de alrededor se alcance a pie.
+      const cx = Math.floor(spot.stand.x / TILE)
+      const cy = Math.floor(spot.stand.y / TILE)
+      const around = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => `${cx + dx},${cy + dy}`))
+      expect(around.some((tile) => reach.has(tile)), `a ${spot.id} no se llega`).toBe(true)
+      expect(Math.hypot(spot.stand.x - spot.water.x, spot.stand.y - spot.water.y), `${spot.id} lejos del agua`).toBeLessThan(60)
+      expect(signedDistance(spot.water.x, spot.water.y), `el corcho de ${spot.id} no cae en el agua`).toBeGreaterThan(4)
+    })
+    expect(reach.has(`${Math.floor(ROD_SPOT.at[0])},${Math.floor(ROD_SPOT.at[1])}`)).toBe(true)
+  })
+
+  it('el decorado del río: nenúfares sobre el agua, juncos fuera de caminos y edificios, y nada sobre los puentes', () => {
+    const roads = roadTiles()
+    const lilies = PROPS.filter((p) => p.kind === 'lily')
+    const reeds = PROPS.filter((p) => p.kind === 'reeds')
+    expect(lilies.length).toBeGreaterThanOrEqual(8)
+    expect(reeds.length).toBeGreaterThanOrEqual(12)
+    lilies.forEach((p) => expect(signedDistance(p.at[0] * TILE, (p.at[1] - 0.3) * TILE)).toBeGreaterThan(5))
+    reeds.forEach((p) => {
+      const key = `${Math.floor(p.at[0])},${Math.floor(p.at[1] - 0.7)}`
+      expect(roads.has(key), `juncos sobre un camino en ${key}`).toBe(false)
+      BUILDINGS.forEach((b) => expect(footprint(b).includes(key)).toBe(false))
+    })
+    ;[...lilies, ...reeds].forEach((p) =>
+      BRIDGES.forEach((b) => expect(p.at[0] >= b.x - 1 && p.at[0] < b.x + b.w + 1 && p.at[1] >= b.y - 1 && p.at[1] < b.y + b.h + 2, `${p.kind} bajo ${b.id}`).toBe(false)),
+    )
   })
 
   it('los árboles no tapan caminos, agua ni puertas, y son siempre los mismos', () => {

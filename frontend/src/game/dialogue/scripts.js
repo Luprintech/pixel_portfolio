@@ -73,6 +73,11 @@ const CIBER = option('ciber', 'grace.opt.ciber', { to: 'grace.ciberseguridad' })
 const LLEGADA_MENU = [APLICACION, ESTRENO, CIBER, option('entrar', 'gran.opt.entrar', { close: true })]
 
 export const SCRIPTS = {
+  // Conversaciones de Lupe en la calle (`docs/DIALOGOS.md`, apartado 3c): la Mezquita-Catedral, la caña olvidada y la pista de un sitio
+  // de pesca sin caña. Ninguna ofrece opciones: se leen y se cierran.
+  'valle.mezquita': { pages: lines('lupe', 'valle.mezquita', 2) },
+  'valle.cana': { pages: lines('lupe', 'valle.cana', 2) },
+  'valle.sin_cana': { pages: lines('lupe', 'valle.sin_cana', 2) },
   'inicio.bienvenida': {
     pages: [
       { who: 'lupe', text: 'inicio.bienvenida.1' },

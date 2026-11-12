@@ -142,3 +142,10 @@ Resumen de lo que implicaría la mascota del visitante; las reglas de producto e
 ## Zonas delicadas
 
 Ver la sección homónima de `AGENTS.md`: sitemap, `CONTENT_PATH`, SMTP del contacto y Gemini del chat.
+
+
+## Río, pesca y monedas de la recreativa (2026-11-12)
+
+- `frontend/src/game/river.js`: el río como curva con anchura variable; da la distancia con signo (suelo) y las teselas de agua (colisión). `riverPlaces.js` coloca nenúfares, juncos, postes de pesca y la caña; `riverSprites.js` dibuja puentes y objetos del río; `RiverFish.js` anima los peces. Los puentes (`BRIDGES` en `world.js`) son objetos planos de `PROPS` cuya calzada se descuenta de las teselas de agua.
+- `fishing.js`: máquina de estados pura del lance. La escena (`ValleScene.js`) la mueve y emite `fish-notice` y `fish-sound`, que escucha `pages/Valle.jsx`. La caña y las capturas viven en `story.items` y `story.catches`.
+- `game/arcade/wallet.js` y `rewards.js`: monedas, créditos y recompensas únicas de la recreativa; la pesca comparte el monedero (`pesca.<sitio>`).

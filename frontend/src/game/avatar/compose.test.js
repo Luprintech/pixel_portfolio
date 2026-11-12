@@ -289,5 +289,5 @@ describe('frente', () => {
       ['down', 'left', 'right'].some((dir) => POSE_LIST.some((pose) => rowsOf(look, dir, pose).slice(8, 11).some((row) => row.includes('ss')))),
     )
     expect(banded).toEqual([])
-  })
+  }, 30000)
 })

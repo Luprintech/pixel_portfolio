@@ -88,13 +88,13 @@ function startWave(state, wave, events = []) {
   state.clearTimer = 0
   if (wave === BOSS_WAVE) {
     startBoss(state)
-    events.push({ type: 'wave', boss: true })
+    events.push({ type: 'wave', boss: true, wave })
     say(state, 'gBoss')
     return
   }
   const spec = WAVES[wave - 1]
   say(state, spec.name)
-  events.push({ type: 'wave' })
+  events.push({ type: 'wave', wave })
   if (spec.kind === 'rows') {
     state.form = { x: 0, y: 0, dir: 1, total: spec.rows * spec.cols }
     for (let r = 0; r < spec.rows; r++) {

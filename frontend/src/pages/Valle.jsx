@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import Editor from '../components/valle/Editor'
 import Joystick from '../components/valle/Joystick'
 import MusicControl from '../components/valle/MusicControl'
+import NoticeToast from '../components/valle/NoticeToast'
 import AchievementToast from '../components/valle/AchievementToast'
 import ArcadeMachine from '../components/valle/arcade/ArcadeMachine'
 import CustomizeButton from '../components/valle/CustomizeButton'
@@ -40,6 +41,7 @@ import { acquireAmbience, setAmbienceDuck, setAmbienceScene, thunder } from '../
 import { getEngine, startEngineIfAllowed } from '../lib/audioEngine'
 import { playMeow } from '../lib/dialogueSound'
 import { playPetSound } from '../lib/petSounds'
+import { playArcadeSound } from '../lib/arcadeSound'
 import { jukebox } from '../lib/jukebox'
 import { setActivity, startMusicDirector } from '../lib/musicDirector'
 import { playPrintDone, playPrintStep } from '../lib/printerSound'
@@ -55,9 +57,11 @@ const HUD_SIZE = '2.25rem'
 const HUD_BUTTON = 'px-btn px-btn--bone !min-h-[var(--ctl)] !px-3 !py-0 !text-sm'
 
 // Texto del botón de acción según lo que tiene cerca la viajera: el telescopio, la salida de un interior o una puerta.
-function nearLabel(near, copy) {
+function nearLabel(near, copy, story) {
   if (near === 'telescope') return copy.hud.lookSky
   if (near === 'exit') return copy.hud.leave
+  // Un sitio de pesca: con la caña en el inventario se pesca; sin ella, solo se mira el río (y Lupe da una pista).
+  if (near.startsWith('fish:')) return story.items.includes('cana') ? copy.hud.fishing.fish : copy.hud.fishing.look
   const action = copy.hud.actions[near.startsWith('bench:') ? 'bench' : near]
   if (action) return action
   return `${copy.hud.enter}: ${copy.zones[near]}`
@@ -102,6 +106,8 @@ export default function Valle() {
   // Si la viajera está dentro de una casa, y el bocadillo de reacción de un personaje (o null).
   const [indoors, setIndoors] = useState(false)
   const [reaction, setReaction] = useState(null)
+  // Último aviso de pesca (`{ id, event }`): el texto se arma al pintarlo para que siga el idioma.
+  const [fishNotice, setFishNotice] = useState(null)
   // El ordenador de Lupe minimizado deja de bloquear el juego.
   const [pcMinimized, setPcMinimized] = useState(false)
   // Límites del zoom que publica la escena; hasta que existe, ambos botones valen.
@@ -190,6 +196,9 @@ export default function Valle() {
         instance.events.on('enter', setZone)
         instance.registry.events.on('changedata-story', (_parent, value) => setStory(value))
         instance.events.on('talk', setDialogue)
+        // Pesca: avisos de cada lance y sus sonidos (con una actividad abierta no suena nada).
+        instance.events.on('fish-notice', (event) => setFishNotice({ id: Date.now(), event }))
+        instance.events.on('fish-sound', (type) => !activeZone.current && playArcadeSound(getEngine() ?? startEngineIfAllowed(), type))
         // Con una actividad abierta (ordenador, recreativa...) la casa calla: ni maullidos ni impresora compiten con ella.
         instance.events.on('meow', (variant) => !activeZone.current && playMeow(getEngine() ?? startEngineIfAllowed(), variant))
         instance.events.on('indoors', setIndoors)
@@ -379,6 +388,19 @@ export default function Valle() {
     setReaction(null)
     game?.events.emit('bubble-closed')
   }, [game])
+  // Los avisos de pesca desaparecen solos a los pocos segundos.
+  useEffect(() => {
+    if (!fishNotice) return undefined
+    const timer = setTimeout(() => setFishNotice(null), 3200)
+    return () => clearTimeout(timer)
+  }, [fishNotice])
+  const fishText = useMemo(() => {
+    if (!fishNotice) return null
+    const { kind, id } = fishNotice.event
+    const text = copy.hud.fishing
+    if (kind === 'catch' || kind === 'junk') return `${text[kind]} ${text.items[id]}`
+    return text[kind] ?? null
+  }, [fishNotice, copy])
   const reactionText = reaction ? copy.bubbles[reaction.key][reaction.id % copy.bubbles[reaction.key].length] : null
   // Un guion puede acabar abriendo algo (el ordenador de Lupe abre su escritorio retro).
   // Las acciones `tour-*` son de la visita guiada de Lupe: las atiende el valle (`game/npc/ValleNpcs.js`) o, dentro de la casa, su visita
@@ -500,6 +522,7 @@ export default function Valle() {
         )}
 
         {!editing && <SaveToast message={toast} style={hudStyle} />}
+        {!editing && fishText && <NoticeToast message={{ id: fishNotice.id, text: fishText }} style={hudStyle} />}
         {!editing && <AchievementToast toast={achievements.toast} copy={copy} style={hudStyle} />}
 
         {/* En pantallas táctiles el aviso sube por encima del joystick y del botón A (ver `Joystick.jsx`), dentro del área segura,
@@ -511,7 +534,7 @@ export default function Valle() {
             role="status"
           >
             <button type="button" className="px-btn !h-auto !whitespace-normal !text-center" onClick={() => game?.events.emit('action')}>
-              {`${touch ? '' : 'E · '}${nearLabel(near, copy)}`}
+              {`${touch ? '' : 'E · '}${nearLabel(near, copy, story)}`}
             </button>
           </div>
         )}

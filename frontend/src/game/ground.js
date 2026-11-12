@@ -116,10 +116,11 @@ function waterColor(x, y, depth) {
   return depth < 9 ? W1 : W0
 }
 
-// `roads`, `plaza` y `water` son conjuntos de teselas con claves "x,y".
+// `roads` y `plaza` son conjuntos de teselas con claves "x,y". El agua llega como `waterField(x, y)`: la distancia con signo (px, positiva
+// dentro) al borde del río, que es una curva suave y no cabe en teselas (ver `river.js`); sin ella, `water` es un conjunto de teselas.
 // Es un generador que cede el control cada pocas filas (ver sliced.js): pintar más de un millón de píxeles de
 // una vez congela un móvil. `paintGround` lo termina de golpe.
-export function* paintGroundSteps(ctx, { cols, rows, tile, roads, plaza, water }) {
+export function* paintGroundSteps(ctx, { cols, rows, tile, roads, plaza, water = new Set(), waterField = null }) {
   const width = cols * tile
   const height = rows * tile
   const roadRegion = region(cols, rows, roads)
@@ -130,7 +131,7 @@ export function* paintGroundSteps(ctx, { cols, rows, tile, roads, plaza, water }
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const wobble = (noise(x, y, 6, 11) - 0.5) * 3.2
-      const sdLake = signedDistance(x, y, tile, waterRegion) + wobble
+      const sdLake = (waterField ? waterField(x + 0.5, y + 0.5) : signedDistance(x, y, tile, waterRegion)) + wobble
       if (sdLake > 0) {
         dot(ctx, x, y, waterColor(x, y, sdLake))
         continue

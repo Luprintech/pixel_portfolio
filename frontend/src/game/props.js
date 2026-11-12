@@ -4,6 +4,7 @@
 import { PAL, TONE } from './palette.js'
 import { dot, ellipse, makeCanvas, outline, rect } from './pixelKit.js'
 import { drawText, textWidth } from './pixelFont.js'
+import { fishPost, lily, plankBridge, reeds, rod, romanBridge } from './riverSprites.js'
 
 const [WOOD0, WOOD1, WOOD2, WOOD3] = TONE.wood
 const [STONE0, STONE1, STONE2] = TONE.stone
@@ -327,27 +328,9 @@ function fence() {
   return { canvas: done(s), body: [{ l: -16, t: -10, r: 16, b: -1 }] }
 }
 
-// Puente de tablones sobre el arroyo: tablas en horizontal con barandilla a los dos lados.
-export function bridgeSprite(widthTiles, heightTiles) {
-  const w = widthTiles * 16
-  const h = heightTiles * 16 + 12
-  const s = sprite(w, h)
-  const { g } = s
-  rect(g, 0, 10, w, h - 20, WOOD2)
-  for (let x = 0; x < w; x += 5) {
-    rect(g, x, 10, 1, h - 20, WOOD0)
-    rect(g, x + 1, 10, 3, h - 20, x % 10 ? WOOD2 : WOOD3)
-  }
-  ;[2, h - 10].forEach((y) => {
-    rect(g, 0, y, w, 3, WOOD1)
-    rect(g, 0, y, w, 1, WOOD3)
-    for (let x = 4; x < w; x += 16) rect(g, x, y - 5, 3, 9, WOOD0)
-  })
-  return done(s)
-}
-
 export const PROP_KINDS = {
   fountain, noticeboard, postbox, arch, welcomeSign, busStop, bus, towTruck, pool, statue, easel, bench, lamp, rocks, umbrella, fence,
+  romanBridge, plankBridge, lily, reeds, fishPost, rod,
 }
 
 // Cada objeto se dibuja una sola vez por variante: devuelve `{ canvas, body, glow? }`.

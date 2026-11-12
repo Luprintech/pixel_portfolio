@@ -114,6 +114,12 @@ function drawPlayer(g, sprites, state, time) {
   // Sin espada conseguida (o con ella en el aire) la viajera va con las manos libres: `heroSwing` es el dibujo sin hoja.
   const set = player.swing > 0 || !player.sword ? sprites.heroSwing : sprites.hero
   g.drawImage(set[player.dir][step], px(player.x - 8), HUD + px(player.y - 11))
+  if (player.guard) {
+    // El escudo en alto va delante de ella, en el lado al que mira; si mira hacia arriba queda detrás del cuerpo.
+    const shield = sprites.guard[player.dir]
+    const offset = { up: [0, -10], down: [0, 8], left: [-9, 0], right: [9, 0] }[player.dir]
+    g.drawImage(shield, px(player.x + offset[0] - shield.width / 2), HUD + px(player.y + offset[1] - shield.height / 2 + 1))
+  }
   if (player.swing > 0) {
     const box = swordBox(player)
     const blade = sprites.blade[player.dir]

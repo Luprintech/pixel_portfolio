@@ -3,6 +3,7 @@
 // la caja de diálogo también están aquí.
 
 import { GRAN_COPY } from './granCopy.js'
+import { SPOTS_COPY } from './valleSpotsCopy.js'
 import { TOUR_COPY } from './tourCopy.js'
 
 export const DIALOGUE_COPY = {
@@ -19,6 +20,7 @@ export const DIALOGUE_COPY = {
     lines: {
       ...TOUR_COPY.es.lines,
       ...GRAN_COPY.es.lines,
+      ...SPOTS_COPY.es.lines,
       // Llegada al valle (`docs/DIALOGOS.md`, sección 3). Las líneas 1 y 3 de la bienvenida, el maullido y `inicio.regreso` son del
       // guion aprobado; el resto son borradores nuevos (`docs/DIALOGOS.md`, "Borradores nuevos de la bienvenida"), pendientes de revisión.
       'inicio.bienvenida.1': '¡Hola, {name}! Soy Lupe, te doy la bienvenida al Valle del Bucle: mi portfolio con caminos, casas y alguna distracción con bigotes.',
@@ -151,6 +153,7 @@ export const DIALOGUE_COPY = {
     lines: {
       ...TOUR_COPY.en.lines,
       ...GRAN_COPY.en.lines,
+      ...SPOTS_COPY.en.lines,
       // Arriving in the valley (`docs/DIALOGOS.md`, section 3). Welcome lines 1 and 3, the meow and `inicio.regreso` come from the
       // approved script; the rest are new drafts awaiting review.
       'inicio.bienvenida.1': 'Hi, {name}! I\'m Lupe, welcome to Valle del Bucle: my portfolio with paths, houses and the odd whiskered distraction.',

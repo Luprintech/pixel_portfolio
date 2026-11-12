@@ -3,6 +3,7 @@
 import { upgradeLook } from './look.js'
 import { DEFAULT_PET, upgradePet } from './pet.js'
 import { clearScores } from './arcade/scores.js'
+import { clearWallet } from './arcade/wallet.js'
 import { clearAchievements } from './achievements.js'
 import { clearSeen } from './dialogue/seen.js'
 import { sanitizeWorld } from './worldSave.js'
@@ -84,4 +85,6 @@ export function clearSave() {
   clearAchievements()
   // Las mejores puntuaciones de la recreativa también son de la partida.
   clearScores()
+  // Y también las monedas: borrar la partida devuelve a la viajera sus seis monedas iniciales.
+  clearWallet()
 }

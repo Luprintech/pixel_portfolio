@@ -138,7 +138,7 @@ describe('partida guardada', () => {
   })
 
   it('guarda la historia y la recupera; una visita en curso vuelve como pendiente', () => {
-    const story = { welcome: 'done', tour: 'accepted', stops: ['entrada', 'impresoras'], heard: ['inicio.bienvenida'], explained: ['dedicas'] }
+    const story = { welcome: 'done', tour: 'accepted', stops: ['entrada', 'impresoras'], heard: ['inicio.bienvenida'], explained: ['dedicas'], items: [], catches: {} }
     writeSave({ name: 'Lupe', look: DEFAULT_LOOK, story })
     expect(loadSave().story).toEqual({ ...story, tour: 'pending' })
     writeSave({ name: 'Lupe', look: DEFAULT_LOOK, story: { ...story, tour: 'completed' } })
@@ -146,7 +146,7 @@ describe('partida guardada', () => {
   })
 
   it('las paradas de la visita guiada se guardan y se recuperan tal cual, aunque la visita estuviera en curso', () => {
-    const story = { welcome: 'done', tour: 'accepted', stops: ['entrada', 'impresoras', 'atreus'], heard: [], explained: [] }
+    const story = { welcome: 'done', tour: 'accepted', stops: ['entrada', 'impresoras', 'atreus'], heard: [], explained: [], items: [], catches: {} }
     writeSave({ name: 'Lupe', look: DEFAULT_LOOK, story })
     expect(loadSave().story).toEqual({ ...story, tour: 'pending' })
   })

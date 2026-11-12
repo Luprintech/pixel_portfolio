@@ -2,6 +2,8 @@
 // Parte de la lámina de referencia `img/valle/referencia valle del bucle.png`, a escala 0,052 (80×54
 // teselas) y con los edificios a la mitad de su tamaño en la lámina, para que quepan varios en pantalla.
 import { seeded } from './palette.js'
+import { riverTiles } from './river.js'
+import { ROD_SPOT, riverProps } from './riverPlaces.js'
 
 export const TILE = 16
 export const COLS = 80
@@ -17,10 +19,11 @@ export const ARRIVAL = { x: 600, y: 836, stopY: 780 }
 // lleva a ningún contenido (interiores y diálogos llegan en fases posteriores). `terrace` marca el edificio
 // cuya escalera y cubierta se pisan (ver `terrace.js`).
 export const BUILDINGS = [
-  // Norte: formación.
-  { id: 'cervantes', kind: 'school', x: 18, y: 4, w: 12, h: 8, door: { x: 23 } },
+  // Norte: formación. La Universidad ocupa el sitio donde estaba el colegio Cervantes (misma puerta, en la tesela 23).
+  { id: 'universidad', kind: 'university', x: 16, y: 4, w: 15, h: 8, door: { x: 23 } },
   { id: 'artes', kind: 'gallery', x: 31, y: 6, w: 10, h: 6, door: { x: 36 } },
-  { id: 'universidad', kind: 'university', x: 42, y: 3, w: 15, h: 8, door: { x: 49 } },
+  // Mezquita-Catedral de Córdoba, homenaje a la ciudad de Lupe. No tiene interior: la puerta (`talk`) abre una conversación con Lupe.
+  { id: 'mezquita', kind: 'mosque', x: 42, y: 3, w: 15, h: 8, door: { x: 49 }, talk: 'valle.mezquita' },
   // IES Gran Capitán, nodo de la formación en DAW. Conserva el id `daw` (puerta, interior, guardado y textos) del antiguo laboratorio.
   { id: 'daw', kind: 'institute', x: 20, y: 14, w: 10, h: 5, door: { x: 25 } },
   // Noreste: proyectos y lectura.
@@ -43,7 +46,7 @@ export const BUILDINGS = [
 
 // Objetos sueltos: `at` es el punto de apoyo (centro de la base) en teselas, con decimales, y `zone` la
 // puerta que lleva a un panel. El tamaño del cuerpo sólido lo da `PROP_BODY` en ValleScene.
-export const PROPS = [
+const FIXED_PROPS = [
   { kind: 'fountain', at: [37, 29.2] },
   { kind: 'noticeboard', at: [33.5, 31.6] },
   { kind: 'postbox', at: [47.5, 24.2], zone: 'contact', door: { x: 47, y: 24 } },
@@ -75,8 +78,11 @@ export const PROPS = [
   { kind: 'lamp', at: [39, 47.2] },
   { kind: 'lamp', at: [48.2, 21] },
   { kind: 'lamp', at: [20.5, 26.8] },
-  { kind: 'rocks', at: [75.5, 47.6] },
-  { kind: 'rocks', at: [78, 45.6] },
+  { kind: 'rocks', at: [60.5, 47] },
+  { kind: 'rocks', at: [77, 49] },
+  // Pasarelas del río: el puente romano y el de tablones, planos (se pisan por encima).
+  { kind: 'romanBridge', at: [52.5, 32.75] },
+  { kind: 'plankBridge', at: [58, 38.375] },
   { kind: 'umbrella', at: [4.6, 17.4] },
   { kind: 'umbrella', at: [11.2, 17.4] },
   ...Array.from({ length: 16 }, (_, i) => ({ kind: 'fence', at: [3 + i * 2, 50.4] })).filter((p) => p.at[0] < 34),
@@ -88,7 +94,7 @@ export const PROPS = [
 const ROADS = [
   // Eje norte-sur desde la entrada hasta la plaza y, más allá, hasta Artes.
   { from: [36, 12], to: [36, 50], w: 2 },
-  // Norte: de Cervantes a Artes y hacia la piscina.
+  // Norte: de la Universidad a Artes y hacia la piscina.
   { from: [16, 12], to: [37, 12], w: 2 },
   { from: [16, 12], to: [16, 28], w: 1 },
   { from: [25, 19], to: [37, 19], w: 2 },
@@ -101,8 +107,10 @@ const ROADS = [
   { from: [36, 15], to: [76, 15], w: 2 },
   { from: [64, 15], to: [64, 15], w: 1 },
   { from: [73, 15], to: [73, 15], w: 1 },
-  // Este: puente, amistades, música y familia.
+  // Este: puente romano, amistades, música y familia.
   { from: [44, 28], to: [76, 28], w: 2 },
+  // Segundo cruce, más sencillo, entre la parada del autobús y las casitas de la familia.
+  { from: [38, 36], to: [52, 36], w: 2 },
   { from: [63, 26], to: [63, 28], w: 1 },
   { from: [75, 23], to: [75, 28], w: 1 },
   // Entre las dos casitas baja un ramal hasta el camino que une sus puertas.
@@ -116,11 +124,12 @@ const ROADS = [
   { from: [13, 14], to: [13, 14], w: 1 },
 ]
 
-// Arroyo del este, de norte a sur y luego hacia el este: puntos por los que pasa, siempre de dos teselas.
-const STREAM = [[57, 18], [54, 22], [52, 25], [51, 30], [55, 35], [60, 40], [64, 43], [70, 45], [77, 46]]
-
-// Puente donde el camino del este cruza el arroyo: sus teselas se pueden pisar aunque sean agua.
-export const BRIDGE = { x: 50, y: 28, w: 5, h: 2 }
+// Pasarelas sobre el río (su forma está en `river.js`): rectángulos de teselas que se pisan aunque sean agua. El primero es el puente
+// romano, donde el camino del este cruza el río; el segundo, un puente de tablones más sencillo entre la parada del autobús y las casitas.
+export const BRIDGES = [
+  { id: 'romano', x: 48, y: 28, w: 9, h: 2 },
+  { id: 'tablones', x: 52, y: 36, w: 12, h: 2 },
+]
 
 // Plaza empedrada alrededor de la fuente: una elipse de teselas.
 const PLAZA_CENTER = { x: 37, y: 27.5, rx: 9.5, ry: 5.5 }
@@ -152,20 +161,33 @@ export function roadTiles() {
   return set
 }
 
+// Objetos del valle: los fijos de arriba y el decorado del río (nenúfares, juncos, postes de pesca y la caña olvidada), que sale de la
+// forma del río. Los juncos y los nenúfares evitan caminos, plaza, edificios y la cercanía de los puentes.
+const onBuilding = (x, y) => BUILDINGS.some((b) => x >= b.x - 1 && x < b.x + b.w + 1 && y >= b.y - 1 && y < b.y + b.h + 1)
+const nearBridge = (x, y, margin) => BRIDGES.some((bridge) => x >= bridge.x - margin && x < bridge.x + bridge.w + margin && y >= bridge.y - margin && y < bridge.y + bridge.h + margin)
+const flatGround = { roads: roadTiles(), plaza: plazaTiles() }
+export const PROPS = [
+  ...FIXED_PROPS,
+  ...riverProps(
+    (x, y) => !flatGround.roads.has(`${x},${y}`) && !flatGround.plaza.has(`${x},${y}`) && !onBuilding(x, y) && !nearBridge(x, y, 2),
+    (x, y, radius) => nearBridge(x, y, radius) || Math.hypot(x - ROD_SPOT.at[0], y - ROD_SPOT.at[1]) < 3,
+  ),
+]
+
+// El agua se calcula una sola vez: es la misma para el suelo, las colisiones y los árboles.
+let waterCache = null
+
 export function waterTiles() {
-  const set = new Set()
-  STREAM.slice(0, -1).forEach(([x1, y1], i) => {
-    const [x2, y2] = STREAM[i + 1]
-    const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) * 2
-    for (let s = 0; s <= steps; s++) stamp(set, Math.round(x1 + ((x2 - x1) * s) / steps), Math.round(y1 + ((y2 - y1) * s) / steps), 2)
-  })
-  return set
+  waterCache ??= riverTiles(COLS, ROWS)
+  return new Set(waterCache)
 }
 
-// Teselas de agua por las que no se puede andar: todas menos las del puente.
+// Teselas de agua por las que no se puede andar: todas menos las de las pasarelas.
 export function blockedWaterTiles() {
   const set = waterTiles()
-  for (let y = BRIDGE.y; y < BRIDGE.y + BRIDGE.h; y++) for (let x = BRIDGE.x; x < BRIDGE.x + BRIDGE.w; x++) set.delete(`${x},${y}`)
+  BRIDGES.forEach((bridge) => {
+    for (let y = bridge.y; y < bridge.y + bridge.h; y++) for (let x = bridge.x; x < bridge.x + bridge.w; x++) set.delete(`${x},${y}`)
+  })
   return set
 }
 
@@ -197,7 +219,8 @@ export function treePositions() {
   // Variantes: 0 y 1 son verdes; 2 es un cerezo en flor.
   const add = (x, y, blossom = false) => {
     const key = `${x},${y}`
-    if (used.has(key)) return
+    // El río sale del mapa por el este: los árboles del borde no se plantan en el agua.
+    if (used.has(key) || water.has(key)) return
     used.add(key)
     trees.push({ x, y, variant: blossom ? 2 : rand() > 0.5 ? 1 : 0 })
   }

@@ -3,14 +3,14 @@ import { TOUR_STOPS, completeStop, initialStory, newTalkFor, nextStop, reachNode
 
 describe('memoria de la historia', () => {
   it('una partida nueva empieza con la bienvenida pendiente y sin visita', () => {
-    expect(initialStory()).toEqual({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: [] })
+    expect(initialStory()).toEqual({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: [], items: [], catches: {} })
   })
 
   it('solo acepta lo que tiene forma de historia', () => {
     expect(sanitizeStory(null)).toBeNull()
     expect(sanitizeStory('x')).toBeNull()
-    expect(sanitizeStory({ welcome: 'otra', tour: 'flotando', heard: 'no', explained: [3, 'ok', '<b>'] })).toEqual({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: ['ok'] })
-    expect(sanitizeStory({ welcome: 'done', tour: 'completed', heard: ['a.b', 'a.b'], explained: [] })).toEqual({ welcome: 'done', tour: 'completed', stops: TOUR_STOPS, heard: ['a.b'], explained: [] })
+    expect(sanitizeStory({ welcome: 'otra', tour: 'flotando', heard: 'no', explained: [3, 'ok', '<b>'] })).toEqual({ welcome: 'pending', tour: 'none', stops: [], heard: [], explained: ['ok'], items: [], catches: {} })
+    expect(sanitizeStory({ welcome: 'done', tour: 'completed', heard: ['a.b', 'a.b'], explained: [] })).toEqual({ welcome: 'done', tour: 'completed', stops: TOUR_STOPS, heard: ['a.b'], explained: [], items: [], catches: {} })
   })
 
   it('acota la lista de conversaciones', () => {

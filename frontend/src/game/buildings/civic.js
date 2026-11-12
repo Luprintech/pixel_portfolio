@@ -1,4 +1,4 @@
-// Edificios de formación y lectura: colegio con torre del reloj, galería de artes con mural, universidad
+// Edificios de formación y lectura: galería de artes con mural, universidad
 // con arcadas y cúpula, instituto de DAW (IES Gran Capitán) con pórtico y parabólica, y biblioteca con el libro abierto sobre la puerta.
 import { PAL, TONE } from '../palette.js'
 import { dot, ellipse, hash2, rect } from '../pixelKit.js'
@@ -6,36 +6,6 @@ import { drawText, textWidth } from '../pixelFont.js'
 import { STONE0, STONE1, STONE2, WALL0, WALL1, WALL2, WOOD0, WOOD1, WOOD2, arcade, doorAt, finish, hipRoof, iconAt, newSprite, signBoard, wall, windowAt } from './shared.js'
 
 const SLATE = '#6b5b95'
-
-// Colegio: cuerpo central alto con torre y reloj, y dos alas bajas con jardineras.
-export function schoolSprite() {
-  const s = newSprite(192, 128)
-  const { g } = s
-  ;[4, 124].forEach((x) => {
-    wall(g, { x, y: 84, w: 64, h: 44 })
-    hipRoof(g, { x: x - 4, y: 62, w: 72, rows: 5, color: SLATE })
-  })
-  wall(g, { x: 52, y: 60, w: 88, h: 68 })
-  hipRoof(g, { x: 46, y: 36, w: 100, rows: 6, color: SLATE })
-  // Torre del reloj.
-  wall(g, { x: 84, y: 14, w: 24, h: 26, post: false })
-  hipRoof(g, { x: 80, y: 3, w: 32, rows: 4, color: '#8a74b4', inset: 3 })
-  ellipse(g, 96, 27, 8, 8, WOOD1)
-  ellipse(g, 96, 27, 6.5, 6.5, '#f6f0e0')
-  rect(g, 96, 22, 1, 6, WOOD0)
-  rect(g, 96, 27, 4, 1, WOOD0)
-  for (const [dx, dy] of [[0, -6], [6, 0], [0, 6], [-6, 0]]) dot(g, 96 + dx, 27 + dy, WOOD0)
-  rect(g, 96, 0, 1, 4, WOOD0)
-  rect(g, 97, 0, 5, 3, PAL.tile)
-  // Ventanas: dos pisos en el cuerpo central, una por ala con jardinera.
-  ;[62, 76, 112, 126].forEach((x) => {
-    windowAt(s, x, 68, 10, 14)
-    windowAt(s, x, 96, 10, 14)
-  })
-  ;[14, 44, 134, 164].forEach((x) => windowAt(s, x, 96, 10, 14, { shutters: PAL.teal, flowers: true }))
-  doorAt(s, 89, 125, { w: 14, h: 24 })
-  return finish(s)
-}
 
 // Galería de artes: sala baja con un mural de remolino de colores, puerta doble y ventanales.
 export function gallerySprite() {
