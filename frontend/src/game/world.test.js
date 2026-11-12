@@ -65,10 +65,10 @@ describe('mapa del valle', () => {
     PROPS.filter((p) => p.zone).forEach((p) => expect(seen.has(`${p.door.x},${p.door.y}`)).toBe(true))
   })
 
-  it('hay dos puentes y cada uno cruza el río de orilla a orilla, con tierra firme a los dos lados', () => {
+  it('hay tres puentes y cada uno cruza el río de orilla a orilla, con tierra firme a los dos lados', () => {
     const water = waterTiles()
     const walkable = blockedWaterTiles()
-    expect(BRIDGES.length).toBe(2)
+    expect(BRIDGES.length).toBe(3)
     BRIDGES.forEach((bridge) => {
       // Cada fila de la calzada tiene agua en medio, que solo se pisa gracias al puente, y tierra en los dos extremos.
       for (let y = bridge.y; y < bridge.y + bridge.h; y++) {
@@ -82,17 +82,34 @@ describe('mapa del valle', () => {
 
   it('el río es un cauce continuo de entre tres y seis teselas, sin cortes ni estrechamientos bruscos', () => {
     const water = waterTiles()
-    // Por columnas, la anchura de cada tramo: se mide en la dirección en la que el río es más vertical y en la más horizontal.
+    // Por filas, la anchura de cada tramo, desde que el afluente se ha unido al río (justo encima del puente romano) hasta la salida.
     const widths = []
-    for (let y = 18; y < 45; y++) {
+    for (let y = 29; y < 45; y++) {
       let run = 0
       for (let x = 40; x < 70; x++) if (water.has(`${x},${y}`)) run += 1
       widths.push(run)
     }
-    widths.forEach((run, i) => expect(run, `fila ${18 + i}`).toBeGreaterThan(0))
+    widths.forEach((run, i) => expect(run, `fila ${29 + i}`).toBeGreaterThan(0))
     const steps = widths.slice(1).map((run, i) => Math.abs(run - widths[i]))
     expect(Math.max(...steps)).toBeLessThanOrEqual(4)
     expect(Math.max(...widths)).toBeLessThanOrEqual(12)
+  })
+
+  it('el río baja del borde norte entre Artes y la Casa del Encuentro, sin cortes, y se une al río', () => {
+    const water = waterTiles()
+    const artes = BUILDINGS.find((b) => b.id === 'artes')
+    const mosque = BUILDINGS.find((b) => b.id === 'encuentro')
+    for (let y = 3; y <= 16; y++) {
+      const xs = [...Array(mosque.x - artes.x)].map((_, i) => artes.x + i).filter((x) => water.has(`${x},${y}`))
+      expect(xs.length, `fila ${y}`).toBeGreaterThan(0)
+      // El agua queda entre los dos edificios, sin pisar a ninguno y con tierra a los dos lados.
+      expect(Math.min(...xs), `fila ${y}`).toBeGreaterThan(artes.x + artes.w)
+      expect(Math.max(...xs), `fila ${y}`).toBeLessThan(mosque.x - 1)
+    }
+    // Se hace hilo al llegar al borde y no sale por él: las filas 0 y 1 son de árboles, no de agua.
+    for (let x = 0; x < COLS; x++) expect(water.has(`${x},0`) || water.has(`${x},1`), `columna ${x}`).toBe(false)
+    // Y desemboca en el río principal: hay agua continua hasta tocarlo, junto al puente romano.
+    expect([...Array(8)].some((_, i) => water.has(`${52},${24 + i}`))).toBe(true)
   })
 
   it('Cervantes ya no está y la Universidad ocupa su sitio, con su misma puerta', () => {
@@ -102,9 +119,36 @@ describe('mapa del valle', () => {
     expect(university).toMatchObject({ x: 16, y: 4, door: { x: 23, y: 12 } })
   })
 
-  it('la Mezquita está donde estaba la Universidad, sin interior, y su puerta abre la conversación con Lupe', () => {
+  it('la Mezquita está junto al puente romano, sin interior, y su puerta abre la conversación con Lupe', () => {
     const mosque = BUILDINGS.find((b) => b.id === 'mezquita')
-    expect(mosque).toMatchObject({ kind: 'mosque', x: 42, y: 3, talk: 'valle.mezquita' })
+    expect(mosque).toMatchObject({ kind: 'mosque', x: 58, y: 17, w: 17, h: 11, door: { x: 66, y: 28 }, talk: 'valle.mezquita' })
+  })
+
+  it('el taller de proyectos y la Casa de la Música ya no están en el mapa', () => {
+    expect(BUILDINGS.some((b) => b.id === 'projects' || b.kind === 'workshop')).toBe(false)
+    expect(BUILDINGS.some((b) => b.id === 'musica' || b.kind === 'music')).toBe(false)
+  })
+
+  it('la Casa del Encuentro ocupa la parcela que tuvo la Mezquita, con la puerta sobre el camino del norte', () => {
+    const house = BUILDINGS.find((b) => b.id === 'encuentro')
+    expect(house).toMatchObject({ kind: 'friends', x: 52, y: 7, w: 8, h: 8, door: { x: 55, y: 15 } })
+  })
+
+  it('el solar de la Casa de la Música queda limpio: ni camino ni edificio, y con árboles de relleno', () => {
+    const roads = roadTiles()
+    for (let y = 17; y < 28; y++) expect(roads.has(`75,${y}`), `camino en 75,${y}`).toBe(false)
+    const filler = treePositions().filter((t) => t.x >= 75 && t.x <= 78 && t.y >= 17 && t.y <= 27)
+    expect(filler.length).toBeGreaterThan(0)
+  })
+
+  it('ante la Mezquita no quedan las columnas de la Universidad y hay un naranjo a cada lado de la puerta', () => {
+    expect(PROPS.some((p) => p.kind === 'statue')).toBe(false)
+    const mosque = BUILDINGS.find((b) => b.id === 'mezquita')
+    const trees = PROPS.filter((p) => p.kind === 'orangeTree').map((p) => p.at[0])
+    const centre = mosque.door.x + 0.5
+    expect(trees).toHaveLength(2)
+    expect(trees[0] - centre).toBeCloseTo(centre - trees[1], 5)
+    expect(trees[1] - centre).toBeGreaterThan(2)
   })
 
   it('los puntos de pesca están en tierra firme, junto al agua y a los que se llega andando, y la caña también', () => {

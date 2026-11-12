@@ -4,7 +4,7 @@ import { tone } from '../../lib/tone'
 import { useValleCopy } from '../../lib/valleCopy'
 import { panelStyle } from './panelStyle'
 import DawSheet from './DawSheet'
-import { AboutBlock, ContactBlock, PostsBlock, ProjectsBlock, StackBlock } from './Content'
+import { AboutBlock, ContactBlock, PostsBlock, StackBlock } from './Content'
 
 // Panel con el contenido de cada zona. Mismo contenido que el modo clásico.
 export default function ZonePanel({ zone, onClose }) {
@@ -22,7 +22,6 @@ export default function ZonePanel({ zone, onClose }) {
 
   const body = {
     about: <AboutBlock />,
-    projects: <ProjectsBlock limit={3} />,
     contact: <ContactBlock />,
     blog: <PostsBlock limit={3} />,
     stack: <StackBlock />,

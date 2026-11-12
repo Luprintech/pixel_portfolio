@@ -2,7 +2,7 @@
 // Parte de la lámina de referencia `img/valle/referencia valle del bucle.png`, a escala 0,052 (80×54
 // teselas) y con los edificios a la mitad de su tamaño en la lámina, para que quepan varios en pantalla.
 import { seeded } from './palette.js'
-import { riverTiles } from './river.js'
+import { legacyRiverTiles, riverTiles } from './river.js'
 import { ROD_SPOT, riverProps } from './riverPlaces.js'
 
 export const TILE = 16
@@ -23,18 +23,16 @@ export const BUILDINGS = [
   { id: 'universidad', kind: 'university', x: 16, y: 4, w: 15, h: 8, door: { x: 23 } },
   { id: 'artes', kind: 'gallery', x: 31, y: 6, w: 10, h: 6, door: { x: 36 } },
   // Mezquita-Catedral de Córdoba, homenaje a la ciudad de Lupe. No tiene interior: la puerta (`talk`) abre una conversación con Lupe.
-  { id: 'mezquita', kind: 'mosque', x: 42, y: 3, w: 15, h: 8, door: { x: 49 }, talk: 'valle.mezquita' },
+  { id: 'mezquita', kind: 'mosque', x: 58, y: 17, w: 17, h: 11, door: { x: 66 }, talk: 'valle.mezquita' },
   // IES Gran Capitán, nodo de la formación en DAW. Conserva el id `daw` (puerta, interior, guardado y textos) del antiguo laboratorio.
   { id: 'daw', kind: 'institute', x: 20, y: 14, w: 10, h: 5, door: { x: 25 } },
-  // Noreste: proyectos y lectura.
-  { id: 'projects', kind: 'workshop', x: 60, y: 8, w: 9, h: 7, door: { x: 64 }, zone: 'projects' },
+  // Noreste: lectura.
   { id: 'blog', kind: 'library', x: 69, y: 7, w: 9, h: 8, door: { x: 73 }, zone: 'blog' },
   // Oeste: trabajo.
   { id: 'mihrab', kind: 'bar', x: 2, y: 19, w: 14, h: 8, door: { x: 9 } },
   { id: 'copos', kind: 'shop', x: 17, y: 21, w: 11, h: 6, door: { x: 23 } },
-  // Este: amistades, música y familia.
-  { id: 'encuentro', kind: 'friends', x: 60, y: 18, w: 8, h: 8, door: { x: 63 } },
-  { id: 'musica', kind: 'music', x: 72, y: 17, w: 7, h: 6, door: { x: 75 } },
+  // Este: familia (y, junto al puente romano, la Mezquita).
+  { id: 'encuentro', kind: 'friends', x: 52, y: 7, w: 8, h: 8, door: { x: 55 } },
   { id: 'casaHermanos', kind: 'cottage', x: 60, y: 31, w: 7, h: 5, door: { x: 63 }, variant: 0 },
   { id: 'casaPadres', kind: 'cottage', x: 72, y: 31, w: 7, h: 5, door: { x: 75 }, variant: 1 },
   // Sur: la casa de Lupe, en el hueco junto a la entrada, y asistencia en carretera.
@@ -58,8 +56,9 @@ const FIXED_PROPS = [
   { kind: 'bus', at: [48, 35.4] },
   { kind: 'towTruck', at: [58.6, 44.6] },
   { kind: 'pool', at: [8, 15.5] },
-  { kind: 'statue', at: [45, 13.6], variant: 0 },
-  { kind: 'statue', at: [54, 13.6], variant: 1 },
+  // Naranjos a los lados de la puerta de la Mezquita (centro de la puerta: 66,5). Apoyan en la base del muro: la puerta cae sobre el camino.
+  { kind: 'orangeTree', at: [63.8, 28] },
+  { kind: 'orangeTree', at: [69.2, 28] },
   { kind: 'easel', at: [33.5, 12.6] },
   { kind: 'easel', at: [39.5, 12.6] },
   { kind: 'bench', at: [32.5, 24.4] },
@@ -76,13 +75,15 @@ const FIXED_PROPS = [
   { kind: 'lamp', at: [40.2, 33.6] },
   { kind: 'lamp', at: [35.4, 47.2] },
   { kind: 'lamp', at: [39, 47.2] },
-  { kind: 'lamp', at: [48.2, 21] },
+  { kind: 'lamp', at: [48.4, 19.8] },
   { kind: 'lamp', at: [20.5, 26.8] },
   { kind: 'rocks', at: [60.5, 47] },
   { kind: 'rocks', at: [77, 49] },
   // Pasarelas del río: el puente romano y el de tablones, planos (se pisan por encima).
   { kind: 'romanBridge', at: [52.5, 32.75] },
   { kind: 'plankBridge', at: [58, 38.375] },
+  // Puentecillo del camino sobre el afluente, entre Artes y la Mezquita.
+  { kind: 'footBridge', at: [44, 17.375] },
   { kind: 'umbrella', at: [4.6, 17.4] },
   { kind: 'umbrella', at: [11.2, 17.4] },
   ...Array.from({ length: 16 }, (_, i) => ({ kind: 'fence', at: [3 + i * 2, 50.4] })).filter((p) => p.at[0] < 34),
@@ -102,17 +103,13 @@ const ROADS = [
   { from: [9, 27], to: [28, 27], w: 2 },
   // Camino del sur: pasa por la puerta de la casa de Lupe y une la entrada con el oeste y la asistencia.
   { from: [15, 44], to: [49, 44], w: 2 },
-  // Norte-este: universidad, proyectos y biblioteca.
-  { from: [49, 11], to: [49, 15], w: 1 },
+  // Norte-este: Casa del Encuentro y biblioteca.
   { from: [36, 15], to: [76, 15], w: 2 },
-  { from: [64, 15], to: [64, 15], w: 1 },
   { from: [73, 15], to: [73, 15], w: 1 },
-  // Este: puente romano, amistades, música y familia.
+  // Este: puente romano, Mezquita y familia.
   { from: [44, 28], to: [76, 28], w: 2 },
   // Segundo cruce, más sencillo, entre la parada del autobús y las casitas de la familia.
   { from: [38, 36], to: [52, 36], w: 2 },
-  { from: [63, 26], to: [63, 28], w: 1 },
-  { from: [75, 23], to: [75, 28], w: 1 },
   // Entre las dos casitas baja un ramal hasta el camino que une sus puertas.
   { from: [69, 28], to: [69, 37], w: 1 },
   { from: [63, 36], to: [75, 37], w: 2 },
@@ -125,10 +122,12 @@ const ROADS = [
 ]
 
 // Pasarelas sobre el río (su forma está en `river.js`): rectángulos de teselas que se pisan aunque sean agua. El primero es el puente
-// romano, donde el camino del este cruza el río; el segundo, un puente de tablones más sencillo entre la parada del autobús y las casitas.
+// romano, donde el camino del este cruza el río; el segundo, un puente de tablones más sencillo entre la parada del autobús y las casitas;
+// el tercero, un puentecillo corto donde el camino del norte cruza el afluente.
 export const BRIDGES = [
   { id: 'romano', x: 48, y: 28, w: 9, h: 2 },
   { id: 'tablones', x: 52, y: 36, w: 12, h: 2 },
+  { id: 'arroyo', x: 41, y: 15, w: 6, h: 2 },
 ]
 
 // Plaza empedrada alrededor de la fuente: una elipse de teselas.
@@ -174,6 +173,15 @@ export const PROPS = [
   ),
 ]
 
+// La siembra de árboles parte del río de antes (`legacyRiverTiles`) y al final se quitan los del interior que pisan el cauce actual o
+// quedan pegados a él (la tesela y las ocho de alrededor, como con el río de antes). Los del borde se quedan: las copas del borde norte
+// son las que tapan el nacimiento del río.
+const onRiverBank = (x, y) => {
+  if (x <= 0 || y <= 1 || x >= COLS - 1 || y >= ROWS - 1) return false
+  const water = waterTiles()
+  return [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => water.has(`${x + dx},${y + dy}`)))
+}
+
 // El agua se calcula una sola vez: es la misma para el suelo, las colisiones y los árboles.
 let waterCache = null
 
@@ -210,8 +218,16 @@ const GROVES = [
 // Árboles: borde del mapa, grupos del interior y algunos sueltos, sin pisar caminos, agua, plaza,
 // edificios (ni el pasillo hasta su puerta) ni objetos.
 export function treePositions() {
+  // La semilla reparte los árboles según lo que estorba, así que cualquier cambio en lo que estorba reordena todo el valle. Se
+  // siembra con los edificios, los ramales de camino y las columnas de antes, y al final se quitan los que pisan lo nuevo (ver
+  // `LEGACY_BUILDINGS`).
   const roads = roadTiles()
-  const water = waterTiles()
+  LEGACY_ROAD_SPURS.forEach(({ x, from, to }) => {
+    for (let y = from; y <= to; y++) roads.add(`${x},${y}`)
+  })
+  const buildings = [...BUILDINGS.filter((b) => !MOVED_BUILDINGS.includes(b.id)), ...LEGACY_BUILDINGS]
+  const props = [...PROPS.filter((p) => p.kind !== 'orangeTree'), ...STATUES_BEFORE]
+  const water = legacyRiverTiles(COLS, ROWS)
   const plaza = plazaTiles()
   const rand = seeded(2024)
   const trees = []
@@ -233,8 +249,8 @@ export function treePositions() {
     [...Array(3).keys()].some((d) => water.has(`${x + d - 1},${y}`) || water.has(`${x + d - 1},${y - 1}`) || water.has(`${x + d - 1},${y + 1}`)) ||
     plaza.has(`${x},${y}`) ||
     plaza.has(`${x},${y - 1}`) ||
-    BUILDINGS.some((b) => inside(b, x, y, 1) || (Math.abs(x - b.door.x) < 2 && y >= b.door.y - 1 && y <= b.door.y + 3)) ||
-    PROPS.some(({ at: [px, py] }) => Math.abs(x - px) < 2.2 && Math.abs(y - py) < 2.4) ||
+    buildings.some((b) => inside(b, x, y, 1) || (Math.abs(x - b.door.x) < 2 && y >= b.door.y - 1 && y <= b.door.y + 3)) ||
+    props.some(({ at: [px, py] }) => Math.abs(x - px) < 2.2 && Math.abs(y - py) < 2.4) ||
     (Math.abs(x - SPAWN.x / TILE) < 3 && Math.abs(y - SPAWN.y / TILE) < 3) ||
     // Entrada del sur: el arco y el hueco de la valla se quedan despejados.
     (x >= 33 && x <= 41 && y >= 44)
@@ -262,7 +278,43 @@ export function treePositions() {
     if (!blocked(x, y)) add(x, y, rand() < 0.2)
   }
   // Se quitan al final y no en `blocked`: así el resto de árboles no se reparte distinto con la misma semilla.
-  return trees.filter((t) => !inStairsApproach(t.x, t.y))
+  return trees.filter((t) => !inStairsApproach(t.x, t.y) && !inMovedClearance(t.x, t.y) && !onRiverBank(t.x, t.y)).concat(MUSIC_SITE_TREES)
+}
+
+// Lo que había antes de recolocar edificios: la Mezquita primera, el taller de proyectos y la Casa de la Música (ya quitados), la Casa
+// del Encuentro y la Mezquita en su sitio de entonces, los ramales de camino que llevaban a sus puertas y las dos columnas de la
+// Universidad que había ante la primera Mezquita. Solo sirven para repartir los árboles igual que antes en el resto del valle (ver
+// `treePositions`); no se dibujan ni chocan.
+const MOVED_BUILDINGS = ['mezquita', 'encuentro']
+const LEGACY_BUILDINGS = [
+  { x: 42, y: 3, w: 15, h: 8, door: { x: 49, y: 11 } },
+  { x: 60, y: 8, w: 9, h: 7, door: { x: 64, y: 15 } },
+  { x: 60, y: 18, w: 8, h: 8, door: { x: 63, y: 26 } },
+  { x: 72, y: 17, w: 7, h: 6, door: { x: 75, y: 23 } },
+]
+const LEGACY_ROAD_SPURS = [
+  { x: 49, from: 11, to: 15 },
+  { x: 63, from: 26, to: 28 },
+  { x: 75, from: 23, to: 28 },
+]
+const STATUES_BEFORE = [{ at: [45, 13.6] }, { at: [54, 13.6] }]
+
+// Árboles de relleno donde estuvo la Casa de la Música: lo que la Mezquita nueva deja libre entre ella y el borde del mapa. Se
+// añaden aparte de la siembra para no reordenarla; son siempre los mismos y evitan caminos, agua y edificios.
+const MUSIC_SITE_TREES = [
+  { x: 76, y: 19, variant: 1 },
+  { x: 77, y: 22, variant: 0 },
+  { x: 76, y: 25, variant: 2 },
+]
+
+// Lo que las dos casas recolocadas dejan libre: su huella con un margen, el pasillo hasta su puerta y la copa de cada naranjo.
+const inMovedClearance = (x, y) => {
+  const moved = BUILDINGS.filter((b) => MOVED_BUILDINGS.includes(b.id))
+  const orangeTrees = PROPS.filter((p) => p.kind === 'orangeTree')
+  return (
+    moved.some((b) => inside(b, x, y, 1) || (Math.abs(x - b.door.x) < 2 && y >= b.door.y - 1 && y <= b.door.y + 3)) ||
+    orangeTrees.some(({ at: [px, py] }) => Math.abs(x - px) < 2.2 && Math.abs(y - py) < 2.4)
+  )
 }
 
 // Acceso a la escalera de la casa y ala de la cubierta: la escalera y la azotea, ensanchada, se dibujan hacia la izquierda

@@ -67,7 +67,6 @@ export const COPY = {
     },
     zones: {
       about: 'Casa de Lupe',
-      projects: 'Taller de Proyectos',
       contact: 'Buzón de Contacto',
       blog: 'Biblioteca de los Logs',
       stack: 'Laboratorio de DAW y Ciber',
@@ -79,7 +78,6 @@ export const COPY = {
       mihrab: 'Mihrab',
       copos: 'Copos',
       encuentro: 'Casa del Encuentro',
-      musica: 'Casa de la Música',
       casaHermanos: 'Casa de los hermanos',
       casaPadres: 'Casa de los padres',
       asistencia: 'Asistencia en carretera',
@@ -451,7 +449,6 @@ export const COPY = {
     },
     zones: {
       about: "Lupe's house",
-      projects: 'Projects workshop',
       contact: 'Contact postbox',
       blog: 'Library of Logs',
       stack: 'DAW and Cyber lab',
@@ -463,7 +460,6 @@ export const COPY = {
       mihrab: 'Mihrab',
       copos: 'Copos',
       encuentro: 'Meeting house',
-      musica: 'Music house',
       casaHermanos: "Siblings' house",
       casaPadres: "Parents' house",
       asistencia: 'Roadside assistance',

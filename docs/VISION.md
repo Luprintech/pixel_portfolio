@@ -126,14 +126,14 @@ El valle tiene una capa **funcional** (dónde se consulta el contenido profesion
 | Taberna del Debug | Tecnologías, herramientas y experiencia. Puede incluir NPC con diálogos breves. No sustituye la información estructurada y accesible |
 | Oficina de Correos | Contacto: reutiliza el sistema de envío y validación existente |
 
-El taller y el buzón siguen siendo propuestas funcionales. La biblioteca/blog se retirará, pero no se borra desde esta sincronización documental: sus rutas, CMS, contenido y edificio todavía existen y requieren una fase técnica propia. **No sustituir ni renombrar automáticamente los lugares autobiográficos ya decididos**.
+El buzón sigue siendo una propuesta funcional. La biblioteca/blog se retirará, pero no se borra desde esta sincronización documental: sus rutas, CMS, contenido y edificio todavía existen y requieren una fase técnica propia. **No sustituir ni renombrar automáticamente los lugares autobiográficos ya decididos**.
 
 **Capa autobiográfica (detalle en `LORE_Y_MUNDO.md`, sección 7):**
 
 ```text
 NORTE   Dionisio Ortiz ── Universidad de Burgos ── IES Gran Capitán
                                 │                         │
-OESTE   Piscina Santuario ── Plaza/entrada ── Taller de proyectos   ESTE
+OESTE   Piscina Santuario ── Plaza/entrada   ESTE
           │                       │                  │
         Mihrab ── Copos       Parada de bus     Ayuntamiento*
           │                       │                  │

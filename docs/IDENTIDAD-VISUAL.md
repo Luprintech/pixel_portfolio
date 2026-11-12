@@ -83,8 +83,8 @@ Mapa de 56×30 teselas. Una plaza central de 9×6 y un camino principal de este 
 
 ```
         N
-   Casa de Lupe        Taller        Biblioteca
-   (Sobre mí)          (Proyectos)   (Blog)
+   Casa de Lupe        Biblioteca
+   (Sobre mí)          (Blog)
         \                  |            /
   W ---- camino ---- [ PLAZA + cartel ] ---- camino ---- E
         /                              \
@@ -97,7 +97,6 @@ Mapa de 56×30 teselas. Una plaza central de 9×6 y un camino principal de este 
 | --- | --- | --- | --- |
 | Plaza | `PLAZA` | 24,12 (9×6) | cruce de caminos |
 | Casa de Lupe: Sobre mí | `about` | 10,6 | 12,10 |
-| Taller del Código: Proyectos | `projects` | 26,4 | 28,8 |
 | Biblioteca de los Logs: Blog | `blog` | 42,6 | 44,10 |
 | Taberna del Debug: Stack | `stack` | 10,19 | 12,23 |
 | Oficina de Correos: Contacto | `contact` | 44,17 | 46,21 |
@@ -105,12 +104,11 @@ Mapa de 56×30 teselas. Una plaza central de 9×6 y un camino principal de este 
 
 Razones del reparto:
 
-- El Taller queda justo al norte de la plaza, en línea recta desde donde aparece la protagonista: es el destino principal y el primer edificio completo de la hoja de ruta.
 - Casa de Lupe y Taberna al oeste, Biblioteca y Correos al este: dos edificios por lado, nada apelotonado y con el lago como respiro al sur.
 - Una sola dirección de lectura de oeste a este por el camino principal; cada ramal es corto para no obligar a recorrer el mapa.
 - No se reproduce la distribución de ninguna web de referencia.
 
-Los nombres con los que el juego rotula cada edificio (`valleCopy.js`) siguen siendo los de siempre: renombrarlos a Taller, Biblioteca, Taberna y Correos es una decisión de contenido pendiente.
+Los nombres con los que el juego rotula cada edificio (`valleCopy.js`) siguen siendo los de siempre: renombrarlos a Biblioteca, Taberna y Correos es una decisión de contenido pendiente.
 
 ## 7. Portada
 

@@ -8,7 +8,7 @@ import { houseGlow } from './homeLight.js'
 import { litPane } from './litPane.js'
 import { LOWER_WINDOW, RAIL_BOX, STRAND, backRail, deckChair, deckFloor, lowerWindowXs, parasol, stairRail, strandPoints, telescope, terraceRail, terraceStairs } from './terraceProps.js'
 import { railSnow, terraceSnow } from './terraceWinter.js'
-import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, chimney, doorAt, finish, hipRoof, iconAt, leanRoof, newSprite, signBoard, wall, windowAt } from './shared.js'
+import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, chimney, doorAt, finish, hipRoof, iconAt, leanRoof, newSprite, wall, windowAt } from './shared.js'
 
 const SLATE = '#6b5b95'
 
@@ -200,23 +200,6 @@ export function friendsSprite() {
   ellipse(g, 60, 76, 5.5, 5.5, '#9fd6e0')
   rect(g, 60, 70, 1, 12, WOOD1)
   rect(g, 54, 76, 12, 1, WOOD1)
-  return finish(s)
-}
-
-// Rincón de la música: casa estrecha con una nota en el rótulo y una ventana redonda.
-export function musicSprite() {
-  const s = newSprite(112, 96)
-  const { g } = s
-  wall(g, { x: 4, y: 40, w: 104, h: 56 })
-  hipRoof(g, { x: 0, y: 20, w: 112, rows: 5, color: '#4a7aa8', inset: 4 })
-  signBoard(g, 38, 24, 36, 12, { icon: 'note', color: '#1c1b3a', ink: PAL.saffronLight })
-  ellipse(g, 30, 64, 9, 9, WOOD1)
-  ellipse(g, 30, 64, 7.5, 7.5, '#e8a050')
-  rect(g, 30, 56, 1, 16, WOOD1)
-  rect(g, 22, 64, 17, 1, WOOD1)
-  s.windows.push({ x: 24, y: 58, w: 12, h: 12 })
-  windowAt(s, 78, 56, 18, 22, { shutters: '#c4577f' })
-  doorAt(s, 50, 93, { w: 14, h: 24, color: '#8a5aa8' })
   return finish(s)
 }
 

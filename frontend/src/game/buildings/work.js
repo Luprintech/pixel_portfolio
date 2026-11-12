@@ -1,32 +1,7 @@
-// Lugares de trabajo: taller de proyectos, asistencia en carretera, tienda (Copos) y el bar Mihrab.
+// Lugares de trabajo: asistencia en carretera, tienda (Copos) y el bar Mihrab.
 import { PAL } from '../palette.js'
 import { dot, hash2, rect } from '../pixelKit.js'
-import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, chimney, doorAt, finish, hipRoof, iconAt, newSprite, signBoard, wall, windowAt } from './shared.js'
-
-// Taller de proyectos: un gran engranaje sobre el tejado y una ventana de banco de trabajo encendida.
-export function workshopSprite() {
-  const s = newSprite(144, 112)
-  const { g } = s
-  chimney(g, 112, 22, 32)
-  wall(g, { x: 4, y: 52, w: 136, h: 60 })
-  hipRoof(g, { x: 0, y: 32, w: 144, rows: 5, color: '#c85a48', inset: 4 })
-  iconAt(g, 54, 4, 'gear', PAL.saffron, 5)
-  iconAt(g, 55, 5, 'gear', '#c4872a', 5)
-  iconAt(g, 54, 3, 'gear', PAL.saffronLight, 5)
-  // Banco de trabajo visto por una ventana ancha.
-  windowAt(s, 18, 64, 52, 30, { screen: '#f2c570' })
-  rect(g, 20, 84, 48, 4, WOOD1)
-  rect(g, 20, 84, 48, 1, WOOD3)
-  rect(g, 24, 88, 3, 6, WOOD0)
-  rect(g, 60, 88, 3, 6, WOOD0)
-  rect(g, 28, 78, 8, 6, '#7a789a')
-  rect(g, 44, 74, 2, 10, STONE0)
-  rect(g, 41, 72, 8, 3, STONE1)
-  rect(g, 54, 80, 8, 4, PAL.tile)
-  doorAt(s, 100, 109, { w: 14, h: 24, glow: true })
-  windowAt(s, 120, 68, 12, 14, { shutters: PAL.saffron })
-  return finish(s)
-}
+import { STONE0, STONE1, STONE2, WOOD0, WOOD1, WOOD2, WOOD3, doorAt, finish, hipRoof, iconAt, newSprite, signBoard, wall, windowAt } from './shared.js'
 
 // Asistencia en carretera: cochera con persiana medio subida, rótulo de grúa y franja amarilla y negra.
 export function garageSprite() {

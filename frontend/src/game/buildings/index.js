@@ -2,8 +2,8 @@
 // funciones puras de su tipo y variante, así que se pueden pintar una vez por visita y reutilizar.
 import { gallerySprite, instituteSprite, librarySprite, universitySprite } from './civic.js'
 import { mosqueSprite } from './mosque.js'
-import { cottageSprite, friendsSprite, homeSprite, kioskSprite, musicSprite } from './homes.js'
-import { barSprite, garageSprite, shopSprite, workshopSprite } from './work.js'
+import { cottageSprite, friendsSprite, homeSprite, kioskSprite } from './homes.js'
+import { barSprite, garageSprite, shopSprite } from './work.js'
 
 const BUILDERS = {
   gallery: gallerySprite,
@@ -11,13 +11,11 @@ const BUILDERS = {
   mosque: mosqueSprite,
   library: librarySprite,
   institute: instituteSprite,
-  workshop: workshopSprite,
   garage: garageSprite,
   shop: shopSprite,
   bar: barSprite,
   home: homeSprite,
   friends: friendsSprite,
-  music: musicSprite,
   cottage: cottageSprite,
   kiosk: kioskSprite,
 }

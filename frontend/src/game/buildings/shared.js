@@ -170,7 +170,6 @@ const ICONS = {
   book: ['xxx.xxx', 'x.x.x.x', 'x.x.x.x', 'x.x.x.x', 'x.x.x.x', 'xxxxxxx', '.......'],
   gear: ['..x.x..', '.xxxxx.', 'xxx.xxx', '.x...x.', 'xxx.xxx', '.xxxxx.', '..x.x..'],
   cart: ['x......', 'xxxxxx.', '.xxxxx.', '.xxxxx.', '..xxx..', '..x.x..', '.xx.xx.'],
-  note: ['...xxxx', '...x..x', '...x..x', '...x...', '.xxx...', 'xxxx...', '.xx....'],
   snow: ['...x...', 'x..x..x', '.x.x.x.', '..xxx..', '.x.x.x.', 'x..x..x', '...x...'],
   code: ['.x...x.', 'x.....x', '.x.x.x.', 'x..x..x', '.x.x.x.', 'x.....x', '.x...x.'],
   cone: ['..xxx..', '.xxxxx.', '.xxxxx.', '..xxx..', '..xxx..', '...x...', '...x...'],

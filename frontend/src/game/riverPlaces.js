@@ -2,18 +2,19 @@
 // olvidada. Todo sale de la forma del río (`river.js`) y de una semilla fija, así que es siempre lo mismo y las pruebas lo pueden
 // comprobar. Sin dependencias de Phaser ni de React; las coordenadas son teselas (decimales) salvo que se diga que son píxeles.
 import { seeded } from './palette.js'
-import { RIVER_SAMPLES, riverAt, signedDistance } from './river.js'
+import { RIVER_SAMPLES, riverAt, riverNear, signedDistance } from './river.js'
 
 const TILE = 16
 
-// Los cinco sitios donde se puede pescar: `u` es el avance por el río (0 al nacer, 1 al salir) y `side` la orilla (-1 o 1 sobre la normal
-// de `riverAt`). Los nombres son los que usa el monedero para recordar el hallazgo de la primera captura de cada sitio.
+// Los cinco sitios donde se puede pescar: `at` es el punto del río (en teselas; se toma el más cercano de la línea central) y `side` la
+// orilla (-1 o 1 sobre la normal de `riverAt`). Los nombres son los que usa el monedero para recordar el hallazgo de la primera captura
+// de cada sitio. `manantial` es ahora la cabecera, entre Artes y la Mezquita; los demás siguen donde estaban.
 export const FISH_SPOT_DEFS = [
-  { id: 'manantial', u: 0.1, side: -1 },
-  { id: 'ribera', u: 0.2, side: -1 },
-  { id: 'pasarela', u: 0.55, side: -1 },
-  { id: 'recodo', u: 0.72, side: 1 },
-  { id: 'desembocadura', u: 0.88, side: -1 },
+  { id: 'manantial', at: [44, 10.5], side: 1 },
+  { id: 'ribera', at: [52.7, 26.2], side: -1 },
+  { id: 'pasarela', at: [60.5, 39.7], side: -1 },
+  { id: 'recodo', at: [67.2, 44.7], side: 1 },
+  { id: 'desembocadura', at: [74.5, 46.1], side: -1 },
 ]
 
 // La caña olvidada, apoyada en una piedra al sur de las casitas, detrás de los bancos, entre el camino y el río. Punto de apoyo (centro de la base).
@@ -24,8 +25,8 @@ const facingOf = (dx, dy) => (Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : '
 // Puntos de pesca con todo lo que hace falta: dónde se coloca la viajera (`stand`, píxeles), hacia dónde mira, dónde cae el corcho
 // (`water`, píxeles dentro del agua) y dónde va el poste (en teselas, a un lado de la viajera).
 export function fishSpots() {
-  return FISH_SPOT_DEFS.map(({ id, u, side }) => {
-    const river = riverAt(u)
+  return FISH_SPOT_DEFS.map(({ id, at, side }) => {
+    const river = riverAt(riverNear(at[0], at[1]))
     const stand = { x: river.x + side * river.nx * (river.half + 11), y: river.y + side * river.ny * (river.half + 11) }
     const water = { x: river.x + side * river.nx * river.half * 0.5, y: river.y + side * river.ny * river.half * 0.5 }
     const along = { x: -river.ny, y: river.nx }
@@ -48,8 +49,8 @@ export function riverProps(isFree, keepOut) {
   const spots = fishSpots()
   const clear = (x, y, radius) => !keepOut(x, y, radius) && spots.every((spot) => Math.hypot(spot.stand.x - x * TILE, spot.stand.y - y * TILE) > radius * TILE * 1.2)
   // Nenúfares: grupos de dos a cuatro hojas repartidos por el río, en el tercio central del cauce y lejos de los puentes.
-  for (let c = 0; c < 9; c++) {
-    const river = riverAt(0.12 + (c / 9) * 0.82 + rand() * 0.05)
+  for (let c = 0; c < 12; c++) {
+    const river = riverAt(0.1 + (c / 12) * 0.84 + rand() * 0.04)
     const across = (rand() - 0.5) * river.half * 0.9
     const count = 2 + Math.floor(rand() * 3)
     for (let k = 0; k < count; k++) {
@@ -60,8 +61,8 @@ export function riverProps(isFree, keepOut) {
     }
   }
   // Juncos: manojos sueltos a lo largo de las dos orillas, sin cubrir caminos ni los sitios de pesca.
-  for (let i = 0; i < 48; i++) {
-    const river = riverAt(0.04 + (i / 48) * 0.92 + rand() * 0.02)
+  for (let i = 0; i < 64; i++) {
+    const river = riverAt(0.04 + (i / 64) * 0.92 + rand() * 0.015)
     const side = i % 2 === 0 ? 1 : -1
     const reach = river.half + 3 + rand() * 5
     const x = river.x + side * river.nx * reach
