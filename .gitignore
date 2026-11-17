@@ -62,3 +62,12 @@ nul
 
 # Láminas de referencia de estilo (no se suben al repositorio)
 /img/
+
+# Borradores de lore y diálogos con datos de personas cercanas (solo en local)
+docs/LORE_Y_MUNDO.md
+docs/DIALOGOS.md
+
+# Claves y credenciales
+*.pem
+*.key
+credentials*.json
