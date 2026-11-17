@@ -6,7 +6,7 @@ import { clearScores } from './arcade/scores.js'
 import { clearWallet } from './arcade/wallet.js'
 import { clearAchievements } from './achievements.js'
 import { clearSeen } from './dialogue/seen.js'
-import { sanitizeWorld } from './worldSave.js'
+import { migrateWorld, sanitizeWorld } from './worldSave.js'
 import { initialStory, recoverStory, sanitizeStory } from './story/story.js'
 
 const SAVE_KEY = 'valle-del-bucle:save'
@@ -15,7 +15,9 @@ const LEGACY_LOOK_KEY = 'valle-del-bucle:look'
 // Versión 2: añade la mascota. Versión 3: añade el nombre de la mascota. Versión 4: añade el estado del valle
 // (hora y posición). Versión 5: añade la historia (bienvenida, visita guiada y conversaciones escuchadas). Las partidas
 // anteriores se leen igual: sin mascota, sin nombre de mascota, empezando en la entrada y con la bienvenida de Lupe pendiente.
-export const SAVE_VERSION = 5
+// Versión 6: el valle gana una franja al norte (el Ayuntamiento); la posición guardada antes se baja con ella.
+// Versión 7: el valle gana ocho columnas por el oeste; la posición guardada antes se desplaza a la derecha con ellas.
+export const SAVE_VERSION = 7
 export const NAME_MAX = 16
 
 // Deja solo letras, números, espacios, guion y apóstrofo, sin espacios repetidos ni sobrantes.
@@ -47,11 +49,11 @@ function readJson(key) {
 // valle y posición, ver worldSave.js) solo está si se guardó y es válido.
 export function loadSave() {
   const saved = readJson(SAVE_KEY)
-  if (saved && [1, 2, 3, 4, SAVE_VERSION].includes(saved.version)) {
+  if (saved && [1, 2, 3, 4, 5, 6, SAVE_VERSION].includes(saved.version)) {
     const look = upgradeLook(saved.look)
     if (look) {
       const pet = upgradePet(saved.pet)
-      const world = sanitizeWorld(saved.world)
+      const world = sanitizeWorld(migrateWorld(saved.world, saved.version))
       // Una visita guiada "en curso" no se reanuda: se recupera como pendiente (ver `recoverStory`).
       const story = recoverStory(sanitizeStory(saved.story) ?? initialStory())
       return { version: SAVE_VERSION, name: sanitizeName(saved.name), look, pet, petName: petNameFor(pet, saved.petName), story, ...(world && { world }) }

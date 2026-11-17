@@ -41,6 +41,15 @@ const GLYPHS = {
   Z: ['###', '..#', '.#.', '#..', '###'],
 }
 
+// Variante de rótulo pintado a mano (Copos, Escuela de Artes): la O redondeada, la N con solo dos filas llenas y la U
+// abierta por abajo.
+export const ROUNDED_GLYPHS = {
+  ...GLYPHS,
+  O: ['.#.', '#.#', '#.#', '#.#', '.#.'],
+  N: ['#.#', '###', '###', '#.#', '#.#'],
+  U: ['#.#', '#.#', '#.#', '#.#', '.##'],
+}
+
 // Letras de 3×4 para rótulos pequeños (el logotipo de las impresoras): minúsculas y las pocas mayúsculas que hacen falta.
 const SMALL_GLYPHS = {
   b: ['#..', '##.', '#.#', '##.'],

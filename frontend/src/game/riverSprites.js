@@ -94,33 +94,6 @@ export function romanBridge() {
   return { canvas: done(s), body: [{ l: -72, t: -86, r: 72, b: -76 }, { l: -72, t: -44, r: 72, b: -1 }], flat: true }
 }
 
-// Puente de tablones: `tiles`×2 teselas de cubierta (12 por defecto) con barandilla a ambos lados y postes. Más sencillo y más bajo
-// que el romano.
-function plankSpan(tiles) {
-  const w = tiles * 16
-  const h = 44
-  const s = sprite(w, h)
-  const { g } = s
-  rect(g, 0, 10, w, h - 20, WOOD2)
-  for (let x = 0; x < w; x += 6) {
-    rect(g, x, 10, 1, h - 20, WOOD0)
-    rect(g, x + 1, 10, 4, h - 20, (x / 6) % 2 ? WOOD2 : WOOD3)
-  }
-  ;[2, h - 10].forEach((y) => {
-    rect(g, 0, y, w, 3, WOOD1)
-    rect(g, 0, y, w, 1, WOOD3)
-    for (let x = 4; x < w; x += 18) {
-      rect(g, x, y - 5, 3, 10, WOOD0)
-      rect(g, x, y - 5, 1, 10, WOOD2)
-    }
-  })
-  return { canvas: done(s), body: [{ l: -w / 2, t: -44, r: w / 2, b: -36 }, { l: -w / 2, t: -12, r: w / 2, b: -1 }], flat: true }
-}
-
-// Los objetos se dibujan con `(variante)`: cada puente fija su largo aquí. El puentecillo del afluente mide seis teselas.
-export const plankBridge = () => plankSpan(12)
-export const footBridge = () => plankSpan(6)
-
 // Nenúfar: hoja redonda con su muesca y, en dos variantes, una flor blanca o rosa. Flota, así que no tiene cuerpo.
 export function lily(variant = 0) {
   const s = sprite(18, 10)

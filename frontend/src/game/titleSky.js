@@ -60,7 +60,9 @@ const WEATHER = {
   storm: { cloud: 1, rain: 1, storm: 1, snow: 0, wind: 0.9 },
   snow: { cloud: 0.85, rain: 0, storm: 0, snow: 1, wind: 0.35 },
 }
-const WEATHER_ODDS = [['clear', 0.32], ['cloudy', 0.52], ['rain', 0.72], ['storm', 0.85], ['snow', 1]]
+// Lo que el clima del valle no trae: ni tormentas ni arcoíris por defecto.
+const NO_WEATHER = { storm: 0, rainbow: 0 }
+const WEATHER_ODDS =[['clear', 0.32], ['cloudy', 0.52], ['rain', 0.72], ['storm', 0.85], ['snow', 1]]
 
 function weatherKind(seed, k) {
   const roll = hash2(k, 5, seed % 997)
@@ -111,22 +113,29 @@ function bodyAt(phase, [from, to]) {
 }
 
 // Estado completo de la portada en un instante. Con `still` (movimiento reducido) no hay lluvia ni rayos.
-export function skyAt(ms, seed, still = false, pace = 1) {
+// `climate` (ver `valleClimate.js`) es el tiempo y la estación del valle: con él, lluvia, nieve y estación salen del ciclo de estaciones en vez de
+// del azar de la portada. Sin él, todo es como siempre.
+export function skyAt(ms, seed, still = false, pace = 1, climate = null) {
   const phase = (startPhase(seed) + ms / (DAY_MS * pace)) % 1
   const { dark, bands } = keysAt(phase)
-  const weather = weatherAt(ms, seed, pace)
+  const weather = climate ? { ...NO_WEATHER, ...climate } : weatherAt(ms, seed, pace)
   const rain = still ? 0 : weather.rain
   const storm = still ? 0 : weather.storm
   const snow = still ? 0 : weather.snow
+  const seasons = climate
+    ? { summer: climate.weights[1], autumn: climate.weights[2], winter: climate.weights[3], layers: climate.layers, snowCover: climate.snowCover, season: climate.name }
+    : {
+        // Bioma: con lluvia el valle pasa de la primavera de flores al otoño de setas y hojas caídas.
+        autumn: clamp01(rain / 0.65),
+        // Con la nevada el valle pasa a invierno: mismo fundido que el otoño, y los dos no coinciden.
+        winter: clamp01(snow),
+      }
   return {
     phase,
     dark,
     bands,
-    // Bioma: con lluvia el valle pasa de la primavera de flores al otoño de setas y hojas caídas.
-    autumn: clamp01(rain / 0.65),
-    // Con la nevada el valle pasa a invierno: mismo fundido que el otoño, y los dos no coinciden.
-    winter: clamp01(snow),
-    rainbow: rainbowAt(ms, seed, pace) * (1 - dark),
+    ...seasons,
+    rainbow: (climate ? climate.rainbow : rainbowAt(ms, seed, pace)) * (1 - dark),
     sun: bodyAt(phase, SUN_SPAN),
     moon: bodyAt(phase, MOON_SPAN),
     cloud: still ? Math.min(weather.cloud, 0.7) : weather.cloud,
@@ -140,8 +149,8 @@ export function skyAt(ms, seed, still = false, pace = 1) {
   }
 }
 
-// Hay mariposas de día y con el valle en primavera: ni de noche, ni con la lluvia del otoño, ni con nieve.
-export const butterfliesOut = (sky) => sky.dark < 0.5 && sky.autumn < 0.5 && sky.winter < 0.5
+// Hay mariposas de día y con el valle en primavera o verano: ni de noche, ni en otoño o invierno, ni con lluvia.
+export const butterfliesOut = (sky) => sky.dark < 0.5 && sky.autumn < 0.5 && sky.winter < 0.5 && (sky.rain ?? 0) < 0.2
 
 // Cuántas ventanas del pueblo están encendidas: ninguna de día y todas cuando cae la noche.
 export const LIGHTS = 4

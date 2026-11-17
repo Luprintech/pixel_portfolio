@@ -3,22 +3,23 @@
 // comprobar. Sin dependencias de Phaser ni de React; las coordenadas son teselas (decimales) salvo que se diga que son píxeles.
 import { seeded } from './palette.js'
 import { RIVER_SAMPLES, riverAt, riverNear, signedDistance } from './river.js'
+import { shiftX, shiftY } from './mapRows.js'
 
 const TILE = 16
 
 // Los cinco sitios donde se puede pescar: `at` es el punto del río (en teselas; se toma el más cercano de la línea central) y `side` la
 // orilla (-1 o 1 sobre la normal de `riverAt`). Los nombres son los que usa el monedero para recordar el hallazgo de la primera captura
-// de cada sitio. `manantial` es ahora la cabecera, entre Artes y la Mezquita; los demás siguen donde estaban.
+// de cada sitio. `manantial` está en la cabecera, en la orilla este del tramo por el que el río baja del borde norte, frente a la curva. `recodo` y `desembocadura`, en la orilla sur del último tramo, antes de que el río salga por el borde este.
 export const FISH_SPOT_DEFS = [
-  { id: 'manantial', at: [44, 10.5], side: 1 },
-  { id: 'ribera', at: [52.7, 26.2], side: -1 },
-  { id: 'pasarela', at: [60.5, 39.7], side: -1 },
-  { id: 'recodo', at: [67.2, 44.7], side: 1 },
-  { id: 'desembocadura', at: [74.5, 46.1], side: -1 },
+  { id: 'manantial', at: [shiftX(60), shiftY(10.8)], side: -1 },
+  { id: 'ribera', at: [shiftX(53), shiftY(22.5)], side: -1 },
+  { id: 'pasarela', at: [shiftX(57), shiftY(35.5)], side: 1 },
+  { id: 'recodo', at: [shiftX(55), shiftY(36)], side: -1 },
+  { id: 'desembocadura', at: [shiftX(59), shiftY(39)], side: -1 },
 ]
 
-// La caña olvidada, apoyada en una piedra al sur de las casitas, detrás de los bancos, entre el camino y el río. Punto de apoyo (centro de la base).
-export const ROD_SPOT = { id: 'cana', at: [73.6, 41.4] }
+// La caña olvidada, apoyada en una piedra en la orilla este, al sur del puente romano. Punto de apoyo (centro de la base).
+export const ROD_SPOT = { id: 'cana', at: [shiftX(58.5), shiftY(31.5)] }
 
 const facingOf = (dx, dy) => (Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'up' : 'down')
 

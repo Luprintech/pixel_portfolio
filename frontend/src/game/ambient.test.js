@@ -18,6 +18,9 @@ describe('pájaros', () => {
     expect(birdsOut({ ...clear, dark: 0.8 })).toBe(false)
     expect(birdsOut({ ...clear, rain: 0.6 })).toBe(false)
     expect(birdsOut({ ...clear, winter: 0.9 })).toBe(false)
+    // Con la escarcha propia del invierno, sin nieve, los pájaros siguen ahí; con la nieve de una nevada, no.
+    expect(birdsOut({ ...clear, winter: 1, snowCover: 0, snow: 0 })).toBe(true)
+    expect(birdsOut({ ...clear, winter: 1, snowCover: 0.8, snow: 0 })).toBe(false)
     expect(birdsOut(null)).toBe(false)
   })
 

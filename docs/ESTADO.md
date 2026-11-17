@@ -2,9 +2,491 @@
 
 Registro vivo de lo hecho, lo pendiente y las decisiones tomadas. Se actualiza al cerrar cada bloque de trabajo: lo terminado pasa a "Hecho", lo que surge se anota en "Pendiente" y cada decisión con su motivo va en "Decisiones".
 
-Última actualización: 2026-11-12 (fase I del plan maestro: rutinas de NPC y vida ambiental del valle, con Khalessi, Grace, Atreus, Ylonem, animales, frutales por estación y piscina; ver el primer bloque de Hecho). Antes, 2026-11-12 (Puerta del Puente de Córdoba como arco de entrada). Antes, 2026-11-12 (Mezquita junto al puente romano, Casa del Encuentro al norte, Casa de la Música eliminada y río único con puente; ver el primer bloque de Hecho). Antes, 2026-11-12 (Mezquita-Catedral rehecha con su silueta real, naranjos en la entrada y taller de proyectos retirado; ver el primer bloque de Hecho). Antes, 2026-11-12 (recreativa con monedas y escudo, Mezquita, río nuevo y pesca; ver el primer bloque de Hecho). Antes, 2026-11-12 (planificación documental de rutinas de NPC, animales, árboles frutales, estaciones y piscina; pendiente de implementación). Antes, 2026-11-12 (rutinas de Ylonem y Grace por el pueblo, con palomas y Khalessi; prototipo parcial, no cierre de esta planificación). Antes, 2026-11-12 (Lupe presenta Gran Capitán, Ylonem y Grace viven fuera y los NPC ya no quedan tapados por las ventanas). Antes, 2026-11-11 (Ylonem y Grace como personajes de Gran Capitán). Antes, 2026-11-11 (Fase D: IES Gran Capitán como primer edificio completo del nuevo mapa, y sincronización de la visita interior). Antes, 2026-11-11 (dos temas del juego, Aventura y Cozy, con selector en Opciones). Antes, 2026-11-11 (C2: visita guiada por dentro de la casa de Lupe). Antes, 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
+Última actualización: 2026-11-13 (exterior de la casa de Lupe redibujado según la ilustración de la usuaria; ver el primer bloque de Hecho). Antes, 2026-11-13 (la Casa del Encuentro pasa a ser un patio cordobés dibujado con código a partir de la ilustración de la usuaria; ver el primer bloque de Hecho). Antes, 2026-11-13 (Mezquita, arco y San Rafael 3,5 teselas al este, con el arco en el eje del paseo lateral del Ayuntamiento; ver el primer bloque de Hecho). Antes, 2026-11-13 (San Rafael sigue en PNG pero entintado con líneas finas para que encaje con el valle; ver el primer bloque de Hecho). Antes, 2026-11-13 (la viajera conduce el SEAT Córdoba por todo el valle, de perfil al volante y con sonido de arranque y motor; ver el primer bloque de Hecho). Antes, 2026-11-13 (el SEAT Córdoba pasa de PNG a dibujo con código y crece a 66×31). Antes, 2026-11-13 (siete fachadas pasan de PNG a dibujo con código: Bar Mihrab, Copos, RACE, Escuela de Artes, Universidad, IES Gran Capitán y CPIFP Alan Turing; ver el primer bloque de Hecho). Antes, 2026-11-13 (fachadas con los PNG de la usuaria, fuente con chorros y transparencia, Mezquita, arco y San Rafael en un eje, río que sale por el norte y SEAT Córdoba ante la Universidad; ver los primeros bloques de Hecho). Antes, 2026-11-12 (ciclo de cuatro estaciones de 20 minutos con lluvia y nieve esporádicas, nieve acumulada, flora y fauna por estación e indicador en el HUD; ver el primer bloque de Hecho). Antes, 2026-11-12 (caminos con las baldosas de la plaza, puente de tablones al sur y puentecillo nuevo al norte de la Mezquita, casa de Lupe separada del eje con atajo a RACE y atajo del Ayuntamiento a los estudios; ver el primer bloque de Hecho). Antes, 2026-11-12 (valle ampliado 8 columnas al oeste: Copos y RACE separados por césped, explanada para la grúa, quiosco de helados a la derecha de la piscina; ver el primer bloque de Hecho). Antes, 2026-11-12 (redistribución del valle según la lámina aprobada: estudios arriba a la izquierda con Alan Turing nuevo, Ayuntamiento encima de la plaza, calle de trabajo al oeste con un solo RACE, quiosco y piscina junto a la casa de Lupe, Casa del Encuentro a la derecha de la entrada y sin Biblioteca de los Logs; ver el primer bloque de Hecho). Antes, 2026-11-12 (Ayuntamiento de Córdoba rehecho con su arquitectura real y pegado a la derecha de las columnas del templo, con plaza cívica delante; ver el primer bloque de Hecho). Antes, 2026-11-12 (fuente de la plaza sustituida por una inspirada en Las Tendillas, con el Gran Capitán a caballo; ver el primer bloque de Hecho). Antes, 2026-11-12 (Ayuntamiento de Córdoba y columnas romanas en una franja nueva al norte; el mapa pasa de 54 a 66 filas; ver el primer bloque de Hecho). Antes, 2026-11-12 (reajuste del este: sin las dos casitas, Mezquita siete filas más arriba, arco de Córdoba pegado a su puerta con la T del puente romano debajo, biblioteca al sureste y arco de antes en la entrada del valle; ver el primer bloque de Hecho). Antes, 2026-11-12 (fase I del plan maestro: rutinas de NPC y vida ambiental del valle, con Khalessi, Grace, Atreus, Ylonem, animales, frutales por estación y piscina; ver el primer bloque de Hecho). Antes, 2026-11-12 (Puerta del Puente de Córdoba como arco de entrada). Antes, 2026-11-12 (Mezquita junto al puente romano, Casa del Encuentro al norte, Casa de la Música eliminada y río único con puente; ver el primer bloque de Hecho). Antes, 2026-11-12 (Mezquita-Catedral rehecha con su silueta real, naranjos en la entrada y taller de proyectos retirado; ver el primer bloque de Hecho). Antes, 2026-11-12 (recreativa con monedas y escudo, Mezquita, río nuevo y pesca; ver el primer bloque de Hecho). Antes, 2026-11-12 (planificación documental de rutinas de NPC, animales, árboles frutales, estaciones y piscina; pendiente de implementación). Antes, 2026-11-12 (rutinas de Ylonem y Grace por el pueblo, con palomas y Khalessi; prototipo parcial, no cierre de esta planificación). Antes, 2026-11-12 (Lupe presenta Gran Capitán, Ylonem y Grace viven fuera y los NPC ya no quedan tapados por las ventanas). Antes, 2026-11-11 (Ylonem y Grace como personajes de Gran Capitán). Antes, 2026-11-11 (Fase D: IES Gran Capitán como primer edificio completo del nuevo mapa, y sincronización de la visita interior). Antes, 2026-11-11 (dos temas del juego, Aventura y Cozy, con selector en Opciones). Antes, 2026-11-11 (C2: visita guiada por dentro de la casa de Lupe). Antes, 2026-11-11 (integración editorial autorizada de Ylonem, compañero de DAW y colaborador profesional; no se modificó código). Antes, 2026-11-11 (sincronización de plan maestro, lore, diálogos, visión, estado y arquitectura con la cronología confirmada, el mapa previsto y el estado real de C1). El historial detallado de bloques anteriores se conserva debajo.
 
 ## Hecho
+
+### Exterior de la casa de Lupe según la ilustración de la usuaria (2026-11-13)
+
+- Solo cambia el aspecto exterior: interior, diálogos, visita guiada, telescopio, silla, mesa, escalera y azotea siguen igual. La geometría de la escalera y la cubierta (`terrace.js`) no se ha tocado, así que lo que se pisa y dónde se interactúa no cambia; la puerta sigue centrada en la columna 227 del dibujo (misma tesela de entrada).
+- Nueva casa de dos plantas en `buildings/homeHouse.js`, dibujada con código: tejado de teja árabe con alero festoneado y cabezas de viga, chimenea encalada con caperuza de barro, buhardilla con frontón de teja y ventana encendida, fachada de cal con esquinas de sillar y zócalo lavanda, dos ventanas pequeñas de cuatro cristales, dos grandes con contraventanas lavanda, jardineras de geranios y ménsulas de forja (dentro, la estantería con libros y una planta), tejadillo de teja con ménsulas en voluta, puerta de tablones con clavos y aldaba en su marco de sillar, farol, placa LUPE, macetas añiles con geranios y rosal trepador.
+- En la cubierta: sala baja encalada con ventanas de visillo, marco de sillar y jardineras, zócalo lavanda, macetas añiles sobre taburetes en las esquinas del fondo y bombillas más grandes en la guirnalda.
+- El tejado nuevo es más alto y ancho, y la escena saca el cuerpo sólido de las filas anchas del dibujo: con él la colisión habría crecido hacia el norte. La casa fija sus filas de muro de siempre (`wallRows`, 48 a 160) y `ValleScene` las usa si un dibujo las trae.
+- La luz nocturna (`homeLight.js`) sigue a las ventanas nuevas. Los geranios se comparten con el patio en `buildings/flowers.js` (`geraniums` para matas pequeñas). Se retiran las piezas antiguas sin uso de `homeFacade.js` (queda la placa) y de `homes.js`.
+- Comparado con la referencia a la resolución del dibujo y corregidas las diferencias (tejas, tejadillo, macetas, jardineras, farol, zócalo). Comprobado en el valle a tamaño real. No se pudo probar en vivo la subida a la azotea porque el panel del navegador estaba oculto; la geometría que la gobierna no cambia.
+
+### Casa del Encuentro como patio cordobés dibujado con código (2026-11-13)
+
+- La usuaria pidió sustituir la Casa del Encuentro por la ilustración de un patio cordobés, recreada como sprite nativo (sin PNG ni textura) y con la máxima fidelidad. Nuevo tipo de edificio `patio` (`buildings/patio.js` compone; `buildings/patioParts.js` tiene las piezas: tejas, vigas y pies derechos añiles, faroles, macetas con geranios, azulejos, empedrado con mosaico, pozo y limonero). Se retira `friendsSprite` de `homes.js`.
+- Conserva todos los elementos de la referencia: tejado de teja árabe con remate de cal, galería con balcón de dos filas de geranios en macetas añiles, puerta alta, ventanas con contraventanas y visillos, cuadritos y plato de cerámica, cinco faroles más el de la pared de la escalera, escalera de azulejos con barandilla, macetas colgadas en la pared, limonero con limones, mesa con vino y taburete, jaula, pozo con arco de forja, polea y cubo, aspidistra, cántaro volcado con flores y el mosaico de la flor en el empedrado.
+- Colores sacados de la ilustración (añil, cal rosada, barro), no de los tonos generales del valle: son los que hacen reconocible el patio. Los cristales y faroles se encienden de noche.
+- Misma ubicación, tamaño (128×128, ocho por ocho teselas) y tesela de puerta (54, 56). El dibujo se alinea por el escalón que sobresale del empedrado (`PATIO_DOOR_COL`), que queda sobre esa tesela; la colisión sale del dibujo como en el resto de edificios. Las aves siguen posándose en su tejado.
+- Comparado con la referencia reducida a 128 px, zona por zona, y corregidas las diferencias (tejas, textura de las flores, balcón, pozo, escalera, faroles, puerta). Comprobado en el valle a tamaño real. No se pudo probar en vivo la entrada con `E` porque el panel del navegador estaba oculto y el juego no avanzaba; la puerta no cambia de tesela.
+
+### Mezquita, arco y San Rafael en el eje del paseo lateral del Ayuntamiento (2026-11-13)
+
+- La usuaria pidió mover el conjunto a la derecha para que el arco quedara alineado con el camino que baja junto al Ayuntamiento (columnas 51 y 52, centro en x 52) y, por el norte, con la Mezquita. Todo se desplaza 3,5 teselas: Mezquita en `x: 43,5` con la puerta en media tesela (51,5), arco en 52, San Rafael en 46,5 y los naranjos en 49,3 y 54,7.
+- La puerta en media tesela es la única forma de que el dibujo (centrado en su puerta) caiga en el eje de un camino de dos teselas. La escena ya trabaja en píxeles (dibujo, puerta y colisión), así que no hizo falta tocarla; en las pruebas, una puerta así debe pisar camino en las dos teselas que toca (`doorTiles`).
+- El camino de la Mezquita pasa de tres teselas a dos, del ancho de la abertura del arco, y continúa en las mismas columnas que el paseo lateral. Entre la Universidad y la Mezquita queda el paseo y césped. La Mezquita deja tesela y media de orilla hasta el río (antes, más de dos); la prueba se ajustó a ese margen.
+- Ylonem graba el naranjo derecho desde 3,5 teselas más al este.
+- Comprobado en el juego con zoom 1 y 2: arco sobre el paseo lateral y Mezquita centrada encima. `npm test` (119 archivos, 1018 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+
+### San Rafael entintado para que encaje con el valle (2026-11-13)
+
+- La usuaria quería que el Triunfo de San Rafael no pareciera una imagen pegada. Se probó dibujarlo entero con código y después con solo el arcángel en PNG, pero no le gustó cómo quedaba; también se descartó reducirlo a 48×133, porque el arcángel se volvía una mancha.
+- Sigue saliendo del PNG a 144×400 y se pinta a un tercio, pero el PNG lleva la paleta reducida a 16 colores (sombreado plano) y `sanRafael.js` lo entinta con código: perfil oscuro de un píxel de textura (`outlineSolid`) y líneas finas por dentro donde la luz cambia de golpe entre dos vecinos (`inkEdges`, umbral `EDGE_STEP`), trazadas del lado de la sombra. Un contorno de un píxel del mapa, como el de los edificios, resultaba demasiado grueso (decisión de la usuaria).
+- El lienzo gana un píxel a los lados y arriba para que quepa el perfil (146×401); el punto de apoyo no cambia.
+- **Comprobado en el juego** de día, delante de la Mezquita, a los zooms 3 y 4. `npm test`, `npm run lint` y `npm run build` en `frontend/`. **Sin comprobar:** noche y nieve.
+
+### La viajera conduce el SEAT Córdoba (2026-11-13)
+
+- **Subir y bajar:** junto al coche, E (o el botón A en táctil) ofrece "Conducir el SEAT Córdoba"; al volante solo se ofrece "Bajar del coche", y solo si hay sitio para los pies de la viajera delante, detrás o a un lado (`freeExitSpot`). El coche se queda aparcado donde se deja, con su cuerpo sólido y su zona de subir movidos allí.
+- **Conducir** (`game/driving.js`, pura y con pruebas): mismas teclas o joystick que para andar, hasta 150 px/s con aceleración y frenada suaves, sin salir del mapa. Por decisión de la usuaria, de momento va por todo el mapa **sin chocar con nada**; por dónde puede ir se fijará cuando los caminos y el mapa sean definitivos. Al volante se dibuja por encima de los edificios (profundidad 5000, bajo lo que vuela y el tinte del cielo) para que no desaparezca tras ellos.
+- **De perfil al volante:** solo hay dibujo lateral; mira a la izquierda o, volteado, a la derecha, y al subir o bajar conserva el último lado. La viajera sentada de perfil (`SIT_POSE`, mirando a la izquierda) se ve recortada por la ventanilla delantera (`seatCordobaWithDriver`): cara y pelo, cortados por el techo y la cintura. Se repinta si cambia su aspecto al volante. La mascota va dentro (oculta) y reaparece al bajar.
+- **Escena:** `game/CarDriving.js` lleva subir, conducir, bajar y pintar al conductor; `ValleScene.js` solo lo crea al colocar el coche y le pasa las teclas y la acción. El sprite de la viajera, sin cuerpo físico, sigue al coche, así que la cámara y el guardado lo acompañan.
+- **Sonido** (`lib/carSound.js`, con pruebas): arranque sintetizado (tres vueltas del motor de arranque y el motor que coge) y un ronroneo en bucle (diente de sierra y cuadrada con paso bajo) que sube de tono y volumen al acelerar y se apaga al bajar. Va por el bus de efectos, así que respeta volumen y silencio. La escena avisa con `car-sound` y `Valle.jsx` lo toca.
+- **Textos:** `hud.actions.seatCordoba` y `hud.actions.getout` en español e inglés. No son diálogos, así que no van en `DIALOGOS.md`.
+- **Comprobado en el juego** (joystick simulado): subir, ir a la derecha y abajo con la cámara detrás, coche volteado con la viajera en la ventanilla y por encima del Ayuntamiento, bajar, quedar aparcado y volver a subir; consola sin errores. `npm test` (1018 pruebas), `npm run lint` y `npm run build` en `frontend/`. **Sin comprobar:** el sonido a oído, el control táctil real, de noche y con nieve.
+
+### SEAT Córdoba dibujado con código y algo más grande (2026-11-13)
+
+- A petición de la usuaria, el coche deja el PNG y se pinta en píxeles (`seatCordoba.js`), copiando el mismo modelo: berlina de primera generación blanca, capó bajo, parabrisas tendido, techo corto, luneta inclinada, maletero recto con el piloto rojo, antena trasera, faro, intermitente ámbar, tiradores, retrovisor y tapacubos claros. Se borran `seatCordoba.png` y su entrada en `pngAssets.js`.
+- Pasa de 56×26 a 66×31 en el mapa y se dibuja a escala 1, sin el remuestreo al triple. Es el ancho máximo que cabe entre el final de la escalinata y el borde de la fachada sin mover el coche. `SEAT_CORDOBA_SIZE` lo exporta y `world.test.js` lo usa en lugar de medidas fijas. La huella sólida se ensancha a ±31 y sigue sobre las mismas baldosas.
+- **Comprobado:** el coche en el juego de día, en su sitio, sin tapar la escalinata; `npm test` (1004 pruebas), `npm run lint` y `npm run build` en `frontend/`. **Sin comprobar a mano:** noche, nieve, modo pastel y móvil.
+- Siguen en PNG: el quiosco de helados, la fuente de la plaza, San Rafael, el autobús de Aucorsa y la grúa.
+
+### Fachadas del valle dibujadas con código en lugar de PNG (2026-11-13)
+
+- Siete edificios dejan de pintarse desde un PNG y pasan a dibujarse en píxeles, copiando pieza a pieza la ilustración de la usuaria con las mismas medidas, la misma columna de puerta, los mismos cuerpos sólidos y la misma zona de `E`: Bar Mihrab (`buildings/barMihrab.js`), Copos (`copos.js`), RACE (`race.js`), Escuela de Artes (`artes.js`), Universidad de Burgos (`university.js`, con sus dos capas y la geometría de `ubuLayout.js`), IES Gran Capitán (`ies.js`) y CPIFP Alan Turing (`turing.js`, con sus dos capas). Se borran sus PNG y sus entradas en `pngAssets.js`; `work.js` desaparece y `civic.js` se queda con la biblioteca.
+- Peticiones de la usuaria durante la tanda: el escaparate del bar sin botellas y con reflejos de cristal; persianas del IES con cajón, montantes blancos, lamas y barra, a distintas alturas; en el CPIFP, extremo izquierdo curvo con zócalo en diagonal, cubierta sin dientes de sierra, entrada de cristal transparente con el vestíbulo detrás y reflejos, base con el grosor del PNG, voladizo que acaba en la diagonal del paño inclinado y canto inferior del tejado derecho en diagonal.
+- El CPIFP no lleva contorno añadido: su PNG ya traía el canto dentro de la silueta, y uno de más ensanchaba el edificio un píxel por lado. Se comprobó que su silueta coincide fila a fila con la del PNG.
+- Rótulos pintados a mano: `pixelFont.js` exporta `ROUNDED_GLYPHS` (O redondeada, N de dos filas llenas y U abierta), que comparten Copos, la Escuela, la Universidad y el IES.
+- Colores fuera de la paleta (ladrillo, azules de marca, verde de la Junta, arenisca, mármol): se sacaron del PNG, porque sin ellos el edificio deja de reconocerse. La Escuela, la Universidad y el IES llevan `painted: true` para que la nieve no tome por hierba el verde de sus banderas o carteles; el resto pasa por el recoloreado como los demás edificios dibujados.
+- De noche, todos encienden sus cristales con `litPane` (antes, con el PNG, no se encendía nada).
+- El SEAT Córdoba se probó con código y se volvió al PNG a petición de la usuaria.
+- **Comprobado:** cada edificio en el juego de día y de noche delante de su puerta; `npm run lint`, `npm test` (1004 pruebas) y `npm run build` en `frontend/`, y `npm test` en `backend/` (60 pruebas). **Sin comprobar a mano:** nieve, modo pastel, móvil y subir andando la rampa y la escalinata de la Universidad.
+- Siguen en PNG: el quiosco de helados, la fuente de la plaza, San Rafael, el autobús de Aucorsa, la grúa y el SEAT Córdoba.
+
+### SEAT Córdoba aparcado delante de la Universidad de Burgos (2026-11-13)
+
+- **Coche** (`seatCordoba.js`, asset `seatCordoba.png`): el SEAT Córdoba blanco de la usuaria, con el frontal a la izquierda. En el mapa ocupa 56×26 (escala del autobús de Aucorsa y la grúa). Reducido con vecino más cercano se veía muy pixelado (queja de la usuaria), así que, como San Rafael, va al triple de resolución (168×78, Lanczos) y se dibuja a un tercio con filtrado suave.
+- **Sitio** `[35,5, 10,4]`: delante del ala derecha, a la derecha de la escalinata y antes del paseo que baja junto a la Universidad. No hizo falta mover edificios. Las ruedas pisan la primera fila de baldosas del paseo de los estudios y el techo queda por delante de los ventanales bajos (se ordena por las ruedas). Choca solo la huella de la carrocería, y debajo queda más de una tesela de paseo para pasar.
+- **Puerta de la Universidad**: la zona de `E` cubre el rellano a los dos lados del pasamanos. Antes solo cubría la izquierda y, subiendo por la mitad derecha de la escalinata, no se podía entrar.
+- **Comprobado en el juego** al zoom 3: se llega a la puerta por las dos mitades de la escalinata y por la rampa, y se pasa por el paseo bajo el coche. `npm test` (117 archivos, 1004 pruebas), `npm run lint` y `npm run build`, sin errores.
+- **Sin comprobar a mano:** modo Cozy y móvil.
+
+### Mezquita, arco y San Rafael en un solo eje junto a la Universidad (2026-11-13)
+
+- **Mezquita** en `x: 40` (puerta en x 48), pegada al paseo de dos teselas que baja junto a la Universidad, que queda como paso entre las dos. Los naranjos siguen a los lados de la puerta (45,8 y 51,2).
+- **Arco** en `[48,5, 19]`: su eje es el de la puerta y su remate empieza en la fila de la puerta. El camino recto de tres teselas va de la puerta al paseo del Alan Turing pasando bajo el arco. Ya no hay explanada: el paseo, pasada la Universidad, baja una fila (filas 19 y 20) para que la base del arco apoye en él sin cortarlo.
+- **San Rafael** en `[43, 15,5]`, delante del ala izquierda: la base, en el césped fuera del camino, choca solo por su huella; la columna y el arcángel se dibujan delante de los ventanales.
+- **Árboles**: entre la Universidad y la Mezquita y delante de la fachada hasta el paseo no se siembra ninguno (`MOSQUE_GROUNDS`). Se quita la arboleda de esa zona y el manzano de junto a San Rafael. La decoración se decidirá cuando estén colocados los edificios.
+- Ylonem graba el naranjo derecho desde el césped a la derecha del arco.
+- **Comprobado en el juego**: desde el paseo, recto hacia el norte, se cruza el arco y se llega a la puerta, donde `E` abre la conversación de la Mezquita. Por el paso de junto a la Universidad se sube hasta el borde norte. `npm test` (117 archivos, 1003 pruebas), `npm run lint` y `npm run build`, sin errores.
+- **Sin comprobar a mano:** modo Cozy y móvil.
+
+### El río sale por el borde norte, a la derecha de la Mezquita (2026-11-13)
+
+- **Trazado** (`river.js`): conserva el cauce junto al Ayuntamiento, el tramo sur y el puente romano. En la curva que antes giraba hacia el este, ahora sube con una curva suave hasta la columna 64,5 y sale recto por el borde norte. Entre la orilla oeste y la Mezquita queda una franja de tierra de unas cinco teselas. Donde estaba la salida por el este vuelve a haber terreno.
+- **Anchura**: aguas arriba de la fila 29 (la curva y el tramo norte) el cauce mantiene la anchura que tiene en esa fila, unas cuatro teselas de orilla a orilla, hasta el borde.
+- **Árboles**: la hilera del borde norte deja libre el ancho del cauce y conserva árboles a los dos lados. La arboleda de la orilla este va desde la orilla hasta el borde del mapa. Los nenúfares, los juncos y el punto de pesca `manantial` salen de la forma del río y se recolocan solos.
+- **Comprobado en el juego** con vista amplia: el río sube junto a la Mezquita sin tocarla y sale por arriba entre los árboles. `npm test` (117 archivos, 1003 pruebas), `npm run lint` y `npm run build`, sin errores.
+- **Sin comprobar a mano:** pescar en `manantial`, modo Cozy y móvil.
+
+### Fuente de la plaza con el PNG de la usuaria, chorros animados y transparencia; bancos, farolas y tablón recolocados (2026-11-13)
+
+- **Fuente** (`granCapitanFountain.js`, asset `fountainBase.png`): se usa el PNG de la usuaria tal cual, con el caballo intacto (142×152). El centro del estanque queda donde estaba el de la fuente anterior (fila 39,8). El cuerpo sólido son cinco franjas que siguen el pretil, así que se puede rodear sin atravesar el agua. El relleno del pretil y la piedra son de un solo color: no queda azul fuera del agua.
+- **Chorros** (`fountainJets.js`): once surtidores en los sitios del dibujo original, en una capa aparte con cuatro fotogramas (170 ms). Cada chorro va en su fase para que no suban todos a la vez. Con "reducir movimiento" se quedan quietos.
+- **Transparencia** (`seeThrough.js`): la estatua, sus versiones de estación y los chorros se aclaran a 0,55 cuando alguien queda detrás y tapado al menos en un 35 %. Vale para la viajera, su mascota y los NPC. Delante o a los lados no se aclara.
+- **Plaza**: los cuatro bancos, pegados al borde de las baldosas junto a las esquinas. Las farolas, en las esquinas del contorno escalonado. El tablón de anuncios, en el borde sur, abajo a la izquierda de la fuente, en el sitio de la farola que había ahí, que se quita de momento.
+- **NPC** (`granPlaces.js`): la fuente, los sitios de dar de comer a las palomas, los de tomar el sol, el plano de paisaje de Ylonem y los bancos de Grace y Atreus siguen a la fuente, los bancos y el tablón nuevos. Ninguno cae dentro del estanque.
+- **Comprobado en el juego** con zoom 3: la estatua se aclara con la viajera o Lupe detrás y no con ellas delante o al lado; los chorros ciclan; el tablón queda al sur sin estorbar el paso. `npm test` (117 archivos, 1003 pruebas), `npm run lint` y `npm run build`, sin errores.
+- **Sin comprobar a mano:** los recorridos completos de los NPC por la plaza nueva, modo Cozy y móvil.
+
+### Río que entra por el este, Mezquita junto a la Universidad, borde este recortado y sin puentes de madera (2026-11-13)
+
+Sustituye la distribución de los bloques anteriores de esta zona (puente del arco, Mezquita junto al río).
+
+- **Río** (`river.js`): conserva el tramo sur. Del puente romano hacia arriba sube recto junto al Ayuntamiento y, a su altura (filas 23 a 26), gira suavemente hacia el este y corre por el bosque hasta salir por el borde este, entre los árboles, con la anchura del tramo sur. Al norte del Ayuntamiento ya no hay agua: el tramo diagonal y la salida por el norte son terreno. La anchura se sigue midiendo desde la fila 29, que no cambió.
+- **Puentes**: se quitan el puente de madera del arco y el de tablones del sur (no llevaban a ningún sitio), con sus accesos: el camino que bajaba al de tablones, el ramal que subía a él desde el camino del sur, el sendero de la ribera y el banco que quedaba suelto. El camino del sur acaba a la altura de la Casa del Encuentro. El puente romano sube una fila (filas 39 y 40) para quedar a la altura de la fuente, con su paseo recto desde la plaza. Se eliminan los dibujos que ya no usaba nadie (`arcBridge`, `plankBridge`, `plankSpan`).
+- **Mezquita, arco y San Rafael**: Mezquita en `x: 48, y: 1` (puerta en x 56), tan a la izquierda como deja su arco, que va frente a la puerta y tiene que quedar al este del Ayuntamiento y de su paseo lateral (columnas 51 y 52), porque delante de él va su explanada. Arco en 56,5 con la base en la fila 20, camino recto de tres teselas bajo él y explanada delante (filas 20 y 21), unida al paseo del Alan Turing, que viene de los estudios por la fila 18 y baja por el lateral del Ayuntamiento. San Rafael en el parterre de césped a la izquierda (45,5, 17), entre el paseo de junto a la Universidad, el del Alan Turing y el lateral del Ayuntamiento, sin tapar la Mezquita. Entre la fachada y la explanada no se siembran árboles.
+- **Borde este** (`mapRows.js`, `EAST_TRIM = 16`): el mapa pasa de 88 a 72 columnas (el mundo y la cámara salen de `COLS`). A la derecha de la Mezquita queda una franja de bosque de unas seis columnas más la hilera del borde. Se ajustan arboledas, vallas, rocas y `TOWN_REGION`, y lo que el río pone fuera del borde (nenúfares, juncos) no se coloca.
+- **Pesca y NPC**: los cinco puntos de pesca y la caña se recolocan sobre el río nuevo, todos en tierra, a la vista del agua y a los que se llega andando (`manantial`, en la orilla norte del tramo que entra del este; `ribera`, aguas arriba del puente romano; `recodo` y `desembocadura`, en la orilla sur del último tramo; la caña, al sur del puente romano). Ylonem graba el naranjo derecho de la Mezquita desde el césped a la derecha del arco.
+- Las pruebas del trazado se reescribieron (río, puentes, Mezquita, arco, borde este); las que dependían de la franja recortada (la parcela de la antigua biblioteca, el solar de la Casa de la Música) se quitaron o se acotaron, y el mínimo de árboles del valle baja de 300 a 250.
+- **Comprobado en el juego** con zoom 3: desde el Alan Turing, por su paseo y la explanada, se pasa bajo el arco y en la puerta de la Mezquita `E` abre la conversación de Lupe; el puente romano se cruza en los dos sentidos; mundo y cámara miden 1152 px de ancho. `npm test` (117 archivos, 1002 pruebas), `npm run lint` y `npm run build`, sin errores.
+- **Sin comprobar a mano:** las rutas de Ylonem, Grace y Atreus por el puente romano subido, modo Cozy y móvil.
+
+### La Mezquita, junto al río (provisional) (2026-11-13)
+
+- A petición de la usuaria, solo la Mezquita (con sus dos naranjos) se desplaza a la izquierda, a la misma altura: `x: 51`, puerta en x 59. El agua llega a la columna 48 a la altura de su fachada y a la 50 en la fila de su puerta, así que entre su lateral izquierdo y la orilla quedan unas dos teselas de césped. Los árboles que caían en la parcela nueva se resiembran fuera (la siembra evita los edificios) y la explanada sin árboles (`MOSQUE_GROUNDS`) empieza ahora en el lateral de la Mezquita.
+- El río, el puente del arco, el arco y San Rafael siguen donde estaban. Es provisional que el arco ya no quede frente a la puerta: la usuaria decidirá después dónde van el arco y San Rafael. La prueba de esa alineación queda como pendiente (`it.todo` en `world.test.js`).
+- Para llegar a la puerta se añadió solo un tramo de baldosas delante de la fachada (filas 12 y 13), de la puerta al camino que pasa bajo el arco. Ylonem graba ahora el naranjo derecho de la puerta desde la salida del puente.
+- **Comprobado en el juego** con zoom 3: desde el giro del paseo de los estudios se cruza el puente, se pasa bajo el arco y por las baldosas nuevas se llega a la puerta, donde `E` abre la conversación de Lupe. `npm test` (117 archivos, 1002 pruebas y una pendiente), `npm run lint` y `npm run build`, sin errores.
+
+### Ayuntamiento acortado, río que gira hacia la Universidad, Mezquita en la orilla norte y puente del arco (2026-11-13)
+
+Varias rondas sobre la misma zona, en este orden; aquí queda el resultado final.
+
+- **Ayuntamiento** (`buildings/ayuntamiento.js`): sin los dos vanos de ladrillo de los extremos; cinco vanos, 19 teselas (304 px). Ventanas y puertas del mismo tamaño, rótulo, banderas y entrada central; los pilares de los lados rematan la fachada y la galería del tejado pasa a once arcos. La luz de noche sale sola de las ventanas que quedan. Parcela `x: 32, w: 19`, puerta en x 41; las columnas del templo siguen pegadas (27,75) y el atajo a los estudios (x 21) queda libre. La plaza cívica y sus objetos (farolas, bancos, arriates, mosaico) se reparten simétricos respecto a la nueva puerta, y un tramo de baldosas baja de la puerta al camino del Ayuntamiento. El paseo de los estudios baja ahora pegado a su lado derecho (x 51).
+- **Río** (`river.js`): al norte gira hacia la izquierda desde la parte trasera del Ayuntamiento (fila 24), pasa a unas dos teselas y media de césped del lado derecho de la Universidad y sale por el borde norte con su anchura (sin hilo ni poza). La anchura se mide desde la fila 29, que no cambió, así que el cauce del sur es el de siempre. Se quitó el puentecillo del norte, su acceso y su dibujo (`footBridge`). El punto de pesca de la cabecera (`manantial`) pasa a la orilla interior de la curva.
+- **Mezquita, arco y San Rafael**, en la orilla derecha: Mezquita al fondo (`x: 66, y: 1`, puerta en x 74), arco centrado en su puerta (74,5, base en la fila 21) con dos filas de suelo entre ambos y camino recto de tres teselas, y San Rafael (65,5) a la izquierda del arco y del borde de la Mezquita, con una franja de césped hasta la ribera. Entre la ribera y el conjunto no se siembran árboles (`MOSQUE_GROUNDS`); la arboleda que había ahí pasa a la parcela que dejaron libre (filas 23 a 32).
+- **Puente del arco** (`arcBridge`, de madera como el de tablones): recto de oeste a este en las filas 21 y 22, de x 58 a 64, con tierra en los dos extremos. Por el oeste lo une un acceso al giro del paseo de los estudios, detrás del Ayuntamiento; por el este desemboca en el paseo de delante del arco, al que también sube el sendero de la ribera desde el puente romano.
+- Ylonem graba el naranjo izquierdo de la Mezquita desde el césped entre San Rafael y el arco. Las pruebas del trazado (río, puentes, Mezquita, arco, San Rafael, Ayuntamiento) se reescribieron para la distribución nueva.
+- **Comprobado en el juego** con zoom 3: se entra al Ayuntamiento desde la plaza y se sale delante de su puerta; desde el giro del paseo de los estudios se cruza el puente, se pasa por el arco y en la puerta de la Mezquita `E` abre la conversación de Lupe; el puente se cruza en los dos sentidos; del puente romano se llega por la ribera al mismo paseo. `npm test` (117 archivos, 1002 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** la ruta de Ylonem hasta su punto de grabación, modo Cozy, nieve y móvil.
+
+### San Rafael sin pixelado (2026-11-13)
+
+- Reducido a 48 px con vecino más cercano, San Rafael se veía muy pixelado (se saltaba casi todos los píxeles del original). Ahora va al triple de resolución (144×400, remuestreado con Lanczos y alfa premultiplicado, sin halo) y se dibuja a un tercio: ocupa lo mismo en el mapa (48×133) y la colisión no cambia. Al zoom habitual (3) cada píxel de la textura cae en un píxel de pantalla, así que se ve nítido y con el detalle del original; ya no hace falta el retoque de la vara y el halo.
+- Los objetos admiten `scale`: la escena los pinta a ese tamaño, con sus capas de estación, y filtra su textura en lineal (`smoothKeys`, se conserva al cambiar de tema). Es la única excepción al filtrado de vecino más cercano, pedida por la usuaria; el resto del valle sigue igual.
+- **Comprobado en el juego** con zoom 3: tamaño 48×133, filtrado lineal en la base y en la capa de estación. `npm test` (117 archivos, 1002 pruebas), `npm run lint` y `npm run build`, sin errores.
+- **Sin comprobar a mano:** otros zooms (2 y 4, donde se suaviza un poco), modo Cozy y nieve.
+
+### Triunfo de San Rafael junto al arco; la Mezquita y el arco, cuatro teselas al este (2026-11-13)
+
+- Nuevo objeto `sanRafael` (`sanRafael.js`, `game/assets/sanRafael.png`): la ilustración de la usuaria, sin la bruma de alfa bajo, reducida con vecino más cercano a 48×133 para que a zoom 3 se distingan la base rocosa, la columna y el arcángel; la vara y el halo, que quedaban en puntos sueltos, se redibujaron enteros. Está en (69, 39,5), en el césped entre el sendero de la ribera y el arco, y choca solo por la base (franja de 10 px), así que se rodea y se pasa por detrás.
+- A 48 px de ancho el monumento tapaba el ala izquierda de la Mezquita, así que la Mezquita (x 70, puerta en x 78), el arco (78,5) y sus naranjos (75,8 y 81,2) se desplazaron cuatro teselas al este como conjunto; los árboles que caían en la nueva huella desaparecen solos (los árboles de relleno evitan edificios y caminos). El camino de la Mezquita sube recto de la T del puente romano, por el centro del arco, a la puerta (x 77 a 79); el paseo del puente romano se alarga hasta él, y del paseo baja otro tramo entre los bancos hasta el puente de tablones (x 73 a 75), como antes. Colisión, conversación con `E` y su punto salen de la nueva parcela.
+- No llegó ninguna captura con el NPC: el que tenía parada en ese césped es Ylonem (el sitio desde donde graba el naranjo izquierdo de la Mezquita), y su punto se movió con el naranjo.
+- Las pruebas del trazado antiguo (un solo camino recto de la puerta al puente de tablones) se actualizaron al nuevo; la de la parcela de la antigua biblioteca empieza ahora en la fila 42, porque el paseo del puente romano llega hasta x 77.
+- **Comprobado en el juego** con zoom 3: del puente romano por el paseo, por debajo del arco, hasta la puerta de la Mezquita, donde `E` abre la conversación de Lupe; San Rafael se rodea y se pasa por detrás. `npm test` (117 archivos, 1002 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** la ruta de Ylonem hasta su nuevo punto de grabación, modo Aventura, nieve y móvil.
+
+### Autobús de Aucorsa junto a la grúa; fuera el autobús antiguo (2026-11-13)
+
+- El autobús verde de Aucorsa de la usuaria (`game/assets/aucorsaBus.png`, `aucorsaBus.js`) aparca en la explanada de RACE, a la izquierda de la grúa, con el frontal hacia la izquierda. Se dejó transparente la bruma de alfa bajo y se redujo con vecino más cercano a 120×43; el logo no se leía y se redibujó "AUCORSA" con la letra de 3×5 y el emblema hexagonal. Está en x 24 (sin tapar el atajo que sube de la casa de Lupe por x 19) y la grúa pasa a x 31,75; entre las dos carrocerías quedan unos 25 px. Ruedas en la misma fila (44,6) y cuerpos sólidos en una franja baja.
+- Se retira el autobús amarillo y blanco del apartadero junto al puente romano (y su dibujo procedural en `props.js`): el ensanche de baldosas queda libre y la parada sigue en su sitio.
+- La nieve repintaba como hierba cualquier verde, y el autobús salía blanco. `snowSteps` admite `recolor: false` y los dibujos en PNG llevan `painted: true` (autobús, grúa, fachadas y quiosco): solo reciben la capa de nieve de arriba, sin perder sus verdes (el cartel de la Junta, la bandera andaluza, las plantas).
+- **Comprobado en el juego** con zoom 3: se cruza entre los dos vehículos y por detrás de ambos, `E` entra en RACE y se sale delante de la puerta, y se camina por donde estaba el autobús antiguo. `world.test.js` comprueba que hay un solo autobús, el hueco con la grúa, el atajo libre y la explanada. `npm test` (117 archivos, 1001 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** modo Aventura, móvil.
+
+### Bar Mihrab con la fachada de la usuaria y terraza (2026-11-13)
+
+- El bar procedural (tejado morado y toldos rosas) se sustituye por la fachada del Bar Mihrab que aportó la usuaria (`game/assets/barFacade.png`): rótulo, toldo, escaparate y puerta a la derecha. Se dejó transparente la bruma de alfa bajo, se recortó el margen y se redujo con vecino más cercano a 64×60, con la puerta a la altura de la viajera. A esa escala el rótulo no se leía: se redibujó "BAR MIHRAB" con la letra de 3×5; los textos manuscritos del toldo y del cristal, que quedaban en manchas, se quitaron (toldo crema liso).
+- Parcela: `x: 9, y: 26, w: 10, h: 4`, puerta en x 17; el dibujo ocupa de x 14,75 a 18,75 y su umbral queda en la fila 30. Delante, una terraza de baldosas (filas 30 y 31, x 9 a 18) pegada al camino del Ayuntamiento.
+- Terraza (`terraceCafe.js`, objetos del valle): tres mesas cuadradas oscuras con dos sillas de mimbre y patas de hierro, a la izquierda de la puerta y con 12 px entre ellas, y dos sombrillas crema con el mástil detrás de las mesas. La lona va por encima de la cabeza de la viajera y la sombrilla se ordena 20 px por delante de su base (`lift`, nuevo en los objetos), así que quien pasa por debajo queda bajo la lona. No llegó ninguna foto real de referencia: la terraza sigue la descripción.
+- Queda libre el camino del Ayuntamiento, el atajo que sube entre el bar y las columnas, la puerta (la zona de `E` está delante, fuera de las mesas) y un pasillo entre la fachada y las mesas. `work.js` ya no dibuja a mano ninguna fachada: se le quitan los imports de dibujo.
+- **Comprobado en el juego** con zoom 3: se entra con `E` por la puerta derecha y al salir la viajera aparece delante (x 280, y 480); se pasa entre las mesas, se recorre la terraza por detrás bajo las sombrillas y se sube por el atajo hasta el paseo de los institutos. `world.test.js` comprueba mesas, huecos, terraza y puerta. `npm test` (117 archivos, 1000 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** modo Aventura, móvil.
+
+### CPIFP Alan Turing con la fachada de la usuaria (2026-11-13)
+
+- El instituto procedural (que ya solo usaba Alan Turing) se sustituye por la nave que aportó la usuaria, con su propio tipo `cpifp`: voladizo metálico, entrada acristalada, placa azul, marquesina azul y mesas de madera. Bajo la base traía restos naranjas casi transparentes y, por toda la imagen, una bruma de píxeles de alfa muy bajo: se dejó transparente todo lo de alfa ≤ 128, conservando el pavimento y el contorno, y el borde queda limpio sobre el césped. Se redujo con vecino más cercano a 208×63, como el IES, para que las puertas midan parecido. La placa no se leía a esa escala: se redibujó más ancha con la letra de 3×5.
+- Son dos PNG (`turingBack.png` y `turingFront.png`): la nave y, aparte, la marquesina y las mesas, por delante de quien pasa a su lado. Colisiones: el muro hasta su base, la marquesina y las mesas, con paso libre entre ellas hasta las puertas. La zona de `E` (`doorZone`) está ante las puertas acristaladas, bajo el voladizo; al salir, la viajera vuelve delante de ellas.
+- Parcela: `x: 23, y: 14, w: 14, h: 4`, puerta en x 32. El dibujo ocupa de x 376 a 584: 31 px desde el IES Gran Capitán y antes del paseo de x 38. Ningún NPC usaba la puerta anterior. Se eliminan `instituteSprite`, el rótulo, la parabólica y las ventanas de código del instituto procedural, que ya no usaba nadie.
+- No se usa ninguna foto real: solo llegó el sprite.
+- **Comprobado en el juego** con zoom 3: la placa se lee, la marquesina y las mesas frenan, `E` entra y al salir la viajera aparece ante las puertas (x 512, y 284). `npm test` (117 archivos, 999 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** modo Aventura, nieve y móvil.
+
+### IES Gran Capitán con la fachada de la usuaria (2026-11-13)
+
+- El IES Gran Capitán (id `daw`) deja de compartir el dibujo procedural con Alan Turing y pasa a su propio tipo, `ies`, con la fachada que aportó la usuaria (`game/assets/iesFacade.png`): tres plantas de ladrillo, aula anexa a la izquierda, entrada acristalada con el cartel de la Junta y el aparcabicis con tres bicicletas a la derecha, sin vallas. Se recortó el margen transparente y se redujo con vecino más cercano a 208×89: a 160 (el ancho de antes) las puertas quedaban de la mitad de alto que la viajera. A esa escala el cartel no se leía: se redibujó más ancho, con el símbolo de la Junta y "IES GRAN CAPITÁN" en la letra de 3×5.
+- Parcela: `x: 9, y: 12, w: 13, h: 6`, puerta en x 15 (centro de la entrada). El dibujo ocupa de x 8,6 a 21,6, entre el naranjo del oeste y Alan Turing (desde x 23). `GRAN_DOOR` (la llegada de Lupe para presentar a Ylonem y Grace) sale ahora de la puerta de `world.js`; los puestos de Ylonem, Grace y Lupe siguen en el paseo, junto a la puerta.
+- Colisiones: el muro hasta su base, el aula anexa y el aparcabicis, que llega a la acera para que nadie quede detrás de las bicis. Se anda por la acera de la fachada hasta las puertas; la zona de `E` (`doorZone`) está en esa acera, bajo el cartel, y al salir la viajera vuelve delante de las puertas.
+- Alan Turing conserva su fachada procedural; se quitan la variante del instituto, la configuración del Gran Capitán y la tilde del rótulo, que ya no usaba nadie.
+- No se usa ninguna foto real: solo llegó el sprite, y el filtrado de vecino más cercano sigue limitado al juego.
+- **Comprobado en el juego** con zoom 3: el nombre se lee, se llega del paseo a las puertas, `E` entra y al salir la viajera aparece delante de la puerta (x 248, y 279); el aula anexa y el aparcabicis frenan donde toca. `npm test` (117 archivos, 999 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** la escena de llegada de Lupe con la puerta nueva, modo Aventura, nieve y móvil.
+
+### Universidad de Burgos con la fachada de la usuaria, escalinata y rampa transitables (2026-11-13)
+
+- La universidad procedural se sustituye por la fachada de la Facultad de Educación que aportó la usuaria: saliente curvo central, banderas, escalinata con pasamanos y rampa lateral. Se recortó el margen transparente y se redujo con vecino más cercano a 240×119, el ancho de la parcela. El escudo y el rótulo no se distinguían a esa escala: se redibujaron a la resolución del juego (escudo con corona, cuartel azul y castillo; "UNIVERSIDAD DE BURGOS" y "FACULTAD DE EDUCACIÓN" con la letra de 3×5).
+- Son dos PNG (`ubuBack.png` y `ubuFront.png`): la fachada y, aparte, las barandillas de la rampa y el pasamanos central, que se dibujan por delante de quien sube. `buildings/ubuLayout.js` describe dónde se pisa (rellano, escalinata a los dos lados del pasamanos, rampa desde la esquina oeste) y de ahí salen los cuerpos sólidos (el bulto menos el hueco del cuerpo de la viajera, juntado en rectángulos) y la zona de `E`.
+- `ramps.js`: andando solo en horizontal por la rampa, la viajera sube o baja con la pendiente (con cuerpos rectangulares se atascaba a cada píxel). Los edificios admiten `doorZone` (la puerta en el rellano, no a pie de calle) y `ramp`. Se elimina `arcade` de `shared.js`, que solo usaba la fachada anterior.
+- La zona de `E` está en el rellano, ante la puerta acristalada y a la izquierda del pasamanos; la salida del interior deja a la viajera donde pulsó `E`, así que vuelve al rellano libre de barandillas. Se reutilizan el interior y el contenido. Ningún NPC tenía parada en la entrada anterior.
+- **Comprobado en el juego** con zoom 3: se sube por la escalinata (por los dos lados) y por la rampa (solo con la flecha derecha, y se baja con la izquierda) hasta el rellano; `E` entra y al salir la viajera aparece en el rellano (x 474, y 143); la viajera queda detrás de la barandilla de la rampa. `ubuLayout.test.js` y `ramps.test.js` cubren los accesos, el pasamanos, el muro y la zona de `E`. `npm test` (117 archivos, 999 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** modo Aventura, nieve, móvil con joystick en la rampa.
+
+### Fachada de la Escuela de Artes Dionisio Ortiz con la ilustración de la usuaria (2026-11-13)
+
+- La galería procedural se sustituye por la fachada que aportó la usuaria (`game/assets/artesFacade.png`): dos plantas con balcones, ventanas verdes, las tres banderas sobre la puerta y el remate con el rosetón. El archivo ya traía transparencia real (sin fondo que quitar); se recortó el margen transparente y se redujo con vecino más cercano a 160×114, el ancho de la parcela. El borde no deja halo sobre el césped (ningún píxel claro en el contorno). A esa escala el rótulo quedaba en 29 px y no se leía: se redibujó más ancho, en dos líneas con la letra de 3×5 del juego, sobre la ventana central.
+- Parcela: `y: 2, h: 8` (ocho teselas de alto, apoyada en el paseo de la fila 10); la puerta sigue en (16, 10), centrada en la puerta principal bajo el balcón de las banderas, así que `E`, la salida y las paradas de NPC no cambian. Dibujo de x 184 a 344; la Universidad empieza en x 368. Se reutilizan el interior y el contenido de la escuela.
+- **Comprobado en el juego** con zoom 3: el nombre se lee, la fachada no invade el camino ni la Universidad, `E` entra por la puerta principal y al salir la viajera aparece delante de ella (x 264, y 160). `npm test` (115 archivos, 993 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Pendiente de decidir:** los dos caballetes de delante tapan en parte las ventanas bajas laterales.
+- **Sin comprobar a mano:** modo Aventura, nieve y móvil.
+
+### Quiosco de helados Camy, con entrada por detrás (2026-11-13)
+
+- El quiosco procedural de la piscina se sustituye por el quiosco azul de Camy de la ilustración de la usuaria, con su papelera a la izquierda y el cartel de helados a la derecha (la usuaria pidió el cartel a ese lado). Reducido tal cual, con vecino más cercano o promediando, quedaba ruidoso y borroso, así que se redibujó a mano a la resolución del juego (72×64): techo, bolsas colgadas, estantes, caja, máquina de chicles, vitrina, mostrador con el logo de Camy legible, cartel con seis helados y papelera.
+- Son dos PNG (`kioskBack.png` y `kioskFront.png`, ver `pngAssets.js`). Se puede entrar por una puerta trasera y quedarse detrás del mostrador: el fondo se ordena por la pared trasera y el frente por la base, así que la viajera queda entre los dos y asoma por el hueco. Para eso los edificios admiten `bodies` (huellas sólidas por pieza, franjas bajas junto al suelo, en lugar del muro entero) y `depthRows` (profundidad del fondo y del frente); `addFrontRail` pasa a ser `addFrontLayer`, compartido con la barandilla de la casa de Lupe.
+- Parcela: `x: 13, w: 5`, puerta en x 15 (el mostrador sobre su caminito). El dibujo ocupa de x 13,4 a 17,9: entre el vaso y la papelera quedan 31 px para pasar y el atajo a RACE sigue libre. La interacción de `E` es la misma (abre el interior del quiosco) y su aviso sale delante del mostrador; desde dentro del puesto no aparece.
+- **Comprobado en el juego** con zoom 3: se llega al mostrador por el caminito y `E` abre el quiosco; al salir, la viajera aparece delante del mostrador; se entra por detrás, se recorre el mostrador por dentro y la viajera se ve detrás de él. `world.test.js` comprueba el paso hasta la piscina y que las piezas se apoyan en la fila de la puerta. `npm test` (115 archivos, 993 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** modo Aventura, nieve y móvil.
+
+### Fachada de Copos con el PNG de la usuaria (2026-11-13)
+
+- La tienda procedural de Copos se sustituye por la fachada que aportó la usuaria (`game/assets/coposFacade.png`): rótulo azul corrido, puerta acristalada a la izquierda, escaparate sin folletos y dos persianas. Se recortó solo el margen transparente y se redujo con vecino más cercano a 176×43, el ancho de RACE, para que la puerta mida como las de los vecinos. A esa escala el rótulo y los logos no se leían; como en RACE, se redibujaron a la resolución del juego: el rótulo con "COPOS" y "CONGELADOS" en letra de 3×5 y el copo, el nombre del logo grande y el azulejo junto al escaparate.
+- Parcela: `x: 4, y: 37, w: 11, h: 3`, puerta en x 4. El dibujo se alinea por la puerta acristalada y ocupa de x 3,5 a 14,5, casi donde estaba la tienda (de 3,75 a 14,75). El hueco de césped hasta RACE queda en 8,7 teselas, con el manzano. La puerta, el punto de `E` y la salida salen de `door.x`. Ningún NPC tenía parada en la puerta anterior.
+- **Comprobado en el juego** con zoom 3: el rótulo se lee, `E` entra desde la puerta acristalada y al salir la viajera aparece delante de ella (x 72, y 640). `world.test.js` calcula el hueco entre las dos fachadas a partir de sus puertas. `npm test` (115 archivos, 992 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** modo Aventura, nieve y móvil.
+
+### Fachada de RACE con el PNG de la usuaria, pegada a la plaza (2026-11-13)
+
+- El garaje procedural se sustituye por la fachada que aportó la usuaria (`game/assets/raceFacade.png`): oficina de ladrillo de una planta con la puerta acristalada a la izquierda y tres ventanales. Se recortó solo el margen transparente y se redujo con vecino más cercano a 176×46, el ancho de Copos, con lo que la puerta mide como las de los vecinos. A esa escala cada logo quedaba en 10×9 px y no se leía, así que, a petición de la usuaria, los tres carteles se redibujaron a la resolución del juego (17×11, corona y "RACE" en letra de 3×5, como la grúa). Sin ventanas iluminadas de noche: el relleno taparía la oficina que ya se ve tras los cristales.
+- `pngAssets.js` carga los dos PNG del valle (fachada y grúa) y `warmEntry` los espera; sustituye al cargador propio de `towTruck.js`.
+- A petición de la usuaria, RACE se desplaza al este, pegado a la plaza: puerta en x 24, dibujo de x 23,2 a 34,2 (`x: 23, y: 37, w: 11, h: 3`, una oficina de tres teselas de alto). Entre Copos y RACE queda un hueco de césped más ancho con el manzano a la vista. La explanada se alarga hasta x 34 y la grúa pasa a x 30,5, a la derecha de la columna de la puerta. La puerta, el punto de `E` y la salida salen de `door.x`, así que coinciden con la puerta acristalada. Ningún NPC tenía parada en la puerta anterior. El pájaro que se posa en el tejado usa `y` de la parcela y queda sobre la cornisa baja.
+- **Comprobado en el juego** con zoom 3: la fachada se apoya en la calle sin pisar la plaza, `E` entra desde la puerta acristalada y al salir la viajera aparece delante de ella (x 392, y 640). `world.test.js` comprueba que la fachada no pisa la plaza y está pegada a ella, el hueco con Copos y que la grúa no tapa la puerta. `npm test` (115 archivos, 992 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** modo Aventura, nieve sobre la cornisa y móvil.
+
+### Grúa de RACE con el sprite de la usuaria (2026-11-12)
+
+- La grúa procedural de `props.js` se sustituye por un PNG (`game/assets/towTruck.png`, 81×39) redibujado a la resolución del juego a partir de la ilustración que aportó la usuaria. Reducida tal cual (1774×887 → 80 px de ancho) el logo y el rótulo se volvían una mancha, y al voltearla para que mire al oeste, como la anterior, el texto salía en espejo. La versión simplificada conserva la cabina doble amarilla, la caja azul con "RACE" legible, la baliza y la horquilla del enganche trasero. Se carga con el mismo filtrado de vecino más cercano del resto del juego (`pixelArt: true`) y pasa por la paleta pastel y la nieve como los demás objetos.
+- `towTruck.js` carga la imagen y `warmEntry` la espera antes de preparar los dibujos, porque la preparación es síncrona y la escena solo arranca tras `warmEntry`. Si el PNG no carga, la grúa queda invisible pero el valle entra igual.
+- La entidad es la misma (`towTruck` en `PROPS`, misma orientación), desplazada a x 29,7 para que la carrocería quepa entera en la explanada. El cuerpo sólido (`TOW_TRUCK_BODY`) es una franja baja de parachoques a parachoques: la viajera puede pasar por detrás (la grúa la tapa) y por delante, con el orden de dibujo por la base.
+- **Comprobado en el juego** con zoom 3: apoyada en las baldosas de la explanada, la viajera se para en la carrocería y queda detrás, la puerta del garaje queda libre y `E` entra en RACE. `world.test.js` comprueba que el cuerpo no pisa la columna de la puerta ni se sale de la explanada. `npm test` (115 archivos, 992 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+- **Sin comprobar a mano:** el aspecto en modo Aventura (no pastel), con nieve y en móvil.
+
+### Estaciones y clima del valle: cuatro estaciones, episodios esporádicos de lluvia y nieve, flora y fauna e indicador en el HUD (2026-11-12)
+
+Avanza la visión (secciones de ambiente y de ciclo de día y estaciones). Sobre la versión actual del mapa (caminos de baldosa, piscina y tres puentes).
+
+- **Ciclo:** primavera → verano → otoño → invierno → primavera, 20 minutos de juego activo por estación (`seasonConfig.js`). Antes, el valle pasaba a otoño con la lluvia y a invierno con la nevada, al azar y cada pocos minutos; ahora la estación y el tiempo son cosas distintas. La estación y el tiempo transcurrido en ella se guardan con la partida (`world.season`, opcional: una partida anterior parte de la primavera). El tiempo con la pestaña oculta o el juego cerrado no cuenta; dentro de una casa sí. El reloj del día (`SkyLayer.clock`) y las rutinas de Grace, Ylonem y Atreus no cambian: cambiar de estación no toca la hora.
+- **Lluvia y nieve:** el valle está despejado casi siempre. Cada estación tiene un plan de episodios que sale de la semilla del valle y del número de estación, así que recargar no reinicia el cupo (`valleClimate.planSeason`). Primavera: hasta dos chaparrones de 30 a 45 s; verano: como mucho un chaparrón de 20 a 30 s, y casi siempre ninguno; otoño: hasta dos de 45 a 60 s; invierno: como mucho una nevada de 40 a 60 s, y a veces ninguna. Entre el final de un episodio y el inicio del siguiente pasan al menos 15 minutos de juego activo, también entre estaciones y tras recargar (`carry` en el guardado); cambiar de estación, abrir el juego o volver a la pestaña no dispara nada (el primer episodio no llega antes de 90 s). Lluvia y nieve no se solapan. Tras una nevada la nieve queda 3 minutos en tejados, copas y césped y se retira en 2 más; una nevada solo puede empezar si le da tiempo a derretirse antes de acabar el invierno. La escarcha (hierba pálida y árboles con menos hojas) es la capa propia del invierno, distinta de la nieve acumulada. Tras la lluvia sale un arcoíris. Se retiran las tormentas y los rayos del valle (la portada los conserva).
+- **Flora y fauna (se suman a pájaros, mariposas, palomas, peces y gatos, que siguen):** primavera, flores en los bordes de caminos y plaza, dos patos en el río y mariposas también junto a la casa de Lupe; verano, césped más seco, cerezos con hojas, libélulas junto a la piscina y luciérnagas al anochecer en la ribera; otoño, árboles ocres, hojas caídas en los bordes y una ardilla que sale de vez en cuando junto a los institutos; invierno, árboles con menos hojas, escarcha y un petirrojo en la plaza (en las lámparas y los bancos). Todo es decorativo: sin cuerpo físico, lejos de puertas, puentes y caminos de paso, y se esconde si la viajera se acerca. Al cambiar de estación se retira lo anterior (una sola capa de flores y una de hojas, creadas y destruidas con su estación), sin duplicados al volver de una casa o recargar. Con «reducir movimiento» no hay animales.
+- **HUD:** icono pequeño junto al zoom (flor, sol, hoja, copo). Su nombre se consulta al pasar el ratón, al enfocarlo con el teclado y al tocarlo en el móvil (unos segundos), y se enseña unos segundos al cambiar de estación. Sale debajo del icono para no tapar los controles de la esquina ni la barra en móvil. No hay reloj en el HUD.
+- **Conversaciones de los frutales:** cinco estados (primavera, verano, otoño, invierno con escarcha y nieve). Los textos nuevos están en `DIALOGOS.md`, apartado 3d.
+- **Comprobado en el juego** (acelerando el tiempo con `TIME_SCALE` y llevando el reloj con `window.__valle`): se recorren las cuatro estaciones con su aspecto; recargar retoma estación, progreso y plan; con la pestaña oculta el reloj no avanza; una recarga durante y después de una nevada conserva el episodio y la nieve; la nieve permanece, se retira y no se acumula; los patos, libélulas, luciérnagas, ardilla y petirrojo aparecen donde toca; el indicador cabe en un móvil de 375 px sin tapar el joystick ni el botón A; entrar y salir de una tienda mantiene el reloj, la estación y una sola capa de flores. Las pruebas unitarias cubren los intervalos y máximos con 300 semillas y 24 estaciones. `npm run build`, `npm run lint` y `npm test` pasan.
+- **Sin comprobar a mano:** un ciclo completo de 80 minutos reales, el aspecto exacto de la escarcha en modo Cozy (pastel) y con pantalla real de móvil (se usó la emulación de 375 px), y las rutinas de Grace, Ylonem y Atreus tras el regreso de una casa más allá de que el reloj y la escena sigan funcionando.
+
+### Caminos de baldosa, tres puentes y atajos de la casa de Lupe y del Ayuntamiento (2026-11-12)
+
+Continúa la redistribución en la rama `feat/redistribucion-valle`, sin integrar en `main`. La usuaria marcó los cambios sobre capturas del mapa.
+
+**Pavimento** (`ground.js`): los caminos de tierra pasan a ser de las mismas baldosas que la plaza. Caminos y plaza se pintan como una sola región, así que cruces, uniones y bordes con el césped no dejan costura. Los anchos no cambian: eje, paseos y calles de dos teselas; senderos a puertas y atajos, de una. Con nieve, el césped se cubre y las baldosas se ven limpias, como ya pasaba en la plaza. `paintRoute` (las ilustraciones) sigue usando la tierra. `DESIGN.md` lo recoge.
+
+**Casa de Lupe → RACE** (`world.js`, `npc/lupePlaces.js`)
+- La casa (con su terraza y escalera) se mueve dos teselas a la izquierda: queda una franja de césped de casi tres teselas entre su fachada y el eje. La puerta sigue en el camino de abajo (tesela 36).
+- La piscina y el quiosco se desplazan tres teselas a la izquierda. Así cabe un atajo de una tesela que sube del camino del sur, entre el quiosco y la escalera, hasta la explanada de RACE, que se ensancha hacia ese lado. No toca la escalera, el quiosco ni la grúa.
+- Lupe y Atreus: los puntos de la casa (sitio de Lupe, meta de la visita y puerta por la que entran y salen) siguen a la puerta nueva, 32 px a la izquierda. La terraza y la salida ante la puerta se calculan desde el edificio.
+- Los dos frutales que había al oeste de la piscina pasan a la franja al oeste de los estudios.
+
+**Ayuntamiento → estudios:** un sendero de una tesela sube por el hueco entre Mihrab y las columnas, del camino del Ayuntamiento al paseo del Gran Capitán y Alan Turing. El cerezo que estaba en el paso se planta a mano a su derecha (`PLACED_TREES`). Las columnas siguen pegadas al Ayuntamiento.
+
+**Puentes** (`world.js`, `riverPlaces.js`)
+- El Puente Romano no cambia: posición, dibujo y su propio tablero.
+- El de tablones baja a las filas 52 y 53, donde el río empieza a curvarse hacia el este, doce filas al sur del romano. Al oeste lo enlaza un camino que sale del camino del sur; al este, el camino de la Mezquita, que se alarga hasta él. Los dos bancos del sur del arco se colocan a los lados de ese camino.
+- Donde estaba el puente de tablones vuelve la ribera. Del camino que llevaba a él queda un apartadero corto para el autobús, que acaba antes de la orilla.
+- Un puentecillo nuevo al norte de la Mezquita (filas 18 y 19, el dibujo `footBridge` que ya existía) prolonga el paseo de los estudios hasta la orilla este. Desde allí un sendero baja entre el río y la Mezquita hasta el camino del Puente Romano, que sube a la Mezquita por el arco. No gira antes hacia su puerta porque el arco ocupa las filas 33 a 40 y el sendero chocaría con su pilar.
+- El punto de pesca "pasarela" quedaba bajo el puente nuevo: pasa a la orilla este, seis filas río arriba.
+
+**NPC:** ninguna rutina pasaba por las zonas tocadas salvo Atreus, que sale por la puerta de la casa (ya desplazada). Con la rejilla de los NPC, todos los tramos de Grace, Ylonem y Atreus, los de lluvia y atardecer, la llegada de Lupe y las salidas de Khalessi tienen camino.
+
+**Pruebas:** `world.test.js` comprueba ahora:
+- los tres puentes, con camino en sus dos extremos, el de tablones al menos ocho filas al sur del romano y el del norte por encima de la Mezquita;
+- la franja de césped entre la casa y el eje;
+- el atajo de la casa a RACE, entre el quiosco y la escalera y apartado de la grúa;
+- el atajo del Ayuntamiento a los estudios, sin árboles.
+
+`npm test` (112 archivos, 963 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+
+**Comprobado en el navegador** (zoom habitual 4, y 3 y 2):
+- Andando con las flechas: el atajo de la casa a RACE en los dos sentidos, el del Ayuntamiento a los estudios en los dos sentidos y los tres puentes de punta a punta en los dos sentidos.
+- Con las colisiones reales de la escena: rutas de ida y vuelta para los mismos trayectos y del paseo de los estudios a la Mezquita por el norte.
+- Casa de Lupe: el aviso de E aparece en la puerta nueva, se entra y al salir se aparece ante ella. La terraza se dibuja 32 px a la izquierda, con la casa.
+- El pavimento, con hierba y con nieve.
+- Al subir por el atajo hacia el IES salta, como debe, la presentación de Ylonem y Grace por Lupe.
+
+**No comprobado:** subir a la terraza por la escalera en su sitio nuevo; el móvil.
+
+**Decisiones**
+- *Sendero de la orilla este hasta el camino romano:* llevarlo a la puerta de la Mezquita por delante obligaba a atravesar el arco o los naranjos.
+- *Apartadero del autobús:* sin el camino del puente de tablones, el autobús y la parada se quedaban en el césped.
+- *Baldosas limpias con nieve:* es como ya se veía la plaza y mantiene legibles las calles en invierno.
+
+### Valle ampliado al oeste: Copos y RACE separados, explanada de la grúa y quiosco junto a la piscina (2026-11-12)
+
+Continúa la redistribución del bloque siguiente, en la misma rama `feat/redistribucion-valle` y sin integrar en `main`. La usuaria vio que Copos y RACE parecían una sola fachada y pidió más terreno por la izquierda.
+
+**Mapa** (`mapRows.js`, `world.js`)
+- El valle pasa de 80 a 88 columnas: gana 8 por el oeste. `mapRows.js` añade `WEST_COLS`, `MAP_COLS`, `shiftX` y `shiftPxX`, como ya hacía con las filas del norte. Todo lo que no se ha recolocado se desplaza 8 columnas, así que la plaza, el Ayuntamiento, el eje de la entrada y el recorrido hasta el puente quedan igual entre sí. La cámara y el mundo físico salen de `COLS` y miden ahora 1408 px.
+- Copos se va al oeste (x 5) y RACE queda donde estaba respecto a la plaza (x 21), con un hueco de cinco teselas de césped entre los dos. Cada uno tiene su puerta en la misma calle. Delante de RACE hay una explanada de tres filas en la que la grúa aparca a un lado de la puerta del garaje.
+- Mihrab, en x 5: queda con margen al borde oeste y seis teselas libres hasta las columnas del templo.
+- El quiosco de helados sube y queda justo a la derecha de la piscina, con el mostrador hacia el sur y un caminito hasta el camino de abajo. Entre el vaso y el quiosco quedan dos teselas y media para pasar, y el quiosco acaba antes de la escalera de la casa de Lupe. Su sitio de antes es césped.
+- El camino del Ayuntamiento, la calle de Copos y RACE y el camino del sur llegan ahora hasta el borde oeste. La valla del sur y las arboledas del oeste se alargan sobre la franja nueva.
+- Frutales del oeste: un manzano en el hueco entre Copos y RACE y, al oeste de la piscina, un manzano y un naranjo. Sustituyen al huerto, que ocupaba el sitio de la explanada.
+
+**Fuera de `world.js`:** el río y los puntos de pesca (`river.js`, `riverPlaces.js`), los puntos de Grace, Ylonem, Atreus, Lupe y Khalessi (`granPlaces.js`, `lupePlaces.js`, `valleNav.js`), las mariposas (`AmbientLife.js`) y las palomas de la estatua (`ValleScene.js`) se desplazan 8 columnas con `shiftX`/`shiftPxX`. Las rutinas no pasaban por la calle de trabajo ni por la piscina, así que no cambia ningún tramo. `TOWN_REGION` se desplaza con ellas.
+
+**Guardado** (`save.js`, `worldSave.js`): `SAVE_VERSION` sube a 7. Una partida de la versión 6 desplaza su posición 8 columnas (`fromNarrowSave`); una anterior, además, baja las 12 filas del norte (`migrateWorld`).
+
+**Pruebas:** `world.test.js` comprueba ahora el hueco de césped entre Copos y RACE con sus dos puertas en la misma calle, el margen de Mihrab, la explanada con la grúa fuera de la puerta y el quiosco a la derecha de la piscina con paso y caminito. Las columnas fijas de otras pruebas se actualizan. `worldSave.test.js` prueba la migración. `npm test` (112 archivos, 960 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+
+**Comprobado en el navegador** (zoom habitual 4, y 3 y 2 para ver la calle entera):
+- Copos y RACE se ven como dos locales, con el césped en medio.
+- El aviso de E aparece en las puertas de Copos, RACE, Mihrab y el quiosco, y no en el hueco ni en la explanada.
+- Con las colisiones reales de la escena, se llega a pie desde la entrada a esas puertas y a las de los estudios, las casas y el Ayuntamiento.
+- Hay paso entre la piscina y el quiosco.
+- Todos los tramos de Grace, Ylonem y Atreus, los de lluvia y atardecer, la llegada de Lupe y las salidas de Khalessi siguen teniendo camino.
+
+**No comprobado:** entrar y salir de los interiores de Copos, RACE, Mihrab y el quiosco; una partida guardada real de la versión 6 (la migración se probó con datos de prueba); el móvil.
+
+**Decisiones**
+- *Ampliar desplazando todo y no solo lo del oeste:* el mapa empieza en la columna 0; añadir terreno por la izquierda obliga a mover todo lo demás, así que se hace con un desplazamiento único y una versión nueva del guardado.
+- *RACE junto a la plaza y Copos al oeste:* como pidió la usuaria; el hueco de cinco teselas se ve con el zoom habitual sin alejar las puertas entre sí.
+
+### Redistribución del valle según la lámina aprobada (2026-11-12)
+
+Avanza la visión (zonas del pueblo). La usuaria aprobó una lámina con la distribución del valle y pidió llevarla al juego ajustada a la cuadrícula. Rama `feat/redistribucion-valle`, sin integrar en `main` hasta que la usuaria pruebe el mapa.
+
+**Distribución** (`world.js`, reescrito en coordenadas del mapa de 80 × 66; ya no usa la plantilla de 54 filas ni la siembra heredada)
+- Estudios arriba a la izquierda, en dos filas con un paseo delante de cada una: Escuela de Artes Dionisio Ortiz y Universidad de Burgos arriba; IES Gran Capitán (`daw`) y Alan Turing abajo. Los paseos se unen al este de la Universidad y bajan por el lado derecho del Ayuntamiento hasta el camino de la plaza.
+- Alan Turing (`turing`) es nuevo: reutiliza la fachada del instituto (`instituteSprite({ variant: 1 })`) con su rótulo, el ala "CIBER", el pórtico azul y un candado en la bandera (icono `lock` nuevo en `shared.js`). Al pulsar E entra en la sala genérica, como la Universidad.
+- Ayuntamiento justo encima de la plaza, con la puerta en el eje de la entrada y de la fuente; las columnas, pegadas a su izquierda como antes, y su plaza cívica delante.
+- Calle de trabajo al oeste de la plaza: Copos y RACE (un solo garaje, con la grúa al lado) juntos en el camino que entra en la plaza por el oeste; Mihrab, justo encima, en el camino del Ayuntamiento.
+- Entrada: la casa de Lupe sigue siendo la primera a la izquierda y no se ha movido; el quiosco de helados a su izquierda, con la piscina detrás y un ramal desde el camino hasta el vaso (el vaso choca por su propio dibujo); la Casa del Encuentro a la derecha, en el hueco del segundo garaje de RACE.
+- Río: el tramo norte baja ahora por la columna 54,5, entre el Ayuntamiento y la Mezquita, desde el borde norte (`river.js`); el resto del cauce no cambia. Se quita el puentecillo del afluente, que ya no cruzaba ningún camino. El punto de pesca `manantial` sigue en la cabecera.
+- Este: Puente Romano, Puerta del Puente y Mezquita igual que antes. El camino del puente de tablones sube dos filas (deja sitio a la Casa del Encuentro) y el puente arranca una tesela más al oeste; el autobús espera al norte de ese camino y la parada queda enfrente.
+- Biblioteca de los Logs retirada del mapa, con su camino; su parcela junto al río es arboleda. Su dibujo (`librarySprite`) y el panel `blog` de `ZonePanel` se conservan sin uso.
+- Árboles: siembra nueva con semilla fija sobre la distribución actual, sin las listas de edificios y caminos "de antes".
+
+**NPC** (`npc/granPlaces.js`, `AmbientLife.js`)
+- Ninguna rutina usaba la biblioteca.
+- Grace e Ylonem: se mueven con el IES su sitio de espera, el descanso de Grace ante la fachada, los refugios de lluvia de los dos, la primera toma de Ylonem y los puntos por donde llega Lupe a presentarlos. Todo lo de la plaza (bancos, palomas, fuente) no se movió.
+- `TOWN_REGION` (rejilla de los NPC del pueblo) se amplía para cubrir los estudios: ahora va de la fila 17 a la 62 y de la columna 2 a la 72.
+- Atreus: su puerta es la de la casa de Lupe, que no se mueve; sus paradas (plaza, puente, orilla, banco) siguen igual.
+- Mariposas: los jardines del huerto y de la piscina siguen a su sitio nuevo.
+
+**Pruebas:** `world.test.js` sustituye las comprobaciones de posiciones antiguas por otras de la distribución nueva (estudios con paseo hasta la plaza, casas a los lados de la entrada, quiosco y piscina, calle de trabajo con un solo RACE, río entre Ayuntamiento y Mezquita, sin biblioteca, ningún camino en el agua). `granLayout.test.js` sigue la huella nueva del IES. `npm test` (112 archivos, 958 pruebas), `npm run lint` y `npm run build` en `frontend/`, sin errores.
+
+**Comprobado en el navegador** (servidor de desarrollo, zoom habitual 4 y vista alejada): el conjunto se compara con la lámina; las trece puertas (los doce edificios y el buzón) ofrecen su aviso con E en su sitio nuevo; se entra en el IES y al salir se aparece ante su puerta nueva, con sitio delante; con la rejilla de navegación del juego, todos los tramos de Grace, Ylonem y Atreus, los de lluvia y atardecer, la llegada de Lupe y las salidas de Khalessi tienen camino. Se vio a Lupe presentar a Ylonem y Grace ante el IES.
+
+**No comprobado:** recorrer andando cada tramo con el teclado (las paradas se comprobaron con la rejilla, no siguiendo a los NPC en tiempo real); entrar y salir de cada interior uno a uno (solo el IES); lluvia, nieve, tema Cozy y móvil.
+
+**Decisiones**
+- *Calle de trabajo en dos filas:* a la escala del juego Mihrab, Copos y RACE miden 36 teselas y al oeste del eje de la entrada solo hay 33; se mantiene a RACE junto a Copos, como pidió la usuaria, y Mihrab pasa a la fila de arriba.
+- *Alan Turing con la fachada del instituto:* no había dibujo propio y la consigna era reutilizar lo existente.
+- *Mapa escrito en coordenadas actuales:* con todo recolocado, la plantilla de 54 filas y la siembra que imitaba la de antes ya no conservaban nada.
+
+**Pendiente:** el blog ya no tiene entrada en el valle (la tenía la biblioteca): decidir dónde se consulta. Que la usuaria pruebe el mapa antes de integrarlo en `main`.
+
+### Ayuntamiento de Córdoba rehecho y pegado al templo romano (2026-11-12)
+
+Avanza la visión (zonas del pueblo y homenaje a Córdoba). Sustituye al Ayuntamiento del bloque "franja nueva al norte" (más abajo): aquel era una casa grande de tejado morado con torre del reloj. La usuaria pidió primero una versión más noble a partir de una lámina con tejado morado, reloj y campanario; esa versión se llegó a dibujar, pero la descartó y dio como referencia definitiva una lámina basada en el edificio real de la calle Capitulares. Es la que queda.
+
+**Edificio** (`buildings/ayuntamiento.js` compone y `buildings/ayuntamientoParts.js`, nuevo, guarda las piezas; tipo `city`, sin cambios en `buildings/index.js`)
+- Lienzo de 384 × 144 px, huella de 24 × 9 teselas (antes 272 × 128 y 17 × 8). La puerta sigue en el centro del lienzo (`doorCol` 192).
+- Cubierta casi plana: losa clara con dentículos, alero de terracota con el vuelo inclinado a los lados y tres remates en forma de corona con escudo. Sin tejado morado, reloj ni campanario.
+- Galería continua de catorce arcos con fondo de terracota y medallones dorados en los extremos.
+- Parapeto de sillería: bloques macizos con un rombo rehundido sobre cada pilar, tramos de antepecho calado entre ellos y la lápida "AYUNTAMIENTO DE CÓRDOBA" con un castillo a cada lado (la tilde se dibuja a mano; nuevo icono `castle` en `shared.js`).
+- Siete vanos entre ocho pilares de piedra. Arriba, ventanales con carpintería dorada, cielo y copas de árboles reflejados, barandilla corrida de hierro negro y losa de terracota. Las banderas de Córdoba, España, Andalucía y la Unión Europea cuelgan de los cuatro pilares centrales.
+- Planta baja: cristal y la escultura de sillares apilados en el segundo vano, puertas de cristal de dos hojas en los tres centrales (la del centro es la entrada) y ladrillo en los dos de la derecha, uno con friso de cristal. El cartel azul de la foto real no se dibuja: ahí hay ladrillo. Macetones con arbustos en cono delante de tres pilares y del último vano.
+- De noche se enciende cada hoja de cristal por separado, así la carpintería dorada sigue viéndose. Las banderas van delante de los pilares, no del cristal, para que la capa de luz no las tape; tras la barandilla el cristal queda en sombra por el mismo motivo.
+
+**Columnas del templo** (`romanColumns.js`, rehecho sin cambiar de tipo `romanColumns`): podio de 144 × 104 px con escalinata de tres peldaños, cinco columnas corintias (dos con un trozo de arquitrabe encima, una completa, una rota y un muñón), muro de sillares arruinado detrás, tambor caído, matas de flores y un atril. El podio entero es sólido: si se pudiera pisar, la viajera quedaría por delante del punto de apoyo y el dibujo la taparía a medias. Por detrás se puede pasar.
+
+**Colocación** (`world.js`)
+- De izquierda a derecha: templo romano | Ayuntamiento. Las columnas tienen su punto de apoyo en `8,25; 9,75` y el podio acaba en x = 203 px; el Ayuntamiento (`x: 12, y: 1`, puerta en la tesela 24,10) empieza su primer pilar en x = 204 px. Queda un píxel entre ambos, sin césped en medio.
+- El Ayuntamiento empieza en la fila 1: los remates asoman sobre las copas del borde norte, que quedan detrás.
+- Plaza cívica nueva (`CIVIC_PLAZA`, teselas 3 a 37, filas 10 y 11) que une los dos conjuntos y acaba en el camino. Se suma a `plazaTiles`, así que se pinta con el mismo empedrado que la plaza mayor.
+- Objetos de la plaza, simétricos respecto a la puerta: farolas, bancos, dos arriates (`flowerBed`) y un mosaico del castillo entre palmeras ante la entrada (`cityMosaic`, plano, se pisa). Los dos objetos nuevos están en `civicProps.js`. Entre las teselas 22 y 27 no hay nada sólido.
+- Camino: el de la franja norte empieza ahora en la tesela 3 y corre al pie de la plaza. Un tramo de una tesela bajo la puerta (tapado por el empedrado) mantiene la regla de que toda puerta toca un camino.
+- Árboles: solo cambian los grupos sueltos del prado norte que caían sobre el sitio nuevo; el grupo de entre las columnas y el edificio se quita y se pone otro a la derecha del Ayuntamiento (teselas 39 a 44). La siembra del resto del valle no cambia.
+- El aviso de la puerta decía "Entrar: undefined" porque faltaba el nombre en `valleCopy.js`; ahora dice "Entrar: Ayuntamiento de Córdoba" ("Córdoba City Hall" en inglés).
+
+**Pruebas:** `world.test.js` comprueba ahora que las columnas quedan pegadas a la izquierda del Ayuntamiento (entre 1 y 2 px de separación, sin solaparse), que la puerta se alcanza a pie desde la entrada del valle sin atravesar el podio, que delante de la puerta hay empedrado y ningún objeto sólido hasta el camino, y que el podio es sólido hasta el suelo. `npm test` en `frontend/` (112 archivos, 955 pruebas) y en `backend/` (60), `npm run lint` y `npm run build`, sin errores.
+
+**Comprobado en el navegador** (servidor de desarrollo, Playwright, zoom 1, 2 y el de partida): el edificio se compara con la lámina y conserva su silueta y reparto (remates, alero, galería, parapeto con inscripción, ventanales, balcón con banderas, puertas de cristal, ladrillo); no tiene tejado morado, reloj ni campanario; el templo queda inmediatamente a su izquierda. Andando con el teclado: la viajera llega a la puerta, se para en el zócalo y entra con E; se para al pie del podio; recorre la base de los dos conjuntos de x 171 a x 310 sin engancharse en la junta; y recorre la plaza y el camino de punta a punta sin muros invisibles (los únicos cuerpos de la zona son el edificio, el podio, farolas, bancos y arriates, listados desde la escena). Visto también de noche con las ventanas encendidas.
+
+**No comprobado:** lluvia y nieve en la zona; el tema Cozy; el móvil (táctil); el recorrido de los NPC (no pasan por la franja norte).
+
+**Decisiones**
+- *Edificio real y no la lámina del tejado morado:* lo decidió la usuaria con la segunda referencia; la primera versión se descartó sin publicarse.
+- *Contiguos con un píxel de separación:* es lo mínimo para que el contorno de color de cada dibujo no se monte sobre el otro.
+- *Podio sólido entero:* evita que la viajera se suba a él y quede mal ordenada en profundidad.
+- *Mismo tamaño de huella que un edificio grande del valle (24 × 9):* el Ayuntamiento es más ancho que la Universidad para que se reconozca su arquitectura, pero sin pasar de la Mezquita.
+
+**Pendiente:** al pulsar E se entra en la sala genérica vacía que tienen los edificios sin interior propio; decidir si el Ayuntamiento tendrá interior o diálogo (y anotarlo en `DIALOGOS.md`). Comprobar la zona con lluvia, nieve y en móvil.
+
+### Fuente de Las Tendillas con el Gran Capitán en la plaza (2026-11-12)
+
+Avanza la visión (plaza como centro del pueblo y homenaje a Córdoba). La fuente pequeña de dos cuencos se sustituye por una inspirada en la de Las Tendillas, a partir de la lámina pixel art de la usuaria y de las fotos reales. No se tocaron bancos, farolas, tablón, caminos ni la elipse empedrada de la plaza.
+
+**Dibujo** (`granCapitanFountain.js`, nuevo; `props.js` lo usa como `fountain`, así que el tipo de objeto no cambia)
+- Lienzo de 120 × 128 px (antes 72 × 60). Estanque redondo de piedra oscura (elipse de 57 × 19 px, con murete delantero y sillares), agua con ondas en todo el anillo y diez surtidores pequeños repartidos alrededor del pedestal. Los de la mitad de atrás se pintan antes que el pedestal, así que este los tapa.
+- Pedestal sobre planta cuadrada con chaflanes: dos gradas de piedra clara (la arenisca del arco de Córdoba), cuerpo de ladrillo rojizo con un medallón de laurel y bronce en el frente y dos placas en las caras laterales, moldura y cornisa.
+- Estatua ecuestre en bronce verdoso, mirando a la izquierda: caballo al paso con una mano levantada, crin, cola y patas del lado lejano en un tono más oscuro; el Gran Capitán erguido, con sombrero de ala, capa y las riendas en la mano. Cada parte es una silueta de polígonos que se sombrea sola por sus bordes; el jinete lleva contorno propio para separarse del caballo, que es del mismo bronce.
+- Primera versión descartada tras verla: el caballo, hecho con rectángulos, parecía un camello. La segunda, con patas cortas, también; la definitiva alarga las patas y separa al jinete.
+
+**Colisiones**
+- El cuerpo sólido es el pretil entero: cinco franjas horizontales que siguen la elipse (112 px en lo más ancho, de 3 a 41 px por encima del punto de apoyo). Pedestal y estatua quedan dentro. Un solo rectángulo dejaba esquinas invisibles en la curva.
+- La viajera puede pasar por detrás. Ahí el pedestal y la estatua la tapaban entera, así que la fuente se aclara mientras tiene los pies en esa zona (`seeThrough.js`, nuevo; opacidad 0,55 con un fundido de 220 ms). Es el único objeto que lo usa.
+
+**Posición y tamaño:** el punto de apoyo no cambia (`37; 29,2` de la plantilla, `592; 659` px del mapa), centrado en la plaza. Quedan unos 50 px de paso a cada lado, entre el pretil y las farolas laterales, y unos 35 px por delante, antes del tablón y los bancos del sur.
+
+**NPC y vida ambiental** (`npc/granPlaces.js`, `ValleScene.buildLife`)
+- Los rincones de las palomas (`PIGEON_HOMES`) estaban dentro del pretil nuevo: pasan a delante de la fuente, fuera del estanque.
+- Grace sigue esparciendo semillas desde los mismos dos sitios, pero mira hacia las palomas en su nuevo rincón. Ylonem graba la fuente desde un poco más atrás (`548; 488` de la plantilla) mirando a la estatua.
+- Los pájaros ya no se posan en la copa (que ya no existe): se posan en el sombrero del Gran Capitán y entre las orejas del caballo.
+- Khalessi sigue curioseando junto al borde (34 px a cada lado del centro, 16 por debajo), que queda fuera del pretil.
+
+**Pruebas:** `npm test` en `frontend/` (112 archivos, 953 pruebas) y en `backend/` (60), `npm run lint` y `npm run build`, sin errores. Nuevas en `granCapitanFountain.test.js`: la fuente sigue donde la buscan los NPC; el cuerpo cubre el pretil con franjas seguidas, simétricas, más anchas en el centro y de más de 100 px; ningún sitio de paseo de NPC (palomas, Grace, Ylonem, Khalessi) cae dentro del estanque; el aclarado solo salta con la viajera detrás y no deja hueco entre el pretil y la zona de detrás. La prueba de Grace exige ahora 64 px de distancia al centro de la fuente (antes 40).
+
+**Comprobado en el navegador** (servidor de desarrollo, Playwright, zoom por defecto y un paso alejado): la fuente se lee como monumento dentro de una fuente (estanque, pedestal, caballo con jinete y surtidores) y es el elemento principal de la plaza. La viajera, andando con el teclado hacia la fuente desde el sur, el oeste, el este y el norte, se para en el borde del pretil sin atravesar el agua; por detrás, la fuente se aclara y se la ve. Se rodea por los lados sin engancharse. Visto también de día, al atardecer con las farolas encendidas y con el tema Cozy. Sin errores en consola.
+
+**No comprobado:** la nieve sobre la estatua en invierno, la lluvia, el móvil (táctil), el recorrido completo de Grace y Khalessi alrededor de la fuente nueva en el juego (solo con las pruebas de sitios) y los pájaros posándose en el sombrero.
+
+**Decisiones**
+- *Mismo tipo `fountain` y mismo punto de apoyo:* los NPC, el gato y Ylonem buscan la fuente por `FOUNTAIN`; cambiar solo el dibujo y el cuerpo evita tocar sus rutinas.
+- *Aclarar en lugar de impedir el paso por detrás:* cerrar la parte de atrás habría convertido la fuente en un muro de 112 px en mitad de la plaza; con el aclarado se puede rodear entera.
+- *Se aclara la fuente entera, estanque incluido:* separar el estanque del monumento en dos imágenes complicaba la profundidad para un efecto que dura lo que tarda la viajera en rodearla.
+
+**Pendiente:** comprobar la estatua con nieve y en móvil; si la usuaria quiere más fidelidad al monumento real (el pedestal de Las Tendillas es más claro y tiene relieves), afinar el pedestal.
+
+### Ayuntamiento de Córdoba y columnas del templo en una franja nueva al norte (2026-11-12)
+
+Avanza la visión (zonas del pueblo y homenaje a Córdoba) con la zona institucional que pidió la usuaria, a partir de la lámina de organización del valle. No se tocaron la Casa de Lupe, la Mezquita, el puente romano ni el Arco de Córdoba (solo se desplazaron con el resto del valle, sin cambiar de sitio relativo).
+
+**Mapa: 66 filas (antes 54).** La franja de 12 filas nuevas va arriba. No cabía el Ayuntamiento en el noroeste sin mover la Universidad y el quiosco de la piscina, así que el valle entero baja 12 filas. `mapRows.js` (nuevo, sin imports) guarda la ampliación: `shiftY` pasa una fila de la plantilla a la del mapa actual y `shiftPx` un píxel.
+
+- **Plantilla y mapa actual:** en `world.js` los datos antiguos (edificios, caminos, objetos, bancos, puentes, plaza y la siembra de árboles) siguen escritos en la plantilla y se exportan ya desplazados. Lo nuevo de la franja norte se escribe directamente en coordenadas del mapa actual (`NORTH_BUILDINGS`, `NORTH_ROADS`, `NORTH_PROPS`, `northTrees`).
+- **Río:** sus puntos de control se desplazan (`river.js`); la forma y las anchuras no cambian. Nace ahora bajo el camino nuevo, en la fila 14, sin puente.
+- **NPC:** los puntos fijos en píxeles (puertas, bancos, sitios de las palomas, la zona de paseo de Lupe y de Ylonem, la de Khalessi, el sitio de Atreus y la llegada) pasan por `shiftPx` o `shiftY`. Los de interior (`homeTour`, `InteriorLupe`) no se tocan: están en el plano de la casa.
+- **Guardado:** versión 6. Las partidas anteriores bajan 12 filas la posición guardada (`fromTemplateSave`), así que la viajera reanuda en el mismo sitio del terreno.
+
+**Ayuntamiento** (`buildings/ayuntamiento.js`, edificio `ayuntamiento`, tipo `city`; sustituido después, ver "Ayuntamiento de Córdoba rehecho y pegado al templo romano")
+- Huella exacta de 17 × 8 teselas (272 × 128 px), puerta en la tesela 11,11. Simétrico respecto a la puerta.
+- Cuerpo central de tres pisos con torre del reloj, tejado morado como el de la Universidad, portal de madera con escalones y rótulo "AYUNTAMIENTO" (texto de píxeles; el nombre propio no pasa por i18n, como los rótulos de las fachadas).
+- Dos alas con ventanas alineadas y soportal de arcos en la planta baja.
+- Sin interior y sin diálogo: la puerta no abre nada, igual que la Universidad. Si la usuaria quiere que hable Lupe, hay que escribir el diálogo y anotarlo en `DIALOGOS.md`.
+
+**Columnas del templo** (`romanColumns.js`, objeto `romanColumns`)
+- Cuatro fustes sobre una plataforma de piedra: uno completo con su arquitrabe, uno roto, uno más alto y uno corto, y un tambor caído. Piedra de la misma paleta que el arco de Córdoba.
+- Colisión solo en la basa de cada fuste y en el tambor; entre las columnas se pasa.
+
+**Caminos y farolas:** el camino sale de la puerta del Ayuntamiento, corre por las filas 12 y 13 hasta el río y baja por el lado este del río (columnas 47 y 48) hasta el camino del puente romano. Dos farolas flanquean la puerta.
+
+**Árboles:** la siembra no cambia. Comprobado con el valle antes y después: los 337 árboles de la plantilla están en su nueva posición, desplazados 12 filas, excepto los del borde superior (que se sustituyen por el borde del mapa actual). Se añaden 126 árboles: el borde superior, los laterales de la franja nueva y grupos sueltos en el prado del norte, con su propia semilla.
+
+**Pruebas:** `npm test` en `frontend/` (111 archivos, 948 pruebas) y en `backend/` (60), `npm run lint` y `npm run build`, sin errores. Las pruebas de coordenadas antiguas se actualizaron a las filas nuevas; se añadieron tres: que la puerta del Ayuntamiento se alcanza a pie desde la entrada del valle (búsqueda en anchura sobre el mapa, sin árboles, agua ni edificios), que las columnas tienen colisión solo en las basas y que la migración del guardado baja la posición.
+
+**Comprobado en el navegador** (servidor de desarrollo, día claro, zoom de 2,2 sobre la puerta y de 2,6 sobre las columnas): el Ayuntamiento se ve con su tejado morado, la torre, el portal y los soportales; las columnas están en su plataforma, el camino llega desde la puerta y gira hacia el río. Sin errores en consola.
+
+**No comprobado:** noche, lluvia y nieve en la franja nueva; móvil; el recorrido de los NPC por el camino nuevo (solo la alcanzabilidad a pie); la fidelidad fina de las columnas frente a la referencia (son una interpretación a la resolución del juego); y el aspecto del Ayuntamiento con el sol bajo.
+
+**Decisiones**
+- *Ampliar hacia arriba y no a la izquierda:* el noroeste tenía unas 16 × 10 teselas libres, y la Universidad, el quiosco y la piscina ocupan el resto. Ampliar por arriba permite desplazar todo a la vez sin mover ningún edificio existente de sitio relativo.
+- *Plantilla con traslación y no reescribir las coordenadas:* el diff queda legible y la comprobación de árboles es exacta. Quien toque el valle debe saber que los datos antiguos están en la plantilla.
+- *Río que nace bajo el camino:* ampliar también el río hacia el borde habría cambiado su anchura (crece con la distancia al nacimiento) y la siembra de árboles.
+- *Versión 6 del guardado:* la posición guardada está en filas del mapa, así que sin migrar las partidas caerían dentro de otro edificio.
+
+**Pendiente:** decidir si el Ayuntamiento tiene diálogo (Lupe o una visita) y, en ese caso, escribirlo en `DIALOGOS.md`; comprobar la franja nueva de noche y con lluvia; afinar las columnas frente a la lámina.
+
+### Reajuste del este: Mezquita arriba, arco de Córdoba pegado a su puerta y sin las casitas (2026-11-12)
+
+Ajuste de layout pedido por la usuaria, en cuatro pasadas. Los dibujos de la Mezquita, del arco de Córdoba y del arco antiguo no cambian; el río y los puentes tampoco.
+
+**Distribución final, de norte a sur** (todo en `world.js`): Mezquita (`y 9 a 19`, puerta en `66,20`) → una fila de suelo (la fila de la puerta) → arco de Córdoba (`at [66.5, 28]`, ocupa las filas 21 a 27, centrado en la puerta) → camino recto de tres teselas (`x 65 a 67`) que pasa por la abertura y sigue hasta el puente de tablones (fila 37) → en la fila 28, justo bajo la base del arco, el camino que llega recto del puente romano (filas 28 y 29, `x 44 a 64`) y se junta con el vertical en una T. El camino del puente romano no se corta ni se desvía; no hay ramales paralelos.
+
+- **Por qué se movió la Mezquita:** el arco mide 7 filas y entre la puerta y la fila del puente romano (28) solo cabía una; el puente y el río no se tocan, así que hubo que subir el edificio 7 filas (de `y 16` a `y 9`). Antes: `y 17`, y entre medias `y 16`.
+- **Lo que obligó a mover:** la Casa del Encuentro pasa de `x 52` a `x 49` (puerta en `52,15`) porque pisaba el sitio de la Mezquita; sigue sobre el camino del norte, que ahora termina en su puerta. La biblioteca (`blog`) pasa del noreste (`69,7`) a `69,29`, en el solar de las casitas, con su puerta en `73,37` y un ramal de una fila desde el camino de la Mezquita (`x 68 a 73`, fila 37). Es el único camino nuevo; la biblioteca necesitaba uno. Su diseño y su zona (`blog`) no cambian.
+- **Casitas eliminadas** (`casaHermanos`, `casaPadres`): fuera del mapa, de `buildings/index.js` (`cottage`), de `homes.js` (`cottageSprite`), de los rótulos `zones` (es/en) y de `AmbientLife.js`. Sus caminos, también.
+- **Naranjos:** suben con la puerta (`y 20`).
+- **Arco de la entrada del valle:** vuelve el arco anterior (pilares de piedra y arco de madera con flores, recuperado de antes de la Puerta del Puente; kind `arch`, `at [37, 50.4]`, mismas colisiones) con las farolas sobre sus pilares (`35,4; 47,2` y `39; 47,2`).
+- **Bancos:** dos, simétricos al sur del cruce de tablones (`64,5; 39,6` y `68,5; 39,6`).
+- **Terreno y árboles:** la siembra se hace con el mapa de antes (`LEGACY_BUILDINGS`, `EAST_ROADS_BEFORE`, `MOVED_PROPS_BEFORE`, `MOVED_BUILDINGS`), así que no cambia ni uno de los árboles del resto del valle (comprobado: ninguno quitado respecto a antes del ajuste, también el borde este). Ocho árboles de relleno aparte (`EAST_FILL_TREES`): cinco en el solar noreste de la biblioteca y tres entre el arco y el borde este. Los juncos y nenúfares del río no cambian.
+- **Texto:** la caña olvidada estaba "cerca de los bancos de las casitas"; ahora "cerca de los bancos del arco de la Mezquita" (`valle.sin_cana`, es/en y `docs/DIALOGOS.md`). La caña no se mueve (`73,6; 41,4`).
+- **Ylonem:** su parada de los naranjos se pasa al sur del naranjo izquierdo (`FILM_SPOTS`, `topic: trees`, `1000,344`).
+- **Pruebas:** 945 del frontend (en `world.test.js`: sin casitas ni sus caminos; la distribución de norte a sur con la T y sin desvíos ni cortes; la biblioteca con su ramal; el arco antiguo y las farolas en la entrada), lint y build pasan. Comprobado en el navegador (dev server, día claro): la viajera recorre el camino del puente romano, sube por la abertura del arco y llega a la zona de la puerta sin pisar hierba (se midió la posición); desde el sur, las alas frenan. **Ojo:** al probar a pie, la abertura mide 32 px y el camino 48; pasarse del eje contra una jamba frena, como debe.
+- **No comprobado:** noche, lluvia y nieve en la zona nueva, móvil, el recorrido de los NPC por el camino nuevo más allá de la parada de Ylonem, y que la biblioteca abra su panel desde su nueva puerta en el juego (solo se ve en el mapa y lo cubren las pruebas de puertas).
 
 ### Vida del pueblo: rutinas de NPC, animales, frutales y piscina (2026-11-12)
 
@@ -1229,6 +1711,14 @@ Avanza la fase 3 de `docs/VISION.md` (primer edificio completo, aquí la casa) y
 
 ## Pendiente
 
+### Coche conducible (2026-11-13)
+
+- Limitar por dónde va el coche cuando los caminos y el mapa sean definitivos (hoy atraviesa todo, a propósito). Con eso, volver a ordenarlo por las ruedas al volante en lugar de ponerlo encima de los edificios.
+- Como atraviesa todo, se puede bajar sobre la parte no sólida de un edificio (un tejado, por ejemplo). Se arregla con lo anterior.
+- La posición del coche no se guarda: al recargar vuelve delante de la Universidad. La de la viajera sí se guarda, también al volante.
+- Las rutas de los NPC se calculan al crear la escena con el coche en su sitio de origen: si se aparca en otro lado, pueden pasarle por encima.
+- Escuchar el arranque y el motor y ajustar tono y volumen con la usuaria.
+
 ### Siguiente bloque narrativo: aprobación editorial (2026-11-11)
 
 - Revisar con Lupe y aprobar o reescribir las líneas marcadas como borrador de `inicio.bienvenida`, `inicio.casa`, `inicio.dedicas`, `inicio.encontrar`, `inicio.explorar`, `inicio.guia_pausa`, `inicio.puerta` y los bocadillos ambientales, y los de la visita interior (`DIALOGOS.md`, sección 4b). La tercera página actual de `inicio.encontrar` menciona artículos y biblioteca y debe cambiar antes de aprobarse por la retirada decidida del blog.
@@ -1337,6 +1827,13 @@ Las reglas de producto están en `docs/VISION.md`, sección 6; aquí solo se reg
 
 | Decisión | Motivo |
 | --- | --- |
+| Las fachadas de los edificios se dibujan con código copiando la ilustración de la usuaria, con sus medidas, puerta y cuerpos sólidos (2026-11-13) | Con código encajan con el estilo del valle (contorno, luz de noche, nieve), se pueden retocar pieza a pieza y no dependen de reducir una imagen. Los vehículos y monumentos siguen en PNG mientras la usuaria no pida otra cosa. El SEAT Córdoba volvió primero al PNG por decisión suya y después ella pidió dibujarlo con código y algo más grande (2026-11-13). |
+| Estación y tiempo son independientes; cada estación tiene un plan de episodios derivado de la semilla y guardado como `{ season, cycle, elapsed, carry }` (2026-11-12) | Un plan determinista hace que recargar o volver otro día no reinicie el cupo de lluvia ni permita saltarse los 15 minutos; solo hay que guardar cuatro números. |
+| Se cuenta tiempo activo con un tope de paso (1 s) en lugar de reloj de pared (2026-11-12) | Un salto grande entre fotogramas (pestaña oculta, equipo dormido) no suma, y no hace falta escuchar `visibilitychange`. |
+| Sin tormentas ni rayos en el valle (2026-11-12) | La usuaria quiere el valle despejado casi siempre y con episodios breves; la tormenta de la portada no encaja. La portada la conserva. |
+| La nieve y la escarcha son capas distintas (2026-11-12) | La escarcha es el invierno sin nevada (y algunos inviernos no tienen); la nieve es lo que deja un episodio y se retira. |
+| Los árboles de escarcha pierden hojas apagando la base bajo ellos (2026-11-12) | Los huecos de la capa dejarían ver la copa de primavera; se apaga lo de debajo a la vez que entra la escarcha. |
+| Flores y hojas van en un lienzo del tamaño del mapa por capa, creado y destruido con su estación (2026-11-12) | Una sola imagen por capa, sin duplicados al volver de una casa, y sin gastar memoria fuera de su estación. |
 | El nombre es obligatorio para entrar al valle; el de la mascota también si hay mascota (2026-11-11) | Lupe se dirige a la viajera por su nombre y saluda a la mascota por el suyo: sin él, esas frases no tendrían sentido. Las partidas antiguas sin nombre siguen funcionando: el nombre se omite de los textos. |
 | Sala de la casa de 33×17 teselas, con las zonas separadas (2026-11-11) | Con la recreativa, la zona de Khalessi con rascador, comida y arenero y el rincón de impresión aparte, la sala de 24×14 volvía a amontonarse. Se pidió expresamente poder agrandarla. |
 | La azotea crece hacia la izquierda y la fachada no se mueve (2026-11-11) | La casa de dos plantas se dibuja 48 px más a la derecha dentro de su lienzo y el valle alinea la puerta con su tesela: solo crece la cubierta. Evita tocar el mapa y la distribución de árboles. |

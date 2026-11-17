@@ -20,7 +20,7 @@ Referencia de inspiración (no copiar): alexxblaro16.github.io.
 
 Mapa de 56×30 teselas de 16 px. Definición en `frontend/src/game/world.js`. Se entra a una casa **pisando su puerta**.
 
-El valle se organiza alrededor de una plaza empedrada central con un cartel, de la que parte un camino principal de este a oeste. Escala, reglas de sprites y reparto completo en `docs/IDENTIDAD-VISUAL.md`.
+El valle se organiza alrededor de una plaza empedrada central con un cartel, con el Ayuntamiento encima y un eje principal de norte a sur hasta la entrada. Todos los caminos llevan las mismas baldosas que la plaza (desde 2026-11-12); el eje y las calles son de dos teselas y los senderos a puertas y atajos, de una. Escala, reglas de sprites y reparto completo en `docs/IDENTIDAD-VISUAL.md`.
 
 ## 3. Personajes
 

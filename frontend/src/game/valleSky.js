@@ -1,26 +1,28 @@
 // Ciclo de día y noche, tiempo y estaciones del valle. El estado sale de `skyAt` (titleSky.js), el mismo
 // de la portada, así que el día dura lo mismo y llueve, truena o nieva igual; aquí solo se decide cómo
 // se ve sobre un mapa que se recorre con la cámara. Funciones puras: ValleScene las aplica a Phaser.
-import { DAY_MS, lightningAt, skyAt, startPhase, strikesBetween } from './titleSky.js'
-import { paintRain, paintSnow, tintLayers } from './titleSkyPaint.js'
+import { DAY_MS, skyAt, startPhase } from './titleSky.js'
+import { paintRain, paintSnow, tintLayers as baseTintLayers } from './titleSkyPaint.js'
 
-export { tintLayers }
+// El frío tiñe el valle: un poco con la escarcha del invierno y bastante más con la nieve acumulada.
+export const tintLayers = (sky) => baseTintLayers({ ...sky, winter: Math.max(0.6 * sky.winter, sky.snowCover ?? 0) })
 
 // Quien entra al valle lo ve a la luz del día: la visita empieza en la mañana (fase 0,36, con sol pleno) en
 // lugar de a una hora al azar como en la portada, donde quedarse a oscuras es parte del juego.
 const FIRST_PHASE = 0.36
 
-// En el valle se pasea sin prisa: un día dura 8 minutos y el tiempo (con él, el otoño y el invierno) cambia
-// cada 3. En la portada, que es un vistazo, el mismo ciclo va cuatro veces más rápido.
+// En el valle se pasea sin prisa: un día dura 8 minutos. En la portada, que es un vistazo, el mismo ciclo va cuatro veces más rápido.
+// Las estaciones y la lluvia no salen de aquí sino del ciclo de estaciones (`valleClimate.js`).
 export const VALLE_PACE = 4
 
 export const clockOffset = (seed) => ((((FIRST_PHASE - startPhase(seed)) % 1) + 1) % 1) * DAY_MS * VALLE_PACE
 
-// Estado del cielo del valle a un instante de su reloj (en milisegundos reales, ya con el desplazamiento).
-export const valleSkyAt = (ms, seed) => skyAt(ms, seed, false, VALLE_PACE)
-export const valleStrikesBetween = (fromMs, toMs, seed) => strikesBetween(fromMs, toMs, seed, VALLE_PACE)
-// Destello del rayo que cae a un instante del reloj del valle (o null): lo ven el valle y, por las ventanas, la casa.
-export const valleLightningAt = (ms, seed) => lightningAt(ms, seed, VALLE_PACE)
+// Estado del cielo del valle a un instante de su reloj (en milisegundos reales, ya con el desplazamiento). `climate` es el clima de la estación
+// (`SeasonClock`); sin él, el cielo trae el tiempo al azar de la portada (solo lo usan las pruebas y el telescopio antes de que haya clima).
+export const valleSkyAt = (ms, seed, climate = null) => skyAt(ms, seed, false, VALLE_PACE, climate)
+// El valle no tiene tormentas: ni rayos ni truenos. Las funciones se conservan porque el interior de las casas y la capa de cielo las consultan.
+export const valleStrikesBetween = () => []
+export const valleLightningAt = () => null
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v))
 

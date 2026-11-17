@@ -7,17 +7,19 @@ import { fruitSeasonOf } from './fruitTrees.js'
 import { shadowSprite } from './sprites.js'
 import { BUILDINGS, TILE, treePositions } from './world.js'
 import { prefersReducedMotion } from '../lib/reducedMotion.js'
+import { shiftPx, shiftPxX } from './mapRows.js'
 
 const FLY_DEPTH = 6000
 // Cuántos trozos caen a la vez como máximo y a qué distancia de la viajera se molesta en soltarlos (más lejos no se ven).
 const MAX_FALLING = 24
 const FALL_RANGE = 280
-// Dónde revolotean las mariposas: los jardines (la fuente, el huerto del oeste, la orilla del puente y la piscina).
-const GARDENS = [{ x: 592, y: 478, r: 40 }, { x: 392, y: 500, r: 34 }, { x: 760, y: 520, r: 26 }, { x: 130, y: 280, r: 36 }]
+// Dónde revolotean las mariposas: los jardines (la fuente, el manzano entre Copos y RACE, la orilla del puente y la piscina) y el césped junto a la
+// entrada de la casa de Lupe, entre su fachada y el eje de la plaza.
+const GARDENS = [{ x: shiftPxX(592), y: shiftPx(478), r: 40 }, { x: 296, y: 618, r: 34 }, { x: shiftPxX(760), y: shiftPx(520), r: 26 }, { x: 176, y: 808, r: 36 }, { x: 676, y: 832, r: 30 }]
 const BIRD_FRAMES = ['perch', 'up', 'down']
 const SPECIES = 3
 // Edificios con tejado donde se posan.
-const ROOFED = ['cottage', 'home', 'bar', 'shop', 'garage', 'friends']
+const ROOFED = ['home', 'bar', 'shop', 'garage', 'patio']
 
 const between = (range) => range[0] + Math.random() * (range[1] - range[0])
 

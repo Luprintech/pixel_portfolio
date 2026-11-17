@@ -38,9 +38,9 @@ function reachable() {
 describe('IES Gran Capitán: edificio y sala', () => {
   const building = BUILDINGS.find((b) => b.id === GRAN_ID)
 
-  it('conserva el id `daw`, la huella y la puerta del antiguo laboratorio, ahora con fachada propia', () => {
+  it('conserva el id `daw`, con su fachada propia, en la fila de abajo de los estudios', () => {
     expect(GRAN_ID).toBe('daw')
-    expect(building).toMatchObject({ id: 'daw', kind: 'institute', x: 20, y: 14, w: 10, h: 5, door: { x: 25, y: 19 } })
+    expect(building).toMatchObject({ id: 'daw', kind: 'ies', x: 9, y: 12, w: 13, h: 6, door: { x: 15, y: 18 } })
     expect(roadTiles().has(`${building.door.x},${building.door.y}`)).toBe(true)
   })
 
