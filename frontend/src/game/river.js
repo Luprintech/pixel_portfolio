@@ -1,40 +1,43 @@
-// El río del valle como una curva suave con anchura variable, no como una cadena de cuadrados. Nace como un hilo en el borde norte,
-// entre los árboles del fondo, baja recto entre la galería de Artes y la Mezquita, pasa bajo el puentecillo del camino, sigue en
-// diagonal hasta el puente romano y desde allí se ensancha hasta salir del mapa por el sureste. De aquí salen tanto lo que se dibuja
+// El río del valle como una curva suave con anchura variable, no como una cadena de cuadrados. Entra por el borde norte, entre los
+// árboles, a la derecha de la Mezquita; baja recto por el bosque y, a la altura del Ayuntamiento, se curva suavemente hacia el oeste;
+// baja recto junto a él, se desvía un poco hacia el oeste hasta el puente romano y desde allí se ensancha hasta salir del mapa por el
+// sureste. De aquí salen tanto lo que se dibuja
 // (`signedDistance`, que pinta la orilla redondeada en `ground.js`) como lo que choca (`riverTiles`, las teselas que la viajera no
 // puede pisar). Sin dependencias de Phaser ni de React; todo en píxeles salvo `RIVER_POINTS` (teselas).
+import { shiftX, shiftY } from './mapRows.js'
+
 const TILE = 16
 
-// Puntos por los que pasa la línea central, en teselas. Una curva de Catmull-Rom los une. El tramo de arriba baja por el hueco entre
-// Artes y la Mezquita, pasa bajo el puentecillo (filas 15 y 16) sin desviarse y sigue en diagonal, sin curvas, hasta el puente romano;
-// pasa por encima del buzón de Correos (47,5; 24,2) y de su camino, sin tocarlos.
-export const RIVER_POINTS = [
-  [44, 2.4], [44.3, 4], [43.8, 7], [44.1, 10.5], [44, 13.5], [44, 16], [44.05, 18], [45.2, 19.6], [47.7, 21.3], [50.2, 23], [51.5, 24.9], [52.1, 26.6], [52.3, 28.3],
+// Puntos por los que pasa la línea central, en teselas de la plantilla (ver `mapRows.js`; las filas negativas caen en la franja norte).
+// Una curva de Catmull-Rom los une. Los primeros quedan más allá del borde norte para que el río entre en el mapa sin acabar en una
+// poza; bajan por la columna 56,5 de la plantilla (la 64,5 del mapa, a cinco teselas de la Mezquita) y, a la altura del Ayuntamiento, se
+// curvan suavemente hasta la columna 54,3 del cauce de siempre. De ahí al sur no cambia.
+const TEMPLATE_RIVER_POINTS = [
+  [56.5, -16], [56.5, -12], [56.5, -6], [56.4, 0], [56.2, 4.5], [55.8, 8.5], [55.2, 12], [54.6, 14.8], [54.3, 17], [53.8, 20.5], [53.1, 23.5], [52.6, 26], [52.3, 28.3],
   [52.2, 29.5], [53.4, 33], [57, 36.6], [60.4, 39.6], [63.2, 42.6], [66.4, 44.4], [71, 45.6], [76, 46.2], [80.5, 46.4],
 ]
+// En teselas del mapa actual.
+export const RIVER_POINTS = TEMPLATE_RIVER_POINTS.map(([x, y]) => [shiftX(x), shiftY(y)])
 
 const smooth = (t) => t * t * (3 - 2 * t)
 
-// Anchura en teselas según lo recorrido (`tiles`, desde el nacimiento) y lo avanzado (`u`, de 0 a 1): un hilo al nacer, unas tres
-// teselas y media a la altura del puentecillo (así su cubierta de seis teselas llega a tierra por los dos lados), algo más de cuatro
-// en el puente romano y algo más al salir, con una onda suave para que no sea una cinta de ancho uniforme.
-function widthAt(u, tiles) {
-  const head = 1 + 2.4 * smooth(Math.min(1, tiles / 14))
-  const body = 0.9 * smooth(Math.max(0, Math.min(1, (tiles - 14) / 16)))
-  const ripple = 0.35 * Math.sin(tiles * 0.55 + 1) * smooth(Math.min(1, tiles / 10))
-  const mouth = 0.6 * smooth(Math.max(0, (u - 0.82) / 0.18))
-  return head + body + ripple + mouth
-}
+// La anchura se mide desde un punto del cauce que no ha cambiado (la fila 29 del mapa, a media altura del Ayuntamiento), para que de
+// ahí al sur sea la misma que cuando el río nacía recto en el borde norte: entonces ese punto quedaba a 26,75 teselas del nacimiento,
+// con 74,68 teselas de río en total.
+const ANCHOR_ROW = 29
+const OLD_ANCHOR_TILES = 26.75
+const OLD_TOTAL_TILES = 74.684
 
-// El río de antes de recortar el brazo del manantial: ya no se dibuja, solo sirve para repartir los árboles como antes (ver `legacyRiverTiles`).
-const LEGACY_POINTS = [
-  [58.2, 18.4], [56.6, 20.4], [54.2, 23], [52.6, 26.5], [52.2, 29.5], [53.4, 33], [57, 36.6], [60.4, 39.6], [63.2, 42.6], [66.4, 44.4], [71, 45.6], [76, 46.2], [80.5, 46.4],
-]
-function legacyWidthAt(u) {
-  const base = 1.5 + 2.9 * smooth(Math.min(1, u / 0.3))
-  const ripple = 0.45 * Math.sin(u * 11 + 1) * smooth(Math.min(1, u / 0.35))
-  const mouth = 0.6 * smooth(Math.max(0, (u - 0.82) / 0.18))
-  return base + ripple + mouth
+// Anchura en teselas según lo recorrido desde el antiguo nacimiento (`tiles`): algo más de cuatro de la fila de referencia al puente
+// romano y algo más al salir, con una onda suave para que no sea una cinta de ancho uniforme. Aguas arriba de la fila de referencia (la
+// curva y el tramo que entra por el norte) se queda con la anchura que tiene allí, de orilla a orilla, hasta el borde.
+function widthAt(tiles) {
+  const t = Math.max(OLD_ANCHOR_TILES, tiles)
+  const head = 3.4
+  const body = 0.9 * smooth(Math.max(0, Math.min(1, (t - 14) / 16)))
+  const ripple = 0.35 * Math.sin(t * 0.55 + 1) * smooth(Math.min(1, t / 10))
+  const mouth = 0.6 * smooth(Math.max(0, (tiles / OLD_TOTAL_TILES - 0.82) / 0.18))
+  return head + body + ripple + mouth
 }
 
 // Catmull-Rom entre `b` y `c` con vecinos `a` y `d`.
@@ -64,6 +67,9 @@ function sampleCurve(controlPoints, widthOf) {
   const lengths = [0]
   for (let i = 1; i < raw.length; i++) lengths.push(lengths[i - 1] + Math.hypot(raw[i].x - raw[i - 1].x, raw[i].y - raw[i - 1].y))
   const total = lengths.at(-1)
+  // Lo recorrido hasta la fila de referencia en esta curva, para medir la anchura como antes (ver `widthAt`).
+  const anchorAt = raw.findIndex((point) => point.y >= ANCHOR_ROW * TILE)
+  const offset = lengths[Math.max(0, anchorAt)] / TILE - OLD_ANCHOR_TILES
   const samples = []
   let at = 0
   for (let distance = 0; distance <= total; distance += STEP_PX) {
@@ -73,7 +79,7 @@ function sampleCurve(controlPoints, widthOf) {
     const x = raw[at].x + (raw[at + 1].x - raw[at].x) * f
     const y = raw[at].y + (raw[at + 1].y - raw[at].y) * f
     const u = distance / total
-    samples.push({ x, y, half: (widthOf(u, (distance / TILE)) * TILE) / 2, u })
+    samples.push({ x, y, half: (widthOf(distance / TILE - offset) * TILE) / 2, u })
   }
   return samples
 }
@@ -135,7 +141,6 @@ function distanceField(samples) {
 
 const SAMPLES = sampleCurve(RIVER_POINTS, widthAt)
 const riverDistance = distanceField(SAMPLES)
-const legacyDistance = distanceField(sampleCurve(LEGACY_POINTS, legacyWidthAt))
 
 // Distancia con signo (px) del punto al borde del agua: positiva dentro, negativa fuera.
 export const signedDistance = riverDistance
@@ -151,7 +156,6 @@ const tilesOf = (field, cols, rows) => {
 }
 
 export const riverTiles = (cols, rows) => tilesOf(riverDistance, cols, rows)
-export const legacyRiverTiles = (cols, rows) => tilesOf(legacyDistance, cols, rows)
 
 // Punto de la línea central a una fracción `u` del recorrido, con la normal que mira a la izquierda del avance y la anchura media (px).
 export function riverAt(u) {

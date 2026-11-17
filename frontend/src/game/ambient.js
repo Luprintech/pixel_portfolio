@@ -24,8 +24,8 @@ const between = (range, rng) => range[0] + rng() * (range[1] - range[0])
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
 const pick = (list, rng) => list[Math.floor(rng() * list.length)]
 
-// ¿Hay pájaros? De día y sin lluvia ni nevada.
-export const birdsOut = (sky) => Boolean(sky) && sky.dark < 0.45 && sky.rain < 0.2 && sky.winter < 0.4
+// ¿Hay pájaros? De día y sin lluvia ni nevada, ni nieve todavía sin retirar (con escarcha sí: es lo normal de un invierno sin nevada).
+export const birdsOut = (sky) => Boolean(sky) && sky.dark < 0.45 && sky.rain < 0.2 && (sky.snow ?? 0) < 0.1 && (sky.snowCover ?? sky.winter) < 0.4
 
 export function createAmbient(rng = Math.random) {
   return { rng, birds: [], nextBird: between([4000, 9000], rng) }

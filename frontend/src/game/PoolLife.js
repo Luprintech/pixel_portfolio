@@ -61,9 +61,9 @@ export default class PoolLife {
     return band
   }
 
-  // Con la nevada el agua se hiela y no brilla: el contenedor se funde con el invierno del cielo.
+  // En invierno el agua se enfría y con la nieve acumulada se hiela y no brilla: el contenedor se apaga con las dos.
   update(sky) {
-    this.group.setAlpha(1 - Math.min(1, sky?.winter ?? 0))
+    this.group.setAlpha(1 - Math.min(1, Math.max(0.6 * (sky?.winter ?? 0), sky?.snowCover ?? 0)))
   }
 
   destroy() {

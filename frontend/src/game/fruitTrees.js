@@ -1,7 +1,8 @@
-// Los frutales del valle: naranjos (homenaje a Córdoba) y manzanos. Cada uno se dibuja en tres estados que siguen las estaciones del valle
-// (`valleSky.js`: la base es la primavera de flores, la lluvia lo pasa al otoño y la nevada al invierno): el estado `season` es 0 (primavera),
-// 1 (otoño) o 2 (invierno). La escena registra los tres como base, `:autumn` y `:winter` y el cielo los funde con el tiempo (ver `worldAssets.js`),
-// así que un árbol cambia a la vez que el suelo y nunca al azar ni al acercarse la viajera. El valle no tiene verano propio.
+// Los frutales del valle: naranjos (homenaje a Córdoba) y manzanos. Cada uno se dibuja en cinco estados que siguen las estaciones del valle
+// (`valleClimate.js`: la base es la primavera de flores y encima se funden el verano, el otoño, la escarcha del invierno y la nieve de una nevada):
+// el estado es 0 (primavera), 1 (otoño), 2 (nieve), 3 (verano) o 4 (escarcha). La escena los registra como base, `:summer`, `:autumn`, `:frost` y
+// `:snow` y el cielo los funde con la estación (ver `worldAssets.js`), así que un árbol cambia a la vez que el suelo y nunca al azar ni al
+// acercarse la viajera.
 import { TONE } from './palette.js'
 import { dot, makeCanvas, noise, outline, rect } from './pixelKit.js'
 
@@ -10,17 +11,21 @@ const [STONE0, STONE1, STONE2] = TONE.stone
 
 export const FRUIT_KINDS = ['orangeTree', 'appleTree']
 export const isFruitTree = (kind) => FRUIT_KINDS.includes(kind)
-// Estados por orden de variante: lo que dibuja cada uno y el `propSprite` que pide `worldAssets.js` para cada capa.
-export const FRUIT_STATES = ['spring', 'autumn', 'winter']
+// Estados de un frutal: cada uno tiene su conversación (`valle.naranjo.summer`...) y su dibujo (`FRUIT_LOOKS`, la variante que pide `worldAssets.js`).
+export const FRUIT_STATES = ['spring', 'summer', 'autumn', 'winter', 'snow']
+export const FRUIT_LOOKS = { spring: 0, summer: 3, autumn: 1, winter: 4, snow: 2 }
 export const FRUIT_NAMES = { orangeTree: 'naranjo', appleTree: 'manzano' }
 
-// Estación del valle según el cielo (la misma que mira el cielo para fundir las capas): con la nevada, invierno; con la lluvia, otoño.
-export const fruitSeasonOf = (sky) => (sky?.winter >= 0.5 ? 'winter' : sky?.autumn >= 0.5 ? 'autumn' : 'spring')
+// Estado del frutal según el cielo (la misma estación que funde las capas): con nieve acumulada, `snow`; si no, la estación que predomina.
+export const fruitSeasonOf = (sky) =>
+  sky?.snowCover >= 0.4 ? 'snow' : sky?.winter >= 0.5 ? 'winter' : sky?.autumn >= 0.5 ? 'autumn' : sky?.summer >= 0.5 ? 'summer' : 'spring'
 
 // Qué conversación abre mirar un frutal (`naranjo` o `manzano`) con el cielo dado: `valle.naranjo.autumn`, por ejemplo.
 export const fruitTalkId = (name, sky) => `valle.${name}.${fruitSeasonOf(sky)}`
 
 const SNOW = ['#ffffff', '#eef3f8', '#d4e0ec']
+// Escarcha: más tenue que la nieve, sin cubrir el color de debajo.
+const FROST = ['#e8f1f6', '#c9dce8']
 
 // Bola de hojas con la luz arriba a la izquierda y ruido para romper el borde. `leaf` son cinco tonos, de oscuro a claro; `keep(x, y)` deja
 // fuera píxeles (el invierno deja huecos en la copa).
@@ -71,14 +76,16 @@ function planter(g, season) {
     dot(g, x + 1, 42, GREEN[4])
   }
   if (season === 2) rect(g, 4, 40, 40, 2, SNOW[0])
+  // Escarcha: un polvo claro sobre el borde de la jardinera, sin manto.
+  if (season === 4) for (let x = 5; x < 43; x += 3) dot(g, x, 40 + (x % 2), FROST[x % 2])
 }
 
 const ORANGE_BLOBS = [[24, 16, 11], [14, 21, 8], [34, 21, 8], [24, 25, 8], [18, 12, 6], [31, 11, 6]]
 const ORANGE_FRUIT = [[14, 18], [22, 9], [30, 16], [38, 22], [19, 26], [27, 24], [10, 25], [33, 8], [24, 18]]
 const ORANGE_BLOSSOM = [[17, 14], [28, 12], [35, 17], [12, 22], [24, 22], [21, 7], [32, 25], [15, 27], [26, 15], [37, 21], [10, 19]]
 
-// Naranjo: primavera con azahar entre las hojas, otoño con los frutos pequeños y verdes que van tomando color, invierno con las naranjas
-// maduras y un poco de nieve. Mide 48×54 y apoya en la fila 53.
+// Naranjo: primavera con azahar entre las hojas, verano con los frutos recién cuajados, otoño con los frutos verdes que van tomando color, y
+// en invierno las naranjas maduras con escarcha (estado 4) o con un poco de nieve (estado 2). Mide 48×54 y apoya en la fila 53.
 export function orangeTree(season = 0) {
   const canvas = makeCanvas(48, 54)
   const g = canvas.getContext('2d')
@@ -95,6 +102,12 @@ export function orangeTree(season = 0) {
     })
     // Un par de frutos del año pasado, todavía colgando.
     ;[[14, 18], [30, 16]].forEach(([x, y]) => fruit(g, x, y, ['#f08a24', '#ffc468', '#c4601a']))
+  } else if (season === 3) {
+    // Frutos recién cuajados: pequeños y verdes, sin nada de color todavía.
+    ORANGE_FRUIT.forEach(([x, y]) => {
+      rect(g, x, y, 2, 2, '#7fa030')
+      dot(g, x, y, '#b4cc58')
+    })
   } else if (season === 1) {
     // Frutos en desarrollo: más pequeños y de un verde amarillento que se va calentando.
     ORANGE_FRUIT.forEach(([x, y], i) => {
@@ -105,7 +118,9 @@ export function orangeTree(season = 0) {
     })
   } else {
     ORANGE_FRUIT.forEach(([x, y]) => fruit(g, x, y, ['#f08a24', '#ffc468', '#c4601a']))
-    snowOnTop(canvas, 2, 6, 42)
+    if (season === 2) snowOnTop(canvas, 2, 6, 42)
+    // Con escarcha, un velo claro en alguna hoja de lo alto de la copa, sin cubrirla.
+    else for (let x = 14; x <= 34; x += 4) dot(g, x, 12 + ((x * 7) % 9), FROST[x % 8 ? 0 : 1])
   }
   return { canvas: outline(canvas, 0.5), body: [{ l: -20, t: -8, r: 20, b: -1 }] }
 }
@@ -121,7 +136,7 @@ function branch(g, x0, y0, x1, y1, color) {
 
 // Copa desnuda del manzano en invierno: ramas gruesas que salen de la horquilla del tronco en abanico, cada una con dos ramitas, y una
 // capa de nieve sobre las puntas. Es determinista (el ruido manda el largo), así que el árbol es siempre el mismo.
-function bareCrown(g) {
+function bareCrown(g, snow = true) {
   const tips = []
   for (let i = 0; i < 7; i++) {
     const angle = (-162 + i * 24) * (Math.PI / 180)
@@ -141,13 +156,14 @@ function bareCrown(g) {
     tips.push([x1, y1])
   }
   tips.forEach(([x, y]) => {
-    dot(g, x, y - 1, SNOW[0])
-    dot(g, x + 1, y - 1, SNOW[1])
+    dot(g, x, y - 1, snow ? SNOW[0] : FROST[0])
+    if (snow) dot(g, x + 1, y - 1, SNOW[1])
   })
 }
 
-// Manzano plantado en la hierba: primavera con la copa llena de flor blanca y rosa, otoño con manzanas rojas y hojas que amarillean, y
-// invierno con las ramas casi desnudas, nieve en ellas y alguna manzana caída al pie. Mide 52×60 y apoya en la fila 59.
+// Manzano plantado en la hierba: primavera con la copa llena de flor blanca y rosa, verano con manzanas pequeñas y verdes, otoño con manzanas
+// rojas y hojas que amarillean, y en invierno las ramas casi desnudas con escarcha (estado 4) o con nieve y un manto blanco al pie (estado 2),
+// y alguna manzana caída. Mide 52×60 y apoya en la fila 59.
 export function appleTree(season = 0) {
   const canvas = makeCanvas(52, 60)
   const g = canvas.getContext('2d')
@@ -165,6 +181,13 @@ export function appleTree(season = 0) {
       dot(g, x + 1, y, i % 2 ? '#fffafa' : '#f2a8bc')
       dot(g, x, y + 1, '#fbe9ee')
     })
+  } else if (season === 3) {
+    // Copa verde y espesa con las manzanas todavía pequeñas y verdes.
+    APPLE_BLOBS.forEach(([cx, cy, r]) => blob(g, cx, cy, r, GREEN, 9))
+    APPLE_FRUIT.forEach(([x, y]) => {
+      rect(g, x, y, 2, 2, '#86b030')
+      dot(g, x, y, '#bcd860')
+    })
   } else if (season === 1) {
     // Copa mezclada: según el ruido, hojas verdes que aún quedan o amarillas y anaranjadas.
     APPLE_BLOBS.forEach(([cx, cy, r], i) => {
@@ -175,7 +198,7 @@ export function appleTree(season = 0) {
     dot(g, 14, 57, '#cc7a24')
     dot(g, 36, 58, '#e29c34')
   } else {
-    bareCrown(g)
+    bareCrown(g, season === 2)
     // Pocas hojas secas que se resisten.
     ;[[16, 16], [37, 17], [24, 10], [30, 22]].forEach(([x, y]) => {
       dot(g, x, y, '#8a5a2a')
@@ -184,8 +207,13 @@ export function appleTree(season = 0) {
     // Manzanas caídas al pie, con su nieve, y un manto blanco alrededor de las raíces.
     fruit(g, 14, 56, ['#a8332a', '#cc6a58', '#6a1818'])
     fruit(g, 34, 57, ['#a8332a', '#cc6a58', '#6a1818'])
-    rect(g, 10, 57, 30, 2, SNOW[1])
-    rect(g, 16, 59, 22, 1, SNOW[2])
+    if (season === 2) {
+      rect(g, 10, 57, 30, 2, SNOW[1])
+      rect(g, 16, 59, 22, 1, SNOW[2])
+    } else {
+      // Escarcha sobre la hierba del pie, en motas sueltas.
+      for (let x = 11; x < 40; x += 3) dot(g, x, 57 + (x % 2), FROST[x % 2])
+    }
   }
   return { canvas: outline(canvas, 0.5), body: [{ l: -6, t: -9, r: 6, b: -1 }] }
 }

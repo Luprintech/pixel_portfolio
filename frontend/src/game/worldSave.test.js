@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { DEFAULT_LOOK } from './look'
 import { clearSave, loadSave, writeSave } from './save'
 import { BUILDINGS, SPAWN, TILE, waterTiles } from './world.js'
-import { resumePoint, sanitizeWorld } from './worldSave.js'
+import { fromTemplateSave, migrateWorld, resumePoint, sanitizeWorld } from './worldSave.js'
 
 const world = { seed: 123456, ms: 98765, x: 600, y: 700 }
 
@@ -52,5 +52,35 @@ describe('partida con estado del valle', () => {
     const loaded = loadSave()
     expect(loaded.name).toBe('Lupe')
     expect(loaded).not.toHaveProperty('world')
+  })
+})
+
+describe('partidas de antes de la franja norte', () => {
+  it('bajan la posición tantas filas como ha crecido el valle por arriba', () => {
+    expect(fromTemplateSave({ seed: 1, ms: 2, x: 600, y: 700 })).toMatchObject({ x: 600, y: 700 + 12 * TILE })
+    expect(fromTemplateSave(null)).toBeNull()
+  })
+
+  it('una posición guardada antes de la ampliación al oeste se desplaza ocho columnas, y una de antes de la franja norte también baja', () => {
+    const saved = { seed: 1, ms: 2, x: 600, y: 700 }
+    expect(migrateWorld(saved, 6)).toMatchObject({ x: 600 + 8 * TILE, y: 700 })
+    expect(migrateWorld(saved, 5)).toMatchObject({ x: 600 + 8 * TILE, y: 700 + 12 * TILE })
+    expect(migrateWorld(saved, 7)).toEqual(saved)
+    expect(migrateWorld(null, 6)).toBeNull()
+  })
+})
+
+describe('estación en la partida guardada', () => {
+  const world = { seed: 12345, ms: 90000, x: 400, y: 700 }
+
+  it('una partida anterior sin estación se acepta tal cual (empezará en primavera)', () => {
+    expect(sanitizeWorld(world)).toEqual(world)
+  })
+
+  it('conserva la estación y su progreso, y descarta una dañada sin perder el resto', () => {
+    const season = { season: 2, cycle: 6, elapsed: 540000, carry: 300000 }
+    expect(sanitizeWorld({ ...world, season })).toEqual({ ...world, season })
+    expect(sanitizeWorld({ ...world, season: { ...season, season: 9 } })).toEqual(world)
+    expect(sanitizeWorld({ ...world, season: 'otoño' })).toEqual(world)
   })
 })

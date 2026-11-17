@@ -173,7 +173,9 @@ const ICONS = {
   snow: ['...x...', 'x..x..x', '.x.x.x.', '..xxx..', '.x.x.x.', 'x..x..x', '...x...'],
   code: ['.x...x.', 'x.....x', '.x.x.x.', 'x..x..x', '.x.x.x.', 'x.....x', '.x...x.'],
   cone: ['..xxx..', '.xxxxx.', '.xxxxx.', '..xxx..', '..xxx..', '...x...', '...x...'],
+  castle: ['x.x.x.x', 'xxxxxxx', '.xxxxx.', '.x.x.x.', '.xxxxx.', '.xx.xx.', '.xx.xx.'],
   hook: ['..xxxx.', '..x....', '..x....', '..x....', 'x.x....', 'xxx....', '.x.....'],
+  lock: ['..xxx..', '.x...x.', '.x...x.', 'xxxxxxx', 'xxx.xxx', 'xxx.xxx', 'xxxxxxx'],
 }
 
 export function iconAt(g, x, y, name, color, scale = 1) {
@@ -201,14 +203,3 @@ export function chimney(g, x, y, h) {
   for (let cy = y + 5; cy < y + h; cy += 4) rect(g, x, cy, 9, 1, STONE0)
 }
 
-// Fila de arcos de medio punto sobre una pared: `count` huecos oscuros de `w` por `h` con su remate.
-export function arcade(g, { x, y, w, h, count, gap, color = '#3a2a4a' }) {
-  for (let i = 0; i < count; i++) {
-    const ax = x + i * (w + gap)
-    rect(g, ax, y + 2, w, h - 2, color)
-    rect(g, ax + 1, y + 1, w - 2, 1, color)
-    rect(g, ax + 2, y, w - 4, 1, color)
-    rect(g, ax - 1, y + 1, 1, h - 1, WALL2)
-    rect(g, ax + w, y + 1, 1, h - 1, WALL0)
-  }
-}

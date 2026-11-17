@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { COPY } from '../../lib/valleCopy.js'
 import { BUILDINGS, TILE, blockedWaterTiles, plazaTiles, roadTiles } from '../world.js'
+import { shiftPx } from '../mapRows.js'
 import { HOME_DOOR } from './lupePlaces.js'
 import {
   ATREUS_DOOR, ATREUS_PAUSE_MS, ATREUS_REST_MS, CAT_PLAZA, FEED_SPOTS, FILM_SPOTS, FOUNTAIN, PIGEON_COUNT, PIGEON_HOMES, ROUTINES, SUN_SPOTS, TOWN_REGION, WEATHER_ROUTINES,
@@ -77,8 +78,8 @@ describe('rutinas de Ylonem y Grace', () => {
     feeds.forEach((step) => {
       expect(inside(step.to)).toBe(true)
       expect(Math.hypot(step.look.x - step.to.x, step.look.y - step.to.y)).toBeLessThan(60)
-      // Lejos de la fuente (su cuerpo ocupa unos 30 px a cada lado) y cerca de los rincones de las palomas.
-      expect(Math.abs(step.to.x - FOUNTAIN.x)).toBeGreaterThan(40)
+      // A un lado de la fuente (su pretil ocupa unos 70 px a cada lado, ver `granCapitanFountain.js`) y cerca de los rincones de las palomas.
+      expect(Math.abs(step.to.x - FOUNTAIN.x)).toBeGreaterThan(76)
       expect(Math.min(...PIGEON_HOMES.map((home) => Math.hypot(home.x - step.to.x, home.y - step.to.y)))).toBeLessThan(120)
     })
     // Se sienta y se levanta entre medias: nunca echa de comer sentada.
@@ -101,7 +102,7 @@ describe('rutinas de Ylonem y Grace', () => {
   it('con lluvia Ylonem y Grace se refugian en la fachada del IES y Atreus vuelve; al atardecer Ylonem filma el cielo', () => {
     ;[WEATHER_ROUTINES.ylonemRain[0], WEATHER_ROUTINES.graceRain[0]].forEach((step) => {
       expect(step.kind).toBe('shelter')
-      expect(step.to.y).toBeLessThan(330)
+      expect(step.to.y).toBeLessThan(shiftPx(330))
     })
     expect(WEATHER_ROUTINES.atreusHome).toEqual([expect.objectContaining({ home: true, to: ATREUS_DOOR })])
     expect(WEATHER_ROUTINES.ylonemSunset[0]).toMatchObject({ kind: 'film', topic: 'sunset' })

@@ -17,6 +17,7 @@ import OptionsDialog from '../components/valle/OptionsDialog'
 import PrinterPanel from '../components/valle/PrinterPanel'
 import RetroDesktop from '../components/valle/RetroDesktop'
 import SaveToast from '../components/valle/SaveToast'
+import SeasonBadge from '../components/valle/SeasonBadge'
 import SkyView from '../components/valle/SkyView'
 import SmartTv from '../components/valle/SmartTv'
 import WorldBubble from '../components/valle/WorldBubble'
@@ -42,6 +43,7 @@ import { getEngine, startEngineIfAllowed } from '../lib/audioEngine'
 import { playMeow } from '../lib/dialogueSound'
 import { playPetSound } from '../lib/petSounds'
 import { playArcadeSound } from '../lib/arcadeSound'
+import { playCarStart, startCarEngine } from '../lib/carSound'
 import { jukebox } from '../lib/jukebox'
 import { setActivity, startMusicDirector } from '../lib/musicDirector'
 import { playPrintDone, playPrintStep } from '../lib/printerSound'
@@ -112,6 +114,8 @@ export default function Valle() {
   const [pcMinimized, setPcMinimized] = useState(false)
   // Límites del zoom que publica la escena; hasta que existe, ambos botones valen.
   const [zoomState, setZoomState] = useState({ canIn: true, canOut: true })
+  // Estación vigente (`{ name, changes }`, la publica el juego): el indicador del HUD enseña su nombre al cambiar. Hasta que existe, primavera.
+  const [season, setSeason] = useState({ name: 'spring', changes: 0 })
   const hostRef = useRef(null)
   const skyRef = useRef(null)
   // La zona abierta, para los avisos del juego que llegan por eventos y no deben sonar encima de una actividad.
@@ -183,6 +187,8 @@ export default function Valle() {
     if (!started) return undefined
     let instance = null
     let cancelled = false
+    // Motor del SEAT Córdoba en marcha (su mando) mientras la viajera conduce.
+    let motor = null
     setStatus('loading')
     // El código del juego y los dibujos del mundo se esperan con la pantalla de carga puesta, a porciones: la escena
     // arranca con todo hecho y sin bloquear el móvil. Se deja pasar un fotograma para que se pinte lo último escrito.
@@ -199,6 +205,19 @@ export default function Valle() {
         // Pesca: avisos de cada lance y sus sonidos (con una actividad abierta no suena nada).
         instance.events.on('fish-notice', (event) => setFishNotice({ id: Date.now(), event }))
         instance.events.on('fish-sound', (type) => !activeZone.current && playArcadeSound(getEngine() ?? startEngineIfAllowed(), type))
+        // El coche: arranque al subir, el motor sube de tono al acelerar y se apaga al bajar.
+        instance.events.on('car-sound', (kind, throttle) => {
+          if (kind === 'start') {
+            const engine = getEngine() ?? startEngineIfAllowed()
+            motor?.stop()
+            playCarStart(engine)
+            motor = startCarEngine(engine)
+          } else if (kind === 'speed') motor?.setThrottle(throttle)
+          else if (kind === 'stop') {
+            motor?.stop()
+            motor = null
+          }
+        })
         // Con una actividad abierta (ordenador, recreativa...) la casa calla: ni maullidos ni impresora compiten con ella.
         instance.events.on('meow', (variant) => !activeZone.current && playMeow(getEngine() ?? startEngineIfAllowed(), variant))
         instance.events.on('indoors', setIndoors)
@@ -208,19 +227,27 @@ export default function Valle() {
         // También se guarda el último estado: la vista del telescopio lo lee para pintar el mismo cielo.
         instance.events.on('sky', (sky) => {
           skyRef.current = sky
-          setAmbienceScene(sky)
+          // El sonido de invierno (campanitas, sin grillos ni pájaros) es el de la nieve: la escarcha del invierno sin nevada suena como un día frío cualquiera.
+          setAmbienceScene({ ...sky, winter: sky.snowCover ?? sky.winter })
         })
         instance.events.on('thunder', thunder)
         // La escena puede haber publicado ya el zoom antes de que escuchemos: se lee el valor actual y se siguen los cambios.
         const syncZoom = (_parent, value) => value && setZoomState(value)
         syncZoom(null, instance.registry.get('zoom'))
         instance.registry.events.on('changedata-zoom', syncZoom)
+        // La estación, igual: se lee la actual (puede estar publicada ya) y se siguen los cambios.
+        const syncSeason = (_parent, value) => value && setSeason(value)
+        syncSeason(null, instance.registry.get('season'))
+        instance.registry.events.on('changedata-season', syncSeason)
+        // La primera vez que la escena la publica la clave es nueva, y Phaser avisa con `setdata` (no con `changedata`).
+        instance.registry.events.on('setdata', (_parent, key, value) => key === 'season' && syncSeason(null, value))
         setGame(instance)
         setStatus('ready')
       })
       .catch(() => !cancelled && setStatus('error'))
     return () => {
       cancelled = true
+      motor?.stop()
       instance?.destroy(true)
       setGame(null)
       setNear(null)
@@ -505,6 +532,7 @@ export default function Valle() {
                 onZoom={zoomView}
                 className="!min-h-[var(--ctl)] !w-[var(--ctl)]"
               />
+              {status === 'ready' && <SeasonBadge season={season.name} changes={season.changes} copy={copy.hud.season} style={hudStyle} className="!min-h-[var(--ctl)] !w-[var(--ctl)]" />}
               <p className="px-text hidden max-w-[22rem] px-3 py-1 text-sm lg:block" style={hudStyle}>
                 {touch ? copy.hud.touchControls : copy.hud.controls}
               </p>

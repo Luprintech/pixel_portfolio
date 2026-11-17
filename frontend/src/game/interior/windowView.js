@@ -14,7 +14,7 @@ const RAIN_SLOW = 0.2
 const SNOW_DENSITY = 6
 const SNOW_SLOW = 0.4
 const CLOUD_SPAN = 420
-const HILL = { grass: '#4f7f3f', autumn: '#b8742e', snow: '#eef4ff', night: '#14132e' }
+const HILL = { grass: '#4f7f3f', summer: '#7a8a3a', autumn: '#b8742e', frost: '#a9c4c0', snow: '#eef4ff', night: '#14132e' }
 
 // Estrellas de un cristal: posiciones fijas dentro de él, tantas como pide su tamaño.
 export const windowStars = (w, h, seed = 3) =>
@@ -70,9 +70,13 @@ function paintClouds(g, w, h, sky, ms) {
   })
 }
 
-// Lomas del fondo: verdes en primavera, anaranjadas con el otoño y blancas con la nieve, y oscuras de noche.
+// Lomas del fondo: verdes en primavera, más secas en verano, anaranjadas con el otoño, pálidas con la escarcha y blancas con la nieve, y oscuras de noche.
+// Un cielo sin clima de estación (el de antes de que exista) trae `winter` como nieve y no tiene verano ni escarcha.
 function paintHills(g, w, h, sky, soften) {
-  const day = mixHex(mixHex(HILL.grass, HILL.autumn, sky.autumn), HILL.snow, sky.winter)
+  const snow = sky.snowCover ?? sky.winter
+  const frost = sky.snowCover === undefined ? 0 : 0.7 * sky.winter
+  const dry = mixHex(HILL.grass, HILL.summer, sky.summer ?? 0)
+  const day = mixHex(mixHex(mixHex(dry, HILL.autumn, sky.autumn), HILL.frost, frost), HILL.snow, snow)
   const color = soften(mixHex(day, HILL.night, 0.65 * sky.dark))
   for (let x = 0; x < w; x++) rect(g, x, h - 1 - (((x >> 2) + 1) % 3 === 0 ? 1 : 0), 1, 2, color)
 }

@@ -1,6 +1,7 @@
 // Capas del cielo sobre el mapa: oscurecimiento de la hora y el tiempo, luz de ventanas y farolas, lluvia,
 // nieve y rayos, y el fundido entre estaciones. Es la parte de Phaser de valleSky.js: ValleScene le
 // registra las imágenes que cambian y llama a `update` en cada fotograma.
+import SeasonClock from './seasonClock.js'
 import { clockOffset, lampGlow, paintWeather, tintLayers, valleSkyAt, valleStrikesBetween, windowGlow } from './valleSky.js'
 
 const DEPTH = { tint: 9000, glow: 9100, weather: 9200 }
@@ -9,15 +10,24 @@ const PUBLISH_MS = 100
 const FX_KEY = 'valle-weather'
 
 export default class SkyLayer {
-  // `clock` (ms de mundo) reanuda una partida guardada; sin él, el día empieza en su primera fase.
-  constructor(scene, { seed, clock }) {
+  // `clock` (ms de mundo) reanuda una partida guardada; sin él, el día empieza en su primera fase. `season` es el progreso de estación guardado
+  // (`SeasonClock.snapshot`); sin él, empieza la primavera.
+  constructor(scene, { seed, clock, season }) {
     this.scene = scene
     this.seed = seed
     this.origin = null
     this.offset = clock ?? clockOffset(seed)
     this.lastMs = this.offset
     this.lastPublish = -PUBLISH_MS
-    this.seasons = { autumn: [], winter: [] }
+    // Imágenes de cada capa de estación (ver `valleClimate.blendOf`): verano, otoño, escarcha de invierno y nieve acumulada.
+    this.seasons = { summer: [], autumn: [], frost: [], snow: [] }
+    this.trees = new Set()
+    this.treeBases = []
+    // El reloj de estaciones cuenta tiempo activo, dentro y fuera de las casas, y avisa a la página de cada cambio (ver `publishSeason`).
+    this.seasonClock = new SeasonClock({ seed, saved: season })
+    this.seasonChanges = 0
+    this.seasonClock.onChange(() => this.publishSeason(++this.seasonChanges))
+    this.publishSeason(0)
     // El último estado del cielo calculado: lo leen los personajes y la vida ambiental sin recalcularlo (null hasta el primer fotograma).
     this.last = null
     this.lit = []
@@ -30,10 +40,18 @@ export default class SkyLayer {
     this.resize()
   }
 
-  // Imagen que aparece con una estación: se funde con su opacidad mientras dura el cambio.
-  addSeason(season, image) {
+  // Imagen que aparece con una estación: se funde con su opacidad mientras dura el cambio. `tree` marca las de un árbol: la escarcha le quita hojas (deja
+  // huecos), así que lo que hay debajo (la base y las demás estaciones) se apaga a la vez que ella entra, para que por los huecos se vea el suelo y no
+  // el árbol de antes.
+  addSeason(season, image, tree = false) {
     image.setAlpha(0)
     this.seasons[season].push(image)
+    if (tree) this.trees.add(image)
+  }
+
+  // La imagen base de un árbol (la primavera), que se apaga con la escarcha.
+  addTreeBase(image) {
+    this.treeBases.push(image)
   }
 
   // Cristales encendidos de un edificio, con un `rank` (0 a 1) que escalona la hora a la que se encienden.
@@ -70,6 +88,17 @@ export default class SkyLayer {
     image.setAlpha(rounded)
   }
 
+  // La estación vigente en el registro del juego: la página lee de ahí el icono y el nombre del indicador. `changes` cuenta los cambios desde que
+  // se abrió el valle, para que la página enseñe el nombre al cambiar y no al entrar.
+  publishSeason(changes) {
+    this.scene.game.registry.set('season', { name: this.seasonClock.value.name, changes })
+  }
+
+  // Estado del cielo a la hora `ms` con el clima de ahora: lo piden el valle y el interior de las casas, que comparten reloj y estación.
+  skyAt(ms) {
+    return valleSkyAt(ms, this.seed, this.seasonClock.tick())
+  }
+
   // Hora del mundo ahora mismo, en ms. El reloj de Phaser y `performance.now` comparten base, y así sigue
   // corriendo aunque `update` no se llame (la viajera dentro de un edificio).
   clock() {
@@ -79,12 +108,16 @@ export default class SkyLayer {
   update(time) {
     if (this.origin === null) this.origin = time
     const ms = time - this.origin + this.offset
-    const sky = valleSkyAt(ms, this.seed)
+    const sky = this.skyAt(ms)
     this.last = sky
 
     tintLayers(sky).forEach(({ alpha }, i) => this.setIfChanged(this.tints[i], alpha))
-    this.seasons.autumn.forEach((image) => this.setIfChanged(image, sky.autumn))
-    this.seasons.winter.forEach((image) => this.setIfChanged(image, sky.winter))
+    // Bajo la escarcha, un árbol pierde lo que hay debajo: el alpha de esas capas se multiplica por lo que falta para que la escarcha cubra del todo.
+    const bare = 1 - sky.layers.frost
+    Object.entries(this.seasons).forEach(([layer, images]) =>
+      images.forEach((image) => this.setIfChanged(image, layer === 'frost' || layer === 'snow' || !this.trees.has(image) ? sky.layers[layer] : sky.layers[layer] * bare)),
+    )
+    this.treeBases.forEach((image) => this.setIfChanged(image, bare))
     this.lit.forEach(({ image, rank }) => this.setIfChanged(image, windowGlow(sky.gloom, rank)))
     this.lamps.forEach((image) => this.setIfChanged(image, lampGlow(sky.gloom)))
 

@@ -3,8 +3,9 @@
 // Los obstáculos son los mismos cuerpos sólidos que frenan a la viajera, así que lo que a ella le cierra el paso, a Lupe también.
 import { createNav } from '../interior/catNav.js'
 import { TILE } from '../world.js'
+import { shiftPx, shiftX } from '../mapRows.js'
 
-export const NAV_REGION = { x: 12 * TILE, y: 40 * TILE, width: 42 * TILE, height: 11 * TILE }
+export const NAV_REGION = { x: shiftX(12) * TILE, y: shiftPx(40 * TILE), width: 42 * TILE, height: 11 * TILE }
 
 const touches = (r, b) => r.x < b.x + b.width && r.x + r.w > b.x && r.y < b.y + b.height && r.y + r.h > b.y
 

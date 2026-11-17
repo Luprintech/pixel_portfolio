@@ -1,51 +1,31 @@
-// Objetos sueltos del valle (fuente, bancos, farolas, vallas, autobús...). Cada uno es un dibujo con su
+// Objetos sueltos del valle (fuente, bancos, farolas, vallas...). Cada uno es un dibujo con su
 // cuerpo sólido, medido desde el punto de apoyo (centro de la base): `l`, `r`, `t` y `b` son los bordes
 // en píxeles, con `t` y `b` negativos hacia arriba. Un `glow` marca la luz que se enciende de noche.
 import { PAL, TONE } from './palette.js'
 import { dot, ellipse, makeCanvas, outline, rect } from './pixelKit.js'
 import { drawText, textWidth } from './pixelFont.js'
-import { cordobaArch as arch } from './cordobaArch.js'
+import { cordobaArch } from './cordobaArch.js'
+import { granCapitanFountain as fountain } from './granCapitanFountain.js'
+import { romanColumns } from './romanColumns.js'
+import { cityMosaic, flowerBed } from './civicProps.js'
 import { appleTree, orangeTree } from './fruitTrees.js'
 import { lounger, poolUmbrella as umbrella, towel } from './poolProps.js'
-import { fishPost, footBridge, lily, plankBridge, reeds, rod, romanBridge } from './riverSprites.js'
+import { fishPost, lily, reeds, rod, romanBridge } from './riverSprites.js'
+import { aucorsaBus as bus } from './aucorsaBus.js'
+import { sanRafael } from './sanRafael.js'
+import { towTruck } from './towTruck.js'
+import { seatCordoba } from './seatCordoba.js'
+import { cafeTable, cafeUmbrella } from './terraceCafe.js'
 
 const [WOOD0, WOOD1, WOOD2, WOOD3] = TONE.wood
 const [STONE0, STONE1, STONE2] = TONE.stone
-const [W0, W1, W2, W3, W4] = TONE.water
+const [, , W2, W3, W4] = TONE.water
 
 const sprite = (w, h) => {
   const canvas = makeCanvas(w, h)
   return { canvas, g: canvas.getContext('2d') }
 }
 const done = ({ canvas }, strength = 0.5) => outline(canvas, strength)
-
-function fountain() {
-  const s = sprite(72, 60)
-  const { g } = s
-  ellipse(g, 36, 46, 33, 13, STONE0)
-  ellipse(g, 36, 44, 33, 13, STONE2)
-  ellipse(g, 36, 45, 29, 10, STONE1)
-  ellipse(g, 36, 45, 27, 9, W2)
-  ellipse(g, 36, 44, 22, 6.5, W3)
-  for (let i = 0; i < 7; i++) dot(g, 16 + i * 6, 44 + (i % 2) * 2, W4)
-  // Pie y dos cuencos.
-  rect(g, 33, 24, 6, 20, STONE1)
-  rect(g, 33, 24, 2, 20, STONE2)
-  ellipse(g, 36, 30, 14, 5, STONE1)
-  ellipse(g, 36, 29, 14, 5, STONE2)
-  ellipse(g, 36, 29, 11, 3.5, W3)
-  ellipse(g, 36, 16, 7, 3, STONE2)
-  rect(g, 35, 8, 2, 8, W4)
-  ellipse(g, 36, 6, 4, 3, W4)
-  ;[[24, 14], [48, 14], [28, 6], [44, 8]].forEach(([x, y]) => dot(g, x, y + 8, W4))
-  // Flores en el borde del pilón.
-  for (let i = 0; i < 12; i++) {
-    const x = 8 + i * 5
-    dot(g, x, 54 + (i % 3), i % 2 ? PAL.rose : '#f6f0e0')
-    dot(g, x + 1, 55 + (i % 3), TONE.grass[2])
-  }
-  return { canvas: done(s), body: [{ l: -30, t: -26, r: 30, b: -4 }] }
-}
 
 function noticeboard() {
   const s = sprite(36, 34)
@@ -79,6 +59,35 @@ function postbox() {
   rect(g, 6, 15, 4, 1, '#c8402e')
   rect(g, 13, 8, 2, 5, PAL.saffron)
   return { canvas: done(s), body: [{ l: -5, t: -6, r: 5, b: -1 }] }
+}
+
+// Entrada del sur: dos pilares de piedra con farol y un arco de madera cubierto de flores.
+function arch() {
+  const s = sprite(72, 56)
+  const { g } = s
+  ;[2, 56].forEach((x) => {
+    rect(g, x, 14, 14, 42, STONE1)
+    rect(g, x, 14, 4, 42, STONE2)
+    rect(g, x + 11, 14, 3, 42, STONE0)
+    rect(g, x - 1, 10, 16, 5, STONE2)
+    for (let y = 22; y < 56; y += 6) rect(g, x, y, 14, 1, STONE0)
+  })
+  // Arco de madera con flores trepando.
+  for (let x = 14; x < 58; x++) {
+    const t = (x - 36) / 22
+    const y = 6 + Math.round(t * t * 12)
+    rect(g, x, y, 1, 5, WOOD2)
+    dot(g, x, y, WOOD3)
+    dot(g, x, y + 4, WOOD0)
+  }
+  for (let i = 0; i < 46; i++) {
+    const x = 6 + Math.round((i * 60) / 46)
+    const t = (x - 36) / 30
+    const y = 4 + Math.round(t * t * 16) + (i % 3)
+    dot(g, x, y, i % 3 === 0 ? TONE.grass[2] : i % 2 ? PAL.rose : '#f6f0e0')
+    dot(g, x + 1, y + 1, '#f09ab6')
+  }
+  return { canvas: done(s), body: [{ l: -34, t: -42, r: -20, b: -1 }, { l: 20, t: -42, r: 34, b: -1 }] }
 }
 
 // Cartel de bienvenida: tablón sobre dos postes con el nombre del valle en dos líneas.
@@ -119,54 +128,6 @@ function busStop() {
   rect(g, 6, 33, 2, 6, WOOD0)
   rect(g, 28, 33, 2, 6, WOOD0)
   return { canvas: done(s), body: [{ l: -15, t: -10, r: 15, b: -1 }] }
-}
-
-// Autobús de líneas amarillas y blancas visto de lado.
-function bus() {
-  const s = sprite(88, 44)
-  const { g } = s
-  rect(g, 4, 6, 80, 30, '#f6f0e0')
-  rect(g, 6, 4, 76, 2, '#f6f0e0')
-  rect(g, 4, 28, 80, 8, '#f2b134')
-  rect(g, 4, 25, 80, 3, '#8a74b4')
-  rect(g, 4, 6, 80, 2, '#d8d0c0')
-  for (let i = 0; i < 5; i++) {
-    rect(g, 10 + i * 13, 10, 10, 11, '#6fb3c6')
-    rect(g, 10 + i * 13, 10, 10, 3, '#9fd6e0')
-  }
-  rect(g, 70, 9, 12, 16, '#6fb3c6')
-  rect(g, 70, 9, 12, 3, '#9fd6e0')
-  rect(g, 78, 10, 4, 14, '#e8a050')
-  rect(g, 66, 10, 3, 24, '#d8d0c0')
-  rect(g, 82, 30, 4, 4, '#fff6a8')
-  ;[18, 62].forEach((x) => {
-    ellipse(g, x, 37, 6, 6, '#2e2d4a')
-    ellipse(g, x, 37, 3, 3, '#9a98b8')
-  })
-  return { canvas: done(s), body: [{ l: -42, t: -30, r: 42, b: -4 }] }
-}
-
-function towTruck() {
-  const s = sprite(72, 44)
-  const { g } = s
-  rect(g, 30, 14, 36, 18, '#f2c230')
-  rect(g, 30, 14, 36, 2, '#f8d77a')
-  rect(g, 6, 8, 24, 24, '#f2c230')
-  rect(g, 6, 8, 24, 2, '#f8d77a')
-  rect(g, 8, 11, 12, 10, '#6fb3c6')
-  rect(g, 8, 11, 12, 3, '#9fd6e0')
-  rect(g, 2, 24, 28, 9, '#d4a020')
-  rect(g, 4, 28, 4, 3, '#fff6a8')
-  // Grúa: brazo inclinado con cable y gancho.
-  for (let i = 0; i < 28; i++) rect(g, 44 + Math.floor(i * 0.8), 14 - Math.floor(i * 0.5), 3, 3, i % 4 < 2 ? '#8a8aa0' : '#6c6a8c')
-  rect(g, 66, 0, 2, 22, STONE1)
-  rect(g, 64, 22, 6, 2, STONE1)
-  rect(g, 66, 22, 1, 4, STONE0)
-  ;[16, 52].forEach((x) => {
-    ellipse(g, x, 36, 6, 6, '#2e2d4a')
-    ellipse(g, x, 36, 3, 3, '#9a98b8')
-  })
-  return { canvas: done(s), body: [{ l: -32, t: -30, r: 32, b: -4 }] }
 }
 
 // Piscina: lámina de agua con el borde de piedra clara, escalera de barras y cuatro franjas de luz.
@@ -269,8 +230,8 @@ function fence() {
 }
 
 export const PROP_KINDS = {
-  fountain, noticeboard, postbox, arch, welcomeSign, busStop, bus, towTruck, pool, orangeTree, appleTree, easel, bench, lamp, rocks, umbrella, lounger, towel, fence,
-  romanBridge, plankBridge, footBridge, lily, reeds, fishPost, rod,
+  fountain, noticeboard, postbox, arch, cordobaArch, romanColumns, flowerBed, cityMosaic, welcomeSign, busStop, bus, towTruck, seatCordoba, pool, orangeTree, appleTree, easel, bench, lamp, rocks, umbrella, lounger, towel, fence,
+  romanBridge, lily, reeds, fishPost, rod, cafeTable, cafeUmbrella, sanRafael,
 }
 
 // Cada objeto se dibuja una sola vez por variante: devuelve `{ canvas, body, glow? }`.

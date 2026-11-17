@@ -9,7 +9,8 @@ import { makeCanvas, wallRows } from './pixelKit.js'
 import { petCanvas, petRestCanvas } from './pets/index.js'
 import { createIdle, playOffset, takeSound, updateIdle } from './pets/idle.js'
 import { FRUIT_NAMES, fruitTalkId, isFruitTree } from './fruitTrees.js'
-import { buildingAssets, groundBase, groundSeasonJob, propAssets, treeAssets } from './worldAssets.js'
+import { followRamp } from './ramps.js'
+import { SEASON_LAYERS, buildingAssets, groundBase, groundSeasonJob, propAssets, treeAssets } from './worldAssets.js'
 import SkyLayer from './SkyLayer.js'
 import LitWindows from './litWindows.js'
 import { advanceWalk, facingFor, inputVector } from './walk.js'
@@ -22,6 +23,7 @@ import { getStory, updateStory } from './story/storyStore.js'
 import { addItem, hasItem, recordCatch, setTour, tourOnRoofEntry } from './story/story.js'
 import RiverFish from './RiverFish.js'
 import AmbientLife from './AmbientLife.js'
+import SeasonalLife from './SeasonalLife.js'
 import PoolLife from './PoolLife.js'
 import { prefersReducedMotion } from '../lib/reducedMotion.js'
 import { fishSpots } from './riverPlaces.js'
@@ -30,6 +32,10 @@ import { grantReward, loadWallet, saveWallet } from './arcade/wallet.js'
 import { registerSheet } from './sheetTexture.js'
 import { sitDown, standUp } from './sitting.js'
 import { GAME_THEME_COLOR, GAME_THEME_FADE, themeName } from '../lib/gameTheme.js'
+import { shiftPx, shiftPxX } from './mapRows.js'
+import SeeThrough from './seeThrough.js'
+import { JET_FRAME_MS, jetFrames } from './fountainJets.js'
+import CarDriving from './CarDriving.js'
 
 const SPEED = 90
 // Lo máximo que cambia la altura de los pies por fotograma al entrar en la escalera: más que la pendiente de la rampa.
@@ -38,7 +44,6 @@ const CLIMB_EASE = 4
 const FEET_BODY = 4
 // Las ventanas encendidas y la luz de las farolas.
 const LIT_WINDOW = '#f8d77a'
-const SEASONS = ['autumn', 'winter']
 // Lo máximo que dura la entrada andando, por si algo la frena.
 const ARRIVAL_MAX_MS = 6000
 // Cuánto se queda el resultado de un lance (el pez que sale, el que se escapa) antes de poder volver a echar la caña.
@@ -56,6 +61,7 @@ export default class ValleScene extends Phaser.Scene {
     // Una partida guardada (`world`) reanuda su hora, su tiempo y su posición; sin ella, todo empieza de cero.
     this.seed = data.world?.seed ?? data.seed ?? Math.floor(Math.random() * 1e9)
     this.clock = data.world?.ms
+    this.season = data.world?.season
     this.start = data.world ? resumePoint(data.world) : ARRIVAL
     // Una partida nueva entra andando por el arco del sur: hasta que llega, el teclado no mueve a la viajera.
     this.arriving = !data.world
@@ -72,6 +78,8 @@ export default class ValleScene extends Phaser.Scene {
     // Lance en marcha (ver `beginFishing`) o null, y los puntos de pesca con su zona.
     this.fishing = null
     this.spots = []
+    // El SEAT Córdoba que se puede conducir (ver `CarDriving.js`); se crea al colocar su dibujo.
+    this.car = null
     // Dibujos del escenario que dependen del tema (clave y cómo pedirlos al tema vigente): son los que se vuelven a registrar al cambiarlo.
     this.themed = []
     this.replaced = null
@@ -79,11 +87,12 @@ export default class ValleScene extends Phaser.Scene {
 
   create() {
     this.physics.world.setBounds(0, 0, COLS * TILE, ROWS * TILE)
-    this.sky = new SkyLayer(this, { seed: this.seed, clock: this.clock })
+    this.sky = new SkyLayer(this, { seed: this.seed, clock: this.clock, season: this.season })
     this.buildTextures()
     this.buildGround()
     this.solids = []
     this.doors = []
+    this.seeThrough = new SeeThrough(this)
     this.litWindows = []
     this.buildScenery()
     this.buildBuildings()
@@ -136,12 +145,13 @@ export default class ValleScene extends Phaser.Scene {
       this.game.events.off('theme', this.onTheme, this)
       this.game.events.off('zoom', this.stepZoom, this)
       this.riverFish.destroy()
+      if (this.car?.driving) this.game.events.emit('car-sound', 'stop')
     })
   }
 
-  // Lo que se guarda del valle: la hora del mundo y dónde está la viajera (ver worldSave.js).
+  // Lo que se guarda del valle: la hora del mundo, la estación con su progreso y dónde está la viajera (ver worldSave.js).
   snapshot() {
-    return { seed: this.seed, ms: Math.round(this.sky.clock()), x: Math.round(this.princess.x), y: Math.round(this.princess.y) }
+    return { seed: this.seed, ms: Math.round(this.sky.clock()), season: this.sky.seasonClock.snapshot(), x: Math.round(this.princess.x), y: Math.round(this.princess.y) }
   }
 
   fitCamera() {
@@ -179,16 +189,18 @@ export default class ValleScene extends Phaser.Scene {
   // Texturas
   addCanvas(key, canvas) {
     if (this.textures.exists(key)) this.textures.remove(key)
-    this.textures.addCanvas(key, canvas)
+    const texture = this.textures.addCanvas(key, canvas)
+    // Los dibujos de más resolución que se pintan a escala (`scale`, ver `buildProps`) se filtran suave, también sus estaciones.
+    if (this.smoothKeys?.has(key.split(':')[0])) texture.setFilter(Phaser.Textures.FilterMode.LINEAR)
     this.replaced?.add(key)
   }
 
   // Dibujo del escenario ya preparado en `worldAssets` (paleta pastel incluida): se registra con sus
-  // versiones de otoño e invierno (`clave:autumn`, `clave:winter`), que se funden por encima según el
+  // versiones de estación (`clave:summer`, `clave:autumn`, `clave:frost`, `clave:snow`), que se funden por encima según el
   // tiempo. La viajera, la mascota y las sombras no pasan por ahí y conservan su color.
   addPrepared(key, set) {
     this.addCanvas(key, set.base)
-    SEASONS.forEach((season) => set[season] && this.addCanvas(`${key}:${season}`, set[season]))
+    SEASON_LAYERS.forEach((season) => set[season] && this.addCanvas(`${key}:${season}`, set[season]))
   }
 
   // Un dibujo del escenario que cambia con el tema. `assetsOf()` lo pide al tema vigente (`this.pastel`), así que al
@@ -222,14 +234,17 @@ export default class ValleScene extends Phaser.Scene {
   }
 
   // Imagen de un dibujo con sus versiones de estación apiladas encima, al mismo sitio y profundidad.
-  placeScenery(key, x, y, origin, depth) {
-    const image = this.add.image(x, y, key).setOrigin(...origin).setDepth(depth)
+  placeScenery(key, x, y, origin, depth, scale = 1) {
+    const image = this.add.image(x, y, key).setOrigin(...origin).setDepth(depth).setScale(scale)
     // Las versiones de estación se guardan en la imagen: quien quite el objeto del mapa (la caña) las oculta con ella.
     image.seasonImages = []
-    SEASONS.forEach((season) => {
+    // Los árboles pierden hojas con la escarcha: su base y sus capas de estación se funden con ella (ver `SkyLayer.addSeason`).
+    const tree = key.startsWith('tree-')
+    if (tree) this.sky.addTreeBase(image)
+    SEASON_LAYERS.forEach((season) => {
       if (!this.textures.exists(`${key}:${season}`)) return
-      const layer = this.add.image(x, y, `${key}:${season}`).setOrigin(...origin).setDepth(depth)
-      this.sky.addSeason(season, layer)
+      const layer = this.add.image(x, y, `${key}:${season}`).setOrigin(...origin).setDepth(depth).setScale(scale)
+      this.sky.addSeason(season, layer, tree)
       image.seasonImages.push(layer)
     })
     return image
@@ -290,6 +305,11 @@ export default class ValleScene extends Phaser.Scene {
     this.princess.setTexture(this.travellerKey, frameName(this.facing, 0))
     if (previous) this.textures.remove(previous)
     this.buildPet(this.princess.x, this.princess.y)
+    // Con el coche en marcha la viajera va dentro: se repinta al volante y la mascota sigue oculta.
+    if (this.car?.driving) {
+      this.car.paintDriver()
+      this.car.showPet(false)
+    }
   }
 
   buildTextures() {
@@ -301,12 +321,15 @@ export default class ValleScene extends Phaser.Scene {
     this.addCanvas('lamp-glow', lampGlowCanvas())
   }
 
-  // Para entrar solo hace falta la base del suelo. El otoño y el invierno se terminan de preparar mientras se
+  // Para entrar solo hace falta la base del suelo. Las demás estaciones se terminan de preparar mientras se
   // juega (porciones por fotograma, ver `advanceGroundSeasons`) y se añaden cuando están listos.
   buildGround() {
     this.addThemed('ground', () => ({ base: groundBase(this.pastel) }))
     this.placeScenery('ground', 0, 0, [0, 0], 0)
-    this.groundPending = SEASONS.map((season) => [season, groundSeasonJob(season, this.pastel)])
+    // Primero la capa de la estación en que se reanuda la partida: si no, el suelo tardaría en cambiar de aspecto al entrar en pleno invierno.
+    const current = { summer: 'summer', autumn: 'autumn', winter: 'frost' }[this.sky.seasonClock.value.name]
+    const order = current ? [current, ...SEASON_LAYERS.filter((layer) => layer !== current)] : SEASON_LAYERS
+    this.groundPending = order.map((season) => [season, groundSeasonJob(season, this.pastel)])
   }
 
   // No se empieza hasta que la viajera ha terminado de subir por el camino: en un móvil, preparar las estaciones
@@ -319,7 +342,8 @@ export default class ValleScene extends Phaser.Scene {
       const [season, work] = this.groundPending[0]
       if (!work.step()) continue
       this.addThemed(`ground:${season}`, () => ({ base: groundSeasonJob(season, this.pastel).get() }))
-      this.sky.addSeason(season, this.add.image(0, 0, `ground:${season}`).setOrigin(0, 0).setDepth(0))
+      // Las capas del suelo se preparan en el orden de la estación vigente, no en el de apilado: la profundidad lo fija (sobre la base, bajo el resto).
+      this.sky.addSeason(season, this.add.image(0, 0, `ground:${season}`).setOrigin(0, 0).setDepth(0.05 * (SEASON_LAYERS.indexOf(season) + 1)))
       this.groundPending.shift()
     }
   }
@@ -343,6 +367,7 @@ export default class ValleScene extends Phaser.Scene {
   // Edificios: cada dibujo se alinea para que su puerta caiga en la tesela de la puerta. Las ventanas
   // se encienden de noche con una copia de los cristales que se pinta por encima del oscurecimiento.
   buildBuildings() {
+    this.ramps = []
     BUILDINGS.forEach((b, i) => {
       const { sprite, overlay } = buildingAssets(b, this.pastel)
       const key = `building-${b.id}`
@@ -353,17 +378,31 @@ export default class ValleScene extends Phaser.Scene {
       // baja (la viajera subiría al tejado y se ocultaría tras él) ni en el margen vacío del lienzo (muro
       // invisible). Abajo, el cuerpo de la viajera mide 4 px sobre sus pies: se resta para que los pies lleguen
       // justo a la base y no parezca que flota ante la fachada.
-      const { top, bottom } = wallRows(sprite.canvas)
+      // Un dibujo puede fijar sus filas de muro (la casa de Lupe): si no, salen de sus filas anchas.
+      const { top, bottom } = sprite.wallRows ?? wallRows(sprite.canvas)
       const bodyTop = py + top
       const bodyBottom = py + bottom - FEET_BODY
-      this.placeScenery(key, px, py, [0, 0], bodyBottom)
+      // Un puesto en el que se entra (el quiosco) ordena su fondo por la pared trasera y su frente por la base (`depthRows`).
+      this.placeScenery(key, px, py, [0, 0], sprite.depthRows ? py + sprite.depthRows.back : bodyBottom)
       if (b.terrace) {
         this.buildTerrace(px, py, bodyTop, bodyBottom, sprite.canvas.width)
-        if (overlay) this.addFrontRail(key, overlay, px, py, () => buildingAssets(b, this.pastel).overlay.set)
+        if (overlay) this.addFrontLayer(key, overlay, px, py, this.terrace.depth + 1, () => buildingAssets(b, this.pastel).overlay.set)
+      } else if (sprite.bodies) {
+        // Huellas a medida (el quiosco con su cartel y su papelera; la Universidad con su escalinata y su rampa).
+        sprite.bodies.forEach(({ x, y, w, h }) => this.solid(px + x, py + y, w, h))
+        if (overlay) this.addFrontLayer(key, overlay, px, py, py + sprite.depthRows.front, () => buildingAssets(b, this.pastel).overlay.set)
       } else this.solid(px + 2, bodyTop, sprite.canvas.width - 4, bodyBottom - bodyTop)
       this.addLitWindows(`${key}:lit`, sprite, px, py, i / (BUILDINGS.length - 1))
       if (sprite.glow) this.addGlow(`${key}:glow`, sprite.glow, px, py, i / (BUILDINGS.length - 1))
-      this.addDoor(b.id, b.door.x, b.door.y)
+      // Una fachada con escalinata (la Universidad) pone la puerta en su rellano, no a pie de calle (`doorZone`, en píxeles del lienzo).
+      if (sprite.ramp) {
+        const { x0, y0, x1, y1 } = sprite.ramp
+        this.ramps.push({ x0: px + x0, y0: py + y0, x1: px + x1, y1: py + y1 })
+      }
+      if (sprite.doorZone) {
+        const { x, y, w, h } = sprite.doorZone
+        this.doors.push({ id: b.id, rect: new Phaser.Geom.Rectangle(px + x, py + y, w, h) })
+      } else this.addDoor(b.id, b.door.x, b.door.y)
     })
   }
 
@@ -393,12 +432,13 @@ export default class ValleScene extends Phaser.Scene {
     })
   }
 
-  // Pasamanos de la escalera y barandilla delantera de la cubierta: una imagen aparte, un nivel por encima de la viajera
-  // cuando está arriba, para que suba y ande por detrás de ellos. Quien anda por el suelo queda siempre más abajo.
-  addFrontRail(key, overlay, px, py, setOf) {
-    const railKey = `${key}:front`
-    this.addThemed(railKey, setOf)
-    this.placeScenery(railKey, px + overlay.x, py + overlay.y, [0, 0], this.terrace.depth + 1)
+  // Capa delantera de un edificio, en una imagen aparte con su propia profundidad: el pasamanos y la barandilla de la
+  // cubierta (un nivel por encima de la viajera cuando está arriba, para que ande por detrás de ellos) o el mostrador del
+  // quiosco (por delante de quien está dentro).
+  addFrontLayer(key, overlay, px, py, depth, setOf) {
+    const frontKey = `${key}:front`
+    this.addThemed(frontKey, setOf)
+    this.placeScenery(frontKey, px + overlay.x, py + overlay.y, [0, 0], depth)
   }
 
   // Cambia entre suelo, escalera y cubierta: en el suelo chocan los edificios; arriba no, porque la cubierta
@@ -450,6 +490,13 @@ export default class ValleScene extends Phaser.Scene {
     this.doors.push({ id, rect: new Phaser.Geom.Rectangle(tx * TILE - 6, ty * TILE - 6, TILE + 12, TILE + 6) })
   }
 
+  // El coche aparcado: su cuerpo sólido es el último que se acaba de crear y E ofrece subir desde su zona.
+  addCar(image, key, px, py) {
+    const { x, y, w, h } = CarDriving.doorArea(px, py)
+    this.car = new CarDriving(this, { image, key, solid: this.solids.at(-1), doorRect: new Phaser.Geom.Rectangle(x, y, w, h) })
+    this.doors.push(this.car.door)
+  }
+
   // Objetos sueltos: cada tipo se dibuja una vez y se coloca por su punto de apoyo.
   buildProps() {
     PROPS.forEach((prop) => {
@@ -457,11 +504,13 @@ export default class ValleScene extends Phaser.Scene {
       if (prop.collect && hasItem(getStory(this.game), prop.collect)) return
       const key = `prop-${prop.kind}-${prop.variant ?? 0}`
       const { sprite } = propAssets(prop, this.pastel)
+      // Un dibujo de más resolución (`scale` < 1, San Rafael) se pinta a escala y con filtrado suave.
+      if (sprite.scale) this.smoothKeys = new Set([...(this.smoothKeys ?? []), key])
       if (!this.textures.exists(key)) this.addThemed(key, () => propAssets(prop, this.pastel).set)
       const px = prop.at[0] * TILE
       const py = prop.at[1] * TILE
-      // Los puentes son planos: van por debajo de quien los cruza, no ordenados por su base como el resto de objetos.
-      const image = this.placeScenery(key, px, py, [0.5, 1], sprite.flat ? 1 : py)
+      // Los puentes son planos; lo que está en alto (la lona de una sombrilla) se ordena unos píxeles por delante (`lift`).
+      const image = this.placeScenery(key, px, py, [0.5, 1], sprite.flat ? 1 : py + (sprite.lift ?? 0), sprite.scale ?? 1)
       sprite.body.forEach(({ l, t, r, b }) => this.solid(px + l, py + t, r - l, b - t))
       if (prop.collect) {
         this.collectibles = { ...this.collectibles, [prop.collect]: { image, door: { id: prop.collect, rect: new Phaser.Geom.Rectangle(px - 18, py - 16, 36, 30) } } }
@@ -470,9 +519,26 @@ export default class ValleScene extends Phaser.Scene {
       if (sprite.glow) this.sky.addLamp(this.add.image(px + sprite.glow.dx, py + sprite.glow.dy, 'lamp-glow'))
       if (prop.zone) this.addDoor(prop.zone, prop.door.x, prop.door.y)
       if (prop.kind === 'bench') this.addBench(px, py)
+      if (prop.kind === 'seatCordoba') this.addCar(image, key, px, py)
       if (isFruitTree(prop.kind)) this.addFruitDoor(prop.kind, px, py)
       if (prop.kind === 'lily') this.bobLily(image, (prop.at[0] * 7 + prop.at[1] * 13) % 1800)
+      // Los surtidores de la fuente van encima de su dibujo y se aclaran con él (ver `seeThrough.js`).
+      const extras = sprite.jets ? [this.addFountainJets(px, py)] : []
+      if (sprite.seeThrough) this.seeThrough.add(image, px, py, sprite.seeThrough, extras)
     })
+  }
+
+  // Surtidores de la fuente: una capa por fotograma (todos los chorros, cada uno en su fase) que se va cambiando. Con "reducir
+  // movimiento" se quedan quietos a media altura.
+  addFountainJets(px, py) {
+    const frames = jetFrames()
+    frames.forEach((canvas, i) => this.addCanvas(`fountain-jets-${i}`, canvas))
+    const image = this.add.image(px, py, 'fountain-jets-1').setOrigin(0.5, 1).setDepth(py)
+    if (!prefersReducedMotion()) {
+      let frame = 0
+      this.time.addEvent({ delay: JET_FRAME_MS, loop: true, callback: () => image.setTexture(`fountain-jets-${(frame = (frame + 1) % frames.length)}`) })
+    }
+    return image
   }
 
   // Los nenúfares se mecen despacio con el agua: un píxel arriba y abajo, cada uno a su ritmo (quieto con "reducir movimiento").
@@ -503,10 +569,13 @@ export default class ValleScene extends Phaser.Scene {
       height: prop.kind === 'appleTree' ? 52 : 40,
       fallsIn: prop.kind === 'appleTree' ? ['spring', 'autumn'] : ['spring'],
     }))
-    // La copa de la fuente es un buen sitio para posarse.
-    this.life = new AmbientLife(this, fruit, [{ x: 592, y: 417, depth: 468 }])
+    // En la fuente, los pájaros se posan en el sombrero del Gran Capitán y entre las orejas del caballo.
+    const statuePerches = [{ x: shiftPxX(596), y: shiftPx(346) }, { x: shiftPxX(578), y: shiftPx(351) }].map((perch) => ({ ...perch, depth: shiftPx(468) }))
+    this.life = new AmbientLife(this, fruit, statuePerches)
     const pool = PROPS.find((prop) => prop.kind === 'pool')
     this.pool = pool && new PoolLife(this, { x: pool.at[0] * TILE, y: pool.at[1] * TILE }, { w: 112, h: 84 }, pool.at[1] * TILE)
+    // Flora y fauna de cada estación (`SeasonalLife`): sobre el agua de la piscina vuelan las libélulas del verano.
+    this.seasonal = new SeasonalLife(this, { pool: pool && { x: pool.at[0] * TILE, y: pool.at[1] * TILE - 40 } })
     this.events.once('shutdown', () => this.life.destroy())
   }
 
@@ -588,6 +657,8 @@ export default class ValleScene extends Phaser.Scene {
       return
     }
     if (this.near === 'standup') this.stand()
+    else if (this.near === 'seatCordoba') this.car.enter()
+    else if (this.near === 'getout') this.car.exit()
     else if (this.near === 'rod') this.pickRod()
     else if (this.near.startsWith('fish:')) this.beginFishing(this.near.slice('fish:'.length))
     else if (this.near.startsWith('tree:')) this.game.events.emit('talk', fruitTalkId(this.near.slice('tree:'.length), this.sky.last))
@@ -832,6 +903,7 @@ export default class ValleScene extends Phaser.Scene {
     this.neighbours.update(delta, locked, this.sky.last, { butterflies: this.life.butterflyPoints() })
     this.life.update(delta, this.sky.last, { x: this.princess.x, y: this.princess.y }, [{ x: this.npcs.brain.x, y: this.npcs.brain.y }])
     this.pool?.update(this.sky.last)
+    this.seasonal.update(delta, this.sky.last, { x: this.princess.x, y: this.princess.y })
     this.riverFish.update(delta)
 
     if (this.arriving) {
@@ -842,7 +914,14 @@ export default class ValleScene extends Phaser.Scene {
     } else if (!locked) {
       const move = inputVector(this.cursors, this.keys, this.game.registry.get('joy') || undefined)
       vx = move.x
-      vy = move.y
+      vy = followRamp(this.ramps, this.princess.x, this.princess.y, move.x, move.y)
+    }
+    // Al volante, las teclas mueven el coche.
+    if (this.car?.driving) {
+      this.frame = { moving: this.car.update(vx, vy, delta), delta }
+      this.sky.update(time)
+      this.advanceGroundSeasons()
+      return
     }
     // Con la caña echada se está quieta; pedir una dirección la recoge.
     if (this.fishing) {
@@ -879,6 +958,7 @@ export default class ValleScene extends Phaser.Scene {
     advanceWalk(this.walk, moving, delta)
     this.princess.setFrame(frameName(this.facing, WALK_CYCLE[this.walk.step]))
     this.frame = { moving, delta }
+    this.seeThrough.update([this.princess, this.companion, ...this.npcs.sprites(), ...this.neighbours.sprites()], delta)
 
     this.sky.update(time)
     this.advanceGroundSeasons()
@@ -895,6 +975,14 @@ export default class ValleScene extends Phaser.Scene {
       if (this.near !== use) {
         this.near = use
         this.game.events.emit('near', use)
+      }
+      return
+    }
+    if (this.car?.driving) {
+      const near = this.car.near()
+      if (this.near !== near) {
+        this.near = near
+        this.game.events.emit('near', near)
       }
       return
     }

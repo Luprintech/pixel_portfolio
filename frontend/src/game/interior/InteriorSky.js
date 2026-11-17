@@ -1,6 +1,6 @@
 // El cielo dentro de una casa: la misma hora, estación y tiempo que fuera. No hay un segundo reloj ni una simulación aparte:
 // cada fotograma se lee el reloj del valle (`SkyLayer.clock`, que sigue corriendo aunque el valle duerma) y se pide el mismo
-// estado de cielo (`valleSkyAt`). De ahí salen
+// estado de cielo (`SkyLayer.skyAt`, con la estación y el clima de ahora). De ahí salen
 //   - el oscurecimiento de la noche y de las nubes cargadas, y el tono cálido del amanecer y el atardecer;
 //   - lo que se ve por las ventanas (`windowView.js`): sol, luna, nubes, lluvia, nieve y rayos, siempre al otro lado del cristal;
 //   - las luces de la casa (guirnalda y tiras led), que se encienden al anochecer en la capa de su mueble (`ledLights.js`);
@@ -8,7 +8,7 @@
 // Con «reducir movimiento» no hay fogonazos, ni gotas que caigan, ni colores de led que cambien.
 import { prefersReducedMotion } from '../../lib/reducedMotion.js'
 import { tintLayers } from '../titleSkyPaint.js'
-import { valleLightningAt, valleSkyAt } from '../valleSky.js'
+import { valleLightningAt } from '../valleSky.js'
 import { duskGlow, lightsOn, roomFlash } from './interiorLight.js'
 import { LED_DEPTH, LED_LAYERS, LED_PALETTES, bulbGlowCanvas, ledCanvas } from './ledLights.js'
 import { windowOverlayCanvas } from './roomDecor.js'
@@ -114,7 +114,7 @@ export default class InteriorSky {
   update() {
     const { source } = this
     const ms = source.clock()
-    const sky = valleSkyAt(ms, source.seed)
+    const sky = source.skyAt(ms)
     source.publishWorld(ms, sky)
 
     tintLayers(sky).forEach(({ alpha }, i) => this.setIfChanged(this.tints[i], alpha))

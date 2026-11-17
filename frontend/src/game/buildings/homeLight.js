@@ -6,6 +6,7 @@
 import { ellipse, makeCanvas } from '../pixelKit.js'
 import { DECK, DECK_WIDEN, TABLE } from '../terrace.js'
 import { LOWER_WINDOW, STRAND, lowerWindowXs, strandPoints } from './terraceProps.js'
+import { BIG_WINDOWS, DOOR_LIGHT } from './homeHouse.js'
 
 export const GLOW_H = 190
 const warm = (alpha) => `rgba(255,205,110,${alpha})`
@@ -30,12 +31,11 @@ export function houseGlow() {
   const canvas = makeCanvas(256 + DX, GLOW_H)
   const g = canvas.getContext('2d')
   // Las dos ventanas grandes y las dos de la sala baja.
-  windowLight(g, { x: 120 + DX, y: 102, w: 36, h: 30 })
-  windowLight(g, { x: 202 + DX, y: 102, w: 36, h: 30 })
+  BIG_WINDOWS.forEach((w) => windowLight(g, w))
   lowerWindowXs().forEach((x) => windowLight(g, { x, y: LOWER_WINDOW.y, w: LOWER_WINDOW.w, h: LOWER_WINDOW.h }))
   // Puerta y farol.
-  pool(g, 179 + DX, 165, 22, 8, { rings: 3, alpha: 0.08 })
-  pool(g, 162 + DX, 138, 11, 9, { rings: 2, alpha: 0.09 })
+  pool(g, DOOR_LIGHT.x, 165, 22, 8, { rings: 3, alpha: 0.08 })
+  pool(g, DOOR_LIGHT.lantern.x, DOOR_LIGHT.lantern.y, 11, 9, { rings: 2, alpha: 0.09 })
   // Guirnalda: un charquito bajo cada bombilla, el suelo de la cubierta y la parte baja de la sombrilla.
   strandPoints(STRAND)
     .filter((p) => p.bulb)

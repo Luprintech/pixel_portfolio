@@ -7,21 +7,24 @@ import { FRUIT_KINDS, FRUIT_NAMES, FRUIT_STATES, fruitSeasonOf, fruitTalkId, isF
 describe('frutales por estaciones', () => {
   // Los dibujos no se prueban aquí: jsdom no tiene lienzo 2D. Se miran en el navegador (ver `docs/ESTADO.md`).
   it('hay un estado por estación del valle y la estación sale del cielo', () => {
-    expect(FRUIT_STATES).toEqual(['spring', 'autumn', 'winter'])
+    expect(FRUIT_STATES).toEqual(['spring', 'summer', 'autumn', 'winter', 'snow'])
     FRUIT_KINDS.forEach((kind) => expect(isFruitTree(kind)).toBe(true))
     expect(isFruitTree('bench')).toBe(false)
     expect(fruitSeasonOf({ autumn: 0, winter: 0 })).toBe('spring')
+    expect(fruitSeasonOf({ summer: 0.9, autumn: 0, winter: 0 })).toBe('summer')
     expect(fruitSeasonOf({ autumn: 0.8, winter: 0 })).toBe('autumn')
-    expect(fruitSeasonOf({ autumn: 0, winter: 0.9 })).toBe('winter')
+    expect(fruitSeasonOf({ autumn: 0, winter: 0.9, snowCover: 0 })).toBe('winter')
     expect(fruitSeasonOf({ autumn: 0.2, winter: 0.5 })).toBe('winter')
+    // La nieve acumulada de una nevada manda sobre la escarcha del invierno.
+    expect(fruitSeasonOf({ autumn: 0, winter: 1, snowCover: 0.7 })).toBe('snow')
     expect(fruitSeasonOf(null)).toBe('spring')
   })
 
-  it('mirar un frutal abre una conversación que existe en las tres estaciones y en los dos idiomas', () => {
+  it('mirar un frutal abre una conversación que existe en las cinco estaciones y en los dos idiomas', () => {
     Object.values(FRUIT_NAMES).forEach((name) => {
       FRUIT_STATES.forEach((season) => {
         const id = `valle.${name}.${season}`
-        const sky = { spring: {}, autumn: { autumn: 1 }, winter: { winter: 1 } }[season]
+        const sky = { spring: {}, summer: { summer: 1 }, autumn: { autumn: 1 }, winter: { winter: 1 }, snow: { winter: 1, snowCover: 1 } }[season]
         expect(fruitTalkId(name, sky)).toBe(id)
         const script = SCRIPTS[id]
         expect(script, id).toBeTruthy()

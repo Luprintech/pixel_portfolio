@@ -62,7 +62,7 @@ Desde 2026-11-08 el portfolio es un overworld pixel art estilo Zelda (Phaser 3) 
 
 ## Flujo de Git
 
-Repositorio: https://github.com/Luprintech/pixel_portfolio (rama `main`). Nunca se commitea directo a `main`: cada funcionalidad va en su rama y entra por PR. El repo anterior (`mi-portfolio`) se conserva aparte como archivo y no se toca; en local su historial queda en la rama `legacy-main` y el remoto `legacy`.
+Repositorio: https://github.com/Luprintech/pixel_portfolio (rama `main`). Nunca se commitea directo a `main`: cada funcionalidad va en su rama y entra por PR. El entorno en la nube crea la rama de cada sesión con el prefijo `claude/`: antes del primer push se renombra a `feat/...`, `fix/...` o `docs/...`, porque en el repo no debe aparecer el nombre de Claude. El repo anterior (`mi-portfolio`) se conserva aparte como archivo y no se toca; en local su historial queda en la rama `legacy-main` y el remoto `legacy`.
 
 **Cuando la usuaria dice "mergea"**, en este orden y parando si algo falla:
 
@@ -74,7 +74,7 @@ Repositorio: https://github.com/Luprintech/pixel_portfolio (rama `main`). Nunca 
 
 **Cuando dice "descarga del remoto al local"**: traer a `main` local lo que haya en `origin/main` (`git fetch` y `git pull --ff-only`). Si hay cambios locales sin commitear o `main` ha divergido, avisar antes de tocar nada; no sobrescribir trabajo local.
 
-**Autoría**: todo lo que se commitea, se sube en un PR o se publica es de Guadalupe y solo de ella. Los commits y las descripciones de PR **no llevan** líneas `Co-Authored-By`, "Generated with" ni ninguna mención a Claude o a otra IA.
+**Autoría**: todo lo que se commitea, se sube en un PR o se publica es de Guadalupe y solo de ella. Los commits y las descripciones de PR **no llevan** líneas `Co-Authored-By`, "Generated with" ni ninguna mención a Claude o a otra IA. Antes del primer commit de cada sesión, configura en el repo `git config user.name "Guadalupe Cano"` y `git config user.email "132688456+Luprintech@users.noreply.github.com"`, y comprueba con `git log -1 --format='%an <%ae> | %cn <%ce>'` que autor y committer son ella. Si un commit sale con otra autoría, se reescribe antes de subirlo.
 
 ## Convenciones de código
 

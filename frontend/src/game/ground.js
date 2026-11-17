@@ -1,5 +1,5 @@
-// Pinta el suelo del valle entero en un solo lienzo: hierba con manchas, caminos de tierra
-// con borde irregular, plaza empedrada y laguna con orilla. Sin dependencias de Phaser.
+// Pinta el suelo del valle entero en un solo lienzo: hierba con manchas, caminos y plaza con las mismas baldosas, y el río
+// con su orilla. Sin dependencias de Phaser.
 import { TONE, seeded } from './palette.js'
 import { dot, hash2, makeCanvas, noise } from './pixelKit.js'
 import { drain } from './sliced.js'
@@ -116,15 +116,16 @@ function waterColor(x, y, depth) {
   return depth < 9 ? W1 : W0
 }
 
-// `roads` y `plaza` son conjuntos de teselas con claves "x,y". El agua llega como `waterField(x, y)`: la distancia con signo (px, positiva
+// `roads` y `plaza` son conjuntos de teselas con claves "x,y". Los caminos llevan las mismas baldosas que la plaza y se pintan con
+// ella como una sola región: así los cruces y la unión con la plaza no dejan costura, y el borde con el césped es igual en todas
+// partes. El ancho de cada camino lo sigue dando su conjunto de teselas (el eje principal, de dos; los senderos, de una). El agua llega como `waterField(x, y)`: la distancia con signo (px, positiva
 // dentro) al borde del río, que es una curva suave y no cabe en teselas (ver `river.js`); sin ella, `water` es un conjunto de teselas.
 // Es un generador que cede el control cada pocas filas (ver sliced.js): pintar más de un millón de píxeles de
 // una vez congela un móvil. `paintGround` lo termina de golpe.
 export function* paintGroundSteps(ctx, { cols, rows, tile, roads, plaza, water = new Set(), waterField = null }) {
   const width = cols * tile
   const height = rows * tile
-  const roadRegion = region(cols, rows, roads)
-  const plazaRegion = region(cols, rows, plaza)
+  const pavedRegion = region(cols, rows, new Set([...plaza, ...roads]))
   const waterRegion = region(cols, rows, water)
   const grassMask = new Uint8Array(width * height)
 
@@ -140,15 +141,9 @@ export function* paintGroundSteps(ctx, { cols, rows, tile, roads, plaza, water =
         dot(ctx, x, y, sdLake > -1.5 ? SAND_DARK : SAND)
         continue
       }
-      const sdPlaza = signedDistance(x, y, tile, plazaRegion) + wobble * 0.3
-      if (sdPlaza > 0) {
-        dot(ctx, x, y, plazaColor(x, y, sdPlaza))
-        continue
-      }
-      const sdRoad = signedDistance(x, y, tile, roadRegion) + wobble
-      if (sdRoad > 0) {
-        dot(ctx, x, y, pathColor(x, y, sdRoad))
-        if (hash2(x, y, 9) > 0.992) dot(ctx, x, y, hash2(x, y, 10) > 0.5 ? E4 : E0)
+      const sdPaved = signedDistance(x, y, tile, pavedRegion) + wobble * 0.3
+      if (sdPaved > 0) {
+        dot(ctx, x, y, plazaColor(x, y, sdPaved))
         continue
       }
       dot(ctx, x, y, grassColor(x, y))
@@ -195,7 +190,7 @@ export function* paintGroundSteps(ctx, { cols, rows, tile, roads, plaza, water =
   }
 }
 
-// Camino de tierra que sigue una línea quebrada, con el mismo borde irregular que los del valle.
+// Camino de tierra que sigue una línea quebrada, con borde irregular.
 // Sirve para las ilustraciones, donde el camino no encaja en la cuadrícula de teselas.
 export function paintRoute(ctx, width, height, points, half = 8) {
   const distance = (x, y) => {
