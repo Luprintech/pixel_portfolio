@@ -118,8 +118,7 @@ Los datos de la UI salen siempre de la API; no hay datos de contenido en `fronte
 
 ## Validación mínima antes de cerrar cambios
 
-- Si tocas frontend: ejecuta `npm run build` en `frontend/`.
-- Si tocas JS/JSX del frontend: ejecuta también `npm run lint` en `frontend/`.
+- Si tocas JS/JSX del frontend: ejecuta `npm run lint` y los tests relacionados en `frontend/`. El `build` y la batería completa los ejecuta el CI de GitHub (el NAS es lento); en local solo si hace falta o te lo piden.
 - Si tocas backend: arranca con `node server.js` y verifica `GET /api/health`.
 - Si tocas CMS o contenido: prueba el flujo afectado de extremo a extremo.
 

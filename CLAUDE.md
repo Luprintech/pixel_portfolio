@@ -66,11 +66,12 @@ Repositorio: https://github.com/Luprintech/pixel_portfolio (rama `main`). Nunca 
 
 **Cuando la usuaria dice "mergea"**, en este orden y parando si algo falla:
 
-1. Pasan **todos** los tests: `npm test`, `npm run lint` y `npm run build` en `frontend/`, y `npm test` en `backend/`. Si algo falla, no se mergea: se informa con la salida del fallo.
+1. En local, solo lo ligero: `npm run lint` y los tests del área tocada (`npx vitest run <ruta>`). La batería completa y el `build` no se ejecutan en el NAS (2 núcleos lentos): los hace el CI de GitHub. Decidido el 2026-11-17.
 2. Crear la rama (`feat/...`, `fix/...`, `docs/...`) desde `main` actualizada y commitear.
 3. Subir la rama y abrir el PR con `gh pr create`.
-4. Mergear el PR (squash).
-5. Borrar la rama en remoto y en local, volver a `main` y actualizarla.
+4. Esperar al CI (`.github/workflows/ci.yml`: frontend con lint, tests y build; backend con tests). Si algo falla, no se mergea: se informa con la salida del fallo.
+5. Con el CI en verde, mergear el PR (squash). Se puede dejar `gh pr merge --auto --squash` para que se fusione solo al terminar el CI.
+6. Borrar la rama en remoto y en local, volver a `main` y actualizarla.
 
 **Cuando dice "descarga del remoto al local"**: traer a `main` local lo que haya en `origin/main` (`git fetch` y `git pull --ff-only`). Si hay cambios locales sin commitear o `main` ha divergido, avisar antes de tocar nada; no sobrescribir trabajo local.
 
@@ -92,7 +93,7 @@ El detalle de modularización y de comprobación visual está en `AGENTS.md` (bu
 
 ## Antes de cerrar un cambio
 
-Frontend: `npm run build`, `npm run lint` y `npm test` desde `frontend/`. Backend: `npm test` y comprobar `GET /api/health`. Detalle completo en `AGENTS.md`.
+En local: `npm run lint` y los tests relacionados con el cambio desde `frontend/`, y `npm test` en `backend/` si lo tocas. Los tests completos y el `build` los ejecuta el CI de GitHub antes de fusionar; no se lanzan en el NAS salvo que la usuaria lo pida. Detalle en `AGENTS.md`.
 
 ## Estado del proyecto
 
