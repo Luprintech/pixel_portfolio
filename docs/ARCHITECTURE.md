@@ -144,6 +144,8 @@ Resumen de lo que implicaría la mascota del visitante; las reglas de producto e
 
 `docker-compose.yml` levanta frontend (Nginx, `nginx.conf`) y backend con volumen compartido. No hay pipeline de despliegue automatizado.
 
+El desarrollo se hace en GitHub Codespaces (`.devcontainer/`): un contenedor de Node 20 que comparte red con un PostgreSQL 16, de modo que la base responde en `localhost:5432` como en un equipo local. Vite sirve la web en el 5173 con el proxy de `/api` al backend en el 3000. En un Codespace, `vite.config.js` fija el puerto del cliente de recarga en caliente a 443 y `backend/config/cors.js` acepta en desarrollo el origen del propio Codespace.
+
 ## Zonas delicadas
 
 Ver la sección homónima de `AGENTS.md`: sitemap, `CONTENT_PATH`, SMTP del contacto y Gemini del chat.

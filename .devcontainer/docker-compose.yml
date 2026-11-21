@@ -1,0 +1,28 @@
+# Solo para el Codespace. No tiene nada que ver con el docker-compose.yml de la
+# raíz, que es el de producción.
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm
+    volumes:
+      - ../..:/workspaces:cached
+    # Mantiene vivo el contenedor; los servidores se arrancan a mano con
+    # .devcontainer/arrancar.sh para poder pararlos y relanzarlos.
+    command: sleep infinity
+    # Comparte red con postgres: así la base responde en localhost:5432, igual
+    # que en un equipo local, y backend/.env no cambia de un entorno a otro.
+    network_mode: service:postgres
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: portfolio_cms
+      POSTGRES_USER: portfolio
+      POSTGRES_PASSWORD: portfolio
+    # Los datos sobreviven a parar y reanudar el Codespace; solo se pierden si
+    # se borra el Codespace entero.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

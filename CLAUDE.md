@@ -16,6 +16,7 @@ Portfolio full-stack de Guadalupe Cano (Luprintech): SPA React + Vite, API Expre
 | Arquitectura, rutas, flujo de contenido, juego Phaser | `docs/ARCHITECTURE.md` |
 | Sistema de diseño vigente (Valle del Bucle) | `frontend/docs/DESIGN.md` |
 | Qué se ha hecho, qué falta y por qué se decidió cada cosa | `docs/ESTADO.md` |
+| Entorno de desarrollo en GitHub Codespaces | `.devcontainer/LEEME.md` |
 | Visión de producto: a qué funcionalidades queremos llegar y en qué orden | `docs/VISION.md` |
 | Lore y mundo: hechos, cronología, reparto con seudónimos y mapa de lugares (borrador, no publicar) | `docs/LORE_Y_MUNDO.md` |
 | Guion de diálogos de cada interacción (borrador, no publicar) | `docs/DIALOGOS.md` |
@@ -66,7 +67,7 @@ Repositorio: https://github.com/Luprintech/pixel_portfolio (rama `main`). Nunca 
 
 **Cuando la usuaria dice "mergea"**, en este orden y parando si algo falla:
 
-1. En local, solo lo ligero: `npm run lint` y los tests del área tocada (`npx vitest run <ruta>`). La batería completa y el `build` no se ejecutan en el NAS (2 núcleos lentos): los hace el CI de GitHub. Decidido el 2026-11-17.
+1. En local, solo lo ligero: `npm run lint` y los tests del área tocada (`npx vitest run <ruta>`). La batería completa y el `build` no se ejecutan en el entorno de desarrollo (el Codespace tiene 2 núcleos): los hace el CI de GitHub. Decidido el 2026-11-17; el NAS dejó de usarse para desarrollo el 2026-11-21.
 2. Crear la rama (`feat/...`, `fix/...`, `docs/...`) desde `main` actualizada y commitear.
 3. Subir la rama y abrir el PR con `gh pr create`.
 4. Esperar al CI (`.github/workflows/ci.yml`: frontend con lint, tests y build; backend con tests). Si algo falla, no se mergea: se informa con la salida del fallo.
@@ -93,7 +94,7 @@ El detalle de modularización y de comprobación visual está en `AGENTS.md` (bu
 
 ## Antes de cerrar un cambio
 
-En local: `npm run lint` y los tests relacionados con el cambio desde `frontend/`, y `npm test` en `backend/` si lo tocas. Los tests completos y el `build` los ejecuta el CI de GitHub antes de fusionar; no se lanzan en el NAS salvo que la usuaria lo pida. Detalle en `AGENTS.md`.
+En local: `npm run lint` y los tests relacionados con el cambio desde `frontend/`, y `npm test` en `backend/` si lo tocas. Los tests completos y el `build` los ejecuta el CI de GitHub antes de fusionar; no se lanzan en el Codespace salvo que la usuaria lo pida. Detalle en `AGENTS.md`.
 
 ## Estado del proyecto
 

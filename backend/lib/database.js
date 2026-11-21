@@ -1,6 +1,6 @@
 import fsExtra from 'fs-extra';
 import path from 'path';
-import { Pool } from 'pg';
+import pg from 'pg';
 import bcrypt from 'bcrypt';
 import {
     CONTENT_PATH,
@@ -9,6 +9,12 @@ import {
     PROJECTS_FILE,
 } from '../config/paths.js';
 import { logger } from './logger.js';
+
+const { Pool, types } = pg;
+
+// pg convierte las columnas DATE en un Date a medianoche de la hora local, y toISOString()
+// lo pasa a UTC: en España cada fecha salía con un día menos. Se leen tal cual, 'YYYY-MM-DD'.
+types.setTypeParser(types.builtins.DATE, value => value);
 
 const dbLogger = logger.child({ area: 'database' });
 

@@ -27,6 +27,7 @@ Stack principal verificado en este repo segun `frontend/package.json`, `backend/
 - [Estructura del repositorio](#estructura-del-repositorio)
 - [Requisitos](#requisitos)
 - [Puesta en marcha en local](#puesta-en-marcha-en-local)
+- [Desarrollo en GitHub Codespaces](#desarrollo-en-github-codespaces)
 - [Variables de entorno](#variables-de-entorno)
 - [Scripts disponibles](#scripts-disponibles)
 - [Fuente de verdad del contenido](#fuente-de-verdad-del-contenido)
@@ -182,6 +183,10 @@ Notas verificadas:
 - El frontend usa `VITE_API_URL` como base de la API; si no existe, trabaja con rutas relativas.
 - En desarrollo, Vite espera el backend en `http://localhost:3000` segun la configuracion actual de entorno.
 - El CMS forma parte de la misma SPA y vive bajo `/bitacora`.
+
+## Desarrollo en GitHub Codespaces
+
+El repositorio trae un entorno de Codespaces en `.devcontainer/` con Node 20, PostgreSQL 16, Claude Code y los dos servidores arrancando solos al abrirlo. La web se ve en directo desde la URL privada del puerto 5173, desde cualquier dispositivo. Guía completa, secretos incluidos: [`.devcontainer/LEEME.md`](.devcontainer/LEEME.md).
 
 ## Variables de entorno
 

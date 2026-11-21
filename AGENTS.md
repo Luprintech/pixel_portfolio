@@ -81,6 +81,10 @@ Desde la raíz:
 - Levantar stack: `docker-compose up -d --build`
 - Parar stack: `docker-compose down`
 
+### GitHub Codespaces
+
+Es el entorno de desarrollo habitual (`.devcontainer/`, guía en `.devcontainer/LEEME.md`). Al abrirlo arrancan solos backend y frontend; para relanzarlos: `bash .devcontainer/arrancar.sh`. PostgreSQL corre en un contenedor aparte y responde en `localhost:5432`. El `backend/.env` lo genera `post-create.sh` y las credenciales del CMS llegan como secretos de Codespaces.
+
 ## Variables de entorno
 
 ### Backend obligatorias
@@ -118,7 +122,7 @@ Los datos de la UI salen siempre de la API; no hay datos de contenido en `fronte
 
 ## Validación mínima antes de cerrar cambios
 
-- Si tocas JS/JSX del frontend: ejecuta `npm run lint` y los tests relacionados en `frontend/`. El `build` y la batería completa los ejecuta el CI de GitHub (el NAS es lento); en local solo si hace falta o te lo piden.
+- Si tocas JS/JSX del frontend: ejecuta `npm run lint` y los tests relacionados en `frontend/`. El `build` y la batería completa los ejecuta el CI de GitHub (el Codespace tiene 2 núcleos); en local solo si hace falta o te lo piden.
 - Si tocas backend: arranca con `node server.js` y verifica `GET /api/health`.
 - Si tocas CMS o contenido: prueba el flujo afectado de extremo a extremo.
 

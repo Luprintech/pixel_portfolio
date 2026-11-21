@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -52,6 +53,9 @@ function manualChunks(id) {
   return Object.keys(VENDOR_CHUNKS).find(chunk => VENDOR_CHUNKS[chunk].includes(pkg))
 }
 
+// Codespaces define CODESPACES=true en el entorno del contenedor
+const inCodespace = process.env.CODESPACES === 'true'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [tailwindcss(), react()],
@@ -72,10 +76,13 @@ export default defineConfig({
   // Optimización de servidor de desarrollo
   server: {
     port: 5173,
-    // Túneles HTTPS para probar la instalación de la app en el móvil: Vite rechaza por defecto
-    // cualquier nombre de host que no conozca
-    allowedHosts: ['.trycloudflare.com', '.ngrok-free.app', '.loca.lt'],
-    open: true,
+    // Túneles HTTPS para probar la instalación de la app en el móvil y la URL de los puertos
+    // de Codespaces: Vite rechaza por defecto cualquier nombre de host que no conozca
+    allowedHosts: ['.trycloudflare.com', '.ngrok-free.app', '.loca.lt', '.app.github.dev'],
+    // En el Codespace no hay navegador que abrir. Y la página llega por HTTPS en el puerto 443:
+    // sin clientPort, el cliente de recarga en caliente buscaría el 5173 en esa URL y fallaría.
+    open: !inCodespace,
+    hmr: inCodespace ? { clientPort: 443 } : undefined,
     // Proxy solo en desarrollo: redirige /api/ al backend local
     // En producción esto no existe; nginx.docker.conf hace el proxy
     proxy: {

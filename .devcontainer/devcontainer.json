@@ -1,0 +1,40 @@
+{
+  // Entorno de desarrollo para GitHub Codespaces: Node 20 (la misma versión
+  // que el CI) y un PostgreSQL 16 aparte, definidos en docker-compose.yml.
+  "name": "pixel_portfolio",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "shutdownAction": "stopCompose",
+
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+
+  // Vite (5173) es lo que se abre en el navegador; el backend (3000) solo lo
+  // usa el proxy de Vite, así que no hace falta que avise al levantarse.
+  "forwardPorts": [5173, 3000],
+  "portsAttributes": {
+    "5173": { "label": "Web (Vite)", "onAutoForward": "notify" },
+    "3000": { "label": "API (Express)", "onAutoForward": "silent" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "ignore" }
+  },
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  // Se ejecuta cada vez que alguien abre el Codespace (desde cualquier
+  // dispositivo); el script no duplica servidores si ya están en marcha.
+  "postAttachCommand": "bash .devcontainer/arrancar.sh",
+
+  "customizations": {
+    "codespaces": {
+      "openFiles": [".devcontainer/LEEME.md"]
+    },
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "anthropic.claude-code"
+      ]
+    }
+  }
+}

@@ -12,6 +12,22 @@ const allowedOrigins = [
 // Patrón que acepta cualquier puerto de localhost en desarrollo
 const localhostPattern = /^http:\/\/localhost:\d+$/;
 
+// En un Codespace la web se abre desde https://<codespace>-<puerto>.<dominio>, no desde
+// localhost. Solo se acepta la URL del propio Codespace: FRONTEND_URL no sirve para esto
+// porque el backend la usa también para regenerar sitemap.xml al arrancar.
+export function isCodespaceOrigin(origin, env = process.env) {
+    const name = env.CODESPACE_NAME;
+    const domain = env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
+    if (!name || !domain || !origin) return false;
+
+    const prefix = `https://${name}-`;
+    const suffix = `.${domain}`;
+    if (!origin.startsWith(prefix) || !origin.endsWith(suffix)) return false;
+
+    const port = origin.slice(prefix.length, origin.length - suffix.length);
+    return /^\d+$/.test(port);
+}
+
 export const corsOptions = {
     origin(origin, callback) {
         // Sin origen (peticiones server-to-server, curl, etc.)
@@ -20,8 +36,8 @@ export const corsOptions = {
             return;
         }
 
-        // En desarrollo: permitir cualquier localhost independientemente del puerto
-        if (isDev && localhostPattern.test(origin)) {
+        // En desarrollo: cualquier puerto de localhost o del Codespace en el que corre
+        if (isDev && (localhostPattern.test(origin) || isCodespaceOrigin(origin))) {
             callback(null, true);
             return;
         }
